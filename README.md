@@ -23,7 +23,7 @@ This container can also be used as an add-on in Home Assistant.
 The add-on requires an existing MQTT broker such as Mosquitto, also available to install from the Add-on store.
 To install GivTCP as an add-on, add this repository (https://github.com/britkat1980/giv_tcp) to the Add-on Store repository list.
 The following configuration items are mandatory before the add-on can be started:
-* Inverter IP address
+* Inverter IP address (leave blank for auto-detect or multi-inverter installations)
 * MQTT username (can also be a Home Assistant user - used to authenticate againt your MQTT broker)
 * MQTT password
 All other configuration items can be left as-is unless you need to change them.
