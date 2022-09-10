@@ -6,7 +6,8 @@ class GivClient:
 class GivQueue:
     from redis import Redis
     from rq import Connection, Queue
-    redis_connection = Redis(host='192.168.2.10', port=6379, db=0)
+    from os import getenv
+    redis_connection = Redis(host=getenv('HOSTIP'), port=6379, db=0)
     q = Queue(connection=redis_connection)
 
 class GEType:
