@@ -110,17 +110,35 @@ def setChargeTarget(payload):
 def setBatteryReserve(payload):
     temp={}
     if type(payload) is not dict: payload=json.loads(payload)
-    target=int(payload['dischargeToPercent'])
+    target=int(payload['reservePercent'])
     #Only allow minimum of 4%
     if target<4: target=4
     logger.info ("Setting battery reserve target to: " + str(target))
     try:
-        client.set_battery_power_reserve(target)
+        #client.set_battery_power_reserve(target)
+        client.set_shallow_charge(target)
         temp['result']="Setting Battery Reserve was a success"
 
     except:
         e = sys.exc_info()
         temp['result']="Setting Battery Reserve failed: " + str(e)
+        logger.error (temp['result'])
+    return json.dumps(temp)
+
+def setBatteryCutoff(payload):
+    temp={}
+    if type(payload) is not dict: payload=json.loads(payload)
+    target=int(payload['dischargeToPercent'])
+    #Only allow minimum of 4%
+    if target<4: target=4
+    logger.info ("Setting battery cutoff target to: " + str(target))
+    try:
+        client.set_battery_power_reserve(target)
+        temp['result']="Setting Battery Cutoff was a success"
+
+    except:
+        e = sys.exc_info()
+        temp['result']="Setting Battery Cutoff failed: " + str(e)
         logger.error (temp['result'])
     return json.dumps(temp)
 
@@ -272,21 +290,21 @@ def forceExport(exportTime):
             revert["end_time"]=regCacheStack[4]["Timeslots"]["Discharge_end_time_slot_1"][:5]
             revert["dischargeToPercent"]=regCacheStack[4]["Control"]["Battery_Power_Reserve"]
             revert["mode"]=regCacheStack[4]["Control"]["Mode"]
-        
+
         #set slot2 to calc times and keep slot 1 as is
-        slot1=(datetime.strptime(regCacheStack[4]["Timeslots"]["Discharge_start_time_slot_1"][:5],"%H:%M"),datetime.strptime(regCacheStack[4]["Timeslots"]["Discharge_end_time_slot_1"][:5],"%H:%M")) 
+        slot1=(datetime.strptime(regCacheStack[4]["Timeslots"]["Discharge_start_time_slot_1"][:5],"%H:%M"),datetime.strptime(regCacheStack[4]["Timeslots"]["Discharge_end_time_slot_1"][:5],"%H:%M"))
         slot2=(datetime.now(),datetime.now()+timedelta(minutes=exportTime))
         logger.info("Setting export slot to: "+ slot2[0].strftime("%H:%M")+" - "+slot2[1].strftime("%H:%M"))
         result=client.set_mode_storage(slot1,slot2,export=True)
         logger.info("Mode result is:" + str(result))
-        
+
         time.sleep(1)
 
         payload={}
         payload['dischargeRate']=100
         result=setDischargeRate(payload)
         logger.info("DischargeRate result is:" + str(result))
-        
+
         if "success" in result:
             GivQueue.q.enqueue_in(timedelta(minutes=exportTime),FEResume,revert)
             temp['result']="Export successfully forced "+str(exportTime)+" minutes"
@@ -339,7 +357,7 @@ def forceCharge(chargeTime):
             revert["chargeRate"]=regCacheStack[4]["Control"]["Battery_Charge_Rate"]
             revert["targetSOC"]=regCacheStack[4]["Control"]["Target_SOC"]
             revert["chargeScheduleEnable"]=regCacheStack[4]["Control"]["Enable_Charge_Schedule"]
-        
+
         payload['chargeRate']=100
         result=setChargeRate(payload)
 
@@ -352,7 +370,7 @@ def forceCharge(chargeTime):
         payload['finish']=GivLUT.getTime(datetime.now()+timedelta(minutes=chargeTime))
         payload['chargeToPercent']=100
         result=setChargeSlot1(payload)
-        
+
         if "success" in result:
             GivQueue.q.enqueue_in(timedelta(minutes=chargeTime),FCResume,revert)
             temp['result']="Charge successfully forced "+str(chargeTime)+" minutes"
@@ -477,7 +495,7 @@ def setDateTime(payload):
 
     except:
         e = sys.exc_info()
-        temp['result']="Setting Battery Mode failed: " + str(e) 
+        temp['result']="Setting Battery Mode failed: " + str(e)
         logger.error (temp['result'])
     return json.dumps(temp)
 

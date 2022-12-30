@@ -2,13 +2,13 @@ class GivClient:
     def getData(fullrefresh):
         from givenergy_modbus.client import GivEnergyClient
         from settings import GiV_Settings
-        from givenergy_modbus.model.plant import Plant  
-        
+        from givenergy_modbus.model.plant import Plant
+
         client= GivEnergyClient(host=GiV_Settings.invertorIP)
         plant=Plant(number_batteries=int(GiV_Settings.numBatteries))
         client.refresh_plant(plant,full_refresh=fullrefresh)
         return (plant)
-        
+
 class GivQueue:
     from redis import Redis
     from rq import Queue
@@ -75,7 +75,7 @@ class GivLUT:
     maxCost=100
     maxRate=2
     Last_Updated_Time=GEType("sensor","timestamp","","","",False,False,False)
-    
+
     entity_type={
         "Last_Updated_Time":GEType("sensor","timestamp","","","",False,False,False),
         "Time_Since_Last_Update":GEType("sensor","","",0,10000,True,False,False),
@@ -175,6 +175,7 @@ class GivLUT:
         "Battery_Cell_4_Temperature":GEType("sensor","temperature","",-maxTemp,maxTemp,True,True,False),
         "Mode":GEType("select","","setBatteryMode","","",False,False,False),
         "Battery_Power_Reserve":GEType("number","","setBatteryReserve",4,100,False,False,False),
+        "Battery_Power_Cutoff":GEType("number","","setBatteryCutoff",4,100,False,False,False),
         "Target_SOC":GEType("number","","setChargeTarget",4,100,False,False,False),
         "Enable_Charge_Schedule":GEType("switch","","enableChargeSchedule","","",False,False,False),
         "Enable_Discharge_Schedule":GEType("switch","","enableDishargeSchedule","","",False,False,False),
@@ -225,7 +226,7 @@ class GivLUT:
 "22:00:00","22:01:00","22:02:00","22:03:00","22:04:00","22:05:00","22:06:00","22:07:00","22:08:00","22:09:00","22:10:00","22:11:00","22:12:00","22:13:00","22:14:00","22:15:00","22:16:00","22:17:00","22:18:00","22:19:00","22:20:00","22:21:00","22:22:00","22:23:00","22:24:00","22:25:00","22:26:00","22:27:00","22:28:00","22:29:00","22:30:00","22:31:00","22:32:00","22:33:00","22:34:00","22:35:00","22:36:00","22:37:00","22:38:00","22:39:00","22:40:00","22:41:00","22:42:00","22:43:00","22:44:00","22:45:00","22:46:00","22:47:00","22:48:00","22:49:00","22:50:00","22:51:00","22:52:00","22:53:00","22:54:00","22:55:00","22:56:00","22:57:00","22:58:00","22:59:00",
 "23:00:00","23:01:00","23:02:00","23:03:00","23:04:00","23:05:00","23:06:00","23:07:00","23:08:00","23:09:00","23:10:00","23:11:00","23:12:00","23:13:00","23:14:00","23:15:00","23:16:00","23:17:00","23:18:00","23:19:00","23:20:00","23:21:00","23:22:00","23:23:00","23:24:00","23:25:00","23:26:00","23:27:00","23:28:00","23:29:00","23:30:00","23:31:00","23:32:00","23:33:00","23:34:00","23:35:00","23:36:00","23:37:00","23:38:00","23:39:00","23:40:00","23:41:00","23:42:00","23:43:00","23:44:00","23:45:00","23:46:00","23:47:00","23:48:00","23:49:00","23:50:00","23:51:00","23:52:00","23:53:00","23:54:00","23:55:00","23:56:00","23:57:00","23:58:00","23:59:00"
     ]
-    
+
     delay_times=["Normal","Running","2","15","30","45","60","90","120","150","180"]
     modes=["Eco","Timed Demand","Timed Export","Unknown", "Eco (Paused)"]
 

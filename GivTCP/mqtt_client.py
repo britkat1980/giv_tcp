@@ -37,7 +37,7 @@ while not hasattr(GiV_Settings,'serial_number'):
     if count==20:
         logger.error("No serial_number found in MQTT queue. MQTT Control not available.")
         break
-    
+
 logger.info("Serial Number retrieved: "+GiV_Settings.serial_number)
 
 def on_message(client, userdata, message):
@@ -67,8 +67,12 @@ def on_message(client, userdata, message):
         writecommand['chargeToPercent']=str(message.payload.decode("utf-8"))
         result=GivQueue.q.enqueue(wr.setChargeTarget,writecommand)
     elif command=="setBatteryReserve":
-        writecommand['dischargeToPercent']=str(message.payload.decode("utf-8"))
+        #writecommand['dischargeToPercent']=str(message.payload.decode("utf-8"))
+        writecommand['reservePercent']=str(message.payload.decode("utf-8"))
         result=GivQueue.q.enqueue(wr.setBatteryReserve,writecommand)
+    elif command=="setBatteryCutoff":
+        writecommand['dischargeToPercent']=str(message.payload.decode("utf-8"))
+        result=GivQueue.q.enqueue(wr.setBatteryCutoff,writecommand)
     elif command=="setBatteryMode":
         writecommand['mode']=str(message.payload.decode("utf-8"))
         result=GivQueue.q.enqueue(wr.setBatteryMode,writecommand)
