@@ -46,7 +46,7 @@ Once this has been done the container should start-up and begin publishing data 
 
 From here your invertor data is available through either MQTT or REST as described below. 
 
-### Docker Envirnoment Variables
+### Docker Environment Variables
 
 | ENV Name                | Example       |  Description                      |
 | ----------------------- | ------------- |  -------------------------------- |
