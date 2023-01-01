@@ -57,6 +57,7 @@ class GivLUT:
     lastupdate=GiV_Settings.cache_location+"/lastUpdate_"+str(GiV_Settings.givtcp_instance)+".pkl"
     forcefullrefresh=GiV_Settings.cache_location+"/.forceFullRefresh_"+str(GiV_Settings.givtcp_instance)
     batterypkl=GiV_Settings.cache_location+"/battery_"+str(GiV_Settings.givtcp_instance)+".pkl"
+    reservepkl=GiV_Settings.cache_location+"/reserve_"+str(GiV_Settings.givtcp_instance)+".pkl"
     ppkwhtouch=".ppkwhtouch"
     schedule=".schedule"
     oldDataCount=GiV_Settings.cache_location+"/oldDataCount_"+str(GiV_Settings.givtcp_instance)+".pkl"
@@ -256,6 +257,8 @@ class GivLUT:
                 os.remove(GivLUT.batterypkl)
             if exists(GivLUT.oldDataCount):
                 os.remove(GivLUT.oldDataCount)
+            if exists(GivLUT.reservepkl):
+                os.remove(GivLUT.reservepkl)
         else:
             with open(GivLUT.oldDataCount, 'wb') as outp:
                 pickle.dump(oldDataCount, outp, pickle.HIGHEST_PROTOCOL)

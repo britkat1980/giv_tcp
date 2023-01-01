@@ -79,9 +79,10 @@ def setShallowCharge(payload):
 
 def enableDischarge(payload):
     temp={}
+    saved_battery_reserve = getSavedBatteryReservePercentage()
     try:
         if payload['state']=="enable":
-            client.set_shallow_charge(4)
+            client.set_shallow_charge(saved_battery_reserve)
         elif payload['state']=="disable":
             client.set_shallow_charge(100)
         temp['result']="Setting Discharge Enable was a success"
@@ -458,6 +459,8 @@ def setBatteryMode(payload):
     try:
         if payload['mode']=="Eco":
             client.set_mode_dynamic()
+            time.sleep(1)
+            client.set_shallow_charge(getSavedBatteryReservePercentage())
         elif payload['mode']=="Eco (Paused)":
             client.set_mode_dynamic()
             time.sleep(1)
@@ -498,6 +501,15 @@ def setDateTime(payload):
         temp['result']="Setting Battery Mode failed: " + str(e)
         logger.error (temp['result'])
     return json.dumps(temp)
+
+def getSavedBatteryReservePercentage():
+    saved_battery_reserve=4
+    if exists(GivLUT.reservepkl):
+        with open(GivLUT.reservepkl, 'rb') as inp:
+            saved_battery_reserve= pickle.load(inp)
+    return saved_battery_reserve
+
+
 
 if __name__ == '__main__':
     if len(sys.argv)==2:

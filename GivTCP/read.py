@@ -302,8 +302,31 @@ def getData(fullrefresh):      #Read from Invertor put in cache
         else:
             discharge_schedule="disable"
         #Get Battery Stat registers
-        #battery_reserve=GEInv.battery_discharge_min_power_reserve
         battery_reserve=GEInv.battery_soc_reserve
+
+        # Save a non-100 battery_reserve value for use later in restoring after resuming Eco/Dynamic mode
+        # Check to see if we have a saved value already...
+        saved_battery_reserve=0
+        if exists(GivLUT.reservepkl):
+            with open(GivLUT.reservepkl, 'rb') as inp:
+                saved_battery_reserve= pickle.load(inp)
+
+        # Has the saved value changed from the current value? Only carry on if it is different
+        if saved_battery_reserve != battery_reserve:
+            if battery_reserve<100:
+                try:
+                    # Pickle the value to use later...
+                    with open(GivLUT.reservepkl, 'wb') as outp:
+                        pickle.dump(battery_reserve, outp, pickle.HIGHEST_PROTOCOL)
+                    logger.critical ("Saving the battery reserve percentage for later: " + str(battery_reserve))
+                except:
+                    e = sys.exc_info()
+                    temp['result']="Saving the battery reserve for later failed: " + str(e)
+                    logger.error (temp['result'])
+            else:
+                # Value is 100, we don't want to save 100 because we need to restore to a value FROM 100...
+                logger.critical ("Saving the battery reserve percentage for later: no need, it's currently at 100 and we don't want to save that.")
+
         battery_cutoff=GEInv.battery_discharge_min_power_reserve
         target_soc=GEInv.charge_target_soc
         if GEInv.battery_soc_reserve<=GEInv.battery_percent:
