@@ -10,4 +10,4 @@ pickle-mixin
 flask-cors
 rq
 redis
-git+https://github.com/jace/rq-dashboard.git@master
+git+https://github.com/jace/rq-dashboard.git
