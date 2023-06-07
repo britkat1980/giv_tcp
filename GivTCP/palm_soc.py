@@ -473,7 +473,7 @@ class SolcastObj:
             print("Error; Problem reading Solcast data, using previous values (if any)")
             return
 
-        if stgs.Solcast.url_sw:  # Two arrays are specified
+        if stgs.Solcast.url_sw != "":  # Two arrays are specified
             logger.info("url_sw = '"+str(stgs.Solcast.url_sw)+"'")
             result, solcast_data_2 = get_solcast(stgs.Solcast.url_sw)
             if not result:
