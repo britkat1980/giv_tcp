@@ -489,7 +489,7 @@ class SolcastObj:
         pv_est50 = [0] * 10080
         pv_est90 = [0] * 10080
 
-        if stgs.Solcast.url_sw:  # Two arrays are specified
+        if stgs.Solcast.url_sw != "":  # Two arrays are specified
             forecast_lines = min(len(solcast_data_1['forecasts']), len(solcast_data_2['forecasts']))
         else:
             forecast_lines = len(solcast_data_1['forecasts'])
@@ -501,7 +501,7 @@ class SolcastObj:
         index = solcast_offset
         cntr = 0
         while index < forecast_lines * interval:
-            if stgs.Solcast.url_sw:  # Two arrays are specified
+            if stgs.Solcast.url_sw != "":  # Two arrays are specified
                 pv_est10[index] = (int(solcast_data_1['forecasts'][cntr]['pv_estimate10'] * 1000) +
                     int(solcast_data_2['forecasts'][cntr]['pv_estimate10'] * 1000))
                 pv_est50[index] = (int(solcast_data_1['forecasts'][cntr]['pv_estimate'] * 1000) +
