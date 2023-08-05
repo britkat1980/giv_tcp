@@ -1,7 +1,7 @@
-name:  "GivTCP"
+name:  "GivTCP - AJCollins"
 description:  "TCP Modbus connection to MQTT/JSON for Givenergy Battery/PV Invertors"
-version:  "2.3.2"
-image: britkat/giv_tcp-ma
+version:  "2.3.2.6"
+#image: britkat/giv_tcp-ma
 slug:  "givtcp"
 homeassistant_api: true
 hassio_api: true
@@ -13,7 +13,7 @@ services:
 map:
   - config:rw
 boot:  auto
-url:  https://github.com/britkat1980/giv_tcp
+url:  https://github.com/ajcollins/giv_tcp
 legacy:  true
 arch: 
   - aarch64
