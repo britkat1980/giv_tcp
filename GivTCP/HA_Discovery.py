@@ -143,18 +143,23 @@ class HAMQTT():
             if GivLUT.entity_type[str(topic).split("/")[-1]].sensorClass=="temperature":
                 tempObj['unit_of_meas']="°C"
                 tempObj['device_class']="Temperature"
+                tempObj['state_class']="measurement"
             if GivLUT.entity_type[str(topic).split("/")[-1]].sensorClass=="voltage":
                 tempObj['unit_of_meas']="V"
                 tempObj['device_class']="Voltage"
+                tempObj['state_class']="measurement"
             if GivLUT.entity_type[str(topic).split("/")[-1]].sensorClass=="frequency":
                 tempObj['unit_of_meas']="Hz"
                 tempObj['device_class']="frequency"
+                tempObj['state_class']="measurement"
             if GivLUT.entity_type[str(topic).split("/")[-1]].sensorClass=="current":
                 tempObj['unit_of_meas']="A"
                 tempObj['device_class']="Current"
+                tempObj['state_class']="measurement"
             if GivLUT.entity_type[str(topic).split("/")[-1]].sensorClass=="battery":
                 tempObj['unit_of_meas']="%"
                 tempObj['device_class']="Battery"
+                tempObj['state_class']="measurement"
             if GivLUT.entity_type[str(topic).split("/")[-1]].sensorClass=="timestamp":
                 del(tempObj['unit_of_meas'])
                 tempObj['device_class']="timestamp"
