@@ -131,7 +131,7 @@ class HAMQTT():
                     tempObj['state_class']="total_increasing"
             if GivLUT.entity_type[str(topic).split("/")[-1]].sensorClass=="money":
                 if "ppkwh" in str(topic).lower() or "rate" in str(topic).lower():
-                   tempObj['unit_of_meas']="{GBP}/kWh"
+                    tempObj['unit_of_meas']="{GBP}/kWh"
                 else:
                     tempObj['unit_of_meas']="{GBP}"
                 tempObj['device_class']="Monetary"
