@@ -122,8 +122,9 @@ if len(networks)>0:
             while len(list)<=0:
                 if count<2:
                     logger.info("Scanning network ("+str(count+1)+"):"+str(networks[subnet]))
-                    list=findInvertor(networks[subnet])
-                    if len(list)>0: break
+                    if networks[subnet] is not None:
+                        list=findInvertor(networks[subnet])
+                        if len(list)>0: break
                     count=count+1
                 else:
                     break
