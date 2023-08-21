@@ -11,4 +11,5 @@ flask-cors
 rq
 redis
 npm
+async-timeout
 git+https://github.com/jace/rq-dashboard.git
