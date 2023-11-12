@@ -129,11 +129,11 @@ def isitoldfw(invstats):
     Gen 2 909+ New. 99x Beta   Schedule Pause only for Gen2+
     Gen 3 303+ New 39x Beta    New has 10 slots
     AIO 6xx New 69x Beta       ALL has 10 slots'''
-    if invstats['Model']=='AC' and int(invstats['Firmware'])>500:
-        return True
-    elif invstats['Model']=='All in One' and int(invstats['Firmware'])<600:
-        return True
-    elif invstats['Generation']=='Gen 1' and int(invstats['Firmware'])>400:
+    if invstats['Model']=='AC':
+        return int(invstats['Firmware'])>500
+    elif invstats['Model']=='All in One':
+        return int(invstats['Firmware'])<600
+    elif invstats['Generation']=='Gen 1' and int(invstats['Firmware'])>=400:
         return True
     elif invstats['Generation']=='Gen 2' and int(invstats['Firmware'])<909:
         return True

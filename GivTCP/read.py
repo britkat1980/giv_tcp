@@ -506,6 +506,7 @@ def getData(fullrefresh):  # Read from Inverter put in cache
         timeslots['Charge_end_time_slot_1'] = GEInv.charge_slot_1[1].isoformat()
         try:
             if inverterModel.model == "All in One" or (inverterModel.generation == "Gen 3" and int(GEInv.arm_firmware_version)>302):   #10 slots only apply to AIO and new fw on Gen 3
+                logger.debug("Extended time slots available")
                 timeslots['Charge_start_time_slot_2'] = GEInv.charge_slot_2[0].isoformat()
                 timeslots['Charge_end_time_slot_2'] = GEInv.charge_slot_2[1].isoformat()
                 timeslots['Charge_start_time_slot_3'] = GEInv.charge_slot_3[0].isoformat()
@@ -560,6 +561,8 @@ def getData(fullrefresh):  # Read from Inverter put in cache
                 controlmode['Discharge_Target_SOC_8'] = GEInv.discharge_target_soc_8
                 controlmode['Discharge_Target_SOC_9'] = GEInv.discharge_target_soc_9
                 controlmode['Discharge_Target_SOC_10'] = GEInv.discharge_target_soc_10
+            else:
+                logger.debug("Extended time slots NOT available")
         except:
             logger.debug("New Charge/Discharge timeslots don't exist for this model")
 
