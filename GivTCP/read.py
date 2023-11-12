@@ -48,14 +48,14 @@ def getData(fullrefresh):  # Read from Inverter put in cache
     multi_output = {}
     result = {}
     temp = {}
-    
+
     logger.debug("----------------------------Starting----------------------------")
     logger.debug("Getting All Registers")
 
     # Connect to inverter and load data
     try:
         logger.debug("Connecting to: " + GiV_Settings.invertorIP)
-        plant=GivQueue.q.enqueue(inverterData,fullrefresh,retry=Retry(max=GiV_Settings.queue_retries, interval=2))   
+        plant=GivQueue.q.enqueue(inverterData,fullrefresh,retry=Retry(max=GiV_Settings.queue_retries, interval=2))
         while plant.result is None and plant.exc_info is None:
             time.sleep(0.1)
         if "ERROR" in plant.result:
@@ -66,7 +66,7 @@ def getData(fullrefresh):  # Read from Inverter put in cache
 #        plant=inverterData(True)
 #        GEInv=plant[0]
 #        GEBat=plant[1]
-       
+
         multi_output['Last_Updated_Time'] = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
         multi_output['status'] = "online"
         multi_output['Time_Since_Last_Update'] = 0
@@ -175,7 +175,7 @@ def getData(fullrefresh):  # Read from Inverter put in cache
         power_output['PV_Current_String_1'] = GEInv.i_pv1*10
         power_output['PV_Current_String_2'] = GEInv.i_pv2*10
         power_output['Grid_Voltage'] = GEInv.v_ac1
-        power_output['Grid_Current'] = GEInv.i_grid_port 
+        power_output['Grid_Current'] = GEInv.i_grid_port
 
         # Grid Power
         logger.debug("Getting Grid Power")
@@ -261,7 +261,7 @@ def getData(fullrefresh):  # Read from Inverter put in cache
             power_output['SOC'] = 1
             logger.error("\"Battery SOC\" reported as: "+str(GEInv.battery_percent)+"% and no previous value so setting to 1%")
         power_output['SOC_kWh'] = (int(power_output['SOC'])*((batteryCapacity)/1000))/100
- 
+
         # Energy Stats
         logger.debug("Getting Battery Energy Data")
         energy_today_output['Battery_Charge_Energy_Today_kWh'] = GEInv.e_battery_charge_day
@@ -485,7 +485,7 @@ def getData(fullrefresh):  # Read from Inverter put in cache
         else:
             power_flow_output['Battery_to_Grid'] = 0
 
-        
+
 
         # Check for all zeros
         checksum = 0
@@ -540,6 +540,7 @@ def getData(fullrefresh):  # Read from Inverter put in cache
                 timeslots['Discharge_end_time_slot_9'] = GEInv.discharge_slot_9[1].isoformat()
                 timeslots['Discharge_start_time_slot_10'] = GEInv.discharge_slot_10[0].isoformat()
                 timeslots['Discharge_end_time_slot_10'] = GEInv.discharge_slot_10[1].isoformat()
+                controlmode['Charge_Target_SOC_1'] = GEInv.charge_target_soc_1
                 controlmode['Charge_Target_SOC_2'] = GEInv.charge_target_soc_2
                 controlmode['Charge_Target_SOC_3'] = GEInv.charge_target_soc_3
                 controlmode['Charge_Target_SOC_4'] = GEInv.charge_target_soc_4
@@ -699,7 +700,7 @@ def getData(fullrefresh):  # Read from Inverter put in cache
             # Save new data to Pickle
             with open(GivLUT.regcache, 'wb') as outp:
                 pickle.dump(regCacheStack, outp, pickle.HIGHEST_PROTOCOL)
-                
+
             logger.debug("Successfully retrieved from: " + GiV_Settings.invertorIP)
 
             result['result'] = "Success retrieving data"
@@ -991,7 +992,7 @@ def ratecalcs(multi_output, multi_output_old):
             open(GivLUT.dayRate, 'w').close()
             if exists(GivLUT.nightRate):
                 logger.debug(".nightRate exists so deleting it")
-                os.remove(GivLUT.nightRate)  
+                os.remove(GivLUT.nightRate)
 
     if not exists(GivLUT.nightRate) and not exists(GivLUT.dayRate): #Default to Day if not previously set
         logger.info("No day/Night rate info so reverting to day")

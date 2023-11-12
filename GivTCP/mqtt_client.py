@@ -97,6 +97,10 @@ def on_message(client, userdata, message):
         elif command=="setChargeTarget":
             writecommand['chargeToPercent']=str(message.payload.decode("utf-8"))
             wr.setChargeTarget(writecommand)
+        elif command=="setChargeTarget1":
+            writecommand['chargeToPercent']=str(message.payload.decode("utf-8"))
+            writecommand['slot']=1
+            wr.setChargeTarget2(writecommand)
         elif command=="setChargeTarget2":
             writecommand['chargeToPercent']=str(message.payload.decode("utf-8"))
             writecommand['slot']=2

@@ -244,6 +244,7 @@ class GivLUT:
         "Battery_Power_Reserve":GEType("number","","setBatteryReserve",4,100,False,False,False),
         "Battery_Power_Cutoff":GEType("number","","setBatteryCutoff",4,100,False,False,False),
         "Target_SOC":GEType("number","","setChargeTarget",4,100,False,False,False),
+        "Charge_Target_SOC_1":GEType("number","","setChargeTarget1",4,100,False,False,False),
         "Charge_Target_SOC_2":GEType("number","","setChargeTarget2",4,100,False,False,False),
         "Charge_Target_SOC_3":GEType("number","","setChargeTarget3",4,100,False,False,False),
         "Charge_Target_SOC_4":GEType("number","","setChargeTarget4",4,100,False,False,False),
