@@ -44,6 +44,84 @@ def validateEVC(HOST):
         logger.error(e)
         return False
     
+def findinv(networks):
+    if len(networks)>0:
+    # For each interface scan for inverters
+        logger.debug("Networks available for scanning are: "+str(networks))
+        Stats={}
+        inverterStats={}
+        invList={}
+        list={}
+        evclist={}
+        logger.critical("Scanning network for GivEnergy Devices...")
+        try:
+            for subnet in networks:
+                if networks[subnet]:
+                    count=0
+                    # Get EVC Details
+                    while len(evclist)<=0:
+                        if count<2:
+                            logger.debug("EVC- Scanning network ("+str(count+1)+"):"+str(networks[subnet]))
+                            evclist=findEVC(networks[subnet])
+                            if len(evclist)>0: break
+                            count=count+1
+                        else:
+                            break
+                    if evclist:
+                        poplist=[]
+                        for evc in evclist:
+                            if validateEVC(evclist[evc]):
+                                logger.critical("GivEVC found at: "+str(evclist[evc]))
+                            else:
+                                logger.info(evclist[evc]+" is not an EVC")
+                                poplist.append(evc)
+                        for pop in poplist:
+                            evclist.pop(pop)    #remove the unknown modbus device(s)
+                    # Get Inverter Details
+                    count=0
+                    while len(list)<=0:
+                        if count<2:
+                            logger.debug("INV- Scanning network ("+str(count+1)+"):"+str(networks[subnet]))
+                            list=findInvertor(networks[subnet])
+                            if len(list)>0: break
+                            count=count+1
+                        else:
+                            break
+                    if list:
+                        logger.debug(str(len(list))+" Inverters found on "+str(networks[subnet])+" - "+str(list))
+                        invList.update(list)
+                        for inv in invList:
+                            deets={}
+                            logger.debug("Getting inverter stats for: "+str(invList[inv]))
+                            count=0
+                            while not deets:
+                                if count<2:
+                                    deets=getInvDeets(invList[inv])
+                                    if deets:
+                                        logger.critical (f'Inverter {deets[0]} which is a {str(deets[1])} - {str(deets[2])} has been found at: {str(invList[inv])}')
+                                        Stats['Serial_Number']=deets[0]
+                                        Stats['Firmware']=deets[3]
+                                        Stats['Model']=deets[2]
+                                        Stats['Generation']=deets[1]
+                                        inverterStats[inv]=Stats
+                                    else:
+                                        logger.error("Unable to interrogate inverter to get base details")
+                                    count=count+1
+                                else:
+                                    break
+                    if len(invList)==0:
+                        logger.critical("No inverters found...")
+                    else:
+                    # write data to pickle
+                        with open('invippkl.pkl', 'wb') as outp:
+                            pickle.dump(inverterStats, outp, pickle.HIGHEST_PROTOCOL)
+        except:
+            e = sys.exc_info()
+            logger.error("Error scanning for Inverters- "+str(e))
+    else:
+        logger.error("Unable to get host details from Supervisor\Container")
+    return inverterStats, invList, evcList
+    
 def isitoldfw(invstats):
     '''Firmware Versions for each Model
     AC coupled 5xx old, 2xx new. 28x, 29x beta
@@ -142,80 +220,10 @@ else:
 
 sleep(2)        # Sleep to allow port scanning socket to close
 
-if len(networks)>0:
-# For each interface scan for inverters
-    logger.debug("Networks available for scanning are: "+str(networks))
-    Stats={}
-    inverterStats={}
-    invList={}
-    list={}
-    evclist={}
-    logger.debug("Scanning network for inverters...")
-    try:
-        for subnet in networks:
-            if networks[subnet]:
-                count=0
-                # Get EVC Details
-                while len(evclist)<=0:
-                    if count<2:
-                        logger.debug("EVC- Scanning network ("+str(count+1)+"):"+str(networks[subnet]))
-                        evclist=findEVC(networks[subnet])
-                        if len(evclist)>0: break
-                        count=count+1
-                    else:
-                        break
-                if evclist:
-                    poplist=[]
-                    for evc in evclist:
-                        if validateEVC(evclist[evc]):
-                            logger.critical("GivEVC found at: "+str(evclist[evc]))
-                        else:
-                            logger.debug(evclist[evc]+" is not an EVC")
-                            poplist.append(evc)
-                    for pop in poplist:
-                        evclist.pop(pop)    #remove the unknown modbus device(s)
-                # Get Inverter Details
-                while len(list)<=0:
-                    if count<2:
-                        logger.debug("INV- Scanning network ("+str(count+1)+"):"+str(networks[subnet]))
-                        list=findInvertor(networks[subnet])
-                        if len(list)>0: break
-                        count=count+1
-                    else:
-                        break                
-                if list:
-                    logger.debug(str(len(list))+" Inverters found on "+str(networks[subnet])+" - "+str(list))
-                    invList.update(list)
-                    for inv in invList:
-                        deets={}
-                        logger.debug("Getting inverter stats for: "+str(invList[inv]))
-                        count=0
-                        while not deets:
-                            if count<2:
-                                deets=getInvDeets(invList[inv])
-                                if deets:
-                                    logger.critical (f'Inverter {deets[0]} which is a {str(deets[1])} - {str(deets[2])} has been found at: {str(invList[inv])}')
-                                    Stats['Serial_Number']=deets[0]
-                                    Stats['Firmware']=deets[3]
-                                    Stats['Model']=deets[2]
-                                    Stats['Generation']=deets[1]
-                                    inverterStats[inv]=Stats
-                                else:
-                                    logger.error("Unable to interrogate inverter to get base details")
-                                count=count+1
-                            else:
-                                break
-                if len(invList)==0:
-                    logger.debug("No inverters found...")
-                else:
-                # write data to pickle
-                    with open('invippkl.pkl', 'wb') as outp:
-                        pickle.dump(inverterStats, outp, pickle.HIGHEST_PROTOCOL)
-    except:
-        e = sys.exc_info()
-        logger.error("Error scanning for Inverters- "+str(e))
-else:
-    logger.error("Unable to get host details from Supervisor\Container")
+finv=findinv(networks)
+inverterStats=finv[0]
+invList=finv[1]
+evcList=finv[2]
 
 logger.debug("GivTCP isAddon: "+str(isAddon))
 
