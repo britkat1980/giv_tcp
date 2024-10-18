@@ -5,3 +5,11 @@ GivTCP/startup.sh
 *.pkl
 .forceFullRefresh
 test.txt
+.git
+.vscode
+Dockerfile
+WebDashboard/graphics
+
+# WebDashboard is a static site - node is not required
+# except as a helper to serve the site for development
+WebDashboard/package*

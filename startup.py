@@ -125,7 +125,7 @@ def createsettingsjson(inv):
         outp.write("    first_run_evc= True\n")
         outp.write("    self_run_timer="+str(setts["self_run_timer"])+"\n")
         outp.write("    self_run_timer_full="+str(setts["self_run_timer_full"])+"\n")
-        outp.write("    queue_retries="+str(setts["queue_retries"])+"\n")    
+        outp.write("    queue_retries="+str(setts["queue_retries"])+"\n")
         outp.write("    givtcp_instance="+str(inv)+"\n")
         outp.write("    default_path=\""+str(PATH)+"\"\n")
         outp.write("    dynamic_tariff="+str(setts["dynamic_tariff"]).capitalize()+"\n")
@@ -286,7 +286,7 @@ if isAddon:
         hasMQTT=False
         logger.info("No HA MQTT service has been found. Install and run the Mosquitto addon, or manually configure your own MQTT broker.")
 
-    #Get Timezone    
+    #Get Timezone
     url="http://supervisor/info"
     result = requests.get(url,
         headers={'Content-Type':'application/json',
@@ -294,8 +294,8 @@ if isAddon:
     info=result.json()
     SuperTimezone=info['data']['timezone']
     logger.debug("Supervisor Timezone: "+str(SuperTimezone))
-    
-    #Get addonslug/ingress url    
+
+    #Get addonslug/ingress url
     url="http://supervisor/addons/self/info"
     result = requests.get(url,
         headers={'Content-Type':'application/json',
@@ -303,7 +303,7 @@ if isAddon:
     baseurl=result.json()['data']['ingress_url']
     logger.debug("Ingress URL is: "+str(baseurl))
 
-    #Get Host Details    
+    #Get Host Details
     url="http://supervisor/network/info"
     result = requests.get(url,
         headers={'Content-Type':'application/json',
@@ -352,8 +352,8 @@ while len(finv)==0:
     logger.info("Searching for Inverters")
     finv=findinv(networks)
     i=i+1
-    if i==3: 
-        break    
+    if i==3:
+        break
 inverterStats=finv[0]
 invList=finv[1]
 evcList=finv[2]
@@ -436,7 +436,7 @@ for inv in inverterStats:
                     setts["invertorIP_"+str(num)]=inverterStats[inv]['IP_Address']
                 break
     setts['Model_'+str(inv)]=inverterStats[inv]['Model'].name.capitalize()
-        
+
 
 if len(evcList)>0:
     logger.debug("evcList: "+str(evcList))
@@ -540,7 +540,7 @@ for inv in range(1,6):
             os.remove(firstrun)
 
         createsettingsjson(inv)
-            
+
         ######
         #  Always delete lockfiles and FCRunning etc... but only delete pkl if too old?
         for file in os.listdir(setts["cache_location"]):
@@ -585,7 +585,7 @@ for inv in range(1,6):
             logger.info ("Running Invertor "+str(inv)+" ("+str(setts["serial_number_"+str(inv)])+") read loop every "+str(setts['self_run_timer'])+"/"+str(setts['self_run_timer_full'])+"s")
             selfRun[inv]=subprocess.Popen(["/usr/local/bin/python3",PATH+"/read.py", "start"])
 
-        
+
         GUPORT=6344+inv
         logger.debug ("Starting Gunicorn on port "+str(GUPORT))
         command=shlex.split("/usr/local/bin/gunicorn -w 3 -b :"+str(GUPORT)+" REST:giv_api")
@@ -623,10 +623,21 @@ if setts['Web_Dash']==True:
         outp.write("  \"solarRate\": "+str(setts['day_rate'])+",\n")
         outp.write("  \"exportRate\": "+str(setts['export_rate'])+"\n")
         outp.write("}")
+
     WDPORT=int(setts['Web_Dash_Port'])
-    logger.info ("Serving Web Dashboard from port "+str(WDPORT))
-    command=shlex.split("/usr/bin/node /usr/local/bin/http-server -p "+ str(WDPORT))
-    webDash=subprocess.Popen(command)
+    logger.info (f"Serving Web Dashboard from port {WDPORT}")
+    with open("/etc/nginx/http.d/webdashboard.conf", 'w') as wd:
+        wd.write("server {\n")
+        wd.write(f"\tlisten {WDPORT};\n")
+        wd.write("\tlocation / {\n")
+        wd.write("\t\troot /app/WebDashboard;\n")
+        wd.write("\t\tindex index.html;\n\n")
+        wd.write("\t\ttry_files $uri $uri/ =404;\n")
+        wd.write("\t}\n")
+        wd.write("}\n")
+
+    # reload nginx to pick up the new conf
+    subprocess.Popen(["nginx","-s","reload", "-c", "/etc/nginx/nginx.conf"])
 
 
 if setts['Smart_Target']==True:
@@ -670,16 +681,6 @@ while True:
                 logger.info ("Starting Gunicorn on port "+str(GUPORT))
                 command=shlex.split("/usr/local/bin/gunicorn -w 3 -b :"+str(GUPORT)+" REST:giv_api")
                 gunicorn[inv]=subprocess.Popen(command)
-        
-        if setts['Web_Dash'] == True:
-            if not webDash.poll() == None:
-                webDash.kill()
-                logger.error("Web Dashboard process died. Restarting...")
-                os.chdir("/app/WebDashboard")
-                WDPORT = int(setts['Web_Dash_Port'])
-                logger.info("Serving Web Dashboard from port " + str(WDPORT))
-                command = shlex.split("/usr/bin/node /usr/local/bin/http-server -p " + str(WDPORT))
-                webDash = subprocess.Popen(command)
 
         if setts['MQTT_Address']=="127.0.0.1":
             if not mqttBroker.poll()==None:
