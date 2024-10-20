@@ -2,14 +2,14 @@
 #FROM python:3.11-rc-alpine
 FROM python:alpine3.19
 
-RUN apk add mosquitto
-RUN apk add npm 
-RUN apk add git 
-RUN apk add tzdata 
-RUN apk add musl 
-RUN apk add xsel 
-RUN apk add redis
-RUN apk add nginx
+RUN apk add --no-cache \
+    git \
+    mosquitto \
+    musl \
+    nginx \
+    redis \
+    tzdata \
+    xsel
 
 RUN mkdir -p /run/nginx
 RUN npm install -g http-server
@@ -19,7 +19,7 @@ WORKDIR /app
 
 # copy the dependencies file to the working directory
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt --no-cache-dir
 
 COPY givtcp-vuejs/package.json /app/ingress/package.json
 
