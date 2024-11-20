@@ -95,8 +95,8 @@ class BasePDU(ABC):
             pdu.ensure_valid_state()
         except InvalidPduState:
             raise
-        # except Exception as e:
-        #     raise InvalidFrame(str(e), data)
+        except Exception as e:
+            raise InvalidFrame(str(e), data)
 
         if not decoder.decoding_complete:
             _logger.error(
