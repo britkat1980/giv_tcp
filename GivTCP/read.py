@@ -9,6 +9,7 @@ import sys
 import json
 import logging
 import datetime
+import dateutil
 import pickle
 import time
 import write
@@ -761,7 +762,7 @@ def processInverterInfo(plant: Plant):
         else:
             # Use latest data if its not default date
             inverter['Invertor_Time'] = GEInv.system_time.replace(tzinfo=GivLUT.timezone).isoformat()
-        inv_time=datetime.datetime.strptime(inverter['Invertor_Time'], '%Y-%m-%dT%H:%M:%S%z')
+        inv_time=dateutil.parser.parse(inverter['Invertor_Time'])
 
     ############  Energy Stats    ############
         # Total Energy Figures
@@ -1438,7 +1439,7 @@ def processThreePhaseInfo(plant: Plant):
         else:
             # Use latest data if its not default date
             inverter['Invertor_Time'] = GEInv.system_time.replace(tzinfo=GivLUT.timezone).isoformat()
-        inv_time=datetime.datetime.strptime(inverter['Invertor_Time'], '%Y-%m-%dT%H:%M:%S%z')
+        inv_time=dateutil.parser.parse(inverter['Invertor_Time'])
 
     #    if GiV_Settings.Print_Raw_Registers:
         multi_output['raw'] = getRaw(plant)
@@ -1685,11 +1686,12 @@ def processData(plant: Plant):
         with open(GivLUT.lastupdate, 'wb') as outp:
             pickle.dump(multi_output['Stats']['Last_Updated_Time'], outp, pickle.HIGHEST_PROTOCOL)
 
-        
+
+         inv_time=inverter['Invertor_Time'])
         # Add new data to the stack (cap at 12hr history) and save
         #if len(regCacheStack)>1000:
         if len(regCacheStack)>0:
-            earliest_cache_age=(datetime.datetime.now(GivLUT.timezone)-datetime.datetime.strptime(finditem(regCacheStack[0],"Invertor_Time"), '%Y-%m-%dT%H:%M:%S%z'))
+            earliest_cache_age=(datetime.datetime.now(GivLUT.timezone)-dateutil.parser.parse(finditem(regCacheStack[0],"Invertor_Time")))
             if earliest_cache_age.seconds>43200:
                 regCacheStack.pop(0)
         regCacheStack.append(multi_output)
@@ -2020,7 +2022,7 @@ def ratecalcs(multi_output, multi_output_old):
     rate_data['Day_Rate'] = GiV_Settings.day_rate
     rate_data['Night_Rate'] = GiV_Settings.night_rate
 
-    inv_time=datetime.datetime.strptime(finditem(multi_output,"Invertor_Time"), '%Y-%m-%dT%H:%M:%S%z')
+    inv_time=dateutil.parser.parse(finditem(multi_output,"Invertor_Time"))
     # if midnight then reset costs
     if inv_time.hour == 0 and inv_time.minute == 0:
         logger.info("Midnight, so resetting Day/Night stats...")
@@ -2113,7 +2115,7 @@ def dataCleansing(data, regCacheStack):
     logger.debug("Running the data cleansing process")
     # iterate multi_output to get each end result dict.
     # Loop that dict to validate against
-    inv_time=datetime.datetime.strptime(finditem(data,"Invertor_Time"), '%Y-%m-%dT%H:%M:%S%z')
+    inv_time=dateutil.parser.parse(finditem(data,"Invertor_Time"))
     new_multi_output = loop_dict(data, regCacheStack, data['Stats']["Last_Updated_Time"],str(finditem(regCacheStack,"Invertor_Type")).lower(),inv_time)
     return(new_multi_output)
 
