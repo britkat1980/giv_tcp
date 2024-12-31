@@ -761,7 +761,11 @@ def processInverterInfo(plant: Plant):
         else:
             # Use latest data if its not default date
             inverter['Invertor_Time'] = GEInv.system_time.replace(tzinfo=GivLUT.timezone).isoformat()
-        inv_time=datetime.datetime.strptime(inverter['Invertor_Time'], '%Y-%m-%dT%H:%M:%S%z')
+        try:
+            inv_time=datetime.datetime.strptime(inverter['Invertor_Time'], '%Y-%m-%dT%H:%M:%S%z')
+        except ValueError:
+            # isoformat() adds a .<microseconds> in so try parsing that
+            inv_time=datetime.datetime.strptime(inverter['Invertor_Time'], '%Y-%m-%dT%H:%M:%S.%f%z')
 
     ############  Energy Stats    ############
         # Total Energy Figures
