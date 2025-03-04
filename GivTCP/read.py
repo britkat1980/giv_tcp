@@ -1491,11 +1491,11 @@ def processThreePhaseInfo(plant: Plant):
         power_output['Export_Phase2_Power']=GEInv.p_out_ac2
         power_output['Export_Phase3_Power']=GEInv.p_out_ac3
         power_output['PV_Voltage_String_1']=GEInv.v_pv1
-        power_output['PV_Voltage_String_1']=GEInv.v_pv2
+        power_output['PV_Voltage_String_2']=GEInv.v_pv2
         power_output['PV_Current_String_1']=GEInv.i_pv1
-        power_output['PV_Current_String_1']=GEInv.i_pv2
+        power_output['PV_Current_String_2']=GEInv.i_pv2
         power_output['PV_Power_String_1']=GEInv.p_pv1
-        power_output['PV_Power_String_1']=GEInv.p_pv2
+        power_output['PV_Power_String_2']=GEInv.p_pv2
         power_output['PV_Power']=GEInv.p_pv1+GEInv.p_pv2
         power_output['PV_Current']=GEInv.i_pv1+GEInv.i_pv2
         power_output['Grid_Phase1_Voltage']=GEInv.v_ac1
