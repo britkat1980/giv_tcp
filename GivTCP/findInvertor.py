@@ -10,7 +10,6 @@
 from threading import Thread, Lock
 import ipaddress
 from time import perf_counter
-from time import sleep
 import sys
 import socket
 
