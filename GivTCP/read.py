@@ -698,10 +698,15 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
     logger.debug("Mode is: " + str(mode))
 
     controlmode['Mode'] = mode
-    controlmode['Battery_Power_Reserve'] = battery_reserve
-    controlmode['Battery_Power_Cutoff'] = battery_cutoff
+    
+    if plant.device_type in (Model.AC_3PH, Model.HYBRID_3PH):
+        controlmode['Battery_Power_Cutoff'] = GEInv.battery_power_cutoff
+    else:
+        controlmode['Battery_Power_Cutoff'] = battery_cutoff
+        controlmode['Battery_Power_Reserve'] = battery_reserve
+        
     controlmode['Target_SOC'] = target_soc
-    controlmode['Sync_Time'] = "disable"
+    #controlmode['Sync_Time'] = "disable"
 
     if not GEInv.rtc_enable == Enable.UNKNOWN:
         controlmode['Real_Time_Control'] = GEInv.rtc_enable.name.lower()
@@ -721,8 +726,8 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
 
     controlmode['Battery_Calibration'] = GivLUT.battery_calibration[GEInv.soc_force_adjust]
     controlmode['Active_Power_Rate']= GEInv.active_power_rate
-    controlmode['Reboot_Invertor']="disable"
-    controlmode['Reboot_Addon']="disable"
+    #controlmode['Reboot_Invertor']="disable"
+    #controlmode['Reboot_Addon']="disable"
     if not isinstance(regCacheStack[-1], int):
         if "Temp_Pause_Discharge" in regCacheStack[-1]:
             controlmode['Temp_Pause_Discharge'] = regCacheStack[-1]["Control"]["Temp_Pause_Discharge"]
@@ -1856,26 +1861,26 @@ def processThreePhaseInfo(plant: Plant):
 
         controlmode.update(getControls(plant,regCacheStack,inverterModel,multi_output_old))
 
-        #if not GEInv.force_discharge_enable==Enable.UNKNOWN:
-        #    controlmode['Force_Discharge_Enable']=GEInv.force_discharge_enable.name.lower()
-        #elif multi_output_old:
-        #    controlmode['Force_Discharge_Enable']=multi_output_old['Control']['Force_Discharge_Enable']
-        #else:
-        #    controlmode['Force_Discharge_Enable']="disable"    #Default to off
+        if not GEInv.enable_discharge==Enable.UNKNOWN:
+            controlmode['Force_Discharge_Enable']=GEInv.enable_discharge.name.lower()
+        elif multi_output_old:
+            controlmode['Force_Discharge_Enable']=multi_output_old['Control']['Force_Discharge_Enable']
+        else:
+            controlmode['Force_Discharge_Enable']="disable"    #Default to off
 
-        #if not GEInv.force_charge_enable==Enable.UNKNOWN:
-        #    controlmode['Force_Charge_Enable']=GEInv.force_charge_enable.name.lower()
-        #elif multi_output_old:
-        #    controlmode['Force_Charge_Enable']=multi_output_old['Control']['Force_Charge_Enable']
-        #else:
-        #    controlmode['Force_Charge_Enable']="disable"    #Default to off
+        if not GEInv.force_charge_enable==Enable.UNKNOWN:
+            controlmode['Force_Charge_Enable']=GEInv.force_charge_enable.name.lower()
+        elif multi_output_old:
+            controlmode['Force_Charge_Enable']=multi_output_old['Control']['Force_Charge_Enable']
+        else:
+            controlmode['Force_Charge_Enable']="disable"    #Default to off
 
-        #if not GEInv.ac_charge_enable==Enable.UNKNOWN:
-        #    controlmode['Force_AC_Charge_Enable']=GEInv.ac_charge_enable.name.lower()
-        #elif multi_output_old:
-        #    controlmode['Force_AC_Charge_Enable']=multi_output_old['Control']['Force_AC_Charge_Enable']
-        #else:
-        #    controlmode['Force_AC_Charge_Enable']="disable"    #Default to off
+        if not GEInv.ac_charge_enable==Enable.UNKNOWN:
+            controlmode['Force_AC_Charge_Enable']=GEInv.ac_charge_enable.name.lower()
+        elif multi_output_old:
+            controlmode['Force_AC_Charge_Enable']=multi_output_old['Control']['Force_AC_Charge_Enable']
+        else:
+            controlmode['Force_AC_Charge_Enable']="disable"    #Default to off
 
         ######## Get Meter Details ########
 

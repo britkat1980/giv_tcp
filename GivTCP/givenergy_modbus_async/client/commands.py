@@ -440,7 +440,7 @@ def set_force_charge(enabled: bool) -> list[TransparentRequest]:
     return [WriteHoldingRegisterRequest(RegisterMap.FORCE_CHARGE_ENABLE, enabled)]
 
 def set_force_discharge(enabled: bool) -> list[TransparentRequest]:
-    """Enable the Three Phase battery to charge, depending on the mode and slots set."""
+    """Enable the Three Phase battery to discharge, depending on the mode and slots set."""
     return [WriteHoldingRegisterRequest(RegisterMap.FORCE_DISCHARGE_ENABLE, enabled)]
 
 def set_ac_charge(enabled: bool) -> list[TransparentRequest]:
@@ -562,8 +562,8 @@ def set_battery_charge_limit_ac(val: int, inv_type: str="") -> list[TransparentR
     """Set the battery AC charge power limit as percentage."""
     reg=getattr(RegisterMap, f'{"TPH_" if "3ph" in inv_type else ""}BATTERY_CHARGE_LIMIT_AC')
     val = int(val)
-    if not 0 <= val <= 100:
-        raise ValueError(f"Specified Charge Limit ({val}%) is not in [0-100]%")
+    if not 1 <= val <= 100:
+        raise ValueError(f"Specified Charge Limit ({val}%) is not in [1-99]%")
     
     return [WriteHoldingRegisterRequest(reg, val)]
 
@@ -572,8 +572,8 @@ def set_battery_discharge_limit_ac(val: int, inv_type: str="") -> list[Transpare
     """Set the battery AC discharge power limit as percentage."""
     reg=getattr(RegisterMap, f'{"TPH_" if "3ph" in inv_type else ""}BATTERY_DISCHARGE_LIMIT_AC')
     val = int(val)
-    if not 0 <= val <= 100:
-        raise ValueError(f"Specified Discharge Limit ({val}%) is not in [0-100]%")
+    if not 1 <= val <= 100:
+        raise ValueError(f"Specified Discharge Limit ({val}%) is not in [1-99]%")
     return [WriteHoldingRegisterRequest(reg, val)]
 
 def set_battery_power_reserve(val: int, inv_type: str="") -> list[TransparentRequest]:

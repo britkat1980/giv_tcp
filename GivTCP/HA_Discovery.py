@@ -315,8 +315,8 @@ class HAMQTT():
             else:
                 tempObj['unit_of_meas']="%"
         elif e_type.devType=="button":
-            tempObj['device_class']=""
-            tempObj['payload_press']="toggle"
+            tempObj['device_class']="restart"
+            tempObj['payload_press']="restart"
         ## Convert this object to json string
         jsonOut=json.dumps(tempObj)
         return jsonOut
