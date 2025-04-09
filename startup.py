@@ -633,7 +633,7 @@ for inv in range(1,6):
         #  Always delete lockfiles and FCRunning etc... but only delete pkl if too old?
         for file in os.listdir(setts["cache_location"]):
             filename = os.fsdecode(file)
-            if not filename.__contains__("log") and not filename.startswith("rateData")and not filename.startswith("writecount") and not filename.startswith(".dayRate") and not filename.startswith(".nightRate") and not filename.startswith("allsettings") and not filename.startswith("v2env") and not filename.startswith(".v3upgrade"):
+            if not filename.__contains__("log") and not filename.startswith("rateData") and not filename.startswith("writecount") and not filename.startswith("safewritecount") and not filename.startswith(".dayRate") and not filename.startswith(".nightRate") and not filename.startswith("allsettings") and not filename.startswith("v2env") and not filename.startswith(".v3upgrade"):
                 os.remove(setts['cache_location']+"/"+file)
         if exists(setts["cache_location"]+"/rateData_"+str(inv)+".pkl"):
             timezone=zoneinfo.ZoneInfo(key=setts["timezone"])

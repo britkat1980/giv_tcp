@@ -177,9 +177,15 @@ async def watch_plant(
                 if not passive:
                     #Check time since last full_refresh
                     timesincefull=datetime.datetime.now()-lastfulltime
-                    if timesincefull.total_seconds() > full_refresh_period or exists(".fullrefresh") or GiV_Settings.inverter_type.lower()=="gateway" or datetime.datetime.now(GivLUT.timezone).time() == datetime.time(0, 0):      #always run full refresh for Gateway or at midnight
+                    if timesincefull.total_seconds() > full_refresh_period or exists(".fullrefresh") or GiV_Settings.inverter_type.lower()=="gateway":      #always run full refresh for Gateway
                         fullRefresh=True
                         logger.debug ("Running full refresh")
+                        lastfulltime=datetime.datetime.now()
+                        if exists(".fullrefresh"):
+                            os.remove(".fullrefresh")
+                    elif datetime.datetime.now(GivLUT.timezone).time().hour == 0 and datetime.datetime.now(GivLUT.timezone).time().minute==0:
+                        fullRefresh=True
+                        logger.info ("Midnight so grabbing full Energy data")
                         lastfulltime=datetime.datetime.now()
                         if exists(".fullrefresh"):
                             os.remove(".fullrefresh")
@@ -1920,9 +1926,7 @@ def processData(plant: Plant):
     cleanRegCache = {}
     try:
         logger.debug("Beginning parsing of Inverter data")
-
         #Don't use models in case its not ready
-### Different function for PV String inverter???
         modeltype=hex(plant.register_caches[plant.slave_address].get(HR(0)))[2:4]
         if modeltype=="23":
             multi_output=processPVInfo(plant)
@@ -1942,7 +1946,7 @@ def processData(plant: Plant):
         givtcpdata['Last_Updated_Time'] = datetime.datetime.now(GivLUT.timezone).isoformat()
         givtcpdata['status'] = "online"
         givtcpdata['Time_Since_Last_Update'] = 0
-        givtcpdata['GivTCP_Version']= "3.0.4"
+        givtcpdata['GivTCP_Version']= "3.1.3"
 
         count=0
         if exists(GivLUT.writecountpkl):
