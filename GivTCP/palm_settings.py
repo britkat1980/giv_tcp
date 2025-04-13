@@ -137,3 +137,108 @@ class Solcast:
     weight = int(GiV_Settings.PALM_WEIGHT)
  
     cmd = "/forecasts?format=json"
+
+GE_Command_list = {
+    "data": [
+        {
+            "id": 17,
+            "name": "Enable AC Charge Upper % Limit",
+            "validation": "Value must be either true or false"
+        },
+        {
+            "id": 24,
+            "name": "Enable Eco Mode",
+            "validation": "Value must be either true or false"
+        },
+        {
+            "id": 28,
+            "name": "AC Charge 2 Start Time",
+            "validation": "Value format should be HH:mm. Use correct time range for hour and minutes"
+        },
+        {
+            "id": 29,
+            "name": "AC Charge 2 End Time",
+            "validation": "Value format should be HH:mm. Use correct time range for hour and minutes"
+        },
+        {
+            "id": 41,
+            "name": "DC Discharge 2 Start Time",
+            "validation": "Value format should be HH:mm. Use correct time range for hour and minutes"
+        },
+        {
+            "id": 42,
+            "name": "DC Discharge 2 End Time",
+            "validation": "Value format should be HH:mm. Use correct time range for hour and minutes"
+        },
+        {
+            "id": 47,
+            "name": "Inverter Max Output Active Power Percent",
+            "validation": "Value must be between 0 and 100"
+        },
+        {
+            "id": 53,
+            "name": "DC Discharge 1 Start Time",
+            "validation": "Value format should be HH:mm. Use correct time range for hour and minutes"
+        },
+        {
+            "id": 54,
+            "name": "DC Discharge 1 End Time",
+            "validation": "Value format should be HH:mm. Use correct time range for hour and minutes"
+        },
+        {
+            "id": 56,
+            "name": "Enable DC Discharge",
+            "validation": "Value must be either true or false"
+        },
+        {
+            "id": 64,
+            "name": "AC Charge 1 Start Time",
+            "validation": "Value format should be HH:mm. Use correct time range for hour and minutes"
+        },
+        {
+            "id": 65,
+            "name": "AC Charge 1 End Time",
+            "validation": "Value format should be HH:mm. Use correct time range for hour and minutes"
+        },
+        {
+            "id": 66,
+            "name": "AC Charge Enable",
+            "validation": "Value must be either true or false"
+        },
+        {
+            "id": 71,
+            "name": "Battery Reserve % Limit",
+            "validation": "Value must be between 4 and 100"
+        },
+        {
+            "id": 72,
+            "name": "Battery Charge Power",
+            "validation": "Value must be between 0 and 3000"
+        },
+        {
+            "id": 73,
+            "name": "Battery Discharge Power",
+            "validation": "Value must be between 0 and 3000"
+        },
+        {
+            "id": 75,
+            "name": "Battery Cutoff % Limit",
+            "validation": "Value must be between 4 and 100"
+        },
+        {
+            "id": 77,
+            "name": "AC Charge Upper % Limit",
+            "validation": "Value must be between 0 and 100"
+        },
+        {
+            "id": 83,
+            "name": "Restart Inverter",
+            "validation": "Value can only be 100"
+        },
+        {
+            "id": 258,
+            "name": "Force Off Grid",
+            "validation": "Value must be either true or false"
+        }
+    ]
+}
