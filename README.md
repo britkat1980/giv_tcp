@@ -13,6 +13,8 @@ GivTCP can auto-discover devices on the network for a (near) zero config setup
 
 Typically run through the Home Assistant Addon, it is also possible to run as a standalone docker container.
 
+<a href="https://www.buymeacoffee.com/givtcp" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
+
 ## Quick Set-up
 
 ### Install GivTCP
