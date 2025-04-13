@@ -77,6 +77,9 @@ async def watch_plant(
             await client.detect_plant()
             await client.refresh_plant(True, number_batteries=client.plant.number_batteries,meter_list=client.plant.meter_list)
             #await client.close()
+            if client.plant.device_type==Model.GATEWAY:
+                if client.plant.gateway.parallel_aio_num < 2:
+                    logger.critical("Gateway device has a single AIO attached. Consider disabling in config as only duplicate data is collected from Gateway")
             logger.debug ("Running full refresh")
             if exists("commsfailure_"+str(GiV_Settings.givtcp_instance)+".pkl"):
                 # Remove any failed counts if connection runs OK
@@ -712,7 +715,7 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
         controlmode['Battery_Power_Reserve'] = battery_reserve
         
     controlmode['Target_SOC'] = target_soc
-    #controlmode['Sync_Time'] = "disable"
+    controlmode['Sync_Time'] = "disable"
 
     if not GEInv.rtc_enable == Enable.UNKNOWN:
         controlmode['Real_Time_Control'] = GEInv.rtc_enable.name.lower()
@@ -729,11 +732,13 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
 
     if not GEInv.battery_pause_mode==None:    #Not in AC single phase
         controlmode['Battery_pause_mode'] = GivLUT.battery_pause_mode[int(GEInv.battery_pause_mode)]
-
-    controlmode['Battery_Calibration'] = GivLUT.battery_calibration[GEInv.soc_force_adjust]
+    if GEInv.soc_force_adjust.name.capitalize() in GivLUT.battery_calibration:
+        controlmode['Battery_Calibration'] = GEInv.soc_force_adjust.name.capitalize()
+    else:
+        controlmode['Battery_Calibration'] = "Running"
     controlmode['Active_Power_Rate']= GEInv.active_power_rate
-    #controlmode['Reboot_Invertor']="disable"
-    #controlmode['Reboot_Addon']="disable"
+    controlmode['Reboot_Invertor']="disable"
+    controlmode['Reboot_Addon']="disable"
     if not isinstance(regCacheStack[-1], int):
         if "Temp_Pause_Discharge" in regCacheStack[-1]:
             controlmode['Temp_Pause_Discharge'] = regCacheStack[-1]["Control"]["Temp_Pause_Discharge"]
@@ -1266,6 +1271,7 @@ def processInverterInfo(plant: Plant):
         inverter['Invertor_Max_Bat_Rate'] = inverterModel.batmaxrate
         inverter['Invertor_Temperature'] = GEInv.temp_inverter_heatsink
         inverter['Export_Limit']=GEInv.grid_port_max_power_output
+        inverter['Battery_Calibration_Status'] = GEInv.soc_force_adjust.name.capitalize()
 
         ######## Get Meter Details ########
 
@@ -1524,7 +1530,8 @@ def processGatewayInfo(plant: Plant):
             res=getTimeslots(plant, multi_output_old)
             timeslots.update(res[0])
             controlmode.update(res[1])
-
+        power={}
+        
     ### Is this bit right? If not parallel then are there multiple aios to check? Can you have multiple AIOs not in parallel mode?
         if GEInv.parallel_aio_num>1:
         #    power_output['SOC']=GEInv.parallel_aio_soc
@@ -1621,7 +1628,7 @@ def processGatewayInfo(plant: Plant):
                     power_flow_output['Battery_to_Grid'] = max(discharge_power-B2H, 0)
                 else:
                     power_flow_output['Battery_to_Grid'] = 0
-
+            power["Flows"] = power_flow_output
 
         inverters={}
         swv=int(GEInv.software_version[-2:])
@@ -1700,9 +1707,7 @@ def processGatewayInfo(plant: Plant):
 
         energy["Today"] = energy_today_output
         energy["Total"] = energy_total_output
-        power={}
         power['Power']=power_output
-        power["Flows"] = power_flow_output
         multi_output['Inverters']=inverters
         multi_output["Power"]  = power
         multi_output["Energy"] = energy
@@ -1860,6 +1865,7 @@ def processThreePhaseInfo(plant: Plant):
         inverter['Invertor_Serial_Number']=plant.inverter_serial_number
         inverter['Invertor_Software']=GEInv.tph_software_version
         inverter['Invertor_Firmware']=GEInv.tph_firmware_version
+        inverter['Battery_Calibration_Status'] = GEInv.soc_force_adjust.name.capitalize()
         firmware=GEInv.firmware_version
 
         controlmode={}
@@ -1946,7 +1952,7 @@ def processData(plant: Plant):
         givtcpdata['Last_Updated_Time'] = datetime.datetime.now(GivLUT.timezone).isoformat()
         givtcpdata['status'] = "online"
         givtcpdata['Time_Since_Last_Update'] = 0
-        givtcpdata['GivTCP_Version']= "3.1.3"
+        givtcpdata['GivTCP_Version']= "3.1.6"
 
         count=0
         if exists(GivLUT.writecountpkl):
