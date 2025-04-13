@@ -10,7 +10,6 @@
 from threading import Thread, Lock
 import ipaddress
 from time import perf_counter
-from time import sleep
 import sys
 import socket
 
@@ -68,12 +67,7 @@ class Threader:
             self.threads.remove(thread)
 
 def findInvertor(subnet):
-    baseip=subnet.split('/')[0]
-    mask=subnet.split('/')[1]
-    segs=baseip.split('.')
-    if not segs[-1]=="0":
-        subnet=segs[0]+'.'+segs[1]+'.'+segs[2]+'.0/'+mask
-    ips=[str(ip) for ip in ipaddress.IPv4Network(subnet)]
+    network = ipaddress.IPv4Network(subnet, strict=False)
     PORT = 8899
     start = perf_counter()
     # I didn't need a timeout of 1 so I used 0.1
@@ -91,9 +85,8 @@ def findInvertor(subnet):
 
     # add more or less threads to complete your scan
     threader = Threader(20)
-    for ip in ips:
-        threader.append(connect, ip, PORT)
-        #threader.append(connect, BASE_IP, PORT)
+    for ip in network.hosts():
+        threader.append(connect, str(ip), PORT)
     threader.start()
     threader.join()
     return(invlist)

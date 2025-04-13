@@ -6,7 +6,6 @@ from flask import Flask, request, render_template, Response, send_file
 from flask_cors import CORS
 import read as rd       #grab passthrough functions from main read file
 import write as wr      #grab passthrough functions from main write file
-import evc as evc
 import pickle
 from GivLUT import GivLUT
 import os
@@ -15,12 +14,17 @@ import datetime
 import json
 from settings import GiV_Settings
 from inspect import getmembers, isfunction, getsource
+from givenergy_modbus_async.model import TimeSlot
 
 logger = GivLUT.logger
 #set-up Flask details
 giv_api = Flask(__name__)
 CORS(giv_api)
 
+with open("/config/GivTCP/allsettings.json", "r") as inp:
+    setts=json.load(inp)
+if setts["evc_enable"]==True:
+    import evc
 #Proxy Read Functions
 
 def requestcommand(command,payload):
@@ -29,7 +33,7 @@ def requestcommand(command,payload):
         if exists(GivLUT.writerequests):
             with open(GivLUT.writerequests,'rb') as inp:
                 requests=pickle.load(inp)
-        requests.append([command,payload])
+        requests.append([command,payload,True])
         with open(GivLUT.writerequests,'wb') as outp:
             pickle.dump(requests, outp, pickle.HIGHEST_PROTOCOL)
     except:
@@ -271,6 +275,16 @@ def setBattCut():
     return response("setBatteryCutoff")
 
 
+@giv_api.route('/setChargeRateAC', methods=['POST'])
+def setChrgeRateAC():
+    """Set Battery charge rate in percentage
+
+    Payload: {'chargeRate':'75'}
+    """
+    payload = request.get_json(silent=True, force=True)
+    requestcommand("setChargeRateAC",payload)
+    return response("setChargeRateAC")
+
 @giv_api.route('/setChargeRate', methods=['POST'])
 def setChrgeRate():
     """Set Battery charge rate in watts
@@ -299,6 +313,15 @@ def setExpLim():
     requestcommand("setExportLimit",payload)
     return response("setExportLimit")
 
+@giv_api.route('/setDischargeRateAC', methods=['POST'])
+def setDischrgeRateAC():
+    """Set Battery discharge rate in percentage
+
+    Payload: {'dischargeRate':'75'}
+    """
+    payload = request.get_json(silent=True, force=True)
+    requestcommand("setDischargeRateAC",payload)
+    return response("setDischargeRateAC")
 
 @giv_api.route('/setDischargeRate', methods=['POST'])
 def setDischrgeRate():
@@ -642,6 +665,16 @@ def frceCharge():
     requestcommand("setForceCharge",payload['state'])
     return response("setForceCharge")
 
+@giv_api.route('/setBatteryCalibration', methods=['POST'])
+def setCalib():
+    """Trigger or stop a Battery Calibration
+
+    Payload: {'state':'off' or 'start'}
+    """
+    payload = request.get_json(silent=True, force=True)
+    requestcommand("setBatteryCalibration",payload)
+    return response("setBatteryCalibration")
+
 @giv_api.route('/setACCharge', methods=['POST'])
 def setSCChrg():
     """Enables AC Charge on Three Phase Inverters
@@ -652,6 +685,15 @@ def setSCChrg():
     requestcommand("setACCharge",payload['state'])
     return response("setACCharge")
 
+@giv_api.route('/setEmsPlant', methods=['POST'])
+def setEMSPlnt():
+    """Enables AC Charge on Three Phase Inverters
+
+    Payload: {'state':'enabled' or "disabled'}
+    """
+    payload = request.get_json(silent=True, force=True)
+    requestcommand("setEmsPlant",payload['state'])
+    return response("setEmsPlant")
 
 @giv_api.route('/setChargeControl', methods=['POST'])
 def chrgeControl():
@@ -730,6 +772,10 @@ def getapicalls():
     with open('api.json', 'w') as f:
         f.write(json.dumps(output, indent=4))
     return output
+
+def start():
+    getapicalls()
+    #getAll()
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:

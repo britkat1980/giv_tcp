@@ -150,6 +150,22 @@ class Converter:
             "2001": 5000,
             "2002": 4600,
             "2003": 3600,
+            "2101": 5000,
+            "2102": 4600,
+            "2103": 3600,
+            "2104": 6000,
+            "2105": 7000,
+            "2106": 8000,
+            "2201": 5000,
+            "2202": 4600,
+            "2203": 3600,
+            "2204": 6000,
+            "2205": 7000,
+            "2206": 8000,
+            "2301": 5000,
+            "2302": 4600,
+            "2303": 3600,
+            "2304": 6000,
             "3001": 3000,
             "3002": 3600,
             "4001": 6000,
@@ -158,6 +174,13 @@ class Converter:
             "4004": 11000,
             "7001": 12000,
             "8001": 6000,
+            "8101": 6000,
+            "8102": 8000,
+            "8103": 10000,
+            "8201": 6000,
+            "8202": 8000,
+            "8203": 10000,
+            "8204": 12000,
         }
         return dtc_to_power.get(device_type_code)
     
@@ -485,6 +508,9 @@ class Converter:
     @staticmethod
     def battery_max_power(inp: str) -> Optional[int]:
         """Determine max inverter power from device_type_code."""
+
+        ### USE THIS Calc ### 25A x 80v (nom) x Num of batteries (also for 3ph)
+        
         power = [
             1000,
             2000,
@@ -612,19 +638,27 @@ class MeterStatus(IntEnum):
 
 class Model(StrEnum):
     """Known models of inverters."""
-
-    HYBRID = "2"
+## Use the full mapping found in modbus docs and use first 2 chr of DTC code
+    HYBRID = "20"
+    HYBRID_POLAR = "21"
+    HYBRID_GEN3_PLUS = "22"
+    PV = "23"
     AC = "3"
     HYBRID_3PH = "4"
     AC_3PH = "6"
     EMS = "5"
     GATEWAY = "7"
-    ALL_IN_ONE = "8"
+    ALL_IN_ONE = "80"
+    HYBRID_HV = "81"
+    ALL_IN_ONE_HYBRID = "82"
 
     @classmethod
     def _missing_(cls, value):
         """Just return Hybrid."""
-        return cls(value[0])
+        if value[0] in ["2","8"]:
+            return cls(value[:2])
+        else:
+            return cls(value[0])
 
     @classmethod
     def core_regs(cls, value):
@@ -652,7 +686,7 @@ class Model(StrEnum):
             '7': ([0, 60, 120, 180,1600,1660,1720,1780,1840],[0, 60, 120, 120,180,240,300]),   #Gateway
             '8': ([0, 60, 120, 180, 240],[0, 60, 120, 120, 180, 240, 300]),   #All in One
         }
-        return regs.get(value)
+        return regs.get(value[0])
 
     @classmethod
     def add_regs(cls, value):
@@ -667,7 +701,7 @@ class Model(StrEnum):
             '7': ([1600,1660,1720,1780,1840],[180,240,300]),   #Gateway
             '8': ([240],[180,240,300]),   #All in One
         }
-        return regs.get(value)
+        return regs.get(value[0])
 
 
 class Generation(StrEnum):

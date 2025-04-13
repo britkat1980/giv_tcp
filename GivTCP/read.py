@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from givenergy_modbus_async.model.register import Model, Generation, Enable
 from givenergy_modbus_async.model.plant import Plant, Inverter
-from givenergy_modbus_async.model.battery import Battery
 from givenergy_modbus_async.client.client import commands
 from givenergy_modbus_async.model.register import HR
 from givenergy_modbus_async.exceptions import CommunicationError
+from givenergy_modbus_async.model import TimeSlot
 import sys
 import json
 import logging
@@ -15,6 +15,7 @@ import write
 import inspect
 import requests
 from GivLUT import GivLUT, maxvalues, InvType, GivClientAsync
+from entity_lut import Entity_Type
 from settings import GiV_Settings
 from os.path import exists
 import os
@@ -22,16 +23,16 @@ from datetime import timedelta
 import asyncio
 from typing import Callable, Optional
 from mqtt import GivMQTT
-#from panda import outlierRemoval
 
 logging.getLogger("givenergy_modbus_async").setLevel(logging.CRITICAL) 
 logging.getLogger("rq.worker").setLevel(logging.CRITICAL)
 
 sys.path.append(GiV_Settings.default_path)
 
-givLUT = GivLUT.entity_type
+givLUT = Entity_Type.entity_type
 logger = GivLUT.logger
 
+outliers=[]
 
 def commsFailure():
     fname="commsfailure_"+str(GiV_Settings.givtcp_instance)+".pkl"
@@ -66,10 +67,11 @@ async def watch_plant(
         passive: bool = False,
     ):
         totalTimeoutErrors=0
+
         """Refresh data about the Plant."""
         try:
 #            client= await GivClientAsync.client
-            client = await GivClientAsync.get_connection()
+            client = await GivClientAsync.get_connection(cold_start=True)
 #            await client.connect()
             logger.critical("Detecting inverter characteristics...")
             await client.detect_plant()
@@ -107,46 +109,69 @@ async def watch_plant(
             try:
                 if not client.connected:
                     #in case the client has died, reopen it
-                    logger.debug("Opening Modbus Connecion to: "+str(GiV_Settings.invertorIP))
+                    logger.debug("Re-opening Modbus Connecion to: "+str(GiV_Settings.invertorIP))
                     await client.connect()
                 # Write command and initiation to use the same client connection
                 if exists(GivLUT.writerequests):
-                    logger.debug("Write Request recieved")
-                    with open(GivLUT.writerequests, 'rb') as inp:
-                        writecommands= pickle.load(inp)
-                    for command in writecommands:
-                        # call wr command and pass parameters
-                        logger.debug("Command: "+str(command[0])+" was sent: "+str(command[1]))
-                        if hasattr(write, command[0]):
-                            func = getattr(write, command[0])
-                            if inspect.iscoroutinefunction(func):
-                                result = await func(command[1],True)
-                            else:
-                                result = func(command[1],True)
-                            #send result to touchfile for REST response
-                            response={}
-                            responses=[]
-                            response['id']=command[0]
-                            response['result']=result
-                            if exists(GivLUT.restresponse):
-                                with GivLUT.restlock:
-                                    with open(GivLUT.restresponse,'r') as inp:
-                                        responses=json.load(inp)
-                                logger.debug("responses is: "+str(responses))
-                                responses.append(response)
-                            else:
-                                responses.append(response)
-                                logger.debug("responses is: "+str(responses))
-                            with GivLUT.restlock:
-                                with open(GivLUT.restresponse,'w') as outp:
-                                    outp.write(json.dumps(responses))
+                    try:
+                        logger.debug("Write Request recieved")
+                        with open(GivLUT.writerequests, 'rb') as inp:
+                            writecommands= pickle.load(inp)
+                        for command in writecommands:
+                            # call wr command and pass parameters
+                            logger.debug("Command: "+str(command[0])+" was recieved: "+str(command[1]))
+                            if hasattr(write, command[0]):
+                                func = getattr(write, command[0])
+                                if inspect.iscoroutinefunction(func):
+                                    result = await func(command[1],True)
+                                else:
+                                    result = func(command[1],True)
+                                #send result to touchfile for REST response
+                                if command[2]==True:
+                                    response={}
+                                    responses=[]
+                                    response['id']=command[0]
+                                    response['result']=result
+                                    if exists(GivLUT.restresponse):
+                                        with GivLUT.restlock:
+                                            with open(GivLUT.restresponse,'r') as inp:
+                                                responses=json.load(inp)
+                                        responses.append(response)
+                                        logger.debug("responses is: "+str(responses))
+                                    else:
+                                        responses.append(response)
+                                        logger.debug("responses is: "+str(responses))
+                                    with GivLUT.restlock:
+                                        with open(GivLUT.restresponse,'w') as outp:
+                                            outp.write(json.dumps(responses))
+                                await asyncio.sleep(0.3)        #Pause between commands for 300ms
 
-                    os.remove(GivLUT.writerequests)
+                    ## Check write file for anything more since opening and loop again
+                        with open(GivLUT.writerequests, 'rb') as inp:
+                            newwritecommands= pickle.load(inp)
+                        logger.debug("Write Commands lengths: "+str(len(writecommands))+" -> "+str(len(newwritecommands)))
+                        if len(newwritecommands)==len(writecommands):     #Only remove if no more commands recieved
+                            logger.debug("No new writes, removing writerequest file")
+                            os.remove(GivLUT.writerequests)
+                        else:
+                        #    #Loop straight back to proces smore write commands
+                            logger.debug("Looping back to mop up incoming write commands")
+                            ## remove old command before looping back
+                            for i in newwritecommands[:]:
+                                if i in writecommands:
+                                    newwritecommands.remove(i)
+                            with open(GivLUT.writerequests,'wb') as outp:
+                                pickle.dump(newwritecommands, outp, pickle.HIGHEST_PROTOCOL)
+                            continue
+                    except:
+                        e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+                        logger.error(str(command[0])+" request error: "+str(e)+" deleting all pending requests, please try again")
+                        os.remove(GivLUT.writerequests)
 
                 timesincelast=datetime.datetime.now()-lastruntime
                 if timesincelast.total_seconds() < refresh_period:
-                    await asyncio.sleep(0.3)
-                    #if refresh period hasn't expired then just keep looping
+                    await asyncio.sleep(1)
+                    #if refresh period hasn't expired then just keep looping back up to write check
                     continue
                 
                 if not passive:
@@ -155,6 +180,12 @@ async def watch_plant(
                     if timesincefull.total_seconds() > full_refresh_period or exists(".fullrefresh") or GiV_Settings.inverter_type.lower()=="gateway":      #always run full refresh for Gateway
                         fullRefresh=True
                         logger.debug ("Running full refresh")
+                        lastfulltime=datetime.datetime.now()
+                        if exists(".fullrefresh"):
+                            os.remove(".fullrefresh")
+                    elif datetime.datetime.now(GivLUT.timezone).time().hour == 0 and datetime.datetime.now(GivLUT.timezone).time().minute==0:
+                        fullRefresh=True
+                        logger.info ("Midnight so grabbing full Energy data")
                         lastfulltime=datetime.datetime.now()
                         if exists(".fullrefresh"):
                             os.remove(".fullrefresh")
@@ -172,6 +203,7 @@ async def watch_plant(
                         for res in result:
                             if isinstance(res,TimeoutError):
                                 hasTimeout=True
+                                logger.debug("Timeout Error: "+str(res))
                                 raise Exception(res)
                         timeoutErrors=0     # Reset timeouts if all is good this run
                         logger.debug("Data get was successful, now running handler if needed: ")
@@ -239,7 +271,6 @@ def getInvModel(plant: Plant):
         GEInv=plant.ems
     elif not plant.gateway ==None:
         GEInv=plant.gateway
-
     inverterModel.model=GEInv.model
     inverterModel.generation=GEInv.generation
     inverterModel.phase=GEInv.num_phases
@@ -251,16 +282,21 @@ def getInvModel(plant: Plant):
             maxBatChargeRate=3000
         elif inverterModel.model == Model.ALL_IN_ONE:
             maxBatChargeRate=6000
+        elif plant.isHV:
+            maxBatChargeRate = 25 * 80 * plant.number_batteries
+        elif inverterModel.model == Model.PV:
+            maxBatChargeRate=0
         else:
-            maxBatChargeRate=2883
+            maxBatChargeRate=2600
     else:
         if inverterModel.model == Model.AC:
             maxBatChargeRate=5000
         else:
             maxBatChargeRate=3600
+
     # Calc max charge rate
     if inverterModel.model in[Model.AC_3PH,Model.HYBRID_3PH]:
-        inverterModel.batmaxrate=GEInv.battery_max_power
+        inverterModel.batmaxrate=maxBatChargeRate
     elif inverterModel.model ==Model.GATEWAY:
         inverterModel.batmaxrate=6000*int(GEInv.parallel_aio_num)
         inverterModel.batterycapacity=13.5*int(GEInv.parallel_aio_num)
@@ -344,6 +380,9 @@ def getBatteries(plant: Plant, multi_output_old):
             GEInv=plant.ems
         elif not plant.gateway ==None:
             GEInv=plant.gateway
+        is3PH=False
+        if plant.device_type in (Model.AC_3PH, Model.HYBRID_3PH):
+            is3PH=True
         isHV=plant.isHV
         batteries2={}
         stack={}
@@ -402,7 +441,7 @@ def getBatteries(plant: Plant, multi_output_old):
                 bcudata['Stack_SOC_High']=stack[0].battery_soc_max
                 bcudata['Stack_SOC_Low']=stack[0].battery_soc_min
                 bcudata['Stack_Firmware']=stack[0].pack_software_version
-                bcudata['BMS_Temperature']=GEInv.temp_battery
+
                 bcudata['Stack_Design_Capacity']=round((stack[0].battery_nominal_capacity*stack[0].number_of_module)*0.9,2)     # Usable kWh is 10% less than actual 
                 bcudata['Stack_SOC_kWh']=round((stack[0].remaining_battery_capacity*stack[0].number_of_module)*0.9,2)     # Usable kWh is 10% less than actual
                 bcudata['Stack_Discharge_Energy_Today_kWh']=stack[0].discharge_energy_today
@@ -418,12 +457,20 @@ def getBatteries(plant: Plant, multi_output_old):
                         logger.debug("Building battery output: ")
                         battery = {}
                         battery['Battery_Serial_Number'] = sn
+                        totaltemp=0
                         for i in range(24):
                             battery['Battery_Cell_'+str(i+1)+'_Voltage'] = b.get('v_cell_'+str(i+1).zfill(2))
                         
-                        for i in range(12):
-                            battery['Battery_Cell_'+str(i+1)+'_Temperature'] = b.get('t_cell_'+str(i+1).zfill(2))
-                        
+                        if is3PH:
+                            for i in range(24):
+                                battery['Battery_Cell_'+str(i+1)+'_Temperature'] = b.get('t_cell_'+str(i+1).zfill(2))
+                                totaltemp=totaltemp+b.get('t_cell_'+str(i+1).zfill(2))
+                            bcudata['BMS_Temperature']=round(totaltemp/24,2)
+                        else:
+                            for i in range(12):
+                                battery['Battery_Cell_'+str(i+1)+'_Temperature'] = b.get('t_cell_'+str(i+1).zfill(2))
+                            bcudata['BMS_Temperature']=GEInv.temp_battery
+
                         bcudata[sn] = battery
                         logger.debug("Battery "+str(sn)+" added")
                     else:
@@ -546,14 +593,7 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
     logger.debug("Getting mode control figures")
     # Get Control Mode registers
     if is3PH:
-        if not GEInv.force_discharge_enable==Enable.UNKNOWN:
-            discharge_schedule = GEInv.force_discharge_enable.name.lower()
-        elif multi_output_old:
-            discharge_schedule=multi_output_old['Control']['Enable_Discharge_Schedule']
-        else:
-            discharge_schedule="disable"    #Default to off
-
-        if GEInv.force_charge_enable=="enable" and GEInv.ac_charge_enable=="enable":
+        if GEInv.force_charge_enable==Enable.ENABLE and GEInv.ac_charge_enable==Enable.ENABLE:
             charge_schedule = "enable"
         else:
             charge_schedule = "disable"
@@ -564,13 +604,21 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
             charge_schedule=multi_output_old['Control']['Enable_Charge_Schedule']
         else:
             charge_schedule="disable"    #Default to off
-
-        if not GEInv.enable_discharge == Enable.UNKNOWN:
-            discharge_schedule = GEInv.enable_discharge.name.lower()
+        
+        if not GEInv.eco_mode == Enable.UNKNOWN:
+            batPowerMode=GEInv.eco_mode.name.lower()
         elif multi_output_old:
-            discharge_schedule=multi_output_old['Control']['Enable_Discharge_Schedule']
+            batPowerMode=multi_output_old['Control']['Eco_Mode']
         else:
-            discharge_schedule="disable"    #Default to off
+            batPowerMode="disable"    #Default to off
+        controlmode['Eco_Mode'] = batPowerMode
+
+    if not GEInv.enable_discharge == Enable.UNKNOWN:
+        discharge_schedule = GEInv.enable_discharge.name.lower()
+    elif multi_output_old:
+        discharge_schedule=multi_output_old['Control']['Enable_Discharge_Schedule']
+    else:
+        discharge_schedule="disable"    #Default to off
 
     if not GEInv.enable_charge_target == Enable.UNKNOWN:
         controlmode['Enable_Charge_Target']=GEInv.enable_charge_target.name.lower()
@@ -578,13 +626,6 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
         controlmode['Enable_Charge_Target']=multi_output_old['Control']['Enable_Charge_Target']
     else:
         controlmode['Enable_Charge_Target']="disable"    #Default to off
-
-    if not GEInv.eco_mode == Enable.UNKNOWN:
-        batPowerMode=GEInv.eco_mode.name.lower()
-    elif multi_output_old:
-        batPowerMode=multi_output_old['Control']['Eco_Mode']
-    else:
-        batPowerMode="disable"    #Default to off
 
     battery_reserve = GEInv.battery_soc_reserve
 
@@ -615,11 +656,15 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
     target_soc = GEInv.charge_target_soc
 
     # NON 3PH controls go here
-    if not is3PH:                                     #Not on 3Ph OR GATEWAY
+    if not plant.device_type in (Model.AC_3PH, Model.HYBRID_3PH, Model.GATEWAY):        #Not on 3Ph OR GATEWAY
         discharge_rate = int(min((GEInv.battery_discharge_limit/100)*inverterModel.batterycapacity*1000, inverterModel.batmaxrate))
         controlmode['Battery_Discharge_Rate'] = discharge_rate
         charge_rate = int(min((GEInv.battery_charge_limit/100)*inverterModel.batterycapacity*1000, inverterModel.batmaxrate))
         controlmode['Battery_Charge_Rate'] = charge_rate
+    else:
+        controlmode['Battery_Discharge_Rate']=int(inverterModel.batmaxrate*(GEInv.battery_discharge_limit_ac/100))
+        controlmode['Battery_Charge_Rate']=int(inverterModel.batmaxrate*(GEInv.battery_charge_limit_ac/100))
+        
     
     controlmode['Enable_Charge_Schedule'] = charge_schedule
     controlmode['Enable_Discharge_Schedule'] = discharge_schedule
@@ -652,29 +697,43 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
         mode = "Timed Export"
     elif GEInv.eco_mode == 0 and GEInv.enable_discharge == False:
         # Dynamic r27=1 r110=4 r59=0
-        mode = "Eco (Paused)"
+        mode = "Export (Paused)"
     else:
         mode = "Unknown"
 
     logger.debug("Mode is: " + str(mode))
 
     controlmode['Mode'] = mode
-    controlmode['Battery_Power_Reserve'] = battery_reserve
-    controlmode['Battery_Power_Cutoff'] = battery_cutoff
-    controlmode['Eco_Mode'] = batPowerMode
+    
+    if plant.device_type in (Model.AC_3PH, Model.HYBRID_3PH):
+        controlmode['Battery_Power_Cutoff'] = GEInv.battery_power_cutoff
+    else:
+        controlmode['Battery_Power_Cutoff'] = battery_cutoff
+        controlmode['Battery_Power_Reserve'] = battery_reserve
+        
     controlmode['Target_SOC'] = target_soc
-    controlmode['Sync_Time'] = "disable"
+    #controlmode['Sync_Time'] = "disable"
 
-### How do I tell if inverter has BPM???? It always returns the read register, is it not on AC
-#    if not GEInv.battery_pause_mode == None:    #not on old firmware
+    if not GEInv.rtc_enable == Enable.UNKNOWN:
+        controlmode['Real_Time_Control'] = GEInv.rtc_enable.name.lower()
+        if GEInv.rtc_enable == Enable.ENABLE:
+            open(GivLUT.rtc_enabled,'w').close()
+        else:
+            if exists(GivLUT.rtc_enabled):
+                os.remove(GivLUT.rtc_enabled)
+    else:
+        controlmode['Real_Time_Control'] = "disable"
+        if exists(GivLUT.rtc_enabled):
+            os.remove(GivLUT.rtc_enabled)
+
 
     if not GEInv.battery_pause_mode==None:    #Not in AC single phase
         controlmode['Battery_pause_mode'] = GivLUT.battery_pause_mode[int(GEInv.battery_pause_mode)]
 
     controlmode['Battery_Calibration'] = GivLUT.battery_calibration[GEInv.soc_force_adjust]
     controlmode['Active_Power_Rate']= GEInv.active_power_rate
-    controlmode['Reboot_Invertor']="disable"
-    controlmode['Reboot_Addon']="disable"
+    #controlmode['Reboot_Invertor']="disable"
+    #controlmode['Reboot_Addon']="disable"
     if not isinstance(regCacheStack[-1], int):
         if "Temp_Pause_Discharge" in regCacheStack[-1]:
             controlmode['Temp_Pause_Discharge'] = regCacheStack[-1]["Control"]["Temp_Pause_Discharge"]
@@ -683,8 +742,6 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
     else:
         controlmode['Temp_Pause_Charge'] = "Normal"
         controlmode['Temp_Pause_Discharge'] = "Normal"
-
-### Implement Force number option here###
 
     if exists(".FCRunning"+str(GiV_Settings.givtcp_instance)):
         logger.debug("Force Charge is Running")
@@ -726,6 +783,171 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
         controlmode['Temp_Pause_Discharge_Num']=0
     return controlmode
 
+
+def processPVInfo(plant: Plant):
+    energy_total_output = {}
+    energy_today_output = {}
+    power_output = {}
+    power_flow_output = {}
+    inverter = {}
+    inverterModel= InvType
+    multi_output={}
+    try:
+        GEInv=plant.inverter
+        inverterModel=getInvModel(plant)
+
+        
+        # Grab previous data from Pickle and use it validate any outrageous changes
+        regCacheStack = GivLUT.get_regcache()
+        if regCacheStack:
+            multi_output_old = regCacheStack[-1]
+        else:
+            regCacheStack = [0]
+            multi_output_old = {}
+
+        # Check a couple of obvious data points to reject bad reads
+        if float(GEInv.modbus_version)>2 or GEInv.modbus_address>100 or GEInv.user_code>100 or GEInv.temp_inverter_heatsink>100:
+            logger.debug("Dodgy Data so using last cache...")
+            return multi_output_old
+
+        # If System Time is wrong (default date) use last good time or local time if all else fails
+        if GEInv.system_time.year == 2000:
+            #Use old Sys_Time
+            logger.debug("Inverter Time is default... fixing it")
+            inverter['Invertor_Time'] = finditem(multi_output_old,"Invertor_Time")
+            if inverter['Invertor_Time']==None:
+            # Unless its missing then use now()
+                inverter['Invertor_Time']=datetime.datetime.now(GivLUT.timezone).isoformat()
+        else:
+            # Use latest data if its not default date
+            inverter['Invertor_Time'] = GEInv.system_time.replace(tzinfo=GivLUT.timezone).isoformat()
+
+    ############  Energy Stats    ############
+        # Total Energy Figures
+        logger.debug("Getting Total Energy Data")
+
+        energy_total_output['Export_Energy_Total_kWh'] = GEInv.e_grid_out_total
+
+        energy_total_output['Invertor_Energy_Total_kWh'] = GEInv.e_inverter_out_total
+        energy_total_output['PV_Energy_Total_kWh'] = GEInv.e_pv_total
+
+        # Energy Today Figures
+        logger.debug("Getting Today Energy Data")
+        energy_today_output['PV_Energy_Today_kWh'] = GEInv.e_pv1_day+GEInv.e_pv2_day
+        energy_today_output['Export_Energy_Today_kWh'] = GEInv.e_grid_out_day
+        energy_today_output['Invertor_Energy_Today_kWh'] = GEInv.e_inverter_out_day
+
+    ############  Core Power Stats    ############
+
+        # PV Power
+        logger.debug("Getting PV Power")
+        PV_power_1 = GEInv.p_pv1
+        PV_power_2 = GEInv.p_pv2
+        PV_power = PV_power_1+PV_power_2
+        if PV_power < 15000:
+            power_output['PV_Power_String_1'] = PV_power_1
+            power_output['PV_Power_String_2'] = PV_power_2
+            power_output['PV_Power'] = PV_power
+        power_output['PV_Voltage_String_1'] = GEInv.v_pv1
+        power_output['PV_Voltage_String_2'] = GEInv.v_pv2
+        power_output['PV_Current_String_1'] = GEInv.i_pv1
+        power_output['PV_Current_String_2'] = GEInv.i_pv2
+        power_output['Grid_Voltage'] = GEInv.v_ac1
+        power_output['Grid_Current'] = GEInv.i_grid_port 
+
+        # Grid Power
+        logger.debug("Getting Grid Power")
+        grid_power = GEInv.p_grid_out
+        if grid_power < 0:
+            import_power = abs(grid_power)
+            export_power = 0
+        elif grid_power > 0:
+            import_power = 0
+            export_power = abs(grid_power)
+        else:
+            import_power = 0
+            export_power = 0
+        power_output['Grid_Power'] = grid_power
+        power_output['Import_Power'] = import_power
+        power_output['Export_Power'] = export_power
+
+
+        # Inverter Power
+        logger.debug("Getting PInv Power")
+        inverter_power = GEInv.p_inverter_out
+        if -inverterModel.invmaxrate <= inverter_power <=inverterModel.invmaxrate:
+            power_output['Invertor_Power'] = inverter_power
+
+    ############  Power Flow Stats    ############
+
+        # Solar to H/B/G
+        logger.debug("Getting Solar to H/B/G Power Flows")
+        if PV_power > 0:
+            S2H = min(PV_power - export_power,0)
+            power_flow_output['Solar_to_House'] = S2H
+            power_flow_output['Solar_to_Grid'] = export_power
+
+        else:
+            power_flow_output['Solar_to_House'] = 0
+            power_flow_output['Solar_to_Grid'] = 0
+
+        if GEInv.f_ac1>100:
+            freq=GEInv.f_ac1/10
+        else:
+            freq=GEInv.f_ac1
+        power_output['Grid_Frequency'] = freq
+        if GEInv.f_eps_backup>100:
+            freq=GEInv.f_eps_backup/10
+        else:
+            freq=GEInv.f_eps_backup
+        power_output['Inverter_Output_Frequency'] = freq
+
+        # Check for all zeros
+        checksum = 0
+        for item in energy_total_output:
+            checksum = checksum+energy_total_output[item]
+        if checksum == 0:
+            raise ValueError("All zeros returned by inverter, skipping update")
+
+        ######## Get Inverter Details ########
+        logger.debug("Getting inverter Details")
+        inverter['Invertor_Serial_Number'] = plant.inverter_serial_number
+        inverter['Modbus_Version'] = GEInv.modbus_version
+        inverter['Invertor_Firmware'] = GEInv.firmware_version
+        metertype = GEInv.meter_type.name.capitalize()
+        inverter['Meter_Type'] = metertype
+        inverter['Invertor_Type'] = inverterModel.generation.name.capitalize() + " " + inverterModel.model.name.capitalize()
+        inverter['Invertor_Max_Inv_Rate'] = inverterModel.invmaxrate
+        inverter['Invertor_Temperature'] = GEInv.temp_inverter_heatsink
+        inverter['Export_Limit']=GEInv.grid_port_max_power_output
+
+        ######## Get Meter Details ########
+
+        meters={}
+        meters.update(getMeters(plant))
+
+        ######## Get Battery Details ########
+
+            ######## Create multioutput and publish #########
+        energy = {}
+        energy["Today"] = energy_today_output
+        energy["Total"] = energy_total_output
+        power = {}
+        power["Power"] = power_output
+        power["Flows"] = power_flow_output
+        multi_output["Power"] = power
+        multi_output[GEInv.serial_number] = inverter
+        multi_output["Energy"] = energy
+        multi_output["Meter_Details"] = meters
+        if GiV_Settings.Print_Raw_Registers:
+            multi_output['raw'] = getRaw(plant)
+    except Exception:
+        e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
+        #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        logger.error("Error processing Inverter data: " + str(e))
+        return None
+    return multi_output
+
 def processInverterInfo(plant: Plant):
     energy_total_output = {}
     energy_today_output = {}
@@ -742,6 +964,7 @@ def processInverterInfo(plant: Plant):
         isHV=plant.isHV
         inverterModel=getInvModel(plant)
 
+        
         # Grab previous data from Pickle and use it validate any outrageous changes
         regCacheStack = GivLUT.get_regcache()
         if regCacheStack:
@@ -749,6 +972,11 @@ def processInverterInfo(plant: Plant):
         else:
             regCacheStack = [0]
             multi_output_old = {}
+
+        # Check a couple of obvious data points to reject bad reads
+        if float(GEInv.modbus_version)>2 or GEInv.modbus_address>100 or GEInv.user_code>100 or GEInv.temp_inverter_heatsink>100:
+            logger.debug("Dodgy Data so using last cache...")
+            return multi_output_old
 
         # If System Time is wrong (default date) use last good time or local time if all else fails
         if GEInv.system_time.year == 2000:
@@ -821,8 +1049,8 @@ def processInverterInfo(plant: Plant):
             power_output['PV_Power'] = PV_power
         power_output['PV_Voltage_String_1'] = GEInv.v_pv1
         power_output['PV_Voltage_String_2'] = GEInv.v_pv2
-        power_output['PV_Current_String_1'] = GEInv.i_pv1*10
-        power_output['PV_Current_String_2'] = GEInv.i_pv2*10
+        power_output['PV_Current_String_1'] = GEInv.i_pv1
+        power_output['PV_Current_String_2'] = GEInv.i_pv2
         power_output['Grid_Voltage'] = GEInv.v_ac1
         power_output['Grid_Current'] = GEInv.i_grid_port 
 
@@ -1012,7 +1240,8 @@ def processInverterInfo(plant: Plant):
         # Check for all zeros
         checksum = 0
         for item in energy_total_output:
-            checksum = checksum+energy_total_output[item]
+            if not energy_total_output[item] == None:
+                checksum = checksum+energy_total_output[item]
         if checksum == 0:
             raise ValueError("All zeros returned by inverter, skipping update")
 
@@ -1068,8 +1297,8 @@ def processInverterInfo(plant: Plant):
         multi_output["Control"] = controlmode
         multi_output["Battery_Details"] = batteries2
         multi_output["Meter_Details"] = meters
-    #    if GiV_Settings.Print_Raw_Registers:
-        multi_output['raw'] = getRaw(plant)
+        if GiV_Settings.Print_Raw_Registers:
+            multi_output['raw'] = getRaw(plant)
     except Exception:
         e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
         #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
@@ -1091,13 +1320,13 @@ def processEMSInfo(plant: Plant):
         ems['Serial_Number']=GEInv.getsn()
         ems['Invertor_Type'] = GEInv.generation + " - " + GEInv.model.name.capitalize()
         ems['Invertor_Firmware']=GEInv.firmware_version
-        ems['System_Time']=GEInv.system_time
+        ems['Invertor_Time']=GEInv.system_time.replace(tzinfo=GivLUT.timezone).isoformat()
         ems['Remaining_Battery_Wh']=GEInv.remaining_battery_wh
         ems['Invertor_Serial_Number']=plant.inverter_serial_number
         ems['Export_Limit']=GEInv.grid_port_max_power_output
         
         inverters={}
-        if GEInv.inverter_1_power:
+        if GEInv.inverter_1_serial_number:
             inv1={}
             inv1['Power']=GEInv.inverter_1_power
             inv1['SOC']=GEInv.inverter_1_soc
@@ -1106,7 +1335,7 @@ def processEMSInfo(plant: Plant):
             inv1['status']=GEInv.inverter_1_status
             inverters[GEInv.inverter_1_serial_number]=inv1
 
-        if GEInv.inverter_2_power:
+        if GEInv.inverter_2_serial_number:
             inv2={}
             inv2['Power']=GEInv.inverter_2_power
             inv2['SOC']=GEInv.inverter_2_soc
@@ -1115,7 +1344,7 @@ def processEMSInfo(plant: Plant):
             inv2['status']=GEInv.inverter_2_status
             inverters[GEInv.inverter_2_serial_number]=inv2
 
-        if GEInv.inverter_3_power:
+        if GEInv.inverter_3_serial_number:
             inv3={}
             inv3['Power']=GEInv.inverter_3_power
             inv3['SOC']=GEInv.inverter_3_soc
@@ -1124,7 +1353,7 @@ def processEMSInfo(plant: Plant):
             inv3['status']=GEInv.inverter_3_status
             inverters[GEInv.inverter_3_serial_number]=inv3
         
-        if GEInv.inverter_4_power:
+        if GEInv.inverter_4_serial_number:
             inv4={}
             inv4['Power']=GEInv.inverter_4_power
             inv4['SOC']=GEInv.inverter_4_soc
@@ -1141,7 +1370,7 @@ def processEMSInfo(plant: Plant):
         power_output['Generation_Load_Power']=GEInv.total_generation_load_power
         power_output['Total_Power']=GEInv.p_inverter_active
         power_output['Battery_Power']=GEInv.total_battery_power
-        power_output['Other_Battery_Power']=GEInv.other_battery_power
+        power_output['Other_Battery_Power']=GEInv.other_battery_power        
 
         energy={}
         energy_total_output = {}
@@ -1214,8 +1443,8 @@ def processEMSInfo(plant: Plant):
         timeslots['Export_start_time_slot_3'] = GEInv.export_slot_3.start.isoformat()
         timeslots['Export_end_time_slot_3'] = GEInv.export_slot_3.end.isoformat()
 
-        #if GiV_Settings.Print_Raw_Registers:
-        multi_output['raw'] = getRaw(plant)
+        if GiV_Settings.Print_Raw_Registers:
+            multi_output['raw'] = getRaw(plant)
 
         multi_output['Power']=power_output
         multi_output['Power']['Meters']=meter
@@ -1281,7 +1510,20 @@ def processGatewayInfo(plant: Plant):
         power_output['Grid_Relay_Voltage']=GEInv.v_grid_relay
         power_output['Inverter_Relay_Voltage']=GEInv.v_inverter_relay
         power_output['Invertor_Power']=-GEInv.p_aio_total
-
+        
+        controlmode={}    
+        timeslots={}
+        #Only implement these, if Parallel mode is in use
+        if GEInv.parallel_aio_online_num>1:
+            controlmode=getControls(plant,regCacheStack,inverterModel,multi_output_old)
+            #Use same approach as 3PH to generate the (dis)charge Rate controls
+            controlmode['Battery_Discharge_Rate']=int(inverterModel.batmaxrate*(GEInv.battery_discharge_limit_ac/100))
+            controlmode['Battery_Charge_Rate']=int(inverterModel.batmaxrate*(GEInv.battery_charge_limit_ac/100))
+            logger.debug("Getting TimeSlot data")
+            res = {}
+            res=getTimeslots(plant, multi_output_old)
+            timeslots.update(res[0])
+            controlmode.update(res[1])
 
     ### Is this bit right? If not parallel then are there multiple aios to check? Can you have multiple AIOs not in parallel mode?
         if GEInv.parallel_aio_num>1:
@@ -1304,6 +1546,82 @@ def processGatewayInfo(plant: Plant):
                 average=int(total/count)
                 power_output['SOC']=average
                 power_output['SOC_kWh'] = round((int(power_output['SOC'])*(inverterModel.batterycapacity))/100,2)
+
+                Battery_power=-GEInv.p_aio_total
+                if Battery_power >= 0:
+                    discharge_power = abs(Battery_power)
+                    charge_power = 0
+                    power_output['Charge_Time_Remaining'] = 0
+                    #power_output['Charge_Completion_Time'] = finaltime.replace(tzinfo=GivLUT.timezone).isoformat()
+                    if discharge_power!=0:
+                        # Time to get from current SOC to battery Reserve at the current rate
+                        power_output['Discharge_Time_Remaining'] = max(int(inverterModel.batterycapacity*((power_output['SOC'] - controlmode['Battery_Power_Reserve'])/100) / (discharge_power/1000) * 60),0)
+                        finaltime=datetime.datetime.now() + timedelta(minutes=power_output['Discharge_Time_Remaining'])
+                        power_output['Discharge_Completion_Time'] = finaltime.replace(tzinfo=GivLUT.timezone).isoformat()
+                    else:
+                        power_output['Discharge_Time_Remaining'] = 0
+                        #power_output['Discharge_Completion_Time'] = datetime.datetime.now().replace(tzinfo=GivLUT.timezone).isoformat()
+                elif Battery_power <= 0:
+                    discharge_power = 0
+                    charge_power = abs(Battery_power)
+                    power_output['Discharge_Time_Remaining'] = 0
+                    #power_output['Discharge_Completion_Time'] = datetime.datetime.now().replace(tzinfo=GivLUT.timezone).isoformat()
+                    if charge_power!=0:
+                        # Time to get from current SOC to target SOC at the current rate (Target SOC-Current SOC)xBattery Capacity
+                        power_output['Charge_Time_Remaining'] = max(int(inverterModel.batterycapacity*((controlmode['Target_SOC'] - power_output['SOC'])/100) / (charge_power/1000) * 60),0)
+                        finaltime=datetime.datetime.now() + timedelta(minutes=power_output['Charge_Time_Remaining'])
+                        power_output['Charge_Completion_Time'] = finaltime.replace(tzinfo=GivLUT.timezone).isoformat()
+                    else:
+                        power_output['Charge_Time_Remaining'] = 0
+
+                grid_power = GEInv.p_ac1
+                if grid_power < 0:
+                    import_power = abs(grid_power)
+                    export_power = 0
+                elif grid_power > 0:
+                    import_power = 0
+                    export_power = abs(grid_power)
+                else:
+                    import_power = 0
+                    export_power = 0
+
+                # Power flows
+                power_flow_output={}
+                logger.debug("Getting Solar to H/B/G Power Flows")
+                if GEInv.p_pv > 0:
+                    S2H = min(GEInv.p_pv, GEInv.p_load)
+                    power_flow_output['Solar_to_House'] = S2H
+                    S2B = max((GEInv.p_pv-S2H)-export_power, 0)
+                    power_flow_output['Solar_to_Battery'] = S2B
+                    power_flow_output['Solar_to_Grid'] = max(GEInv.p_pv - S2H - S2B, 0)
+
+                else:
+                    power_flow_output['Solar_to_House'] = 0
+                    power_flow_output['Solar_to_Battery'] = 0
+                    power_flow_output['Solar_to_Grid'] = 0
+
+                # Battery to House
+                logger.debug("Getting Battery to House Power Flow")
+                B2H = max(discharge_power-export_power, 0)
+                power_flow_output['Battery_to_House'] = B2H
+
+                # Grid to Battery/House Power
+                logger.debug("Getting Grid to Battery/House Power Flow")
+                if import_power > 0:
+                    power_flow_output['Grid_to_Battery'] = charge_power-max(GEInv.p_pv-GEInv.p_load, 0)
+                    power_flow_output['Grid_to_House'] = max(import_power-charge_power, 0)
+
+                else:
+                    power_flow_output['Grid_to_Battery'] = 0
+                    power_flow_output['Grid_to_House'] = 0
+
+                # Battery to Grid Power
+                logger.debug("Getting Battery to Grid Power Flow")
+                if export_power > 0:
+                    power_flow_output['Battery_to_Grid'] = max(discharge_power-B2H, 0)
+                else:
+                    power_flow_output['Battery_to_Grid'] = 0
+
 
         inverters={}
         swv=int(GEInv.software_version[-2:])
@@ -1371,32 +1689,20 @@ def processGatewayInfo(plant: Plant):
         energy_total_output['Parallel_Total_Charge_Energy_Total_kWh']=round(GEInv.e_aio_charge_total/1000,2)
         energy_total_output['Parallel_Total_Discharge_Energy_Total_kWh']=round(GEInv.e_aio_discharge_total/1000,2)
         
-        controlmode={}    
-        timeslots={}
-        #Only implement these, if Parallel mode is in use
-        if GEInv.parallel_aio_online_num>1:
-            controlmode=getControls(plant,regCacheStack,inverterModel,multi_output_old)
-            #Use same approach as 3PH to generate the (dis)charge Rate controls
-            controlmode['Battery_Discharge_Rate']=int(inverterModel.batmaxrate*(GEInv.battery_discharge_limit_ac/100))
-            controlmode['Battery_Charge_Rate']=int(inverterModel.batmaxrate*(GEInv.battery_charge_limit_ac/100))
-            logger.debug("Getting TimeSlot data")
-            res = {}
-            res=getTimeslots(plant, multi_output_old)
-            timeslots.update(res[0])
-            controlmode.update(res[1])
 
         ######## Get Meter Details ########
 
         meters={}
         meters.update(getMeters(plant))
 
-        #if GiV_Settings.Print_Raw_Registers:
-        multi_output['raw'] = getRaw(plant)
+        if GiV_Settings.Print_Raw_Registers:
+            multi_output['raw'] = getRaw(plant)
 
         energy["Today"] = energy_today_output
         energy["Total"] = energy_total_output
         power={}
         power['Power']=power_output
+        power["Flows"] = power_flow_output
         multi_output['Inverters']=inverters
         multi_output["Power"]  = power
         multi_output["Energy"] = energy
@@ -1427,6 +1733,11 @@ def processThreePhaseInfo(plant: Plant):
         else:
             multi_output_old=regCacheStack[-1]
 
+        # Check a couple of obvious data points to reject bad reads
+        if float(GEInv.modbus_version)>2 or GEInv.modbus_address>100 or GEInv.user_code>100 or GEInv.temp_inverter_heatsink>100:
+            logger.debug("Dodgy Data so using last cache...")
+            return multi_output_old
+
         # If System Time is wrong (default date) use last good time or local time if all else fails
         if GEInv.system_time.year == 2000:
             #Use old Sys_Time
@@ -1440,8 +1751,8 @@ def processThreePhaseInfo(plant: Plant):
             inverter['Invertor_Time'] = GEInv.system_time.replace(tzinfo=GivLUT.timezone).isoformat(timespec='seconds')
         inv_time=datetime.datetime.strptime(inverter['Invertor_Time'], '%Y-%m-%dT%H:%M:%S%z')
 
-    #    if GiV_Settings.Print_Raw_Registers:
-        multi_output['raw'] = getRaw(plant)
+        if GiV_Settings.Print_Raw_Registers:
+            multi_output['raw'] = getRaw(plant)
 
         inverterModel=getInvModel(plant)
 
@@ -1491,11 +1802,11 @@ def processThreePhaseInfo(plant: Plant):
         power_output['Export_Phase2_Power']=GEInv.p_out_ac2
         power_output['Export_Phase3_Power']=GEInv.p_out_ac3
         power_output['PV_Voltage_String_1']=GEInv.v_pv1
-        power_output['PV_Voltage_String_1']=GEInv.v_pv2
+        power_output['PV_Voltage_String_2']=GEInv.v_pv2
         power_output['PV_Current_String_1']=GEInv.i_pv1
-        power_output['PV_Current_String_1']=GEInv.i_pv2
+        power_output['PV_Current_String_2']=GEInv.i_pv2
         power_output['PV_Power_String_1']=GEInv.p_pv1
-        power_output['PV_Power_String_1']=GEInv.p_pv2
+        power_output['PV_Power_String_2']=GEInv.p_pv2
         power_output['PV_Power']=GEInv.p_pv1+GEInv.p_pv2
         power_output['PV_Current']=GEInv.i_pv1+GEInv.i_pv2
         power_output['Grid_Phase1_Voltage']=GEInv.v_ac1
@@ -1532,7 +1843,7 @@ def processThreePhaseInfo(plant: Plant):
         inverter['Power_Factor']=GEInv.power_factor
         inverter['Battery_Type'] = GEInv.battery_type.name.capitalize()
         inverter['Invertor_Type'] = "Gen 3 - " + GEInv.model.name.capitalize()
-        inverter['Invertor_Max_Bat_Rate'] = GEInv.battery_max_power
+        inverter['Invertor_Max_Bat_Rate'] = inverterModel.batmaxrate
         inverter['Invertor_Max_Inv_Rate'] = GEInv.inverter_max_power
         inverter['Battery_Priority']=GEInv.battery_priority.name.capitalize()
 
@@ -1555,11 +1866,9 @@ def processThreePhaseInfo(plant: Plant):
         # do the standard control apply to 3ph?
 
         controlmode.update(getControls(plant,regCacheStack,inverterModel,multi_output_old))
-        controlmode['Battery_Discharge_Rate']=int(GEInv.battery_max_power*(GEInv.battery_discharge_limit_ac/100))
-        controlmode['Battery_Charge_Rate']=int(GEInv.battery_max_power*(GEInv.battery_charge_limit_ac/100))
 
-        if not GEInv.force_discharge_enable==Enable.UNKNOWN:
-            controlmode['Force_Discharge_Enable']=GEInv.force_discharge_enable.name.lower()
+        if not GEInv.enable_discharge==Enable.UNKNOWN:
+            controlmode['Force_Discharge_Enable']=GEInv.enable_discharge.name.lower()
         elif multi_output_old:
             controlmode['Force_Discharge_Enable']=multi_output_old['Control']['Force_Discharge_Enable']
         else:
@@ -1617,14 +1926,15 @@ def processData(plant: Plant):
     cleanRegCache = {}
     try:
         logger.debug("Beginning parsing of Inverter data")
-
-        #Don't use models in case its not
-        modeltype=hex(plant.register_caches[plant.slave_address].get(HR(0)))[2:3]
-        if modeltype == '5':
+        #Don't use models in case its not ready
+        modeltype=hex(plant.register_caches[plant.slave_address].get(HR(0)))[2:4]
+        if modeltype=="23":
+            multi_output=processPVInfo(plant)
+        elif modeltype[0] == '5':
             multi_output=processEMSInfo(plant)
-        elif modeltype == '7':
+        elif modeltype[0] == '7':
             multi_output=processGatewayInfo(plant)
-        elif modeltype in ('4', '6'):
+        elif modeltype[0] in ('4', '6'):
             multi_output=processThreePhaseInfo(plant)
         else:
             multi_output=processInverterInfo(plant)
@@ -1636,7 +1946,20 @@ def processData(plant: Plant):
         givtcpdata['Last_Updated_Time'] = datetime.datetime.now(GivLUT.timezone).isoformat()
         givtcpdata['status'] = "online"
         givtcpdata['Time_Since_Last_Update'] = 0
-        givtcpdata['GivTCP_Version']= "3.0.1"
+        givtcpdata['GivTCP_Version']= "3.1.3"
+
+        count=0
+        if exists(GivLUT.writecountpkl):
+            with open(GivLUT.writecountpkl, 'rb') as inp:
+                count = pickle.load(inp)
+        givtcpdata['Write_Count']= count
+        
+        safecount=0
+        if exists(GivLUT.safewritecountpkl):
+            with open(GivLUT.safewritecountpkl, 'rb') as inp:
+                safecount = pickle.load(inp)
+        givtcpdata['Safe_Write_Count']= safecount
+
         multi_output['Stats']=givtcpdata
         regCacheStack = GivLUT.get_regcache()
         if not regCacheStack:
@@ -1648,11 +1971,12 @@ def processData(plant: Plant):
             multi_output=dataCleansing(multi_output,regCacheStack[-1])
 
 ### Outlier removal for multi_output
-        if len(regCacheStack)>500:
-            #multi_output,regCacheStack  = outlierRemoval(multi_output,regCacheStack)
-            logger.debug("Data Cleansing Complete")
-        else:
-            logger.debug("Data Cleansing not carried out: cache too small")
+#        if len(regCacheStack)>100:
+#            logger.debug("Running outlier removal")
+#            multi_output,regCacheStack  = outlierRemoval(multi_output,regCacheStack)
+#            logger.debug("outlier removal Complete")
+#        else:
+#            logger.debug("outlier removal not carried out: cache too small")
 
         # run ppkwh stats on firstrun and every half hour
         if plant.number_batteries>0:    #Don't run ratecalcs if no batteries
@@ -1664,16 +1988,6 @@ def processData(plant: Plant):
             logger.debug("Battery rate calcs complete")
 
 
-        # only update cache if its the same set of keys as previous (don't update if data missing)
-        '''
-        if 'multi_output_old' in locals():
-            MOList = dicttoList(multi_output)
-            MOOList = dicttoList(multi_output_old)
-            dataDiff = set(MOOList) - set(MOList)
-            if len(dataDiff) > 0:
-                for key in dataDiff:
-                    logger.debug(str(key)+" is missing from new data, publishing all other data")
-        '''
         # Get lastupdate from pickle if it exists
         if exists(GivLUT.lastupdate):
             with open(GivLUT.lastupdate, 'rb') as inp:
@@ -1686,11 +2000,12 @@ def processData(plant: Plant):
             pickle.dump(multi_output['Stats']['Last_Updated_Time'], outp, pickle.HIGHEST_PROTOCOL)
 
         
-        # Add new data to the stack (cap at 12hr history) and save
+        # Add new data to the stack (cap at 1hr history) and save
         #if len(regCacheStack)>1000:
         if len(regCacheStack)>0:
-            earliest_cache_age=(datetime.datetime.now(GivLUT.timezone)-datetime.datetime.strptime(finditem(regCacheStack[0],"Invertor_Time"), '%Y-%m-%dT%H:%M:%S%z'))
-            if earliest_cache_age.seconds>43200:
+            #earliest_cache_age=(datetime.datetime.now(GivLUT.timezone)-datetime.datetime.strptime(finditem(regCacheStack[0],"Invertor_Time"), '%Y-%m-%dT%H:%M:%S%z'))
+            #if earliest_cache_age.seconds>3600:
+            if len(regCacheStack)>10:
                 regCacheStack.pop(0)
         regCacheStack.append(multi_output)
         GivLUT.put_regcache(regCacheStack)
@@ -1840,6 +2155,18 @@ def getCache():     # Get latest cache data and return it (for use in REST)
         regCacheStack = GivLUT.get_regcache()
         if regCacheStack:
             multi_output = regCacheStack[-1]
+            inv=multi_output['raw']['invertor']
+            for reg in inv:
+                if isinstance(inv[reg],TimeSlot):
+                    inv[reg]= [inv[reg].start.isoformat(),inv[reg].end.isoformat()]
+                #elif not isinstance(inv[reg],(str,int,float)):
+                elif isinstance(inv[reg],list):
+                    inv[reg]=inv[reg]
+                elif hasattr(inv[reg],"name"):
+                    inv[reg]=inv[reg].name.capitalize()
+                else:
+                        inv[reg]= str(inv[reg])
+            multi_output['raw']['invertor']=inv
             return json.dumps(multi_output, indent=4, sort_keys=True, default=str)
         else:
             multi_output['result']="No register data cache exists, try again later"
@@ -1870,7 +2197,10 @@ def publishOutput(array, SN):
     # Additional Publish options can be added here.
     # A separate file in the folder can be added with a new publish "plugin"
     # then referenced here with any settings required added into settings.py
-
+    if GiV_Settings.Battery_Only==True:
+        temp=array['Battery_Details']
+        array={}
+        array['Battery_Details']=temp
     tempoutput = {}
     tempoutput = iterate_dict(array)
 
@@ -2085,14 +2415,14 @@ def ratecalcs(multi_output, multi_output_old):
             # Add change in energy this slot to previous rate_data
             rate_data['Night_Energy_kWh'] = import_energy-rate_data['Night_Start_Energy_kWh']
             logger.debug("Night_Energy_kWh=" +str(import_energy)+" - "+str(rate_data['Night_Start_Energy_kWh']))
-            rate_data['Night_Cost'] = float(rate_data['Night_Energy_kWh'])*float(GiV_Settings.night_rate)
+            rate_data['Night_Cost'] = round(float(rate_data['Night_Energy_kWh'])*float(GiV_Settings.night_rate),2)
             logger.debug("Night_Cost= "+str(rate_data['Night_Energy_kWh'])+"kWh x £"+str(float(GiV_Settings.night_rate))+"/kWh = £"+str(rate_data['Night_Cost']))
             rate_data['Current_Rate'] = GiV_Settings.night_rate
         else:
             logger.debug("Current Tariff is Day, calculating stats...")
             rate_data['Day_Energy_kWh'] = import_energy-rate_data['Day_Start_Energy_kWh']
             logger.debug("Day_Energy_kWh=" + str(import_energy)+" - "+str(rate_data['Day_Start_Energy_kWh']))
-            rate_data['Day_Cost'] = float(rate_data['Day_Energy_kWh'])*float(GiV_Settings.day_rate)
+            rate_data['Day_Cost'] = round(float(rate_data['Day_Energy_kWh'])*float(GiV_Settings.day_rate),2)
             logger.debug("Day_Cost= "+str(rate_data['Day_Energy_kWh'])+"kWh x £"+str(float(GiV_Settings.day_rate))+"/kWh = £"+str(rate_data['Day_Cost']))
             rate_data['Current_Rate'] = GiV_Settings.day_rate
 
@@ -2170,8 +2500,6 @@ def dataSmoother2(dataNew, dataOld, lastUpdate, invtype,inv_time):
     elif GiV_Settings.data_smoother.lower() == "medium":
         smoothRate = 0.35
         abssmooth=5000
-    elif GiV_Settings.data_smoother.lower() == "none":
-        return(newData)
     else:
         smoothRate = 0.50
         abssmooth=7000
@@ -2215,38 +2543,41 @@ def dataSmoother2(dataNew, dataOld, lastUpdate, invtype,inv_time):
                 logger.debug(str(name)+" has decreased so using old value")
                 return oldData
 
-    ## Finally smooth data if its not already Zero (avoid div by Zero)
-        if oldData != 0:
-    ### Run checks against the conditions in GivLUT ###
-            if "power" in name.lower():
-                if newData==12179:
-                    return oldData
-            if "today" in name.lower():
-                if newData==59.5:
-                    return oldData
-            if lookup.smooth:     # apply smoothing if required
-                if newData != oldData:  # Only if its not the same
-                    timeDelta = (now-then).total_seconds()
-                    dataDelta = abs(newData-oldData)/oldData    #Should it be a ratio or an abs value as low values easily meet the threshold
-                    if "power" in name.lower():
-                        if abs(newData-oldData)>abssmooth:
-                            if checkRawcache(newData,name,abssmooth): #If new data is persistently outside bounds then use new value
-                                return(newData)
-                            else:
-                                logger.debug(str(name)+" jumped too far in a single read: "+str(oldData)+"->"+str(newData)+" so using previous value")
-                                return(oldData)
-                    else:
+## Now smooth data
+        if lookup.smooth and not GiV_Settings.data_smoother.lower() == "none":     # apply smoothing if required
+            if newData != oldData:  # Only if its not the same
+                if name in outliers:    #If the last data point was skipped then keep newdata as two dodgy reads is unlikely
+                    logger.debug("Returning new "+str(name)+" data as the last read was smoothed")
+                    outliers.remove(name)
+                    return newData
+                if any(word in name.lower() for word in ["power","_to_"]):
+                    if abs(newData-oldData)>abssmooth:                                
+                        if checkRawcache(newData,name,abssmooth): #If new data is persistently outside bounds then use new value
+                            return(newData)
+                        else:
+                            logger.debug(str(name)+" jumped too far in a single read: "+str(oldData)+"->"+str(newData)+" so using previous value")
+                            outliers.append(name)
+                            return (oldData)
+                else:
+                    ## Only smooth data if its not already Zero (avoid div by Zero)
+                    if oldData != 0:
+                        if abs(newData-oldData) < 1: # ignore very small changes (eg. today energy stats at start of day)
+                            return (newData)
+                        timeDelta = (now-then).total_seconds()
+                        dataDelta = abs(newData-oldData)/oldData    #Should it be a ratio or an abs value as low values easily meet the threshold
                         if dataDelta > smoothRate and timeDelta < 60:
                             logger.debug(str(name)+" jumped too far in a single read: "+str(oldData)+"->"+str(newData)+" so using previous value")
-                            return(oldData)
+                            outliers.append(name)
+                            return (oldData)
+
     return(newData)
 
 def checkRawcache(newData,name,abssmooth):
     #Get rawdata cache to check if unallowed changes are persistent and should be allowed
+    bigjump=False
     if exists(GivLUT.rawpkl):
         with open(GivLUT.rawpkl, 'rb') as inp:
             rawCacheStack = pickle.load(inp)
-        bigjump=False
         oldData=rawCacheStack[1]['invertor'][GivLUT.raw_to_pub[name]]
         if abs(newData-oldData)>abssmooth:
             bigjump=True

@@ -8,22 +8,27 @@ export const useTcpStore = defineStore('givtcp-form', {
       invertorIP_1: "",
       serial_number_1: "",
       inverterName_1: "",
+      inverter_battery_only_1: false,
       inverter_enable_2: false,
       invertorIP_2: "",
       serial_number_2: "",
       inverterName_2: "",
+      inverter_battery_only_2: false,
       inverter_enable_3: false,
       invertorIP_3: "",
       serial_number_3: "",
       inverterName_3: "",
+      inverter_battery_only_3: false,
       inverter_enable_4: false,
       invertorIP_4: "",
       serial_number_4: "",
       inverterName_4: "",
+      inverter_battery_only_4: false,
       inverter_enable_5: false,
       invertorIP_5: "",
       serial_number_5: "",
       inverterName_5: "",
+      inverter_battery_only_5: false,
     }),
     evc: useSessionStorage('evc', {
       evc_enable: false,
@@ -139,6 +144,14 @@ export const useCard = defineStore('card', {
         {
           type: 'checkbox',
           options: {
+            label: 'Inverter 1 only report battery data (for use with Gateway and EMS connected inverters)',
+            parent: 'inverters',
+            key: 'inverter_battery_only_1'
+          }
+        },
+        {
+          type: 'checkbox',
+          options: {
             label: 'Inverter 2 Enable',
             parent: 'inverters',
             key: 'inverter_enable_2'
@@ -171,6 +184,15 @@ export const useCard = defineStore('card', {
         {
           type: 'checkbox',
           options: {
+            label: 'Inverter 2 only report battery data (for use with Gateway and EMS connected inverters)',
+            parent: 'inverters',
+            key: 'inverter_battery_only_2'
+          }
+        },
+
+        {
+          type: 'checkbox',
+          options: {
             label: 'Inverter 3 Enable',
             parent: 'inverters',
             key: 'inverter_enable_3'
@@ -199,7 +221,16 @@ export const useCard = defineStore('card', {
             parent: 'inverters',
             key: 'inverterName_3'
           }
-        },        {
+        },
+        {
+          type: 'checkbox',
+          options: {
+            label: 'Inverter 3 only report battery data (for use with Gateway and EMS connected inverters)',
+            parent: 'inverters',
+            key: 'inverter_battery_only_3'
+          }
+        },
+        {
           type: 'checkbox',
           options: {
             label: 'Inverter 4 Enable',
@@ -234,6 +265,15 @@ export const useCard = defineStore('card', {
         {
           type: 'checkbox',
           options: {
+            label: 'Inverter 4 only report battery data (for use with Gateway and EMS connected inverters)',
+            parent: 'inverters',
+            key: 'inverter_battery_only_4'
+          }
+        },
+
+        {
+          type: 'checkbox',
+          options: {
             label: 'Inverter 5 Enable',
             parent: 'inverters',
             key: 'inverter_enable_5'
@@ -263,6 +303,15 @@ export const useCard = defineStore('card', {
             key: 'inverterName_5'
           }
         },
+        {
+          type: 'checkbox',
+          options: {
+            label: 'Inverter 5 only report battery data (for use with Gateway and EMS connected inverters)',
+            parent: 'inverters',
+            key: 'inverter_battery_only_5'
+          }
+        },
+
       ]
     },
     evc: {

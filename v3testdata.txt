@@ -1,0 +1,356 @@
+--------------------------------------------------
+2024-10-18T15:21:38.774645: processInvertorInfo (presmoothing) - Grid Power is: -9
+2024-10-18T15:21:38.802565: processData (post smoothing) - Grid Power is: -9
+2024-10-18T15:21:38.807570: processData (post rateData) - Grid Power is: -9
+2024-10-18T15:21:38.808563: put_regcache - Grid Power is: -9
+2024-10-18T15:21:38.882092: runAll handoff - Grid Power is: -9
+2024-10-18T15:21:38.882092: pubFromPickle - Grid Power is: -9
+2024-10-18T15:21:38.884091: publishOutput - Grid Power is: -9
+--------------------------------------------------
+2024-10-18T15:21:50.800899: processInvertorInfo (presmoothing) - Grid Power is: -1
+2024-10-18T15:21:50.823491: processData (post smoothing) - Grid Power is: -1
+2024-10-18T15:21:50.825481: processData (post rateData) - Grid Power is: -1
+2024-10-18T15:21:50.826475: put_regcache - Grid Power is: -1
+2024-10-18T15:21:50.893134: runAll handoff - Grid Power is: -1
+2024-10-18T15:21:50.893637: pubFromPickle - Grid Power is: -1
+2024-10-18T15:21:50.894785: publishOutput - Grid Power is: -1
+--------------------------------------------------
+2024-10-18T15:22:02.587549: processInvertorInfo (presmoothing) - Grid Power is: -2
+2024-10-18T15:22:02.613264: processData (post smoothing) - Grid Power is: -2
+2024-10-18T15:22:02.615212: processData (post rateData) - Grid Power is: -2
+2024-10-18T15:22:02.616174: put_regcache - Grid Power is: -2
+2024-10-18T15:22:02.675913: runAll handoff - Grid Power is: -2
+2024-10-18T15:22:02.675913: pubFromPickle - Grid Power is: -2
+2024-10-18T15:22:02.676838: publishOutput - Grid Power is: -2
+--------------------------------------------------
+2024-10-18T15:22:14.488998: processInvertorInfo (presmoothing) - Grid Power is: 5
+2024-10-18T15:22:14.513729: processData (post smoothing) - Grid Power is: 5
+2024-10-18T15:22:14.516688: processData (post rateData) - Grid Power is: 5
+2024-10-18T15:22:14.517690: put_regcache - Grid Power is: 5
+2024-10-18T15:22:14.598894: runAll handoff - Grid Power is: 5
+2024-10-18T15:22:14.599953: pubFromPickle - Grid Power is: 5
+2024-10-18T15:22:14.601684: publishOutput - Grid Power is: 5
+--------------------------------------------------
+2024-10-18T15:22:26.417821: processInvertorInfo (presmoothing) - Grid Power is: 5
+2024-10-18T15:22:26.442171: processData (post smoothing) - Grid Power is: 5
+2024-10-18T15:22:26.444299: processData (post rateData) - Grid Power is: 5
+2024-10-18T15:22:26.445309: put_regcache - Grid Power is: 5
+2024-10-18T15:22:26.531725: runAll handoff - Grid Power is: 5
+2024-10-18T15:22:26.531725: pubFromPickle - Grid Power is: 5
+2024-10-18T15:22:26.532729: publishOutput - Grid Power is: 5
+--------------------------------------------------
+2024-10-18T15:22:45.835801: processInvertorInfo (presmoothing) - Grid Power is: 4
+2024-10-18T15:22:45.858793: processData (post smoothing) - Grid Power is: 4
+2024-10-18T15:22:45.862727: processData (post rateData) - Grid Power is: 4
+2024-10-18T15:22:45.862727: put_regcache - Grid Power is: 4
+2024-10-18T15:22:45.929721: runAll handoff - Grid Power is: 4
+2024-10-18T15:22:45.929721: pubFromPickle - Grid Power is: 4
+2024-10-18T15:22:45.931382: publishOutput - Grid Power is: 4
+--------------------------------------------------
+2024-10-18T15:22:57.851072: processInvertorInfo (presmoothing) - Grid Power is: -40
+2024-10-18T15:22:57.872430: processData (post smoothing) - Grid Power is: -40
+2024-10-18T15:22:57.874452: processData (post rateData) - Grid Power is: -40
+2024-10-18T15:22:57.875430: put_regcache - Grid Power is: -40
+2024-10-18T15:22:57.931210: runAll handoff - Grid Power is: -40
+2024-10-18T15:22:57.931210: pubFromPickle - Grid Power is: -40
+2024-10-18T15:22:57.932113: publishOutput - Grid Power is: -40
+--------------------------------------------------
+2024-10-18T15:23:09.650059: processInvertorInfo (presmoothing) - Grid Power is: 3
+2024-10-18T15:23:09.674742: processData (post smoothing) - Grid Power is: 3
+2024-10-18T15:23:09.675755: processData (post rateData) - Grid Power is: 3
+2024-10-18T15:23:09.676743: put_regcache - Grid Power is: 3
+2024-10-18T15:23:09.731734: runAll handoff - Grid Power is: 3
+2024-10-18T15:23:09.731734: pubFromPickle - Grid Power is: 3
+2024-10-18T15:23:09.732734: publishOutput - Grid Power is: 3
+--------------------------------------------------
+2024-10-18T15:23:21.556144: processInvertorInfo (presmoothing) - Grid Power is: 4
+2024-10-18T15:23:21.576832: processData (post smoothing) - Grid Power is: 4
+2024-10-18T15:23:21.579740: processData (post rateData) - Grid Power is: 4
+2024-10-18T15:23:21.580768: put_regcache - Grid Power is: 4
+2024-10-18T15:23:21.634560: runAll handoff - Grid Power is: 4
+2024-10-18T15:23:21.635645: pubFromPickle - Grid Power is: 4
+2024-10-18T15:23:21.636566: publishOutput - Grid Power is: 4
+--------------------------------------------------
+2024-10-18T15:23:33.547952: processInvertorInfo (presmoothing) - Grid Power is: 45
+2024-10-18T15:23:33.568392: processData (post smoothing) - Grid Power is: 45
+2024-10-18T15:23:33.570304: processData (post rateData) - Grid Power is: 45
+2024-10-18T15:23:33.571303: put_regcache - Grid Power is: 45
+2024-10-18T15:23:33.628294: runAll handoff - Grid Power is: 45
+2024-10-18T15:23:33.629303: pubFromPickle - Grid Power is: 45
+2024-10-18T15:23:33.630302: publishOutput - Grid Power is: 45
+--------------------------------------------------
+2024-10-18T15:23:45.528393: processInvertorInfo (presmoothing) - Grid Power is: 0
+2024-10-18T15:23:45.548730: processData (post smoothing) - Grid Power is: 0
+2024-10-18T15:23:45.550731: processData (post rateData) - Grid Power is: 0
+2024-10-18T15:23:45.550731: put_regcache - Grid Power is: 0
+2024-10-18T15:23:45.601226: runAll handoff - Grid Power is: 0
+2024-10-18T15:23:45.602234: pubFromPickle - Grid Power is: 0
+2024-10-18T15:23:45.603198: publishOutput - Grid Power is: 0
+--------------------------------------------------
+2024-10-18T15:23:58.648092: processInvertorInfo (presmoothing) - Grid Power is: 4
+2024-10-18T15:23:58.675666: processData (post smoothing) - Grid Power is: 4
+2024-10-18T15:23:58.678667: processData (post rateData) - Grid Power is: 4
+2024-10-18T15:23:58.679665: put_regcache - Grid Power is: 4
+2024-10-18T15:23:58.737428: runAll handoff - Grid Power is: 4
+2024-10-18T15:23:58.738425: pubFromPickle - Grid Power is: 4
+2024-10-18T15:23:58.740423: publishOutput - Grid Power is: 4
+--------------------------------------------------
+2024-10-18T15:24:10.606658: processInvertorInfo (presmoothing) - Grid Power is: -2
+2024-10-18T15:24:10.631161: processData (post smoothing) - Grid Power is: -2
+2024-10-18T15:24:10.633162: processData (post rateData) - Grid Power is: -2
+2024-10-18T15:24:10.634162: put_regcache - Grid Power is: -2
+2024-10-18T15:24:10.696715: runAll handoff - Grid Power is: -2
+2024-10-18T15:24:10.697233: pubFromPickle - Grid Power is: -2
+2024-10-18T15:24:10.698413: publishOutput - Grid Power is: -2
+--------------------------------------------------
+2024-10-18T15:24:22.675235: processInvertorInfo (presmoothing) - Grid Power is: -1
+2024-10-18T15:24:22.698232: processData (post smoothing) - Grid Power is: -1
+2024-10-18T15:24:22.700233: processData (post rateData) - Grid Power is: -1
+2024-10-18T15:24:22.700233: put_regcache - Grid Power is: -1
+2024-10-18T15:24:22.759643: runAll handoff - Grid Power is: -1
+2024-10-18T15:24:22.759643: pubFromPickle - Grid Power is: -1
+2024-10-18T15:24:22.760549: publishOutput - Grid Power is: -1
+--------------------------------------------------
+2024-10-18T15:24:34.572442: processInvertorInfo (presmoothing) - Grid Power is: -3
+2024-10-18T15:24:34.599440: processData (post smoothing) - Grid Power is: -3
+2024-10-18T15:24:34.601441: processData (post rateData) - Grid Power is: -3
+2024-10-18T15:24:34.602441: put_regcache - Grid Power is: -3
+2024-10-18T15:24:34.668688: runAll handoff - Grid Power is: -3
+2024-10-18T15:24:34.668688: pubFromPickle - Grid Power is: -3
+2024-10-18T15:24:34.669689: publishOutput - Grid Power is: -3
+--------------------------------------------------
+2024-10-18T15:24:46.451806: processInvertorInfo (presmoothing) - Grid Power is: 0
+2024-10-18T15:24:46.478499: processData (post smoothing) - Grid Power is: 0
+2024-10-18T15:24:46.481502: processData (post rateData) - Grid Power is: 0
+2024-10-18T15:24:46.482496: put_regcache - Grid Power is: 0
+2024-10-18T15:24:46.542496: runAll handoff - Grid Power is: 0
+2024-10-18T15:24:46.543496: pubFromPickle - Grid Power is: 0
+2024-10-18T15:24:46.544496: publishOutput - Grid Power is: 0
+--------------------------------------------------
+2024-10-18T15:25:01.466572: processInvertorInfo (presmoothing) - Grid Power is: 2
+2024-10-18T15:25:01.491617: processData (post smoothing) - Grid Power is: 2
+2024-10-18T15:25:01.494616: processData (post rateData) - Grid Power is: 2
+2024-10-18T15:25:01.495616: put_regcache - Grid Power is: 2
+2024-10-18T15:25:01.560617: runAll handoff - Grid Power is: 2
+2024-10-18T15:25:01.561625: pubFromPickle - Grid Power is: 2
+2024-10-18T15:25:01.562621: publishOutput - Grid Power is: 2
+--------------------------------------------------
+2024-10-18T15:25:13.379685: processInvertorInfo (presmoothing) - Grid Power is: -15
+2024-10-18T15:25:13.401230: processData (post smoothing) - Grid Power is: -15
+2024-10-18T15:25:13.403230: processData (post rateData) - Grid Power is: -15
+2024-10-18T15:25:13.404229: put_regcache - Grid Power is: -15
+2024-10-18T15:25:13.478709: runAll handoff - Grid Power is: -15
+2024-10-18T15:25:13.484095: pubFromPickle - Grid Power is: -15
+2024-10-18T15:25:13.485477: publishOutput - Grid Power is: -15
+--------------------------------------------------
+2024-10-18T15:25:25.257048: processInvertorInfo (presmoothing) - Grid Power is: -8
+2024-10-18T15:25:25.277972: processData (post smoothing) - Grid Power is: -8
+2024-10-18T15:25:25.279964: processData (post rateData) - Grid Power is: -8
+2024-10-18T15:25:25.281964: put_regcache - Grid Power is: -8
+2024-10-18T15:25:25.342587: runAll handoff - Grid Power is: -8
+2024-10-18T15:25:25.342587: pubFromPickle - Grid Power is: -8
+2024-10-18T15:25:25.343503: publishOutput - Grid Power is: -8
+--------------------------------------------------
+2024-10-18T15:25:37.139542: processInvertorInfo (presmoothing) - Grid Power is: -2
+2024-10-18T15:25:37.162269: processData (post smoothing) - Grid Power is: -2
+2024-10-18T15:25:37.164465: processData (post rateData) - Grid Power is: -2
+2024-10-18T15:25:37.165421: put_regcache - Grid Power is: -2
+2024-10-18T15:25:37.219345: runAll handoff - Grid Power is: -2
+2024-10-18T15:25:37.219345: pubFromPickle - Grid Power is: -2
+2024-10-18T15:25:37.220522: publishOutput - Grid Power is: -2
+--------------------------------------------------
+2024-10-18T15:25:49.132484: processInvertorInfo (presmoothing) - Grid Power is: 0
+2024-10-18T15:25:49.158688: processData (post smoothing) - Grid Power is: 0
+2024-10-18T15:25:49.161077: processData (post rateData) - Grid Power is: 0
+2024-10-18T15:25:49.162114: put_regcache - Grid Power is: 0
+2024-10-18T15:25:49.230163: runAll handoff - Grid Power is: 0
+2024-10-18T15:25:49.231162: pubFromPickle - Grid Power is: 0
+2024-10-18T15:25:49.232173: publishOutput - Grid Power is: 0
+--------------------------------------------------
+2024-10-18T15:26:02.427140: processInvertorInfo (presmoothing) - Grid Power is: -8
+2024-10-18T15:26:02.448207: processData (post smoothing) - Grid Power is: -8
+2024-10-18T15:26:02.450314: processData (post rateData) - Grid Power is: -8
+2024-10-18T15:26:02.451322: put_regcache - Grid Power is: -8
+2024-10-18T15:26:02.507407: runAll handoff - Grid Power is: -8
+2024-10-18T15:26:02.507407: pubFromPickle - Grid Power is: -8
+2024-10-18T15:26:02.508321: publishOutput - Grid Power is: -8
+--------------------------------------------------
+2024-10-18T15:26:14.310956: processInvertorInfo (presmoothing) - Grid Power is: 4
+2024-10-18T15:26:14.338957: processData (post smoothing) - Grid Power is: 4
+2024-10-18T15:26:14.340958: processData (post rateData) - Grid Power is: 4
+2024-10-18T15:26:14.341960: put_regcache - Grid Power is: 4
+2024-10-18T15:26:14.405747: runAll handoff - Grid Power is: 4
+2024-10-18T15:26:14.405747: pubFromPickle - Grid Power is: 4
+2024-10-18T15:26:14.406780: publishOutput - Grid Power is: 4
+--------------------------------------------------
+2024-10-18T15:26:26.202878: processInvertorInfo (presmoothing) - Grid Power is: 2
+2024-10-18T15:26:26.236900: processData (post smoothing) - Grid Power is: 2
+2024-10-18T15:26:26.239885: processData (post rateData) - Grid Power is: 2
+2024-10-18T15:26:26.240884: put_regcache - Grid Power is: 2
+2024-10-18T15:26:26.324171: runAll handoff - Grid Power is: 2
+2024-10-18T15:26:26.324171: pubFromPickle - Grid Power is: 2
+2024-10-18T15:26:26.326170: publishOutput - Grid Power is: 2
+--------------------------------------------------
+2024-10-18T15:26:38.059040: processInvertorInfo (presmoothing) - Grid Power is: -3
+2024-10-18T15:26:38.092064: processData (post smoothing) - Grid Power is: -3
+2024-10-18T15:26:38.094015: processData (post rateData) - Grid Power is: -3
+2024-10-18T15:26:38.095967: put_regcache - Grid Power is: -3
+2024-10-18T15:26:38.225561: runAll handoff - Grid Power is: -3
+2024-10-18T15:26:38.225561: pubFromPickle - Grid Power is: -3
+2024-10-18T15:26:38.225561: publishOutput - Grid Power is: -3
+--------------------------------------------------
+2024-10-18T15:26:55.724597: processInvertorInfo (presmoothing) - Grid Power is: 5
+2024-10-18T15:26:55.744566: processData (post smoothing) - Grid Power is: 5
+2024-10-18T15:26:55.746613: processData (post rateData) - Grid Power is: 5
+2024-10-18T15:26:55.747517: put_regcache - Grid Power is: 5
+2024-10-18T15:26:55.813165: runAll handoff - Grid Power is: 5
+2024-10-18T15:26:55.814183: pubFromPickle - Grid Power is: 5
+2024-10-18T15:26:55.815597: publishOutput - Grid Power is: 5
+--------------------------------------------------
+2024-10-18T15:27:10.037121: processInvertorInfo (presmoothing) - Grid Power is: 0
+2024-10-18T15:27:10.066080: processData (post smoothing) - Grid Power is: 0
+2024-10-18T15:27:10.069086: processData (post rateData) - Grid Power is: 0
+2024-10-18T15:27:10.070084: put_regcache - Grid Power is: 0
+2024-10-18T15:27:10.138000: runAll handoff - Grid Power is: 0
+2024-10-18T15:27:10.138000: pubFromPickle - Grid Power is: 0
+2024-10-18T15:27:10.140092: publishOutput - Grid Power is: 0
+--------------------------------------------------
+2024-10-18T15:27:21.871248: processInvertorInfo (presmoothing) - Grid Power is: 1
+2024-10-18T15:27:21.894518: processData (post smoothing) - Grid Power is: 1
+2024-10-18T15:27:21.896510: processData (post rateData) - Grid Power is: 1
+2024-10-18T15:27:21.897557: put_regcache - Grid Power is: 1
+2024-10-18T15:27:21.954033: runAll handoff - Grid Power is: 1
+2024-10-18T15:27:21.955035: pubFromPickle - Grid Power is: 1
+2024-10-18T15:27:21.956043: publishOutput - Grid Power is: 1
+--------------------------------------------------
+2024-10-18T15:27:33.640293: processInvertorInfo (presmoothing) - Grid Power is: 7
+2024-10-18T15:27:33.660944: processData (post smoothing) - Grid Power is: 7
+2024-10-18T15:27:33.662947: processData (post rateData) - Grid Power is: 7
+2024-10-18T15:27:33.663944: put_regcache - Grid Power is: 7
+2024-10-18T15:27:33.716453: runAll handoff - Grid Power is: 7
+2024-10-18T15:27:33.716453: pubFromPickle - Grid Power is: 7
+2024-10-18T15:27:33.717453: publishOutput - Grid Power is: 7
+--------------------------------------------------
+2024-10-18T15:27:45.448305: processInvertorInfo (presmoothing) - Grid Power is: 0
+2024-10-18T15:27:45.476110: processData (post smoothing) - Grid Power is: 0
+2024-10-18T15:27:45.478029: processData (post rateData) - Grid Power is: 0
+2024-10-18T15:27:45.479030: put_regcache - Grid Power is: 0
+2024-10-18T15:27:45.558712: runAll handoff - Grid Power is: 0
+2024-10-18T15:27:45.558712: pubFromPickle - Grid Power is: 0
+2024-10-18T15:27:45.559727: publishOutput - Grid Power is: 0
+--------------------------------------------------
+2024-10-18T15:27:57.307865: processInvertorInfo (presmoothing) - Grid Power is: -1
+2024-10-18T15:27:57.334873: processData (post smoothing) - Grid Power is: -1
+2024-10-18T15:27:57.336906: processData (post rateData) - Grid Power is: -1
+2024-10-18T15:27:57.337867: put_regcache - Grid Power is: -1
+2024-10-18T15:27:57.399860: runAll handoff - Grid Power is: -1
+2024-10-18T15:27:57.400835: pubFromPickle - Grid Power is: -1
+2024-10-18T15:27:57.401818: publishOutput - Grid Power is: -1
+--------------------------------------------------
+2024-10-18T15:28:10.367537: processInvertorInfo (presmoothing) - Grid Power is: 12
+2024-10-18T15:28:10.390130: processData (post smoothing) - Grid Power is: 12
+2024-10-18T15:28:10.392137: processData (post rateData) - Grid Power is: 12
+2024-10-18T15:28:10.393130: put_regcache - Grid Power is: 12
+2024-10-18T15:28:10.476422: runAll handoff - Grid Power is: 12
+2024-10-18T15:28:10.477530: pubFromPickle - Grid Power is: 12
+2024-10-18T15:28:10.478825: publishOutput - Grid Power is: 12
+--------------------------------------------------
+2024-10-18T15:28:29.271927: processInvertorInfo (presmoothing) - Grid Power is: 1
+2024-10-18T15:28:29.291930: processData (post smoothing) - Grid Power is: 1
+2024-10-18T15:28:29.293841: processData (post rateData) - Grid Power is: 1
+2024-10-18T15:28:29.294864: put_regcache - Grid Power is: 1
+2024-10-18T15:28:29.348192: runAll handoff - Grid Power is: 1
+2024-10-18T15:28:29.348192: pubFromPickle - Grid Power is: 1
+2024-10-18T15:28:29.349197: publishOutput - Grid Power is: 1
+--------------------------------------------------
+2024-10-18T15:28:41.147070: processInvertorInfo (presmoothing) - Grid Power is: 13
+2024-10-18T15:28:41.168686: processData (post smoothing) - Grid Power is: 13
+2024-10-18T15:28:41.170705: processData (post rateData) - Grid Power is: 13
+2024-10-18T15:28:41.171691: put_regcache - Grid Power is: 13
+2024-10-18T15:28:41.225386: runAll handoff - Grid Power is: 13
+2024-10-18T15:28:41.225386: pubFromPickle - Grid Power is: 13
+2024-10-18T15:28:41.226373: publishOutput - Grid Power is: 13
+--------------------------------------------------
+2024-10-18T15:28:53.039367: processInvertorInfo (presmoothing) - Grid Power is: -1
+2024-10-18T15:28:53.064611: processData (post smoothing) - Grid Power is: -1
+2024-10-18T15:28:53.066614: processData (post rateData) - Grid Power is: -1
+2024-10-18T15:28:53.067517: put_regcache - Grid Power is: -1
+2024-10-18T15:28:53.121069: runAll handoff - Grid Power is: -1
+2024-10-18T15:28:53.122067: pubFromPickle - Grid Power is: -1
+2024-10-18T15:28:53.122985: publishOutput - Grid Power is: -1
+--------------------------------------------------
+2024-10-18T15:29:04.904349: processInvertorInfo (presmoothing) - Grid Power is: 4
+2024-10-18T15:29:04.928254: processData (post smoothing) - Grid Power is: 4
+2024-10-18T15:29:04.930257: processData (post rateData) - Grid Power is: 4
+2024-10-18T15:29:04.932254: put_regcache - Grid Power is: 4
+2024-10-18T15:29:04.992256: runAll handoff - Grid Power is: 4
+2024-10-18T15:29:04.992256: pubFromPickle - Grid Power is: 4
+2024-10-18T15:29:04.993271: publishOutput - Grid Power is: 4
+--------------------------------------------------
+2024-10-18T15:29:18.063570: processInvertorInfo (presmoothing) - Grid Power is: 33
+2024-10-18T15:29:18.089556: processData (post smoothing) - Grid Power is: 33
+2024-10-18T15:29:18.091471: processData (post rateData) - Grid Power is: 33
+2024-10-18T15:29:18.092467: put_regcache - Grid Power is: 33
+2024-10-18T15:29:18.151269: runAll handoff - Grid Power is: 33
+2024-10-18T15:29:18.151269: pubFromPickle - Grid Power is: 33
+2024-10-18T15:29:18.153306: publishOutput - Grid Power is: 33
+--------------------------------------------------
+2024-10-18T15:29:29.931466: processInvertorInfo (presmoothing) - Grid Power is: -29
+2024-10-18T15:29:29.954463: processData (post smoothing) - Grid Power is: -29
+2024-10-18T15:29:29.957405: processData (post rateData) - Grid Power is: -29
+2024-10-18T15:29:29.958383: put_regcache - Grid Power is: -29
+2024-10-18T15:29:30.008566: runAll handoff - Grid Power is: -29
+2024-10-18T15:29:30.009474: pubFromPickle - Grid Power is: -29
+2024-10-18T15:29:30.010553: publishOutput - Grid Power is: -29
+--------------------------------------------------
+2024-10-18T15:29:45.252325: processInvertorInfo (presmoothing) - Grid Power is: -15
+2024-10-18T15:29:45.273550: processData (post smoothing) - Grid Power is: -15
+2024-10-18T15:29:45.275467: processData (post rateData) - Grid Power is: -15
+2024-10-18T15:29:45.276466: put_regcache - Grid Power is: -15
+2024-10-18T15:29:45.329959: runAll handoff - Grid Power is: -15
+2024-10-18T15:29:45.330954: pubFromPickle - Grid Power is: -15
+2024-10-18T15:29:45.331921: publishOutput - Grid Power is: -15
+--------------------------------------------------
+2024-10-18T15:29:57.234045: processInvertorInfo (presmoothing) - Grid Power is: 12
+2024-10-18T15:29:57.257839: processData (post smoothing) - Grid Power is: 12
+2024-10-18T15:29:57.260066: processData (post rateData) - Grid Power is: 12
+2024-10-18T15:29:57.260629: put_regcache - Grid Power is: 12
+2024-10-18T15:29:57.322117: runAll handoff - Grid Power is: 12
+2024-10-18T15:29:57.323130: pubFromPickle - Grid Power is: 12
+2024-10-18T15:29:57.324048: publishOutput - Grid Power is: 12
+--------------------------------------------------
+2024-10-18T15:30:09.110121: processInvertorInfo (presmoothing) - Grid Power is: 27
+2024-10-18T15:30:09.132170: processData (post smoothing) - Grid Power is: 27
+2024-10-18T15:30:09.135083: processData (post rateData) - Grid Power is: 27
+2024-10-18T15:30:09.136084: put_regcache - Grid Power is: 27
+2024-10-18T15:30:09.190123: runAll handoff - Grid Power is: 27
+2024-10-18T15:30:09.190123: pubFromPickle - Grid Power is: 27
+2024-10-18T15:30:09.191123: publishOutput - Grid Power is: 27
+--------------------------------------------------
+2024-10-19T19:06:38.947393: processInvertorInfo (presmoothing) - Grid Power is: 1
+--------------------------------------------------
+2024-10-19T19:06:50.657901: processInvertorInfo (presmoothing) - Grid Power is: 5
+--------------------------------------------------
+2024-10-19T19:07:02.355191: processInvertorInfo (presmoothing) - Grid Power is: -3
+--------------------------------------------------
+2024-10-19T19:17:25.027796: processInvertorInfo (presmoothing) - Grid Power is: 1
+--------------------------------------------------
+2024-10-19T19:18:49.394678: processInvertorInfo (presmoothing) - Grid Power is: 4
+2024-10-19T19:19:17.007013: processData (post smoothing) - Grid Power is: 4
+2024-10-19T19:19:17.014772: processData (post rateData) - Grid Power is: 4
+2024-10-19T19:19:17.015772: put_regcache - Grid Power is: 4
+2024-10-19T19:19:17.087582: runAll handoff - Grid Power is: 4
+2024-10-19T19:19:17.088131: pubFromPickle - Grid Power is: 4
+2024-10-19T19:19:17.089138: publishOutput - Grid Power is: 4
+--------------------------------------------------
+2024-10-19T19:19:29.008534: processInvertorInfo (presmoothing) - Grid Power is: -7
+--------------------------------------------------
+2024-10-19T19:20:33.861321: processInvertorInfo (presmoothing) - Grid Power is: 6
+2024-10-19T19:21:01.786638: processData (post smoothing) - Grid Power is: 6
+2024-10-19T19:21:01.791835: processData (post rateData) - Grid Power is: 6
+2024-10-19T19:21:01.791894: put_regcache - Grid Power is: 6
+2024-10-19T19:21:01.872114: runAll handoff - Grid Power is: 6
+2024-10-19T19:21:01.872114: pubFromPickle - Grid Power is: 6
+2024-10-19T19:21:01.874113: publishOutput - Grid Power is: 6
+--------------------------------------------------
+2024-10-19T19:21:13.884244: processInvertorInfo (presmoothing) - Grid Power is: -5

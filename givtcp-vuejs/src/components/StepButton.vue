@@ -68,10 +68,10 @@ export default {
               this.n=json;
           })
         if (window.location.protocol == "https:"){
-              var host = "https://" + n +":8098/REST1/settings"
+              var host = "https://" + n +":8098/settings"
             }
             else{
-              var host = "http://" + n +":8099/REST1/settings"
+              var host = "http://" + n +":8099/settings"
             }
         const setResponse = await fetch(host,{
         method:"POST",
@@ -111,10 +111,10 @@ export default {
           this.n=json;
       })
     if (window.location.protocol == "https:"){
-          var host = "https://" + n +":8098/REST1/settings"
+          var host = "https://" + n +":8098/settings"
         }
         else{
-          var host = "http://" + n +":8099/REST1/settings"
+          var host = "http://" + n +":8099/settings"
         }
     await fetch(host).then(response => {
           return response.json();
@@ -186,10 +186,10 @@ export default {
               this.n=json;
           })
         if (window.location.protocol == "https:"){
-              var host = "https://" + n +":8098/REST1/settings"
+              var host = "https://" + n +":8098/settings"
             }
             else{
-              var host = "http://" + n +":8099/REST1/settings"
+              var host = "http://" + n +":8099/settings"
             }
         const setResponse = await fetch(host,{
         method:"POST",

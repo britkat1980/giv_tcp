@@ -3,13 +3,18 @@ import paho.mqtt.client as mqtt
 import time
 from os.path import exists, basename
 import pickle
+import json
 import write as wr
-import evc as evc
 from GivLUT import GivLUT
 from settings import GiV_Settings
 import sys
 
 logger = GivLUT.logger
+
+with open("/config/GivTCP/allsettings.json", "r") as inp:
+    setts=json.load(inp)
+if setts["evc_enable"]==True:
+    import evc
 
 #connected_flag=False     
 _mqttclient=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, "GivEnergy_GivTCP_"+str(GiV_Settings.givtcp_instance))
@@ -62,16 +67,6 @@ class GivMQTT():
             return True
         except ValueError:
             return False
-
-    def requestcommand(command,payload):
-        requests=[]
-        logger.info("Requesting Control Action: "+str(command)+" - "+str(payload))
-        if exists(GivLUT.writerequests):
-            with open(GivLUT.writerequests,'rb') as inp:
-                requests=pickle.load(inp)
-        requests.append([command,payload])
-        with open(GivLUT.writerequests,'wb') as outp:
-            pickle.dump(requests, outp, pickle.HIGHEST_PROTOCOL)
 
     def on_disconnect(_client, userdata, flags, reason_code, properties):
         _client.connected_flag=False #set flag
@@ -156,9 +151,17 @@ class GivMQTT():
                 payload['dischargeRate']=str(message.payload.decode("utf-8"))
                 #wr.setDischargeRateAC(payload)
                 requestcommand(command,payload)
+            elif command=="enableRTC":
+                payload['state']=str(message.payload.decode("utf-8"))
+                #wr.setChargeRateAC(payload)
+                requestcommand(command,payload)
             elif command=="setChargeRateAC":
                 payload['chargeRate']=str(message.payload.decode("utf-8"))
                 #wr.setChargeRateAC(payload)
+                requestcommand(command,payload)
+            elif command=="setEmsPlant":
+                payload['state']=str(message.payload.decode("utf-8"))
+                #wr.enableChargeSchedule(payload)
                 requestcommand(command,payload)
             elif command=="syncDateTime":
                 payload['state']=str(message.payload.decode("utf-8"))
@@ -753,9 +756,10 @@ def isfloat(num):
 
 def requestcommand(command,payload):
     requests=[]
+    logger.debug("Requesting Control Action: "+str(command)+" - "+str(payload))
     if exists(GivLUT.writerequests):
         with open(GivLUT.writerequests,'rb') as inp:
             requests=pickle.load(inp)
-    requests.append([command,payload])
+    requests.append([command,payload,False])
     with open(GivLUT.writerequests,'wb') as outp:
         pickle.dump(requests, outp, pickle.HIGHEST_PROTOCOL)

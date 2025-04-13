@@ -99,7 +99,7 @@ class Plant:
         Since we attempt to decode register data in the process, it's possible for an
         exception to be raised.
         """
-        if self.inverter.model==Model.EMS or self.inverter.model==Model.GATEWAY:
+        if self.inverter.model in [Model.EMS, Model.GATEWAY, Model.PV]:
             self.number_batteries=0
             return
         if self.isHV:

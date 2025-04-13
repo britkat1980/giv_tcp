@@ -213,7 +213,7 @@ class Client:
         elif not self.plant.ems == None:
             self.plant.device_type=self.plant.ems.model
 
-        if self.plant.device_type in (Model.ALL_IN_ONE, Model.AC_3PH, Model.HYBRID_3PH):
+        if self.plant.device_type in (Model.ALL_IN_ONE, Model.AC_3PH, Model.HYBRID_3PH, Model.HYBRID_HV, Model.ALL_IN_ONE_HYBRID):
             self.plant.isHV = True
             meter_list=[1,2,3,4,5,6,7,8]
         else:

@@ -4,6 +4,8 @@ import pandas as pd
 import numpy as np
 logger = GivLUT.logger
 
+outliercount=0
+
 def outlier_smoother(x, m=3, win=3, plots=True):
     ''' finds outliers in x, points > m*mdev(x) [mdev:median deviation] 
     and replaces them with the median of win points around them '''
@@ -27,7 +29,7 @@ def outlier_smoother(x, m=3, win=3, plots=True):
     
     return x_corr
 
-def impute_outliers_IQR(df: np.array, item):
+def impute_outliers_IQR(df: np.array, item, nancount: int):
     if GiV_Settings.data_smoother.lower()=="high":
        q1=df.quantile(0.25)
        q3=df.quantile(0.75)
@@ -52,8 +54,9 @@ def impute_outliers_IQR(df: np.array, item):
     # iterate clean stack find the dodgy data and log it
     for idx,num in enumerate(clean):
         if np.isnan(num[0]):
-            logger.debug(str(item)+" has Outliers: "+str(df.to_dict(orient='list')[0][idx])+" outside bounds: "+str(upper[0])+" - "+str(lower[0]))    
-    return pd.DataFrame(clean,dtype=float).interpolate(method='linear',limit_direction='both')
+            logger.info(str(item)+" has Outliers: "+str(df.to_dict(orient='list')[0][idx])+" outside bounds: "+str(upper[0])+" - "+str(lower[0]))
+            nancount+=1
+    return [clean,nancount]
 
 def iterate_dict(array):        # Create a publish safe version of the output (convert non string or int datapoints)
     safeoutput = {}
@@ -86,6 +89,7 @@ def makeFlatStack(CacheStack):
 
 def outlierRemoval(latest_data,CacheStack):
     cleanFlatStack={}
+    outliercount=0
     # put latest data into stack
     CacheStack.append(latest_data)
 
@@ -96,12 +100,13 @@ def outlierRemoval(latest_data,CacheStack):
         test=flatstack[item][0]
         if isinstance(test,(int, float)) and not isinstance(test,bool):
             df = pd.DataFrame(flatstack[item])
-            newdf=impute_outliers_IQR(df, item)
+            clean,outliercount=impute_outliers_IQR(df, item,outliercount)
+            newdf=pd.DataFrame(clean,dtype=float).interpolate(method='linear',limit_direction='both')
 #            newnewdf=outlier_smoother(df)
             cleanFlatStack[item]=newdf.to_dict(orient='list')[0]
         else:
             cleanFlatStack[item]=flatstack[item]
-
+    logger.info(str(outliercount)+" - outliers found, fixing with interpolated good data")
 ### NOW put back in the right place...
     for item in cleanFlatStack:
         #find its location in regCache
@@ -117,10 +122,12 @@ def outlierRemoval(latest_data,CacheStack):
                         CacheStack[i][path[0]][item]=cleanFlatStack[item][i]
                     elif len(path)==2 and not path[1]=="Rates":
                         CacheStack[i][path[0]][path[1]][item]=cleanFlatStack[item][i]
+                    elif len(path)==2:
+                        CacheStack[i][path[0]][path[1]][item]=cleanFlatStack[item][i]
                     elif len(path)==3:
                         CacheStack[i][path[0]][path[1]][path[2]][item]=cleanFlatStack[item][i]
                 except:
-                    logger.debug("Data item not in cleanFlat Stack")
+                    logger.debug(str(item)+" not in cleanFlat Stack")
     return CacheStack[-1],CacheStack[:-1]
 
 def find(field_name, d, current_path=''):

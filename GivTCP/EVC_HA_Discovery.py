@@ -7,14 +7,9 @@ import json
 import paho.mqtt.client as paho_mqtt
 from socket import gaierror
 from settings import GiV_Settings
-from givenergy_modbus_async.model.register import Model
-from mqtt import GivMQTT
-from GivLUT import GivLUT
 from entity_lut import Entity_Type
 from os.path import exists
-from read import finditem
-
-logger=GivLUT.logger
+from evc import EVCLut, logger
 
 class HAMQTT():
     if GiV_Settings.MQTT_Port=='':
@@ -31,12 +26,21 @@ class HAMQTT():
     if GiV_Settings.MQTT_Topic=="":
         GiV_Settings.MQTT_Topic="GivEnergy"
 
+    def finditem(obj, key):
+        if key in obj: return obj[key]
+        for k, v in obj.items():
+            if isinstance(v,dict):
+                item = HAMQTT.finditem(v, key)
+                if item is not None:
+                    return item
+        return None
+
     def getinvbatmax():
-        regCacheStack = GivLUT.get_regcache()
+        regCacheStack = EVCLut.get_regcache()
         if regCacheStack:
             multi_output_old = regCacheStack[-1]
-            if 'Invertor_Max_Bat_Rate' in multi_output_old[finditem(multi_output_old,'Invertor_Serial_Number')]:
-                return int(multi_output_old[finditem(multi_output_old,'Invertor_Serial_Number')]['Invertor_Max_Bat_Rate'])
+            if 'Invertor_Max_Bat_Rate' in multi_output_old[HAMQTT.finditem(multi_output_old,'Invertor_Serial_Number')]:
+                return int(multi_output_old[HAMQTT.finditem(multi_output_old,'Invertor_Serial_Number')]['Invertor_Max_Bat_Rate'])
             else:
                 return 5000
         return 5000
@@ -49,9 +53,24 @@ class HAMQTT():
         else:
             logger.error("Bad connection Returned code= "+str(reason_code))
 
+    def iterate_dict(array,topic):      #Create LUT of topics and datapoints
+        MQTT_LUT={}
+        if isinstance(array, dict):
+            # Create a publish safe version of the output
+            for p_load in array:
+                output=array[p_load]
+                if isinstance(output, dict):
+                    MQTT_LUT.update(HAMQTT.iterate_dict(output,topic+"/"+p_load))
+                    logger.debug('Prepping '+p_load+" for publishing")
+                else:
+                    MQTT_LUT[topic+"/"+p_load]=output
+        else:
+            MQTT_LUT[topic]=array
+        return(MQTT_LUT)
+
     def publish_discovery2(array,SN):   #Recieve multiple payloads with Topics and publish in a single MQTT connection
         try:
-            inv_type=finditem(array,"Invertor_Type")
+            inv_type=HAMQTT.finditem(array,"Invertor_Type")
             if inv_type=="":
                 inv_type="GivEnergy"
             rootTopic=str(GiV_Settings.MQTT_Topic+"/"+SN+"/")
@@ -62,26 +81,26 @@ class HAMQTT():
                 if p_load != "raw":
                     payload=array[p_load]
                     logger.debug('Publishing: '+rootTopic+p_load)
-                    output=GivMQTT.iterate_dict(payload,rootTopic+p_load)   #create LUT for MQTT publishing
+                    output=HAMQTT.iterate_dict(payload,rootTopic+p_load)   #create LUT for MQTT publishing
                     for topic in output:
-                        e_type= Entity_Type.entity_type[str(topic).split("/")[-1]]
+                        entity_type2= Entity_Type.entity_type[str(topic).split("/")[-1]]
                         #Determine Entitiy type (switch/sensor/number) and publish the right message
-                        if e_type.devType=="sensor":
+                        if entity_type2.devType=="sensor":
                             if "Battery_Details" in topic:
                                 publisher.append(["homeassistant/sensor/GivEnergy/"+SN+"_"+str(topic).split("/")[-2]+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
                             elif "Inverters" in topic:
                                 publisher.append(["homeassistant/sensor/GivEnergy/"+SN+"_"+str(topic).split("/")[-2]+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
                             else:
                                 publisher.append(["homeassistant/sensor/GivEnergy/"+SN+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
-                        elif e_type.devType=="switch":
+                        elif entity_type2.devType=="switch":
                             publisher.append(["homeassistant/switch/GivEnergy/"+SN+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
-                        elif e_type.devType=="number":
+                        elif entity_type2.devType=="number":
                             publisher.append(["homeassistant/number/GivEnergy/"+SN+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
-                    #    elif e_type[0]=="binary_sensor":
+                    #    elif entity_type[0]=="binary_sensor":
                     #        client.publish("homeassistant2/binary_sensor/GivEnergy/"+str(topic).split("/")[-1]+"/config",HAMQTT.create_binary_sensor_payload(topic,SN),retain=True)
-                        elif e_type.devType=="select":
+                        elif entity_type2.devType=="select":
                             publisher.append(["homeassistant/select/GivEnergy/"+SN+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
-                        elif e_type.devType=="button":
+                        elif entity_type2.devType=="button":
                             publisher.append(["homeassistant/button/GivEnergy/"+SN+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
             
             # Loop round HA publishing 4 times in case its not all there
@@ -109,14 +128,13 @@ class HAMQTT():
         client.on_connect=HAMQTT.on_connect     			#bind call back function
         if HAMQTT.MQTTCredentials:
             client.username_pw_set(HAMQTT.MQTT_Username,HAMQTT.MQTT_Password)
-        client.host=GivMQTT.MQTT_Address
-        client.port=GivMQTT.MQTT_Port
+        client.host=GiV_Settings.MQTT_Address
+        client.port=GiV_Settings.MQTT_Port
         ## set the will message
         client.will_set(GiV_Settings.MQTT_Topic+"/"+SN+"/Stats/status","offline", retain=True)
 
         client.loop_start()
         logger.debug("Connecting to broker: "+ HAMQTT.MQTT_Address)
-#        client=GivMQTT.get_connection()
         while not client.connected_flag:        			#wait in loop
             logger.debug("In wait loop (sendDiscoMsg)")
             time.sleep(0.2)
@@ -181,91 +199,71 @@ class HAMQTT():
             inv_type="EVC"
         tempObj['device']['model']=inv_type
 
-        e_type= Entity_Type.entity_type[item]
+        entity_type2= Entity_Type.entity_type[item]
 
-        if not e_type.controlFunc == "":
-            tempObj['command_topic']=GiV_Settings.MQTT_Topic+"/control/"+SN+"/"+e_type.controlFunc
+        if not entity_type2.controlFunc == "":
+            tempObj['command_topic']=GiV_Settings.MQTT_Topic+"/control/"+SN+"/"+entity_type2.controlFunc
 
 #set device specific elements here:
-        if e_type.devType=="sensor":
+        if entity_type2.devType=="sensor":
             tempObj['unit_of_meas']=""
-            if e_type.sensorClass=="energy":
+            if entity_type2.sensorClass=="energy":
                 tempObj['unit_of_meas']="kWh"
                 tempObj['device_class']="Energy"
-                if e_type.onlyIncrease:        #"soc" in str(topic.split("/")[-1]).lower() or "today" in str(topic.split("/")[-1]).lower():
+                if entity_type2.onlyIncrease:        #"soc" in str(topic.split("/")[-1]).lower() or "today" in str(topic.split("/")[-1]).lower():
                     tempObj['state_class']="total_increasing"
                 else:
                     tempObj['state_class']="total"
-            if e_type.sensorClass=="money":
+            if entity_type2.sensorClass=="money":
                 if "ppkwh" in str(topic).lower() or "rate" in str(topic).lower():
                     tempObj['unit_of_meas']="{GBP}/kWh"
                 else:
                     tempObj['unit_of_meas']="{GBP}"
                 tempObj['device_class']="Monetary"
                 tempObj['icon_template']= "mdi:currency-gbp"
-            if e_type.sensorClass=="power":
+            if entity_type2.sensorClass=="power":
                 tempObj['unit_of_meas']="W"
                 tempObj['device_class']="Power"
                 tempObj['state_class']="measurement"
-            if e_type.sensorClass=="temperature":
+            if entity_type2.sensorClass=="temperature":
                 tempObj['unit_of_meas']="°C"
                 tempObj['device_class']="Temperature"
                 tempObj['state_class']="measurement"
-            if e_type.sensorClass=="voltage":
+            if entity_type2.sensorClass=="voltage":
                 tempObj['unit_of_meas']="V"
                 tempObj['device_class']="Voltage"
                 tempObj['state_class']="measurement"
-            if e_type.sensorClass=="frequency":
+            if entity_type2.sensorClass=="frequency":
                 tempObj['unit_of_meas']="Hz"
                 tempObj['device_class']="frequency"
                 tempObj['state_class']="measurement"
-            if e_type.sensorClass=="current":
+            if entity_type2.sensorClass=="current":
                 tempObj['unit_of_meas']="A"
                 tempObj['device_class']="Current"
                 tempObj['state_class']="measurement"
-            if e_type.sensorClass=="battery":
+            if entity_type2.sensorClass=="battery":
                 tempObj['unit_of_meas']="%"
                 tempObj['device_class']="Battery"
                 tempObj['state_class']="measurement"
-            if e_type.sensorClass=="timestamp":
+            if entity_type2.sensorClass=="timestamp":
                 del tempObj['unit_of_meas']
                 tempObj['device_class']="timestamp"
-            if e_type.sensorClass=="datetime":
+            if entity_type2.sensorClass=="datetime":
                 del tempObj['unit_of_meas']
-            if e_type.sensorClass=="string":
+            if entity_type2.sensorClass=="string":
                 del tempObj['unit_of_meas']
-        elif e_type.devType=="switch":
+        elif entity_type2.devType=="switch":
             tempObj['payload_on']="enable"
             tempObj['payload_off']="disable"
-    #    elif GivLUT.e_type[item.devType=="binary_sensor":
+    #    elif EVCLut.entity_type2[item.devType=="binary_sensor":
     #        client.publish("homeassistant/binary_sensor/GivEnergy/"+item+"/config",HAMQTT.create_binary_sensor_payload(topic,SN),retain=True)
-        elif e_type.devType=="select":
-            if item == "Battery_pause_mode":
-                options=GivLUT.battery_pause_mode
-            elif item == "Local_control_mode":
-                options=GivLUT.local_control_mode
-            elif item == "PV_input_mode":
-                options=GivLUT.pv_input_mode
-            elif item == "Car_Charge_Mode":
-                options=GivLUT.car_charge_mode
-            elif item == "Battery_Calibration":
-                options=GivLUT.battery_calibration
-            elif "Charging_Mode" in item:
-                options= GivLUT.charging_mode
-            elif "Mode" in item:
-                options=GivLUT.modes
-            elif "slot" in item:
-                options=GivLUT.time_slots
-            elif "Temp" in item:
-                options=GivLUT.delay_times
-            elif "Force" in item:
-                options=GivLUT.delay_times
-            elif "Rate" in item:
-                options=GivLUT.rates
+        elif entity_type2.devType=="select":
+            if "Charging_Mode" in item:
+                options= EVCLut.charging_mode
             elif "Charge_Control" in item:
-                options= GivLUT.charge_control
+                options= EVCLut.charge_control
             tempObj['options']=options
-        elif e_type.devType=="number":
+        elif entity_type2.devType=="number":
             # If its a rate then change to Watts
             item=str(topic).split("/")[-1]
             if "soc" in str(item).lower():
@@ -314,9 +312,9 @@ class HAMQTT():
                 tempObj['mode']="slider"
             else:
                 tempObj['unit_of_meas']="%"
-        elif e_type.devType=="button":
-            tempObj['device_class']="restart"
-            tempObj['payload_press']="restart"
+        elif entity_type2.devType=="button":
+            tempObj['device_class']=""
+            tempObj['payload_press']="toggle"
         ## Convert this object to json string
         jsonOut=json.dumps(tempObj)
         return jsonOut
@@ -359,7 +357,7 @@ class CheckDisco():
             logger.error("Error in to MQTT Address. Check config and update.")
             client.disconnect()
         except:
-            e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+            e=sys.exc_info()[0].__name__, sys.exc_info()[2].tb_lineno
             logger.error("Error connecting to MQTT Broker: " + str(e))
             client.disconnect()
     
@@ -417,6 +415,6 @@ class CheckDisco():
             logger.error("Error in to MQTT Address. Check config and update.")
             client.disconnect()
         except:
-            e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-            logger.error("Error connecting to MQTT Broker: " + str(e))
+            e=sys.exc_info()[0].__name__, sys.exc_info()[2].tb_lineno
+            logger.error("Error connecting to MQTT Broker: " + str(sys.exc_info()))
             client.disconnect()

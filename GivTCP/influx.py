@@ -43,22 +43,26 @@ class GivInflux():
     def publish(SN,data):
         output_str=""
         power_output = data['Power']['Power']
+        logging.debug("Creating Power string for InfluxDB")
         for key in power_output:
-            logging.debug("Creating Power string for InfluxDB")
-            output_str=output_str+str(GivInflux.make_influx_string(key))+'='+GivInflux.stringSafe(power_output[key])+','
+            if not power_output[key] == None:
+                output_str=output_str+str(GivInflux.make_influx_string(key))+'='+GivInflux.stringSafe(power_output[key])+','
         flow_output = data['Power']['Flows']
+        logging.debug("Creating Power Flow string for InfluxDB")
         for key in flow_output:
-            logging.debug("Creating Power Flow string for InfluxDB")
-            output_str=output_str+str(GivInflux.make_influx_string(key))+'='+GivInflux.stringSafe(flow_output[key])+','
+            if not power_output[key] == None:
+                output_str=output_str+str(GivInflux.make_influx_string(key))+'='+GivInflux.stringSafe(flow_output[key])+','
         energy_today = data['Energy']['Today']
+        logging.debug("Creating Energy/Today string for InfluxDB")
         for key in energy_today:
-            logging.debug("Creating Energy/Today string for InfluxDB")
-            output_str=output_str+str(GivInflux.make_influx_string(key))+'='+GivInflux.stringSafe(energy_today[key])+','
+            if not power_output[key] == None:
+                output_str=output_str+str(GivInflux.make_influx_string(key))+'='+GivInflux.stringSafe(energy_today[key])+','
 
         energy_total = data['Energy']['Total']
+        logging.debug("Creating Energy/Total string for InfluxDB")
         for key in energy_total:
-            logging.debug("Creating Energy/Total string for InfluxDB")
-            output_str=output_str+str(GivInflux.make_influx_string(key))+'='+GivInflux.stringSafe(energy_total[key])+','
+            if not power_output[key] == None:
+                output_str=output_str+str(GivInflux.make_influx_string(key))+'='+GivInflux.stringSafe(energy_total[key])+','
 
         logging.debug("Data sending to Influx is: "+ output_str[:-1])
         data1=GivInflux.line_protocol(SN,output_str[:-1])

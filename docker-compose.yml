@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   GivTCP:
-    image: britkat/giv_tcp-ma:latest
+    image: britkat/giv_tcp-dev:latest
     ports:
       - "1883:1883"                   # MQTT
       - "8098:8099"                   # REST and Config web server (https on 8098)

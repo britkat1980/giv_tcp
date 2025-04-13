@@ -3,7 +3,6 @@ from pymodbus.client.sync import ModbusTcpClient
 import paho.mqtt.client as mqtt
 import logging
 import importlib
-import settings
 import datetime
 import time
 import pickle
@@ -11,12 +10,35 @@ from os.path import exists, basename
 import os
 from threading import Lock
 import json
-import GivLUT
+import settings
 from settings import GiV_Settings
-from GivLUT import GivLUT
 import sys
 
-logger = GivLUT.logger
+#Logging config
+import logging, os
+import sys
+from logging.handlers import TimedRotatingFileHandler
+logging.basicConfig(format='%(asctime)s - EVC'+ \
+                    ' - %(module)-11s -  [%(levelname)-8s] - %(message)s')
+formatter = logging.Formatter(
+    '%(asctime)s - %(module)s - [%(levelname)s] - %(message)s')
+fh = TimedRotatingFileHandler(GiV_Settings.Debug_File_Location, when='midnight', backupCount=7)
+fh.setFormatter(formatter)
+logger = logging.getLogger('evc_logger')
+logger.addHandler(fh)
+if str(GiV_Settings.Log_Level).lower()=="debug":
+    logger.setLevel(logging.DEBUG)
+elif str(GiV_Settings.Log_Level).lower()=="write_debug":
+    logger.setLevel(logging.INFO)
+elif str(GiV_Settings.Log_Level).lower()=="info":
+    logger.setLevel(logging.INFO)
+elif str(GiV_Settings.Log_Level).lower()=="critical":
+    logger.setLevel(logging.CRITICAL)
+elif str(GiV_Settings.Log_Level).lower()=="warning":
+    logger.setLevel(logging.WARNING)
+else:
+    logger.setLevel(logging.ERROR)
+
 cacheLock = Lock()
 logging.getLogger("pymodbus").setLevel(logging.CRITICAL) 
 
@@ -51,6 +73,10 @@ class EVCType:
 
 class EVCLut:
     regcache=GiV_Settings.cache_location+"/evc_regCache.pkl"
+    invregcache=GiV_Settings.cache_location+"/regCache_"+str(GiV_Settings.givtcp_instance)+".pkl"
+    cachelockfile=GiV_Settings.cache_location+"/.regcache_lockfile_"+str(GiV_Settings.givtcp_instance)
+    charge_control=['Ready','Start','Stop']
+    charging_mode=['Grid','Hybrid','Solar']
     status=[
         'Unknown',
         'Idle',
@@ -105,10 +131,55 @@ class EVCLut:
         72: 'Charge_Session_Energy',
         79: 'Charge_Session_Duration',
         93: 'Plug_and_Go',
-        94: ('Charge_Control',GivLUT.charge_control),
+        94: ('Charge_Control',charge_control),
         109: 'Voltage_L1',
         111: 'Voltage_L2',
         113: 'Voltage_L3'}
+    
+    def get_regcache():
+        try:
+            count=0
+            if exists(EVCLut.cachelockfile):
+                logger.debug("regcache in use, waiting...")
+                with open(EVCLut.cachelockfile) as inp:
+                    lock_age=inp.read()
+                try:
+                    file_age=datetime.datetime.strptime(lock_age, '%Y-%m-%dT%H:%M:%S%z')
+                except:
+                    file_age=datetime.datetime.now(datetime.timezone.utc)
+                timesince=datetime.datetime.now(datetime.timezone.utc) - file_age
+                if timesince.total_seconds>10:
+                    logger.error("regCache Lockfile is too old, forcibly removing...")
+                    os.remove(EVCLut.cachelockfile)
+                while True:
+                    count +=1
+                    time.sleep(0.5)
+                    if not exists(EVCLut.cachelockfile):
+                        logger.debug("regcache now available")
+                        break
+                    if count==10:
+                        # loop round for 5s waiting for it to become available
+                        logger.error("Timed out waiting for regcache")
+                        os.remove(EVCLut.cachelockfile)
+                        return None
+            with open(EVCLut.cachelockfile, 'w') as inp: #create lock file
+                inp.write(datetime.datetime.now(datetime.timezone.utc).isoformat())
+            if exists(EVCLut.regcache):
+                logger.debug("Opening regcache at: "+str(EVCLut.regcache))
+                with open(EVCLut.regcache, 'rb') as inp:
+                    regCacheStack = pickle.load(inp)
+                os.remove(EVCLut.cachelockfile)
+                return regCacheStack
+            else:
+                os.remove(EVCLut.cachelockfile)
+                logger.debug("regcache doesn't exist...")
+                return None
+        except:
+            e=sys.exc_info()
+            if exists(EVCLut.cachelockfile):
+                os.remove(EVCLut.cachelockfile)
+            logger.error("Failed to get Cache: "+str(e))
+            return None
 
 def getEVC(client:ModbusTcpClient):
     regs=[]
@@ -280,17 +351,13 @@ def publishOutput(array, SN):
             updateFirstRun(SN)              # 09=July=23 - Always do this first irrespective of HA setting.
             if GiV_Settings.HA_Auto_D:        # Home Assistant MQTT Discovery
                 logger.critical("Publishing Home Assistant Discovery messages")
-                from HA_Discovery import HAMQTT
+                from EVC_HA_Discovery import HAMQTT
                 HAMQTT.publish_discovery2(tempoutput, SN)
             GiV_Settings.first_run_evc = False  
         logger.debug("Publish all to MQTT")
         if GiV_Settings.MQTT_Topic == "":
             GiV_Settings.MQTT_Topic = "GivEnergy"
         multi_MQTT_publish(str(GiV_Settings.MQTT_Topic+"/"+SN+"/"), tempoutput)
-    if GiV_Settings.Influx_Output:
-        from influx import GivInflux
-        logger.debug("Pushing output to Influx")
-        GivInflux.publish(SN, tempoutput)
 
 def updateFirstRun(SN):
 ### Check if evc or inv and adjust the right line ###
@@ -503,9 +570,9 @@ def setChargeMode(mode):
 
 def setChargeControl(mode):
     try:
-        if mode in GivLUT.charge_control:
+        if mode in EVCLut.charge_control:
             logger.info("Setting Charge control to: "+ mode)
-            val=GivLUT.charge_control.index(mode)
+            val=EVCLut.charge_control.index(mode)
             logger.debug("numeric value "+str(val)+ " sent to EVC")
             try:
                 client=ModbusTcpClient(GiV_Settings.evc_ip_address)
@@ -554,7 +621,7 @@ def chargeMode(once=False):
                     logger.info("Session energy limit reached: "+str(evcRegCache['Charger']['Charge_Session_Energy'])+"kWh stopping charge")
                     setChargeControl("Stop")
                 if not int(evcRegCache['Charger']['Import_Cap'])==0 and evcRegCache['Charger']['Charging_State']=="Charging":
-                    invRegCache = GivLUT.get_regcache()
+                    invRegCache = EVCLut.get_regcache()
                     if invRegCache:
                         if float(invRegCache[4]['Power']['Power']['Grid_Current'])>(float(evcRegCache['Charger']['Import_Cap'])*0.95):
                             target=float(evcRegCache['Charger']['Import_Cap'])*0.9
@@ -578,12 +645,12 @@ def chargeMode(once=False):
 
 def hybridmode():
     try:
-        if exists(EVCLut.regcache) and exists(GivLUT.regcache):
+        if exists(EVCLut.regcache) and exists(EVCLut.invregcache):
             # Set charging current to min 6A plus the level of excess solar
             with cacheLock:
                 with open(EVCLut.regcache, 'rb') as inp:
                     evcRegCache= pickle.load(inp)
-            invRegCache = GivLUT.get_regcache()
+            invRegCache = EVCLut.get_regcache()
             if invRegCache:
                 sparePower=invRegCache[4]['Power']['Power']['PV_Power']-invRegCache[4]['Power']['Power']['Load_Power']+evcRegCache['Charger']['Active_Power_L1']
                 spareCurrent=int(max((sparePower/invRegCache[4]['Power']['Power']['Grid_Voltage']),0)+6)   #Spare current cannot be negative
@@ -601,14 +668,14 @@ def gridmode():
 def solarmode():
     # Set charging current to the level of excess solar
     try:
-        if exists(EVCLut.regcache) and exists(GivLUT.regcache):
+        if exists(EVCLut.regcache) and exists(EVCLut.invregcache):
             with cacheLock:
                 with open(EVCLut.regcache, 'rb') as inp:
                     evcRegCache= pickle.load(inp)
-            invRegCache = GivLUT.get_regcache()
+            invRegCache = EVCLut.get_regcache()
             if invRegCache:
                 sparePower=invRegCache[4]['Power']['Power']['PV_Power']-invRegCache[4]['Power']['Power']['Load_Power']+evcRegCache['Charger']['Active_Power_L1']
-                spareCurrent=sparePower/invRegCache[4]['Power']['Power']['Grid_Voltage']
+                spareCurrent=int(max((sparePower/invRegCache[4]['Power']['Power']['Grid_Voltage']),0)+6)   #Spare current cannot be negative
                 if sparePower>6:    #only if there's excess above min evse level
                     if not spareCurrent==evcRegCache['Charger']['Current_L1']:
                         logger.info("Spare Solar curent ("+str(spareCurrent)+"), setting EVC charge to: "+str(spareCurrent)+"A")
@@ -654,7 +721,7 @@ def setImportCap(val):
 
 def setChargingMode(mode):
     try:
-        if mode in GivLUT.charging_mode:
+        if mode in EVCLut.charging_mode:
             if exists(EVCLut.regcache):
                 logger.info("Setting Charging Mode to: "+str(mode))
                 with open(EVCLut.regcache, 'rb') as inp:

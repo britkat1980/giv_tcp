@@ -43,7 +43,7 @@ class ThreePhaseInverter(RegisterGetter, metaclass=DynamicDoc):
         "grid_reconnect_slope": Def(C.uint16, None, HR(1011)),
         "inverter_max_power": Def((C.hexfield,0), C.threeph_inverter_max_power, HR(1012)),
         "battery_type": Def((C.hexfield,1), BatteryType, HR(1012)),
-        "battery_max_power": Def((C.hexfield,2), C.battery_max_power, HR(1012)),
+        #"battery_max_power": Def((C.hexfield,2), C.battery_max_power, HR(1012)),
         "Inverter_Type": Def((C.hexfield,1), InverterType, HR(1013)),
         "meter_fail_enable": Def(C.uint16, None, HR(1017)),
         "v_grid_low_limit_1": Def(C.deci, None, HR(1018)),
@@ -101,7 +101,7 @@ class ThreePhaseInverter(RegisterGetter, metaclass=DynamicDoc):
         "f_under_derate_stop": Def(C.centi, None, HR(1074)),
         "f_under_derate_recovery_delay": Def(C.centi, None, HR(1075)),
         #"pv_input_mode": Def(C.uint16, PVInputMode, HR(1077)),
-        "load_first_stop_soc": Def(C.uint16, None, HR(1078)),
+        "battery_power_cutoff": Def(C.uint16, None, HR(1078)),
         "ac_power_derate_delay": Def(C.centi, None, HR(1079)),
         "battery_type": Def(C.uint16, BatteryType, HR(1080)),
         "max_charge_current": Def(C.uint16, None, HR(1088)),
@@ -134,7 +134,7 @@ class ThreePhaseInverter(RegisterGetter, metaclass=DynamicDoc):
         "discharge_slot_2": Def(C.timeslot, None, HR(1120), HR(1121)),
         "discharge_slot_2_start": Def(C.uint16, None, HR(1120), valid=(0, 2359)),
         "discharge_slot_2_end": Def(C.uint16, None, HR(1121), valid=(0, 2359)),
-        "force_discharge_enable": Def(C.uint16, Enable, HR(1122)),
+        "enable_discharge": Def(C.uint16, Enable, HR(1122)),
         "force_charge_enable": Def(C.uint16, Enable, HR(1123)),
         "battery_maintenance_mode": Def(C.uint16, BatteryMaintenance, HR(1124)),    
         #
@@ -176,7 +176,6 @@ class ThreePhaseInverter(RegisterGetter, metaclass=DynamicDoc):
         "v_out_ac1": Def(C.deci, None, IR(1094)),
         "v_out_ac2": Def(C.deci, None, IR(1095)),
         "v_out_ac3": Def(C.deci, None, IR(1096)),
-        
         
         #
         # Input Registers, block 1120-1140 - Battery

@@ -133,6 +133,7 @@ class BaseInverter(RegisterGetter, metaclass=DynamicDoc):
         "enable_spi": Def(C.uint16, Enable, HR(128)),
         # skip PF configuration and protection settings 129-166
         "inverter_reboot": Def(C.uint16, None, HR(163)),
+        "rtc_enable": Def(C.uint16, Enable, HR(166)),
         "threephase_balance_mode": Def(C.uint16, None, HR(167)),
         "threephase_abc": Def(C.uint16, None, HR(168)),
         "threephase_balance_1": Def(C.uint16, None, HR(169)),

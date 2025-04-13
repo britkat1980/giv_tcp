@@ -7,7 +7,6 @@ import datetime
 from datetime import datetime, timedelta
 from settings import GiV_Settings
 import settings
-import signal
 import time
 from os.path import exists
 import pickle,os
@@ -15,7 +14,6 @@ import GivLUT
 from GivLUT import GivLUT, GivQueue
 from givenergy_modbus_async.client import commands
 from givenergy_modbus_async.model import TimeSlot
-from givenergy_modbus.client import GivEnergyClient
 from givenergy_modbus_async.pdu import WriteHoldingRegisterResponse, TransparentRequest
 import requests
 import importlib
@@ -25,7 +23,6 @@ from logging.handlers import TimedRotatingFileHandler
 from GivLUT import GivClientAsync
 
 logging.getLogger("givenergy_modbus_async").setLevel(logging.CRITICAL)
-client=GivEnergyClient(host=GiV_Settings.invertorIP)
 
  
 logging.basicConfig(format='%(asctime)s - Inv'+ str(GiV_Settings.givtcp_instance)+ \
@@ -92,6 +89,39 @@ def updateControlCache(entity,value,isTime: bool=False):
         logger.debug("Pushing control update to pkl cache: "+entity+" - "+str(value))
     return
 
+def log_num_writes(reqs):
+    count=0
+    safecount=0
+
+    # if RTC is on do this else just len of all
+    if not exists(GivLUT.rtc_enabled):
+        
+        if exists(GivLUT.writecountpkl):
+            with open(GivLUT.writecountpkl, 'rb') as inp:
+                count = pickle.load(inp)
+        count=count+len(reqs)
+        with open(GivLUT.writecountpkl, 'wb') as outp:
+            pickle.dump(count, outp, pickle.HIGHEST_PROTOCOL)
+
+    else:
+        if exists(GivLUT.writecountpkl):
+            with open(GivLUT.writecountpkl, 'rb') as inp:
+                count = pickle.load(inp)
+        if exists(GivLUT.safewritecountpkl):
+            with open(GivLUT.safewritecountpkl, 'rb') as inp:
+                safecount = pickle.load(inp)
+        for req in reqs:
+            if req.register in GivLUT.safe_regs:
+                safecount=safecount+1
+            else:
+                count=count+1
+
+        # write data to pickle
+        with open(GivLUT.writecountpkl, 'wb') as outp:
+            pickle.dump(count, outp, pickle.HIGHEST_PROTOCOL)
+        with open(GivLUT.safewritecountpkl, 'wb') as outp:
+            pickle.dump(safecount, outp, pickle.HIGHEST_PROTOCOL)
+
 async def sendAsyncCommand(reqs,readloop):
     output={}
     asyncclient=await GivClientAsync.get_connection()
@@ -107,8 +137,9 @@ async def sendAsyncCommand(reqs,readloop):
             break
     if not readloop:
         #if write command came from somewhere other than the read loop then close the connection at the end
-        logger.debug("Closing non readloop modbus connection")
+        logger.info("Closing non readloop modbus connection")
         await asyncclient.close()
+    log_num_writes(reqs)
     return output
 
 async def sbcla(target,readloop=False):
@@ -239,6 +270,35 @@ async def enableChargeSchedule(payload,readloop=False):
         logger.error (temp['result'])
     return json.dumps(temp)
 
+
+
+async def enableRTC(payload,readloop=False):
+    temp={}
+    try:
+        if payload['state']=="enable":
+            logger.debug("Enabling Real Time Control")
+            #temp= await ect(readloop)
+            reqs=commands.set_enable_rtc(True,GiV_Settings.inverter_type.lower())
+            result= await sendAsyncCommand(reqs,readloop)
+            if 'error' in result:
+                raise Exception
+            temp['result']="Enabling Real Time Control was a success"
+        elif payload['state']=="disable":
+            logger.debug("Disabling Real Time Control")
+            #temp= await dct(readloop)
+            reqs=commands.set_enable_rtc(False,GiV_Settings.inverter_type.lower())
+            result= await sendAsyncCommand(reqs,readloop)
+            if 'error' in result:
+                raise Exception           
+            temp['result']="Disabling Real Time Control was a success"
+        logger.info(temp['result'])
+    except:
+        e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        temp['result']="Setting Real Time Control failed: " + str(e)
+        logger.error (temp['result'])
+    return json.dumps(temp)
+
+
 async def enableChargeTarget(payload,readloop=False):
     temp={}
     try:
@@ -317,7 +377,7 @@ async def setExportTarget(payload,readloop=False):
         slot=int(payload['slot'])
         logger.debug("Setting Export Target "+str(slot) + " to: "+str(target))
         #temp= await sest(target,slot,readloop)
-        reqs=commands.set_export_soc_target(False,slot,int(target))
+        reqs=commands.set_export_soc_target(slot,int(target))
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
             raise Exception
@@ -351,6 +411,32 @@ async def setDischargeTarget(payload,readloop=False):
     except:
         e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
         temp['result']="Setting Discharge Target "+str(slot) + " failed: "+ str(e)
+        logger.error (temp['result'])
+    return json.dumps(temp)
+
+async def setEmsPlant(payload,readloop=False):
+    temp={}
+    try:
+        if payload['state']=="enable":
+            logger.debug("Enabling EMS Plant Operation")
+            #temp= await ect(readloop)
+            reqs=commands.set_ems_plant(True)
+            result= await sendAsyncCommand(reqs,readloop)
+            if 'error' in result:
+                raise Exception           
+            temp['result']="Enabling EMS Plant Operation was a success"
+        elif payload['state']=="disable":
+            logger.debug("Disabling EMS Plant Operation")
+            #temp= await dct(readloop)
+            reqs=commands.set_ems_plant(False)
+            result= await sendAsyncCommand(reqs,readloop)
+            if 'error' in result:
+                raise Exception           
+            temp['result']="Disabling EMS Plant Operation was a success"
+        logger.info(temp['result'])
+    except:
+        e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        temp['result']="Setting EMS Plant Operation failed: " + str(e)
         logger.error (temp['result'])
     return json.dumps(temp)
 
@@ -849,7 +935,7 @@ async def FEResume(revert, readloop=False):
         slot=TimeSlot
         slot.start=datetime.strptime(revert['start_time'],"%H:%M")
         slot.end=datetime.strptime(revert['end_time'],"%H:%M")
-        reqs.extend(commands._set_charge_slot(True,2,slot,GiV_Settings.inverter_type.lower()))
+        reqs.extend(commands._set_charge_slot(True,1,slot,GiV_Settings.inverter_type.lower()))
         if revert["discharge_schedule"]=="enable":
             enabled=True
         else:
@@ -898,8 +984,8 @@ async def forceExport(exportTime,readloop=False):
         hasBPM=False
         if exists(GivLUT.regcache):      # if there is a cache then grab it
             regCacheStack=GivLUT.get_regcache()
-            revert["start_time"]=regCacheStack[-1]["Timeslots"]["Discharge_start_time_slot_2"][:5]
-            revert["end_time"]=regCacheStack[-1]["Timeslots"]["Discharge_end_time_slot_2"][:5]
+            revert["start_time"]=regCacheStack[-1]["Timeslots"]["Discharge_start_time_slot_1"][:5]
+            revert["end_time"]=regCacheStack[-1]["Timeslots"]["Discharge_end_time_slot_1"][:5]
             revert["reservePercent"]=regCacheStack[-1]["Control"]["Battery_Power_Reserve"]
             revert["mode"]=regCacheStack[-1]["Control"]["Mode"]
             revert['discharge_schedule']=regCacheStack[-1]["Control"]["Enable_Discharge_Schedule"]
@@ -927,7 +1013,7 @@ async def forceExport(exportTime,readloop=False):
             reqs.extend(commands.set_battery_discharge_limit_ac(100,GiV_Settings.inverter_type.lower()))
         else:
             reqs.extend(commands.set_battery_discharge_limit(50))
-        reqs.extend(commands.set_mode_storage(discharge_slot_2=slot,discharge_for_export=True, inv_type=GiV_Settings.inverter_type.lower()))
+        reqs.extend(commands.set_mode_storage(discharge_slot_1=slot,discharge_for_export=True, inv_type=GiV_Settings.inverter_type.lower()))
         if hasBPM:
             reqs.extend(commands.set_battery_pause_mode(0))
         result = await sendAsyncCommand(reqs,readloop)
@@ -1403,7 +1489,7 @@ async def setDateTime(payload,readloop=False):
 async def setBatteryCalibration(payload,readloop=False):
     """Kicks off a Battery Calibration using a value in the range: [0:'Off',1:'Start',3:'Charge Only']
 
-    Payload: {"state":1}
+    Payload: {"state":"Off"}
     """
     temp={}
     targetresult="Success"

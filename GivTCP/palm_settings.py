@@ -59,11 +59,12 @@ class GE:
 
 
     # Inverter charge/discharge rate in kW, INVERTER_MAX_BAT_RATE is in Watts
-    if exists(GivLUT.regcache):      # if there is a cache then grab it
-        with GivLUT.cachelock:
-            with open(GivLUT.regcache, 'rb') as inp:
-                regCacheStack = pickle.load(inp)
-                multi_output_old = regCacheStack[-1]
+    #if exists(GivLUT.regcache):      # if there is a cache then grab it
+    #    with GivLUT.cachelock:
+    #        with open(GivLUT.regcache, 'rb') as inp:
+    regCacheStack=GivLUT.get_regcache()
+    if not regCacheStack == []:
+        multi_output_old = regCacheStack[-1]
         charge_rate=float(multi_output_old[GiV_Settings.serial_number]['Invertor_Max_Bat_Rate'])/1000
         batt_capacity=float(multi_output_old[GiV_Settings.serial_number]['Battery_Capacity_kWh'])
     else:

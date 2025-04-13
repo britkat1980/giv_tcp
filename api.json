@@ -67,6 +67,11 @@
             "usage": "Forces battery to discharge at max power for the defined duration in Minutes or send Cancel command",
             "payload": "{'duration':'30' or 'Cancel'}"
         },
+        "fullCache": {
+            "url": "/fullCache",
+            "method": "GET",
+            "usage": "Return full cache History as a json file"
+        },
         "runAll": {
             "url": "/runAll",
             "method": "GET",
@@ -139,6 +144,12 @@
             "usage": "Set Battery reserve SOC percentage",
             "payload": "{'reservePercent':'4'}"
         },
+        "setBatteryCalibration": {
+            "url": "/setBatteryCalibration",
+            "method": "POST",
+            "usage": "Trigger or stop a Battery Calibration",
+            "payload": "{'state':'off' or 'start'}"
+        },
         "setCarChargeBoost": {
             "url": "/setCarChargeBoost",
             "method": "POST",
@@ -181,6 +192,12 @@
             "usage": "Set Battery charge rate in watts",
             "payload": "{'chargeRate':'2500'}"
         },
+        "setChargeRateAC": {
+            "url": "/setChargeRateAC",
+            "method": "POST",
+            "usage": "Set Battery charge rate in percentage",
+            "payload": "{'chargeRate':'75'}"
+        },
         "setDateTime": {
             "url": "/setDateTime",
             "method": "POST",
@@ -222,6 +239,12 @@
             "method": "POST",
             "usage": "Set Battery discharge rate in watts",
             "payload": "{'dischargeRate':'2500'}"
+        },
+        "setDischargeRateAC": {
+            "url": "/setDischargeRateAC",
+            "method": "POST",
+            "usage": "Set Battery discharge rate in percentage",
+            "payload": "{'dischargeRate':'75'}"
         },
         "setExportSlot1": {
             "url": "/setExportSlot1",
