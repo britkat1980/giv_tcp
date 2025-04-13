@@ -1,5 +1,0 @@
-[submodule "WebDashboard"]
-    path = WebDashboard
-    url = https://github.com/DanielGallo/GivEnergy-Smart-Home-Display.git
-    branch = master
-    update = merge
