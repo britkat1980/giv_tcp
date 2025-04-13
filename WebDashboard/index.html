@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GivEnergy Dash</title>
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+
+    <link rel="shortcut icon" href="images/favicon.png">
+    <link rel="apple-touch-icon" href="images/Logo.png">
+
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/libraries/jquery.js"></script>
+    <script type="module" src="js/app.js"></script>
+</head>
+<body>
+    <svg id="canvas" width="100%" height="100%" viewBox="0 0 840 365">
+        <g transform="translate(0, 8)">
+            <g id="diagram">
+                <g transform="translate(20, 22)">
+                    <text x="0" y="0" class="clock" id="clock"></text>
+                </g>
+
+                <text x="180" y="348" id="refreshIntervalText" text-anchor="middle" class="refreshText"></text>
+
+                <!-- Spacing lines (hidden - helps with re-positioning the circles) -->
+                <line x1="180" y1="180" x2="180" y2="10" display="none" stroke="#646464" stroke-width="1" transform="rotate(120 180 180)" />
+                <line x1="180" y1="180" x2="180" y2="10" display="none" stroke="#646464" stroke-width="1" transform="rotate(240 180 180)" />
+                <line x1="180" y1="180" x2="180" y2="10" display="none" stroke="#646464" stroke-width="1" />
+
+                <g>
+                    <!-- This group holds all the connector lines -->
+                    <g id="solar_to_grid" class="idle">
+                        <path class="connector" d="M 320 180 A 140 140 0 0 1 279 279" fill="none" transform="rotate(285 180 180)" />
+                        <path class="connector" d="M 320 180 A 140 140 0 0 1 180 320" fill="none" transform="rotate(285 180 180)" />
+                    </g>
+
+                    <g id="solar_to_battery" class="idle">
+                        <path class="connector" d="M 320 180 A 140 140 0 0 1 279 279" fill="none" transform="rotate(165 180 180)" />
+                        <path class="connector" d="M 320 180 A 140 140 0 0 1 180 320" fill="none" transform="rotate(165 180 180)" />
+                    </g>
+
+                    <g id="battery_with_grid" class="idle">
+                        <path class="connector" d="M 320 180 A 140 140 0 0 1 279 279" fill="none" transform="rotate(45 180 180)" />
+                        <path class="connector" d="M 320 180 A 140 140 0 0 1 180 320" fill="none" transform="rotate(45 180 180)" />
+                    </g>
+
+                    <g id="solar_to_home" class="idle">
+                        <line class="connector" x1="180" y1="140" x2="180" y2="90" stroke="#646464" stroke-width="2" />
+                    </g>
+
+                    <g id="battery_to_home" class="idle">
+                        <line class="connector" x1="180" y1="140" x2="180" y2="90" stroke="#646464" stroke-width="2" transform="rotate(240 180 180)" />
+                    </g>
+
+                    <g id="grid_to_home" class="idle">
+                        <line class="connector" x1="180" y1="140" x2="180" y2="90" stroke="#646464" stroke-width="2" transform="rotate(120 180 180)" />
+                    </g>
+                </g>
+
+                <!-- Solar circle -->
+                <g id="power_solar" class="idle">
+                    <circle id="power_solar_circle" cx="180" cy="50" r="44" class="circle" />
+                    <text x="180" y="50" text-anchor="middle" dy="23">
+                        <tspan id="power_solar_text" class="circle_value" >0.00</tspan>
+                        <tspan class="circle_scale" dx="-4">kW</tspan>
+                    </text>
+
+                    <g transform="translate(153, 9)">
+                        <path class="graphic" d="M 30 17 A 1 1 0 0 0 30 41 A 1 1 0 0 0 30 17 M 30 15 L 30 10 M 44 29 L 49 29 M 30 43 L 30 48 M 16 29 L 11 29 M 20 19 L 16 15 M 40 19 L 44 15 M 40 39 L 44 43 M 20 39 L 16 43" transform="scale(0.9)" />
+                    </g>
+                </g>
+
+                <!-- Battery circle -->
+                <g id="power_battery" class="idle">
+                    <circle id="power_battery_circle" cx="68" cy="246" r="44" class="circle" />
+                    <text x="68" y="246" text-anchor="middle" dy="23">
+                        <tspan id="power_battery_text" class="circle_value">0.00</tspan>
+                        <tspan class="circle_scale" dx="-4">kW</tspan>
+                    </text>
+
+                    <g transform="translate(101, 248), rotate(180)">
+                        <path class="graphic" d="M 11 10 L 15 10 L 15 21 L 11 21 L 11 10 M 17 6 L 60 6 L 60 25 L 17 25 L 17 6 M 20 9 L 25 9 L 25 22 L 20 22 L 20 9 M 28 9 L 33 9 L 33 22 L 28 22 L 28 9 M 36 9 L 41 9 L 41 22 L 36 22 L 36 9 M 44 9 L 49 9 L 49 22 L 44 22 L 44 9 M 52 9 L 57 9 L 57 22 L 52 22 L 52 9" transform="scale(0.9)" />
+                    </g>
+                </g>
+
+                <!-- Grid circle -->
+                <g id="power_grid" class="idle">
+                    <circle id="power_grid_circle" cx="292" cy="246" r="44" class="circle" />
+                    <text x="292" y="246" text-anchor="middle" dy="23">
+                        <tspan id="power_grid_text" class="circle_value">0.00</tspan>
+                        <tspan class="circle_scale" dx="-4">kW</tspan>
+                    </text>
+
+                    <g transform="translate(274, 213), scale(0.65)">
+                        <path class="graphic" d="M 27 0 L 21 12 L 33 12 L 33 12 L 27 0 M 21 12 L 18 33 L 12 54 L 42 54 L 36 33 L 33 12 M 33 12 L 42 12 L 33 18 M 21 12 L 12 12 L 21 18 L 36 33 L 12 54 M 18 33 L 42 54 M 18 33 L 33 18" />
+                    </g>
+                </g>
+
+                <!-- Home circle -->
+                <g id="power_home" class="idle">
+                    <circle id="power_home_circle" cx="180" cy="180" r="44" class="circle" />
+                    <text x="180" y="180" text-anchor="middle" dy="23">
+                        <tspan id="power_home_text" class="circle_value">0.00</tspan>
+                        <tspan class="circle_scale" dx="-4">kW</tspan>
+                    </text>
+
+                    <g transform="translate(158, 143), scale(0.65)">
+                        <!-- outline of the house -->
+                        <path class="graphic" d="M34 4 L10 28 H58 Z M14 60 H54 V28 H14 Z" />
+
+                        <!-- chimney -->
+                        <path class="graphic" d="M42 12 V8 H46 V16 H42 Z" />
+
+                        <!-- overlay roof -->
+                        <path class="graphic" d="M34 4 L10 28 H58 Z" />
+
+                        <!-- doors and windows -->
+                        <path class="graphic" d="M20 46 H28 V60 H20 Z M20 34 H28 V42 H20 Z M36 34 H48 V42 H36 Z M36 46 H48 V54 H36 Z" />
+                    </g>
+                </g>
+            </g>
+
+            <g id="debugPanel" style="display: none;">
+                <text class="debug" id="debug_Solar_to_Grid" x="290" y="130" text-anchor="end">000</text>
+                <text class="debug" id="debug_Solar_to_Battery" x="70" y="130">000</text>
+                <text class="debug" id="debug_Solar_to_House" x="190" y="118">000</text>
+                <text class="debug" id="debug_Battery_to_House" x="130" y="240">000</text>
+                <text class="debug" id="debug_Battery_to_Grid" x="180" y="290" text-anchor="middle">000</text>
+                <text class="debug" id="debug_Grid_to_Battery" x="180" y="305" text-anchor="middle">000</text>
+                <text class="debug" id="debug_Grid_to_House" x="230" y="240" text-anchor="end">000</text>
+
+                <text class="debug" id="debug_Grid_Power" x="292" y="215" text-anchor="middle">000</text>
+            </g>
+
+            <g id="panels">
+                <!-- Summary information panel -->
+                <g id="summary_panel" transform="translate(6, 5)">
+                    <!-- Home Usage -->
+                    <g transform="translate(370, 0)">
+                        <path class="graphic graphic-home" d="M 34 4 L 10 28 L 58 28 L 34 4 M 14 28 L 14 60 L 54 60 L 54 28 M 20 46 L 28 46 L 28 60 L 20 60 L 20 46 M 20 34 L 28 34 L 28 42 L 20 42 L 20 34 M 36 34 L 48 34 L 48 42 L 36 42 L 36 34 M 42 12 L 42 8 L 46 8 L 46 16 M 36 46 L 48 46 L 48 54 L 36 54 L 36 46" stroke-width="1" transform="scale(0.7)" />
+                    </g>
+                    <g transform="translate(426, 17)">
+                        <text x="0" y="0">
+                            <tspan class="label" x="0">Used</tspan>
+                            <tspan id="energy_home_text" x="0" dy="1.3em">0.0 kWh</tspan>
+                        </text>
+                    </g>
+
+                    <!-- Solar Generation -->
+                    <g transform="translate(368, 50)">
+                        <path class="graphic graphic-solar" d="M 30 17 A 1 1 0 0 0 30 41 A 1 1 0 0 0 30 17 M 30 15 L 30 10 M 44 29 L 49 29 M 30 43 L 30 48 M 16 29 L 11 29 M 20 19 L 16 15 M 40 19 L 44 15 M 40 39 L 44 43 M 20 39 L 16 43" transform="scale(0.9)" />
+                    </g>
+                    <g transform="translate(426, 71)">
+                        <text x="0" y="0">
+                            <tspan class="label" x="0">Generated</tspan>
+                            <tspan id="energy_solar_text" x="0" dy="1.3em">0.0 kWh</tspan>
+                        </text>
+                        <text id="solar_generated_income_text" text-anchor="end" dx="156" dy="1.3em">£0.00</text>
+                    </g>
+
+                    <!-- Peak Import -->
+                    <g transform="translate(379, 115)">
+                        <path class="graphic graphic-grid" d="M 27 0 L 21 12 L 33 12 L 33 12 L 27 0 M 21 12 L 18 33 L 12 54 L 42 54 L 36 33 L 33 12 M 33 12 L 42 12 L 33 18 M 21 12 L 12 12 L 21 18 L 36 33 L 12 54 M 18 33 L 42 54 M 18 33 L 33 18 M 47 40 L 47 23 M 47 23 L 52 28 M 47 23 L 42 28" transform="scale(0.6)" />
+                    </g>
+                    <g transform="translate(426, 126)">
+                        <text x="0" y="0">
+                            <tspan class="label" x="0">Peak Import</tspan>
+                            <tspan id="energy_imported_peak_text" x="0" dy="1.3em">0.0</tspan> kWh
+                        </text>
+                        <text id="energy_imported_peak_cost_text" text-anchor="end" dx="156" dy="1.3em">£0.00</text>
+                    </g>
+
+                    <!-- Off-Peak Import -->
+                    <g transform="translate(379, 170)">
+                        <path class="graphic graphic-grid" d="M 27 0 L 21 12 L 33 12 L 33 12 L 27 0 M 21 12 L 18 33 L 12 54 L 42 54 L 36 33 L 33 12 M 33 12 L 42 12 L 33 18 M 21 12 L 12 12 L 21 18 L 36 33 L 12 54 M 18 33 L 42 54 M 18 33 L 33 18 M 47 40 L 47 23 M 47 40 L 52 35 M 47 40 L 42 35" transform="scale(0.6)" />
+                    </g>
+                    <g transform="translate(426, 181)">
+                        <text x="0" y="0">
+                            <tspan class="label" x="0">Off-Peak Import</tspan>
+                            <tspan id="energy_imported_offpeak_text" x="0" dy="1.3em">0.0</tspan> kWh
+                        </text>
+                        <text id="energy_imported_offpeak_cost_text" text-anchor="end" dx="156" dy="1.3em">£0.00</text>
+                    </g>
+
+                    <!-- Grid Export -->
+                    <g transform="translate(379, 224)">
+                        <path class="graphic graphic-grid" d="M 27 0 L 21 12 L 33 12 L 33 12 L 27 0 M 21 12 L 18 33 L 12 54 L 42 54 L 36 33 L 33 12 M 33 12 L 42 12 L 33 18 M 21 12 L 12 12 L 21 18 L 36 33 L 12 54 M 18 33 L 42 54 M 18 33 L 33 18 M 54 30 L 40 30 L 45 25 M 40 30 L 45 35" transform="scale(0.6)" />
+                    </g>
+                    <g transform="translate(426, 235)">
+                        <text x="0" y="0">
+                            <tspan class="label" x="0">Exported</tspan>
+                            <tspan id="energy_exported_text" x="0" dy="1.3em">0.0</tspan> kWh
+                        </text>
+                        <text id="energy_exported_income" text-anchor="end" dx="156" dy="1.3em">£0.00</text>
+                    </g>
+
+                    <!-- Battery State -->
+                    <g transform="translate(423, 307), rotate(180)">
+                        <path class="graphic graphic-battery" d="M 11 10 L 15 10 L 15 21 L 11 21 L 11 10 M 17 6 L 60 6 L 60 25 L 17 25 L 17 6 M 20 9 L 25 9 L 25 22 L 20 22 L 20 9 M 28 9 L 33 9 L 33 22 L 28 22 L 28 9 M 36 9 L 41 9 L 41 22 L 36 22 L 36 9 M 44 9 L 49 9 L 49 22 L 44 22 L 44 9 M 52 9 L 57 9 L 57 22 L 52 22 L 52 9" transform="scale(0.75)" />
+                    </g>
+                    <g transform="translate(426, 290)">
+                        <text x="0" y="0">
+                            <tspan class="label" x="0">Batteries</tspan>
+                            <tspan id="battery_percentage_text" x="0" dy="1.3em">0%</tspan>
+                        </text>
+                        <text id="battery_state_text" text-anchor="end" dx="156" dy="1.3em">Idle</text>
+                    </g>
+                </g>
+
+                <line id="panel_divider" x1="600" y1="0" x2="600" y2="330" stroke="#646464" stroke-width="1" />
+
+                <!-- Inverter and Battery Information Panel - generated dynamically based on the number of inverters and batteries -->
+                <g id="inverter_panel" transform="translate(610, 19)">
+
+                </g>
+            </g>
+        </g>
+
+        <!-- The various types of markers for showing the direction of flow on the lines/paths -->
+        <marker id="line-arrow" orient="auto" markerWidth="8" markerHeight="10" refX="15" refY="5">
+            <path class="connector" d='M 4 0 L 0 5 L 4 10 L 5 10 L 1 5 L 5 0 Z' />
+        </marker>
+
+        <marker id="arc-arrow" orient="auto" markerWidth="8" markerHeight="10" refX="3" refY="5">
+            <path class="connector" d='M 4 0 L 0 5 L 4 10 L 5 10 L 1 5 L 5 0 Z' />
+        </marker>
+
+        <marker id="arc-arrow-opposite" orient="auto" markerWidth="8" markerHeight="10" refX="3" refY="5">
+            <path class="connector" d='M 0 0 L 4 5 L 0 10 L 1 10 L 5 5 L 1 0 Z' />
+        </marker>
+
+        <g id="gatewayDetails" style="display: none;">
+            <text class="label" x="0" y="0">Gateway</text>
+
+            <text x="0" y="0" class="grouper">
+                <tspan class="label" x="0" dy="1.4em">Status</tspan>
+                <tspan class="gateway_mode" text-anchor="end" x="205" dy="0">0</tspan>
+            </text>
+        </g>
+
+        <g id="inverterDetails" style="display: none;">
+            <text class="label" x="0" y="0">Inverter</text>
+
+            <text x="0" y="0" class="grouper">
+                <tspan class="label" x="0" dy="1.4em">Solar Power</tspan>
+                <tspan class="solar_power" text-anchor="end" x="210" dy="0">0</tspan>
+
+                <tspan class="label" x="0" dy="1.4em">Target Charge</tspan>
+                <tspan class="target_soc" text-anchor="end" x="210" dy="0">0</tspan>
+
+                <tspan class="label" x="0" dy="1.4em">Batteries</tspan>
+                <tspan class="inverter_soc" text-anchor="end" x="210" dy="0">0</tspan>
+
+                <tspan class="label" x="0" dy="1.4em">Status</tspan>
+                <tspan class="inverter_status" text-anchor="end" x="205">0</tspan>
+            </text>
+        </g>
+
+        <g id="batteryDetails" style="display: none;">
+            <g transform="translate(50, 8), rotate(180), scale(0.9)">
+                <path style="stroke: rgb(163, 163, 163); stroke-width: 2px;" class="graphic" d="M 11 10 L 15 10 L 15 21 L 11 21 L 11 10 M 17 6 L 60 6 L 60 25 L 17 25 L 17 6 M 20 9" />
+            </g>
+
+            <text dx="0" y="0" class="grouper">
+                <tspan x="18" dy="-1" text-anchor="middle" class="state_of_charge" style="font-size: 11pt;">0</tspan>
+
+                <tspan x="18" dy="20" text-anchor="middle" class="remaining_capacity" style="font-size: 11pt;">0</tspan>
+            </text>
+        </g>
+    </svg>
+</body>
+</html>
