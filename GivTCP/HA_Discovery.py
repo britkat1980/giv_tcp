@@ -83,7 +83,7 @@ class HAMQTT():
                             publisher.append(["homeassistant/select/GivEnergy/"+SN+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
                         elif e_type.devType=="button":
                             publisher.append(["homeassistant/button/GivEnergy/"+SN+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
-            
+
             # Loop round HA publishing 4 times in case its not all there
             i=0
             complete=False
@@ -98,10 +98,10 @@ class HAMQTT():
                     logger.critical("Failed to publish all discovery data in 4 attempts. Check MQTT broker")
                     break
         except gaierror:
-            logger.error("Error in to MQTT Address. Check config and update.")
+            logger.error("publish_discovery2: Error in to MQTT Address. Check config and update.")
         except:
             e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-            logger.error("Error connecting to MQTT Broker: " + str(e))
+            logger.error("publish_discovery2: Error connecting to MQTT Broker: " + str(e))
 
     def sendDiscoMsg(array,SN):
         paho_mqtt.Client.connected_flag=False        			#create flag in class
@@ -277,7 +277,7 @@ class HAMQTT():
                 tempObj['unit_of_meas']="A"
                 tempObj['min']=6
                 tempObj['max']=32
-                tempObj['mode']="slider"            
+                tempObj['mode']="slider"
             elif "compensation" in str(item).lower():   #if EMS compensation
                 tempObj['unit_of_meas']="W"
                 tempObj['min']=-5
@@ -326,7 +326,7 @@ class CheckDisco():
     def on_connect(client, userdata, flags, rc, properties):
         client.subscribe("homeassistant/#")
         client.subscribe("GivEnergy/#")
-    
+
     def on_disconnect(client, userdata, flags, rc, properties):
         #clear cached messages on disconnect
         CheckDisco.msgs={}
@@ -356,15 +356,18 @@ class CheckDisco():
                     unpub.append([m[0],m[1]])      #take the one that was sent but not received and add to unpub
             return unpub
         except gaierror:
-            logger.error("Error in to MQTT Address. Check config and update.")
+            logger.error("checkdisco: Error in to MQTT Address. Check config and update.")
             client.disconnect()
         except:
             e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-            logger.error("Error connecting to MQTT Broker: " + str(e))
+            logger.error("checkdisco: Error connecting to MQTT Broker: " + str(e))
             client.disconnect()
-    
+
     def removedisco(SN,messages):
         try:
+            logger.debug("removedisco: SN: "+str(SN))
+            logger.debug("removedisco: messages: "+str(messages))
+            logger.debug("removedisco: CheckDisco.msgs: "+str(CheckDisco.msgs))
             foundmessages=0
             moremessages=0
             client = paho_mqtt.Client(paho_mqtt.CallbackAPIVersion.VERSION2,"GivEnergy_GivTCP_removedisco_"+str(GiV_Settings.givtcp_instance))
@@ -414,9 +417,9 @@ class CheckDisco():
             client.loop_stop()
             client.disconnect()
         except gaierror:
-            logger.error("Error in to MQTT Address. Check config and update.")
+            logger.error("removedisco: Error in to MQTT Address. Check config and update.")
             client.disconnect()
         except:
             e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-            logger.error("Error connecting to MQTT Broker: " + str(e))
+            logger.error("removedisco: Error connecting to MQTT Broker: " + str(e))
             client.disconnect()
