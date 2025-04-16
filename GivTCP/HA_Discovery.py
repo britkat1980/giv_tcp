@@ -366,8 +366,11 @@ class CheckDisco():
     def removedisco(SN,messages):
         try:
             logger.debug("removedisco: SN: "+str(SN))
-            logger.debug("removedisco: messages: "+str(messages))
             logger.debug("removedisco: CheckDisco.msgs: "+str(CheckDisco.msgs))
+            # if no msgs, just return otherwise will cause misleading exception in for loop below: 'for topic in CheckDisco.msgs:'
+            if not CheckDisco.msgs:
+                logger.debug("removedisco: nothing to do")
+                return None
             foundmessages=0
             moremessages=0
             client = paho_mqtt.Client(paho_mqtt.CallbackAPIVersion.VERSION2,"GivEnergy_GivTCP_removedisco_"+str(GiV_Settings.givtcp_instance))
@@ -421,5 +424,6 @@ class CheckDisco():
             client.disconnect()
         except:
             e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+            # catches any error, not just error connecting to MQTT Broker
             logger.error("removedisco: Error connecting to MQTT Broker: " + str(e))
             client.disconnect()
