@@ -696,7 +696,7 @@ async def setPauseSlot(payload,readloop=False):
             raise Exception
         updateControlCache("Battery_pause_start_time_slot",str(datetime.strptime(payload['start'],"%H:%M")))
         updateControlCache("Battery_pause_end_time_slot",str(datetime.strptime(payload['finish'],"%H:%M")))
-        temp['result']="Setting Pause Slot "+str(payload['slot'])+" to: "+str(payload['start'])+" - "+str(payload['finish'])+" was a success"
+        temp['result']="Setting Pause Slot to: "+str(payload['start'])+" - "+str(payload['finish'])+" was a success"
         logger.info(temp['result'])
     except:
         e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
