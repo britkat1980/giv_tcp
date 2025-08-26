@@ -46,6 +46,12 @@ def commsFailure():
         pickle.dump(oldDataCount, outp, pickle.HIGHEST_PROTOCOL)
     return oldDataCount
 
+def resetTodayStats():
+    # end value 0 to all "Today stats"
+    Today={'Today':{'AC_Charge_Energy_Today_kWh': 0, 'Battery_Charge_Energy_Today_kWh': 0, 'Battery_Discharge_Energy_Today_kWh': 0, 'Battery_Throughput_Today_kWh': 0, 'Export_Energy_Today_kWh': 0, 'Import_Energy_Today_kWh': 0, 'Invertor_Energy_Today_kWh': 0, 'Load_Energy_Today_kWh': 0, 'PV_Energy_Today_kWh': 0, 'Self_Consumption_Energy_Today_kWh': 0}}
+    GivMQTT.multi_MQTT_publish("GivEnergy/"+GiV_Settings.serial_number+"/Energy/",Today)
+    logger.info("Forcing MQTT data for Today Stats to Zero at Midnight")
+
 def rebootaddon():
     if GiV_Settings.isAddon:
         access_token = os.getenv("SUPERVISOR_TOKEN")
@@ -172,8 +178,10 @@ async def watch_plant(
                         os.remove(GivLUT.writerequests)
 
                 timesincelast=datetime.datetime.now()-lastruntime
+                if datetime.datetime.now(tz=GivLUT.timezone).time() == datetime.time(0, 0):
+                    resetTodayStats()
                 if timesincelast.total_seconds() < refresh_period:
-                    await asyncio.sleep(1)
+                    await asyncio.sleep(0.5)
                     #if refresh period hasn't expired then just keep looping back up to write check
                     continue
                 
