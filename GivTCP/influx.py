@@ -27,7 +27,7 @@ else:
 class GivInflux():
 
     def line_protocol(SN,readings):
-        return '{},tagKey={} {}'.format(SN,'GivReal', readings) 
+        return '{},tagKey={} {}'.format(SN,'GivReal', readings)
 
     def make_influx_string(datastr):
         new_str=datastr.replace(" ","_")
@@ -50,24 +50,26 @@ class GivInflux():
         flow_output = data['Power']['Flows']
         logging.debug("Creating Power Flow string for InfluxDB")
         for key in flow_output:
-            if not power_output[key] == None:
+            if not flow_output[key] == None:
                 output_str=output_str+str(GivInflux.make_influx_string(key))+'='+GivInflux.stringSafe(flow_output[key])+','
         energy_today = data['Energy']['Today']
         logging.debug("Creating Energy/Today string for InfluxDB")
         for key in energy_today:
-            if not power_output[key] == None:
+            if not energy_today[key] == None:
                 output_str=output_str+str(GivInflux.make_influx_string(key))+'='+GivInflux.stringSafe(energy_today[key])+','
 
         energy_total = data['Energy']['Total']
         logging.debug("Creating Energy/Total string for InfluxDB")
         for key in energy_total:
-            if not power_output[key] == None:
+            if not energy_total[key] == None:
                 output_str=output_str+str(GivInflux.make_influx_string(key))+'='+GivInflux.stringSafe(energy_total[key])+','
 
         logging.debug("Data sending to Influx is: "+ output_str[:-1])
         data1=GivInflux.line_protocol(SN,output_str[:-1])
-        
-        _db_client = InfluxDBClient(url=GiV_Settings.influxURL, token=GiV_Settings.influxToken, org=GiV_Settings.influxOrg, debug=True)
+        influxdb_debug = False
+        if GiV_Settings.Log_Level.lower()=="debug":
+            influxdb_debug = True
+        _db_client = InfluxDBClient(url=GiV_Settings.influxURL, token=GiV_Settings.influxToken, org=GiV_Settings.influxOrg, debug=influxdb_debug)
         _write_api = _db_client.write_api(write_options=WriteOptions(batch_size=1))
         _write_api.write(bucket=GiV_Settings.influxBucket, record=data1)
         logging.info("Written to InfluxDB")
