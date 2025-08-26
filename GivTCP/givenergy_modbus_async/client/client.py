@@ -215,14 +215,14 @@ class Client:
 
         if self.plant.device_type in (Model.ALL_IN_ONE, Model.AC_3PH, Model.HYBRID_3PH, Model.HYBRID_HV, Model.ALL_IN_ONE_HYBRID):
             self.plant.isHV = True
-            meter_list=[1,2,3,4,5,6,7,8]
         else:
             self.plant.isHV= False
-            meter_list=[]
+#            meter_list=[]
+        meter_list=[1,2,3,4,5,6,7,8]
 
         #### Set whether a device has batteries and then count them if they are allowed ####
-        if self.plant.device_type in (Model.EMS,Model.GATEWAY):
-            self.plant.number_batteries=0
+        if self.plant.device_type in (Model.EMS,Model.GATEWAY, Model.HYBRID_GEN4):
+            await self.refresh_plant(True, number_batteries=0, meter_list=meter_list, bcu_list=self.plant.bcu_list, retries=retries, timeout=timeout, return_exceptions=True) #set return exceptions to true to allow meters to not be found
         else:
             if self.plant.device_type in (Model.AC, Model.HYBRID):
                 self.plant.slave_address = 0x31
@@ -233,7 +233,8 @@ class Client:
             #### Get max num of batteries for each BCU then test if they are valid ####
             await self.refresh_plant(True, number_batteries=6, meter_list=meter_list, bcu_list=self.plant.bcu_list, retries=retries, timeout=timeout, return_exceptions=True) #set return exceptions to true to allow meters to not be found
             self.plant.detect_batteries()
-            self.plant.detect_meters()
+
+        self.plant.detect_meters()
         
             # Use that to detect the number of batteries
         _logger.debug("Batteries detected: %d", self.plant.number_batteries)

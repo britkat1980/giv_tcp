@@ -68,6 +68,7 @@ async def getInvDeets(HOST):
         model=GEInv.model
         fw=GEInv.arm_firmware_version
         numbats=client.plant.number_batteries
+        nummeters=len(client.plant.meter_list)
 
         Stats['Serial_Number']=SN
         Stats['Firmware']=fw
@@ -75,7 +76,7 @@ async def getInvDeets(HOST):
         Stats['Generation']=gen
         Stats['Number_of_Batteries']=numbats
         Stats['IP_Address']=HOST
-        logger.info(f'Inverter {str(SN)} which is a {str(gen.name.capitalize())} - {str(model.name.capitalize())} with {str(numbats)} batteries has been found at: {str(HOST)}')
+        logger.info(f'Inverter {str(SN)} which is a {str(gen.name.capitalize())} - {str(model.name.capitalize())} with {str(numbats)} batteries and {str(nummeters)} meters has been found at: {str(HOST)}')
         return Stats
     except:
         logger.debug("Gathering inverter details for " + str(HOST) + " failed.")

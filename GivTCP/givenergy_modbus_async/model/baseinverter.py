@@ -33,9 +33,9 @@ class BaseInverter(RegisterGetter, metaclass=DynamicDoc):
         "inverter_max_power_new": Def((C.hexfield,2,2), C.inverter_max_power_new, HR(2)),
         "model": Def(C.hex, Model, HR(0)),
         "certification_type": Def((C.hexfield,0,2), Certification, HR(2)),
-        #"battery_max_power": Def((C.hexfield,2,2), C.battery_max_power, HR(2)),
+        "battery_max_power": Def(C.battery_max_power, None, HR(0),HR(21)),
         "num_mppt": Def((C.duint8, 0), None, HR(3)),
-        "num_phases": Def((C.duint8, 1), None, HR(3)),
+        "num_phases": Def(C.hex, Phase, HR(0)),
         # HR(4-6) unused
         "enable_ammeter": Def(C.bool, None, HR(7)),
         "first_battery_serial_number": Def(
@@ -46,7 +46,7 @@ class BaseInverter(RegisterGetter, metaclass=DynamicDoc):
         "dsp_firmware_version": Def(C.uint16, None, HR(19)),
         "enable_charge_target": Def(C.uint16, Enable, HR(20), valid=(0, 1)),
         "arm_firmware_version": Def(C.uint16, None, HR(21)),
-        "generation": Def(C.uint16, Generation, HR(21)),
+        "generation": Def(C.generation, Generation, HR(0),HR(21)),
         "firmware_version": Def(C.firmware_version, None, HR(19), HR(21)),
         "usb_device_inserted": Def(C.uint16, UsbDevice, HR(22)),
         "select_arm_chip": Def(C.bool, None, HR(23)),
@@ -102,7 +102,6 @@ class BaseInverter(RegisterGetter, metaclass=DynamicDoc):
         "battery_low_voltage_protection_limit": Def(C.uint16, C.centi, HR(97)),
         "battery_high_voltage_protection_limit": Def(C.uint16, C.centi, HR(98)),
         # skip voltage adjustment settings 99-104
-        ##Adjust Battery Voltage? (From GivTCP list)
         "battery_voltage_adjust": Def(C.uint16, C.centi, HR(105)),
         # skip voltage adjustment settings 106-107
         "battery_low_force_charge_time": Def(C.uint16, None, HR(108)),

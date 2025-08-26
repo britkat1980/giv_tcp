@@ -1487,15 +1487,23 @@ async def setDateTime(payload,readloop=False):
     return json.dumps(temp)
 
 async def setBatteryCalibration(payload,readloop=False):
-    """Kicks off a Battery Calibration using a value in the range: [0:'Off',1:'Start',3:'Charge Only']
+    """Kicks off or Stops Battery Calibration
 
-    Payload: {"state":"Off"}
+    Payload: {'state':'Off', 'Start' or "Charge Only"}
     """
     temp={}
     targetresult="Success"
     if type(payload) is not dict: payload=json.loads(payload)
-    if payload['state'] in GivLUT.battery_calibration:
-        val=GivLUT.battery_calibration.index(payload['state'])
+    if payload['state'] == "Off":
+        val=0
+    elif payload['state'] == "Start":
+        val=1
+    elif payload['state'] == "Charge Only":
+        val=3
+    else:
+        logger.error(payload['state'] + " is not a valid control for Battery Calibration.")
+        temp['result']="Setting Battery Calibration failed. Invaild control request."
+        return json.dumps(temp)
     try:
         logger.debug("Setting Battery Calibration to: "+str(payload['state']))
         #temp= await sbc(val,readloop)
@@ -1503,7 +1511,10 @@ async def setBatteryCalibration(payload,readloop=False):
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
             raise Exception
-        updateControlCache("Battery_Calibration",str(GivLUT.battery_calibration[val]))
+        if val==0:
+            updateControlCache("Battery_Calibration","disable")
+        else:
+            updateControlCache("Battery_Calibration","enable")
         temp['result']="Setting Battery Calibration "+str(payload['state'])+" was a success"
         logger.info(temp['result'])
     except:

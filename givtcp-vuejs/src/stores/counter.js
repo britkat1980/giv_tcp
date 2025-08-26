@@ -144,7 +144,7 @@ export const useCard = defineStore('card', {
         {
           type: 'checkbox',
           options: {
-            label: 'Inverter 1 only report battery data (for use with Gateway and EMS connected inverters)',
+            label: 'Inverter 1 only report battery data (for use when this inverter is connected to EMS or Gateway in parallel mode)',
             parent: 'inverters',
             key: 'inverter_battery_only_1'
           }
@@ -184,7 +184,7 @@ export const useCard = defineStore('card', {
         {
           type: 'checkbox',
           options: {
-            label: 'Inverter 2 only report battery data (for use with Gateway and EMS connected inverters)',
+            label: 'Inverter 2 only report battery data (for use when this inverter is connected to EMS or Gateway in parallel mode)',
             parent: 'inverters',
             key: 'inverter_battery_only_2'
           }
@@ -225,7 +225,7 @@ export const useCard = defineStore('card', {
         {
           type: 'checkbox',
           options: {
-            label: 'Inverter 3 only report battery data (for use with Gateway and EMS connected inverters)',
+            label: 'Inverter 3 only report battery data (for use when this inverter is connected to EMS or Gateway in parallel mode)',
             parent: 'inverters',
             key: 'inverter_battery_only_3'
           }
@@ -265,7 +265,7 @@ export const useCard = defineStore('card', {
         {
           type: 'checkbox',
           options: {
-            label: 'Inverter 4 only report battery data (for use with Gateway and EMS connected inverters)',
+            label: 'Inverter 4 only report battery data (for use when this inverter is connected to EMS or Gateway in parallel mode)',
             parent: 'inverters',
             key: 'inverter_battery_only_4'
           }
@@ -306,7 +306,7 @@ export const useCard = defineStore('card', {
         {
           type: 'checkbox',
           options: {
-            label: 'Inverter 5 only report battery data (for use with Gateway and EMS connected inverters)',
+            label: 'Inverter 5 only report battery data (for use when this inverter is connected to EMS or Gateway in parallel mode)',
             parent: 'inverters',
             key: 'inverter_battery_only_5'
           }
