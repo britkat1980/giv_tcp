@@ -79,7 +79,7 @@ async def watch_plant(
             #await client.close()
             if client.plant.device_type==Model.GATEWAY:
                 if client.plant.gateway.parallel_aio_num < 2:
-                    logger.critical("Gateway device has a single AIO attached. Consider disabling in config as only duplicate data is collected from Gateway")
+                    logger.critical("Gateway device has a single AIO attached. Consider disabling in config as mostly duplicate data is collected from Gateway")
             logger.debug ("Running full refresh")
             if exists("commsfailure_"+str(GiV_Settings.givtcp_instance)+".pkl"):
                 # Remove any failed counts if connection runs OK
@@ -197,7 +197,7 @@ async def watch_plant(
                         logger.debug ("Running partial refresh")
                     try:
                         #await client.connect()
-                        reqs = commands.refresh_plant_data(fullRefresh, client.plant.number_batteries, slave_addr=client.plant.slave_address,isHV=client.plant.isHV,additional_holding_registers=client.plant.additional_holding_registers,additional_input_registers=client.plant.additional_input_registers)
+                        reqs = commands.refresh_plant_data(fullRefresh, client.plant.number_batteries, slave_addr=client.plant.slave_address,isHV=client.plant.isHV,additional_holding_registers=client.plant.additional_holding_registers,additional_input_registers=client.plant.additional_input_registers,meter_list=client.plant.meter_list)
                         result= await client.execute(
                             reqs, timeout=timeout, retries=retries, return_exceptions=True
                         )
@@ -278,33 +278,40 @@ def getInvModel(plant: Plant):
     inverterModel.generation=GEInv.generation
     inverterModel.phase=GEInv.num_phases
     inverterModel.invmaxrate=GEInv.inverter_max_power
+    inverterModel.batmaxrate=GEInv.battery_max_power
     inverterModel.batterycapacity=GEInv.battery_nominal_capacity        #for HV this is reported Ah times nom voltage (100%)
 
-    if inverterModel.generation == Generation.GEN1:
-        if inverterModel.model == Model.AC:
-            maxBatChargeRate=3000
-        elif inverterModel.model == Model.ALL_IN_ONE:
-            maxBatChargeRate=6000
-        elif plant.isHV:
-            maxBatChargeRate = 25 * 80 * plant.number_batteries
-        elif inverterModel.model == Model.PV:
-            maxBatChargeRate=0
-        else:
-            maxBatChargeRate=2600
-    else:
-        if inverterModel.model == Model.AC:
-            maxBatChargeRate=5000
-        else:
-            maxBatChargeRate=3600
+#    if inverterModel.model==Model.HYBRID:
+#        if inverterModel.generation == Generation.GEN1:
+#            maxBatChargeRate=2600
+#        else:
+#            maxBatChargeRate=3600       #Gen2&3
+#    elif inverterModel.model == Model.PV:
+#        maxBatChargeRate=0
+#    elif inverterModel.model == Model.AC:
+#        maxBatChargeRate=3000
+#    elif inverterModel.generation == Generation.NA:
+#        maxBatChargeRate=3000
+#    else:
+#        maxBatChargeRate=3600
 
     # Calc max charge rate
-    if inverterModel.model in[Model.AC_3PH,Model.HYBRID_3PH]:
-        inverterModel.batmaxrate=maxBatChargeRate
+    if inverterModel.model in [Model.AC_3PH,Model.HYBRID_3PH]:
+        inverterModel.batmaxrate= 25 * 80 * plant.number_batteries
     elif inverterModel.model ==Model.GATEWAY:
         inverterModel.batmaxrate=6000*int(GEInv.parallel_aio_num)
         inverterModel.batterycapacity=13.5*int(GEInv.parallel_aio_num)
-    else:
-        inverterModel.batmaxrate=min(maxBatChargeRate, inverterModel.batterycapacity*1000/2)
+    elif inverterModel.model in [Model.HYBRID_GEN4,Model.ALL_IN_ONE]:
+        inverterModel.batmaxrate=6000
+    #elif inverterModel.model ==Model.HYBRID_HV:
+    #    if GEInv.device_type_code=="8012":
+    #        inverterModel.batmaxrate=8000
+    #    elif GEInv.device_type_code=="8013":
+    #        inverterModel.batmaxrate=10000
+    #else:       # For normal hybrid and AC3
+
+#### STILL NEED TO ACCOUNT FOR THIS #########
+#        inverterModel.batmaxrate=min(maxBatChargeRate, inverterModel.batterycapacity*1000/2)
     return inverterModel
 
 def getRaw(plant: Plant):
@@ -725,9 +732,8 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
             if exists(GivLUT.rtc_enabled):
                 os.remove(GivLUT.rtc_enabled)
     else:
-        controlmode['Real_Time_Control'] = "disable"
-        if exists(GivLUT.rtc_enabled):
-            os.remove(GivLUT.rtc_enabled)
+        controlmode['Real_Time_Control'] = regCacheStack[-1]["Control"]["Real_Time_Control"]
+        logger.debug("RTC returned Unknown status ("+str(GEInv.rtc_enable.value)+"), keeping last state")
 
 
     if not GEInv.battery_pause_mode==None:    #Not in AC single phase
@@ -1952,7 +1958,7 @@ def processData(plant: Plant):
         givtcpdata['Last_Updated_Time'] = datetime.datetime.now(GivLUT.timezone).isoformat()
         givtcpdata['status'] = "online"
         givtcpdata['Time_Since_Last_Update'] = 0
-        givtcpdata['GivTCP_Version']= "3.1.6"
+        givtcpdata['GivTCP_Version']= "3.1.18dev"
 
         count=0
         if exists(GivLUT.writecountpkl):
@@ -2177,10 +2183,16 @@ def getCache():     # Get latest cache data and return it (for use in REST)
         else:
             multi_output['result']="No register data cache exists, try again later"
         return json.dumps(multi_output, indent=4, sort_keys=True, default=str)
+    except AttributeError:
+        e=sys.exc_info()
+        logger.error("Attribute Error: "+str(e))
+        multi_output['result']="Attribute error getting data from cache"+str(e)
+        json.dumps(multi_output, indent=4, sort_keys=True, default=str)
+#### Perhaps remove cache file here if cache is corrupt?
     except:
         e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
         logger.error("Error getting data from cache: "+str(e))
-        multi_output['result']="Error getting data from cache"
+        multi_output['result']="Error getting data from cache"+str(e)
         json.dumps(multi_output, indent=4, sort_keys=True, default=str)
 
 async def self_run():

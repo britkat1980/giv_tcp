@@ -69,6 +69,8 @@ class HAMQTT():
                         if e_type.devType=="sensor":
                             if "Battery_Details" in topic:
                                 publisher.append(["homeassistant/sensor/GivEnergy/"+SN+"_"+str(topic).split("/")[-2]+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
+                            elif "Meter_Details" in topic:
+                                publisher.append(["homeassistant/sensor/GivEnergy/"+SN+"_"+str(topic).split("/")[-2]+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
                             elif "Inverters" in topic:
                                 publisher.append(["homeassistant/sensor/GivEnergy/"+SN+"_"+str(topic).split("/")[-2]+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
                             else:
@@ -160,7 +162,13 @@ class HAMQTT():
                 tempObj['object_id']=GiV_Settings.ha_device_prefix+"_"+device+"_"+item
                 tempObj['device']['identifiers']=GiV_Settings.ha_device_prefix+" "+device
                 tempObj['device']['name']=GiV_Settings.ha_device_prefix+" "+device.replace("_"," ")
-
+        elif "Meter_Details" in topic:
+            #tempObj["name"]=GiV_Settings.ha_device_prefix+" "+device.replace("_"," ")+" "+item.replace("_"," ") #Just final bit past the last "/"
+            tempObj["name"]=item.replace("_"," ") #Just final bit past the last "/"
+            tempObj['uniq_id']=GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[3]+"_"+item
+            tempObj['object_id']=GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[3]+"_"+item
+            tempObj['device']['identifiers']=GiV_Settings.ha_device_prefix+" "+str(topic).split("/")[3]
+            tempObj['device']['name']=GiV_Settings.ha_device_prefix+" "+str(topic).split("/")[3].replace("_"," ")
             # tempObj['device']['name']=GiV_Settings.ha_device_prefix+" "+GiVTCP_Device.replace("_"," ")
         elif len(SN)>10:    #If EVC and not INV
             tempObj['uniq_id']=GiV_Settings.ha_device_prefix+"_"+SN+"_"+item

@@ -164,9 +164,9 @@ class EVCLut:
                         return None
             with open(EVCLut.cachelockfile, 'w') as inp: #create lock file
                 inp.write(datetime.datetime.now(datetime.timezone.utc).isoformat())
-            if exists(EVCLut.regcache):
-                logger.debug("Opening regcache at: "+str(EVCLut.regcache))
-                with open(EVCLut.regcache, 'rb') as inp:
+            if exists(EVCLut.invregcache):
+                logger.debug("Opening regcache at: "+str(EVCLut.invregcache))
+                with open(EVCLut.invregcache, 'rb') as inp:
                     regCacheStack = pickle.load(inp)
                 os.remove(EVCLut.cachelockfile)
                 return regCacheStack
@@ -597,9 +597,10 @@ def setCurrentLimit(val):
             safeMin=int(evcRegCache['Charger']['Evse_Min_Current'])
             val=max(val,safeMin)  #Force to 6 if less than
             val=min(val,safeMax) # Get safe MAX value from pkl
-            logger.info("Setting Charge current limit to: "+ str(val))
             client=ModbusTcpClient(GiV_Settings.evc_ip_address)
-            client.write_registers(91,(val*10))
+            res=client.write_registers(91,(val*10))
+            logger.info("Charge current limit set to: "+ str(val))
+
     except:
         e=sys.exc_info()
         logger.error("Error controlling EVC: "+str(e))
@@ -623,9 +624,9 @@ def chargeMode(once=False):
                 if not int(evcRegCache['Charger']['Import_Cap'])==0 and evcRegCache['Charger']['Charging_State']=="Charging":
                     invRegCache = EVCLut.get_regcache()
                     if invRegCache:
-                        if float(invRegCache[4]['Power']['Power']['Grid_Current'])>(float(evcRegCache['Charger']['Import_Cap'])*0.95):
+                        if float(invRegCache[-1]['Power']['Power']['Grid_Current'])>(float(evcRegCache['Charger']['Import_Cap'])*0.95):
                             target=float(evcRegCache['Charger']['Import_Cap'])*0.9
-                            reduction=(float(invRegCache[4]['Power']['Power']['Grid_Current']))-target
+                            reduction=(float(invRegCache[-1]['Power']['Power']['Grid_Current']))-target
                             newlimit=int(float(evcRegCache['Charger']['Charge_Limit'])-reduction)
                             logger.info("Car charge current too high reducing... ("+str(evcRegCache['Charger']['Charge_Limit'])+"A - "+str(reduction)+"A = "+str(newlimit)+")")
                             #if not int(evcRegCache['Charger']['Charge_Limit'])==4:
@@ -652,8 +653,8 @@ def hybridmode():
                     evcRegCache= pickle.load(inp)
             invRegCache = EVCLut.get_regcache()
             if invRegCache:
-                sparePower=invRegCache[4]['Power']['Power']['PV_Power']-invRegCache[4]['Power']['Power']['Load_Power']+evcRegCache['Charger']['Active_Power_L1']
-                spareCurrent=int(max((sparePower/invRegCache[4]['Power']['Power']['Grid_Voltage']),0)+6)   #Spare current cannot be negative
+                sparePower=invRegCache[-1]['Power']['Power']['PV_Power']-invRegCache[-1]['Power']['Power']['Load_Power']+evcRegCache['Charger']['Active_Power_L1']
+                spareCurrent=int(max((sparePower/invRegCache[-1]['Power']['Power']['Grid_Voltage']),0)+6)   #Spare current cannot be negative
                 if not spareCurrent==evcRegCache['Charger']['Charge_Limit']:
                     logger.info("Topping up min charge with Solar curent ("+str(spareCurrent-6)+"A), setting EVC charge to: "+str(spareCurrent)+"A")
                     setCurrentLimit(spareCurrent)
@@ -674,8 +675,8 @@ def solarmode():
                     evcRegCache= pickle.load(inp)
             invRegCache = EVCLut.get_regcache()
             if invRegCache:
-                sparePower=invRegCache[4]['Power']['Power']['PV_Power']-invRegCache[4]['Power']['Power']['Load_Power']+evcRegCache['Charger']['Active_Power_L1']
-                spareCurrent=int(max((sparePower/invRegCache[4]['Power']['Power']['Grid_Voltage']),0)+6)   #Spare current cannot be negative
+                sparePower=invRegCache[-1]['Power']['Power']['PV_Power']-invRegCache[-1]['Power']['Power']['Load_Power']+evcRegCache['Charger']['Active_Power_L1']
+                spareCurrent=int(max((sparePower/invRegCache[-1]['Power']['Power']['Grid_Voltage']),0)+6)   #Spare current cannot be negative
                 if sparePower>6:    #only if there's excess above min evse level
                     if not spareCurrent==evcRegCache['Charger']['Current_L1']:
                         logger.info("Spare Solar curent ("+str(spareCurrent)+"), setting EVC charge to: "+str(spareCurrent)+"A")
@@ -747,12 +748,7 @@ def setDateTime(sysTime):
         #Set Date and Time on inverter
         try:
             client=ModbusTcpClient(GiV_Settings.evc_ip_address)
-            res=client.write_registers(97,2023)
-            res=client.write_registers(100,5)
-            #client.write_registers(99,11)
-            #client.write_registers(100,21)
-            #client.write_registers(101,5)
-            #client.write_registers(102,35)
+            res=client.write_registers(97,[sysTime.year,sysTime.month,sysTime.day,sysTime.hour,sysTime.minute,sysTime.second])
             logger.info("Time Set")
         except:
             e=sys.exc_info()

@@ -181,6 +181,7 @@ class Converter:
             "8202": 8000,
             "8203": 10000,
             "8204": 12000,
+            "8304": 6000,
         }
         return dtc_to_power.get(device_type_code)
     
@@ -506,28 +507,59 @@ class Converter:
         return out
 
     @staticmethod
-    def battery_max_power(inp: str) -> Optional[int]:
-        """Determine max inverter power from device_type_code."""
+    def generation(dtc, fw) -> str:
+        """Known Generations"""
 
-        ### USE THIS Calc ### 25A x 80v (nom) x Num of batteries (also for 3ph)
+        GEN1 = "Gen 1"
+        GEN2 = "Gen 2"
+        GEN3 = "Gen 3"
+        GEN4 = "Gen 4"
+        NA = "NoGen"
+
+        """Pick generation from the arm_firmware_version."""
+        arm_firmware_version_to_gen = {
+            3: GEN3,
+            8: GEN2,
+            9: GEN2,
+        }
+        dtc_to_gen = {
+            "83": GEN4,
+        }
+        dtc=f"{dtc:0{4}x}"  # convert to hex  rep
+        if str(dtc)[:2] == "20":       # These can only be determined by fw version
+            if gen := arm_firmware_version_to_gen.get(math.floor(int(fw) / 100)):
+                return gen
+            else:
+                return GEN1
+        elif str(dtc)[:2] in dtc_to_gen:       # For newer Gen4+ we use dtc
+            return dtc_to_gen[str(dtc)[:2]]
+        else:
+            return NA                   # Eveerything else has no Generation
+
+
+    @staticmethod
+    def battery_max_power(dtc,fw) -> Optional[int]:
+        """Determine max inverter power from device_type_code and fw version."""
+        dtc=f"{dtc:0{4}x}"  # convert to hex rep
+
+        dtc_to_batpower={
+            "3001": 3000,
+            "3002": 3000,
+            "8001": 6000,
+            "8102": 8000,
+            "8103": 10000,
+        }                   #Covers AC3, Gen4 and AIO
+        arm_firmware_version_to_gen = [3,8,9]
         
-        power = [
-            1000,
-            2000,
-            3000,
-            4000,
-            5000,
-            6000,
-            7000,
-            8000,
-            10000,
-            11000,
-            15000,
-            20000,
-            30000,
-            50000,
-        ]
-        return power[inp]
+        if str(dtc)[:2] == "20":       # These can only be determined by fw version
+            if (math.floor(int(fw) / 100)) in arm_firmware_version_to_gen:  #Gen2&3
+                return 3600
+            else:
+                return 2600
+        elif dtc in dtc_to_batpower:
+            return dtc_to_batpower[dtc]
+        else:
+            return 0
     
 
     @staticmethod
@@ -643,23 +675,23 @@ class Model(StrEnum):
     HYBRID_POLAR = "21"
     HYBRID_GEN3_PLUS = "22"
     PV = "23"
-    AC = "3"
-    HYBRID_3PH = "4"
-    AC_3PH = "6"
-    EMS = "5"
-    GATEWAY = "7"
+    AC = "30"
+    HYBRID_3PH = "40"
+    AIO_COMMERCIAL = "41"
+    AC_3PH = "60"
+    EMS = "50"
+    EMS_COMMERCIAL = "51"
+    GATEWAY = "70"
     ALL_IN_ONE = "80"
     HYBRID_HV = "81"
+    HYBRID_GEN4 = "83"
     ALL_IN_ONE_HYBRID = "82"
 
     @classmethod
     def _missing_(cls, value):
         """Just return Hybrid."""
-        if value[0] in ["2","8"]:
-            return cls(value[:2])
-        else:
-            return cls(value[0])
-
+        return cls(value[:2])
+        
     @classmethod
     def core_regs(cls, value):
         """Return core registers for each model to be pulled in a "partial" refresh. (IR,HR)"""
@@ -684,7 +716,7 @@ class Model(StrEnum):
             '5': ([2040],[2040]),   #EMS
             '6': ([0, 60, 120, 180, 240,1000,1060,1120,1180,1240,1300,1360],[180,240,1000,1060,1120]),   #AC - 3ph
             '7': ([0, 60, 120, 180,1600,1660,1720,1780,1840],[0, 60, 120, 120,180,240,300]),   #Gateway
-            '8': ([0, 60, 120, 180, 240],[0, 60, 120, 120, 180, 240, 300]),   #All in One
+            '8': ([0, 60, 120, 180, 240],[0, 60, 120, 120, 180, 240, 300]),   #All in One and Gen 4
         }
         return regs.get(value[0])
 
@@ -710,20 +742,29 @@ class Generation(StrEnum):
     GEN1 = "Gen 1"
     GEN2 = "Gen 2"
     GEN3 = "Gen 3"
+    GEN4 = "Gen 4"
+    NA = "NoGen"
 
-    @classmethod
-    def _missing_(cls, value: int):
-        """Pick generation from the arm_firmware_version."""
-        arm_firmware_version_to_gen = {
-            3: cls.GEN3,
-            8: cls.GEN2,
-            9: cls.GEN2,
-        }
-        key = math.floor(int(value) / 100)
-        if gen := arm_firmware_version_to_gen.get(key):
-            return gen
-        else:
-            return cls.GEN1
+#    @classmethod
+#    def _missing_(cls, fw: str, dtc: str):
+#        """Pick generation from the arm_firmware_version."""
+#        arm_firmware_version_to_gen = {
+#            3: cls.GEN3,
+#            8: cls.GEN2,
+#            9: cls.GEN2,
+#        }
+#        dtc_to_gen = {
+#            "83": cls.GEN4,
+#        }
+#        if value[:2] == "20":       # These can only be determined by fw version
+#            if gen := arm_firmware_version_to_gen.get(math.floor(int(value) / 100)):
+#                return gen
+#            else:
+#                return cls.GEN1
+#        elif value[:2] in dtc_to_gen:       # For newer Gen4+ we use dtc
+#            return dtc_to_gen[value[:2]]
+#        else:
+#            return cls.NA                   # Eveerything else has no Generation
 
 
 class UsbDevice(IntEnum):
@@ -872,36 +913,35 @@ class InverterType(IntEnum):
         """Default to 0."""
         return cls(0)
 
-class Phase(StrEnum):
+class Phase(IntEnum):
     """Determine number of Phases."""
 
-    OnePhase = ("Single Phase",)
-    ThreePhase = ("Three Phase",)
-
-    __dtc_to_phases_lut__ = {
-        2: OnePhase,
-        3: OnePhase,
-        4: ThreePhase,
-        5: OnePhase,
-        6: ThreePhase,
-        7: OnePhase,
-        8: OnePhase,
-    }
+    OnePhase = 1
+    ThreePhase = 3
 
     @classmethod
-    def from_device_type_code(cls, device_type_code: str):
-        """Return the appropriate model from a given serial number."""
-        prefix = int(device_type_code[0])
-        if prefix in cls.__dtc_to_phases_lut__:
-            return cls.__dtc_to_phases_lut__[prefix]
+    def _missing_(cls, device_type_code: str):
+        """Return the appropriate model from a given dtc."""
+        __dtc_to_phases_lut__ = {
+        '2': cls.OnePhase,
+        '3': cls.OnePhase,
+        '4': cls.ThreePhase,
+        '5': cls.OnePhase,
+        '6': cls.ThreePhase,
+        '7': cls.OnePhase,
+        '8': cls.OnePhase,
+    }
+        prefix = device_type_code[0]
+        if prefix in __dtc_to_phases_lut__:
+            res= __dtc_to_phases_lut__[prefix]
+            return res
         else:
-            # raise UnknownModelError(f"Cannot determine model number from serial number {serial_number}")
             return 'Unknown'
         
-    @classmethod
-    def _missing_(cls, value):
-        """Pick model from the first digit of the device type code."""
-        return cls.from_device_type_code(value)
+#    @classmethod
+#    def _missing_(cls, value):
+#        """Pick model from the first digit of the device type code."""
+#        return cls.from_device_type_code(value)
 
 
 class InvertorPower(StrEnum):
@@ -918,6 +958,7 @@ class InvertorPower(StrEnum):
         '4003': 10000,
         '4004': 11000,
         '8001': 6000,
+        '8304': 6000,
     }
 
     @classmethod
