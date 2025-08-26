@@ -403,6 +403,21 @@ class GivMQTT():
                 payload['slot']=10
                 #wr.setChargeSlotEnd(payload)
                 requestcommand("setChargeSlotEnd",payload)
+            elif command=="setEMSChargeTarget1":
+                payload['chargeToPercent'] = str(message.payload.decode("utf-8"))
+                payload['slot'] = 1
+                payload['EMS'] = True
+                requestcommand("setChargeTarget2", payload)
+            elif command=="setEMSChargeTarget2":
+                payload['chargeToPercent'] = str(message.payload.decode("utf-8"))
+                payload['slot'] = 2
+                payload['EMS'] = True
+                requestcommand("setChargeTarget2", payload)
+            elif command=="setEMSChargeTarget3":
+                payload['chargeToPercent'] = str(message.payload.decode("utf-8"))
+                payload['slot'] = 3
+                payload['EMS'] = True
+                requestcommand("setChargeTarget2", payload)
             elif command=="setEMSChargeStart1":
                 payload['start']=message.payload.decode("utf-8")[:5]
                 payload['slot']=1
