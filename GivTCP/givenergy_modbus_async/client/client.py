@@ -95,6 +95,7 @@ class Client:
 
         if hasattr(self, "writer") and self.writer:
             self.writer.close()
+### How do I handle a timeout which hangs the connection...
             await self.writer.wait_closed()
             del self.writer
 

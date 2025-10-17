@@ -749,8 +749,15 @@ while True:
                     logger.error("Self Run loop process stuck. Killing and restarting...")
                     os.chdir(PATH)
                     selfRun[inv].kill()
+                    
+                    #Remove Cache in case its a problem with the cache
+                    if exists(setts['cache_location']+"/lastUpdate_"+str(inv)+".pkl"):
+                        os.remove(setts['cache_location']+"/lastUpdate_"+str(inv)+".pkl")
+
                     logger.info ("Restarting Invertor read loop every "+str(setts['self_run_timer'])+"s")
                     selfRun[inv]=subprocess.Popen(["/usr/local/bin/python3",PATH+"/read.py", "start"])
+                    # Should I remove the cache here
+
             if not gunicorn[inv].poll()==None:
                 gunicorn[inv].kill()
                 logger.error("REST API process died. Restarting...")

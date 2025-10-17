@@ -214,7 +214,7 @@ async def watch_plant(
                         for res in result:
                             if isinstance(res,TimeoutError):
                                 hasTimeout=True
-                                logger.debug("Timeout Error: "+str(res))
+                                logger.error("Timeout Error: "+str(res))
                                 raise Exception(res)
                         timeoutErrors=0     # Reset timeouts if all is good this run
                         logger.debug("Data get was successful, now running handler if needed: ")
@@ -234,7 +234,7 @@ async def watch_plant(
                         # Publish the new total timeout errors
 
                         timeoutErrors=timeoutErrors+1
-                        logger.debug("Error num "+str(timeoutErrors)+" in watch loop execute command: "+str(e))
+                        logger.error("Error num "+str(timeoutErrors)+" in watch loop execute command: "+str(e))
                         logger.debug("Not running handler")
                         if timeoutErrors>5:
                             logger.error("5 consecutive timeout errors in watch loop. Restarting modbus connection:")
