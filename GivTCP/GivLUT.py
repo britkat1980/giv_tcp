@@ -1,7 +1,6 @@
 """GivLUT: Various objects to interface to GivEnergy inverters """
 from givenergy_modbus_async.client.client import Client
 from settings import GiV_Settings
-from givenergy_modbus.model import plant
 import logging
 import pickle
 import datetime

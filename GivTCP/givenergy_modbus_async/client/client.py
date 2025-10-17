@@ -47,6 +47,11 @@ class Client:
         self.framer = ClientFramer()
         self.plant = Plant()
         self.tx_queue = Queue(maxsize=20)
+        # Maximum time (seconds) to wait for socket read before re-checking
+        # this prevents reader.read(...) from blocking forever if the
+        # remote peer becomes silent. Small value (e.g. 5s) is sufficient
+        # to allow occasional idle periods while still allowing cancellation.
+        self.read_timeout = 5.0
         # self.debug_frames = {
         #     'all': Queue(maxsize=1000),
         #     'error': Queue(maxsize=1000),
@@ -77,36 +82,70 @@ class Client:
 
     async def close(self) -> None:
         """Disconnect from the remote host and clean up tasks and queues."""
+        # Make close idempotent and resilient to partially-constructed
+        # client state. Ensure tasks are cancelled first, but don't block
+        # indefinitely waiting for them.
         if not self.connected:
             return
 
         _logger.debug("Disconnecting and cleaning up")
 
+        # Mark disconnected immediately so other tasks can observe state
         self.connected = False
 
+        # Cancel background tasks (consumer then producer) and await them
+        # with a short timeout so close() doesn't hang forever.
+        if getattr(self, "network_consumer_task", None):
+            self.network_consumer_task.cancel()
+            try:
+                await asyncio.wait_for(self.network_consumer_task, timeout=2.0)
+            except Exception:
+                # task may have already finished or refused to cancel quickly
+                pass
+
+        if getattr(self, "network_producer_task", None):
+            self.network_producer_task.cancel()
+            try:
+                await asyncio.wait_for(self.network_producer_task, timeout=2.0)
+            except Exception:
+                pass
+
+        # Cancel any pending futures stored in tx_queue
         if self.tx_queue:
             while not self.tx_queue.empty():
-                _, future = self.tx_queue.get_nowait()
+                try:
+                    _, future = self.tx_queue.get_nowait()
+                except Exception:
+                    break
                 if future:
                     future.cancel()
 
-        if self.network_producer_task:
-            self.network_producer_task.cancel()
-
+        # Close the writer but don't block forever waiting for wait_closed()
         if hasattr(self, "writer") and self.writer:
-            self.writer.close()
-### How do I handle a timeout which hangs the connection...
-            await self.writer.wait_closed()
-            del self.writer
+            try:
+                self.writer.close()
+                await asyncio.wait_for(self.writer.wait_closed(), timeout=2.0)
+            except Exception:
+                _logger.debug("Timed out or error waiting for writer to close")
+            try:
+                del self.writer
+            except Exception:
+                pass
 
-        if self.network_producer_task:
-            self.network_consumer_task.cancel()
-
+        # Safely tear down reader
         if hasattr(self, "reader") and self.reader:
-            self.reader.feed_eof()
-            self.reader.set_exception(RuntimeError("cancelling"))
-            del self.reader
+            try:
+                # unblock any pending read() callers
+                self.reader.feed_eof()
+                self.reader.set_exception(RuntimeError("cancelling"))
+            except Exception:
+                pass
+            try:
+                del self.reader
+            except Exception:
+                pass
 
+        # Clear expected responses map
         self.expected_responses = {}
         # self.debug_frames = {
         #     'all': Queue(maxsize=1000),
@@ -332,7 +371,18 @@ class Client:
         """Task for orchestrating incoming data."""
         try:
             while hasattr(self, "reader") and self.reader and not self.reader.at_eof():
-                frame = await self.reader.read(300)
+                # Protect reader.read from blocking forever by using a
+                # short wait_for timeout. If the timeout elapses we loop
+                # again which allows task cancellation to be observed.
+                try:
+                    frame = await asyncio.wait_for(
+                        self.reader.read(300), timeout=self.read_timeout
+                    )
+                except asyncio.TimeoutError:
+                    # No data arrived within read_timeout, loop back and
+                    # check reader/connected state. This prevents a silent
+                    # peer from causing an indefinite hang.
+                    continue
                 # await self.debug_frames['all'].put(frame)
                 for message in self.framer.decode(frame):
                     _logger.debug("Processing %s", message)
@@ -371,10 +421,8 @@ class Client:
             _logger.debug(
                 "network_consumer reader at EOF, cannot continue, closing connection"
             )
-        except Exception as e:
-             _logger.error(
-                "network_consumer reader exception {}", e
-            )
+        except Exception:
+            _logger.exception("network_consumer reader exception")
         finally:
             await self.close()
 
