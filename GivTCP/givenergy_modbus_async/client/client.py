@@ -51,7 +51,7 @@ class Client:
         # this prevents reader.read(...) from blocking forever if the
         # remote peer becomes silent. Small value (e.g. 5s) is sufficient
         # to allow occasional idle periods while still allowing cancellation.
-        self.read_timeout = 5.0
+        self.read_timeout = 3.0
         # self.debug_frames = {
         #     'all': Queue(maxsize=1000),
         #     'error': Queue(maxsize=1000),
@@ -258,7 +258,10 @@ class Client:
         else:
             self.plant.isHV= False
 #            meter_list=[]
-        meter_list=[1,2,3,4,5,6,7,8]
+        if self.plant.inverter.model == Model.HYBRID:
+            meter_list=[]
+        else:
+            meter_list=[1,2,3,4,5,6,7,8]
 
         #### Set whether a device has batteries and then count them if they are allowed ####
         if self.plant.device_type in (Model.EMS,Model.GATEWAY, Model.HYBRID_GEN4):

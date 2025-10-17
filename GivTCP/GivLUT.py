@@ -207,8 +207,6 @@ class GivLUT:
     else:
         timezone=zoneinfo.ZoneInfo(key="Europe/London")         # Otherwise Assume everyone is in UK!
 
-    #Last_Updated_Time=GEType("sensor","timestamp","","","",False,False,False)
-
     raw_to_pub={
         "Grid_Power":"p_grid_out",
         "Import_Power":"p_grid_out",

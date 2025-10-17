@@ -14,7 +14,7 @@ async def getInvDeets2(HOST):
         client=Client(HOST,8899,3)
         await client.connect()
         await client.detect_plant(additional=False)
-        await client.close()
+        
         SN= client.plant.inverter.serial_number
         #logger.debug("Deets retrieved from found Inverter are: "+str(stats))
         #SN=stats[2]

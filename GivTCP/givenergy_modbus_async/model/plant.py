@@ -122,6 +122,7 @@ class Plant:
         Since we attempt to decode register data in the process, it's possible for an
         exception to be raised.
         """
+        # Do a LUT test first to speed things up
         meter_list=[]
         i = 1
         for i in range(8):

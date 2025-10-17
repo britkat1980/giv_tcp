@@ -513,17 +513,20 @@ class Converter:
         GEN1 = "Gen 1"
         GEN2 = "Gen 2"
         GEN3 = "Gen 3"
+        GEN3P = "Gen 3+"
         GEN4 = "Gen 4"
+        AIO2 = "AIO 2"
         NA = "NoGen"
 
         """Pick generation from the arm_firmware_version."""
         arm_firmware_version_to_gen = {
             3: GEN3,
             8: GEN2,
-            9: GEN2,
+            9: GEN2
         }
         dtc_to_gen = {
-            "83": GEN4,
+            "22": GEN3P,
+            "83": GEN4
         }
         dtc=f"{dtc:0{4}x}"  # convert to hex  rep
         if str(dtc)[:2] == "20":       # These can only be determined by fw version
@@ -742,6 +745,7 @@ class Generation(StrEnum):
     GEN1 = "Gen 1"
     GEN2 = "Gen 2"
     GEN3 = "Gen 3"
+    GEN3P = "Gen 3+"
     GEN4 = "Gen 4"
     NA = "NoGen"
 
