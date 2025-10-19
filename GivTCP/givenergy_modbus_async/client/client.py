@@ -258,7 +258,7 @@ class Client:
         else:
             self.plant.isHV= False
 #            meter_list=[]
-        if self.plant.inverter.model == Model.HYBRID:
+        if self.plant.device_type in (Model.HYBRID, Model.AC):
             meter_list=[]
         else:
             meter_list=[1,2,3,4,5,6,7,8]

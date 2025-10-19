@@ -241,7 +241,7 @@ async def watch_plant(
                         # Publish the new total timeout errors
 
                         timeoutErrors=timeoutErrors+1
-                        logger.error("Error num "+str(timeoutErrors)+" in watch loop execute command: "+str(e))
+                        logger.debug("Error num "+str(timeoutErrors)+" in watch loop execute command: "+str(e))
                         logger.debug("Not running handler")
                         if timeoutErrors>5:
                             logger.error("5 consecutive timeout errors in watch loop. Restarting modbus connection:")
@@ -2384,7 +2384,7 @@ def ratecalcs(multi_output, multi_output_old):
 
     inv_time=datetime.datetime.strptime(finditem(multi_output,"Invertor_Time"), '%Y-%m-%dT%H:%M:%S%z')
     # if midnight then reset costs
-    if inv_time.hour == 0 and inv_time.minute == 0:
+    if inv_time.hour == 0 and inv_time.minute == 0 and not exists(".midnightreset"):
         logger.info("Midnight, so resetting Day/Night stats...")
         rate_data['Night_Cost'] = 0.00
         rate_data['Day_Cost'] = 0.00
@@ -2394,6 +2394,10 @@ def ratecalcs(multi_output, multi_output_old):
         rate_data['Night_Start_Energy_kWh'] = import_energy
         rate_data['Day_Energy_Total_kWh'] = 0
         rate_data['Night_Energy_Total_kWh'] = 0
+        open(".midnightreset", 'w').close() 
+    else:
+        if exists(".midnightreset"):
+            os.remove(".midnightreset")
 
 ## If we use externally triggered rates then don't do the time check but assume the rate files are set elsewhere (default to Day if not set)
     if GiV_Settings.dynamic_tariff == False:     
