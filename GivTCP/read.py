@@ -1966,7 +1966,7 @@ def processData(plant: Plant):
         givtcpdata['Last_Updated_Time'] = datetime.datetime.now(GivLUT.timezone).isoformat()
         givtcpdata['status'] = "online"
         givtcpdata['Time_Since_Last_Update'] = 0
-        givtcpdata['GivTCP_Version']= "3.1.18dev"
+        givtcpdata['GivTCP_Version']= "3.3"
 
         count=0
         if exists(GivLUT.writecountpkl):
