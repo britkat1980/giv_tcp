@@ -132,7 +132,6 @@ GivTCP incorporates control and monitoring of the GE charger. Connecting via loc
 
 NOTE - there is currently a firmware bug (<= v1.12) with the GivEVC where the Modbus port is only available on WiFi. Therefore if your EVC is connected via ethernet it will be necessary to disconnect and re-connect via WiFi to recieve data via GivTCP. You can submit a request to GivEnergy to update the firmware to v1.13 and then enable local control in the GivEnergy portal: Expand the "My EV Charger" card -> Settings -> Other -> "Enable Local Control".
 
-
 ### Configuration
 
   
