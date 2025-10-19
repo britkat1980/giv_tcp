@@ -1,7 +1,6 @@
 """GivLUT: Various objects to interface to GivEnergy inverters """
 from givenergy_modbus_async.client.client import Client
 from settings import GiV_Settings
-from givenergy_modbus.model import plant
 import logging
 import pickle
 import datetime
@@ -207,8 +206,6 @@ class GivLUT:
         timezone=zoneinfo.ZoneInfo(key=os.getenv("TZ"))
     else:
         timezone=zoneinfo.ZoneInfo(key="Europe/London")         # Otherwise Assume everyone is in UK!
-
-    #Last_Updated_Time=GEType("sensor","timestamp","","","",False,False,False)
 
     raw_to_pub={
         "Grid_Power":"p_grid_out",

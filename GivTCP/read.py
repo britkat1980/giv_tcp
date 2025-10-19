@@ -46,6 +46,12 @@ def commsFailure():
         pickle.dump(oldDataCount, outp, pickle.HIGHEST_PROTOCOL)
     return oldDataCount
 
+def resetTodayStats():
+    # end value 0 to all "Today stats"
+    Today={'Today':{'AC_Charge_Energy_Today_kWh': 0, 'Battery_Charge_Energy_Today_kWh': 0, 'Battery_Discharge_Energy_Today_kWh': 0, 'Battery_Throughput_Today_kWh': 0, 'Export_Energy_Today_kWh': 0, 'Import_Energy_Today_kWh': 0, 'Invertor_Energy_Today_kWh': 0, 'Load_Energy_Today_kWh': 0, 'PV_Energy_Today_kWh': 0, 'Self_Consumption_Energy_Today_kWh': 0}}
+    GivMQTT.multi_MQTT_publish("GivEnergy/"+GiV_Settings.serial_number+"/Energy/",Today)
+    logger.info("Forcing MQTT data for Today Stats to Zero at Midnight")
+
 def rebootaddon():
     if GiV_Settings.isAddon:
         access_token = os.getenv("SUPERVISOR_TOKEN")
@@ -73,6 +79,7 @@ async def watch_plant(
 #            client= await GivClientAsync.client
             client = await GivClientAsync.get_connection(cold_start=True)
 #            await client.connect()
+######### Is there a way to just refresh plant here rather than detect again? ##########
             logger.critical("Detecting inverter characteristics...")
             await client.detect_plant()
             await client.refresh_plant(True, number_batteries=client.plant.number_batteries,meter_list=client.plant.meter_list)
@@ -97,12 +104,18 @@ async def watch_plant(
             if failcount>=10:
                 logger.error("Lost communications with Inverter. Restarting container to detect IP change")
                 rebootaddon()
-            await client.close()
+            try:
+                await client.close()
+            except:
+                pass
             return
         except Exception:
             e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
             logger.error ("Error in inital detect/refresh: "+str(e))
-            await client.close()
+            try:
+                await client.close()
+            except:
+                pass
             return
         # set last full_refresh time
         lastfulltime=datetime.datetime.now()
@@ -172,8 +185,10 @@ async def watch_plant(
                         os.remove(GivLUT.writerequests)
 
                 timesincelast=datetime.datetime.now()-lastruntime
+                if datetime.datetime.now(tz=GivLUT.timezone).time() == datetime.time(0, 0):
+                    resetTodayStats()
                 if timesincelast.total_seconds() < refresh_period:
-                    await asyncio.sleep(1)
+                    await asyncio.sleep(0.5)
                     #if refresh period hasn't expired then just keep looping back up to write check
                     continue
                 
@@ -206,7 +221,7 @@ async def watch_plant(
                         for res in result:
                             if isinstance(res,TimeoutError):
                                 hasTimeout=True
-                                logger.debug("Timeout Error: "+str(res))
+                                logger.error("Timeout Error: "+str(res))
                                 raise Exception(res)
                         timeoutErrors=0     # Reset timeouts if all is good this run
                         logger.debug("Data get was successful, now running handler if needed: ")
@@ -280,21 +295,6 @@ def getInvModel(plant: Plant):
     inverterModel.invmaxrate=GEInv.inverter_max_power
     inverterModel.batmaxrate=GEInv.battery_max_power
     inverterModel.batterycapacity=GEInv.battery_nominal_capacity        #for HV this is reported Ah times nom voltage (100%)
-
-#    if inverterModel.model==Model.HYBRID:
-#        if inverterModel.generation == Generation.GEN1:
-#            maxBatChargeRate=2600
-#        else:
-#            maxBatChargeRate=3600       #Gen2&3
-#    elif inverterModel.model == Model.PV:
-#        maxBatChargeRate=0
-#    elif inverterModel.model == Model.AC:
-#        maxBatChargeRate=3000
-#    elif inverterModel.generation == Generation.NA:
-#        maxBatChargeRate=3000
-#    else:
-#        maxBatChargeRate=3600
-
     # Calc max charge rate
     if inverterModel.model in [Model.AC_3PH,Model.HYBRID_3PH]:
         inverterModel.batmaxrate= 25 * 80 * plant.number_batteries
@@ -303,15 +303,6 @@ def getInvModel(plant: Plant):
         inverterModel.batterycapacity=13.5*int(GEInv.parallel_aio_num)
     elif inverterModel.model in [Model.HYBRID_GEN4,Model.ALL_IN_ONE]:
         inverterModel.batmaxrate=6000
-    #elif inverterModel.model ==Model.HYBRID_HV:
-    #    if GEInv.device_type_code=="8012":
-    #        inverterModel.batmaxrate=8000
-    #    elif GEInv.device_type_code=="8013":
-    #        inverterModel.batmaxrate=10000
-    #else:       # For normal hybrid and AC3
-
-#### STILL NEED TO ACCOUNT FOR THIS #########
-#        inverterModel.batmaxrate=min(maxBatChargeRate, inverterModel.batterycapacity*1000/2)
     return inverterModel
 
 def getRaw(plant: Plant):
@@ -487,6 +478,9 @@ def getBatteries(plant: Plant, multi_output_old):
                         logger.error("Battery Object empty so skipping")
                 batteries2['Battery_Stack_'+str(num+1)]=bcudata
         return batteries2
+    except KeyError as e:
+        missing_key = e.args[0] if e.args else None
+        raise KeyError(f"Missing key {missing_key!r}") from e
     except Exception:
         e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
         #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
@@ -522,7 +516,7 @@ def getTimeslots(plant: Plant, multi_output_old=None):
     timeslots['Charge_end_time_slot_1'] = validateTimeslot(GEInv.charge_slot_1.end,"Charge_end_time_slot_1",multi_output_old)
 
     try:
-        if GEInv.model in [Model.ALL_IN_ONE, Model.AC_3PH, Model.HYBRID_3PH, Model.GATEWAY] or (GEInv.generation == Generation.GEN3 and int(GEInv.arm_firmware_version)>302):   #10 slots don't apply to AC/Hybrid except new fw on Gen 3
+        if GEInv.model in [Model.ALL_IN_ONE, Model.AC_3PH, Model.HYBRID_3PH, Model.GATEWAY] or (GEInv.generation == Generation.GEN3 and int(GEInv.arm_firmware_version)>302) or GEInv.generation == Generation.GEN4:   #10 slots don't apply to AC/Hybrid except new fw on Gen 3
             timeslots['Charge_start_time_slot_2'] = validateTimeslot(GEInv.charge_slot_2.start,"Charge_start_time_slot_2",multi_output_old)
             timeslots['Charge_end_time_slot_2'] = validateTimeslot(GEInv.charge_slot_2.end,"Charge_end_time_slot_2",multi_output_old)
             timeslots['Charge_start_time_slot_3'] = validateTimeslot(GEInv.charge_slot_3.start,"Charge_start_time_slot_3",multi_output_old)
@@ -952,6 +946,9 @@ def processPVInfo(plant: Plant):
         multi_output["Meter_Details"] = meters
         if GiV_Settings.Print_Raw_Registers:
             multi_output['raw'] = getRaw(plant)
+    except KeyError as e:
+        missing_key = e.args[0] if e.args else None
+        raise KeyError(f"Missing key {missing_key!r}") from e
     except Exception:
         e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
         #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
@@ -1311,6 +1308,9 @@ def processInverterInfo(plant: Plant):
         multi_output["Meter_Details"] = meters
         if GiV_Settings.Print_Raw_Registers:
             multi_output['raw'] = getRaw(plant)
+    except KeyError as e:
+        missing_key = e.args[0] if e.args else None
+        raise KeyError(f"Missing key {missing_key!r}") from e
     except Exception:
         e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
         #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
@@ -1467,6 +1467,9 @@ def processEMSInfo(plant: Plant):
         energy['Today']=energy_today_output
         energy['Total']=energy_total_output
         multi_output['Energy']=energy
+    except KeyError as e:
+        missing_key = e.args[0] if e.args else None
+        raise KeyError(f"Missing key {missing_key!r}") from e
     except Exception:
         e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
         #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
@@ -1723,6 +1726,9 @@ def processGatewayInfo(plant: Plant):
             multi_output["Control"] = controlmode
         multi_output[GEInv.serial_number]=gateway
         multi_output["Meter_Details"] = meters
+    except KeyError as e:
+        missing_key = e.args[0] if e.args else None
+        raise KeyError(f"Missing key {missing_key!r}") from e
     except Exception:
         e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
         #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
@@ -1912,7 +1918,6 @@ def processThreePhaseInfo(plant: Plant):
         timeslots.update(res[0])
         controlmode.update(res[1])
 
-
         energy = {}
         energy["Today"] = energy_today_output
         energy["Total"] = energy_total_output
@@ -1925,6 +1930,9 @@ def processThreePhaseInfo(plant: Plant):
         multi_output["Energy"] = energy
         multi_output["Timeslots"] = timeslots
         multi_output["Control"] = controlmode
+    except KeyError as e:
+        missing_key = e.args[0] if e.args else None
+        raise KeyError(f"Missing key {missing_key!r}") from e
     except Exception:
         e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
         #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
@@ -2031,6 +2039,9 @@ def processData(plant: Plant):
         if exists(GivLUT.oldDataCount):
             os.remove(GivLUT.oldDataCount)
 
+    except KeyError as e:
+        missing_key = e.args[0] if e.args else None
+        raise KeyError(f"Missing key {missing_key!r}") from e
     except Exception:
         e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
         #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
@@ -2134,6 +2145,9 @@ def runAll2(plant: Plant):  # Read from Inverter put in cache and publish
         # Only publish if its new data?
         logger.debug("Running pubFromPickle")
         multi_output = pubFromPickle(result['multi_output'])
+    except KeyError as e:
+        missing_key = e.args[0] if e.args else None
+        raise KeyError(f"Missing key {missing_key!r}") from e
     except Exception:
         e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
         logger.error("runAll2 Error processing registers: " + str(e))
@@ -2370,7 +2384,7 @@ def ratecalcs(multi_output, multi_output_old):
 
     inv_time=datetime.datetime.strptime(finditem(multi_output,"Invertor_Time"), '%Y-%m-%dT%H:%M:%S%z')
     # if midnight then reset costs
-    if inv_time.hour == 0 and inv_time.minute == 0:
+    if inv_time.hour == 0 and inv_time.minute == 0 and not exists(".midnightreset"):
         logger.info("Midnight, so resetting Day/Night stats...")
         rate_data['Night_Cost'] = 0.00
         rate_data['Day_Cost'] = 0.00
@@ -2380,6 +2394,10 @@ def ratecalcs(multi_output, multi_output_old):
         rate_data['Night_Start_Energy_kWh'] = import_energy
         rate_data['Day_Energy_Total_kWh'] = 0
         rate_data['Night_Energy_Total_kWh'] = 0
+        open(".midnightreset", 'w').close() 
+    else:
+        if exists(".midnightreset"):
+            os.remove(".midnightreset")
 
 ## If we use externally triggered rates then don't do the time check but assume the rate files are set elsewhere (default to Day if not set)
     if GiV_Settings.dynamic_tariff == False:     

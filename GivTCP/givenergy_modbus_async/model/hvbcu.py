@@ -38,7 +38,7 @@ class BCU(RegisterGetter, metaclass=DynamicDoc):
         "status": Def(DT.uint16, None, IR(70)),
         "battery_voltage": Def(DT.deci, None, IR(73)),
         "load_voltage": Def(DT.deci, None, IR(74)),
-        "battery_current": Def(DT.milli, None, IR(76)),
+        "battery_current": Def(DT.int16, DT.deci, IR(76)),
         "battery_power": Def(DT.milli, None, IR(79)),
         "battery_soc_max": Def((DT.duint8, 0), None, IR(80)),
         "battery_soc_min": Def((DT.duint8, 1), None, IR(80)),

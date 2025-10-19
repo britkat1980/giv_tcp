@@ -513,17 +513,20 @@ class Converter:
         GEN1 = "Gen 1"
         GEN2 = "Gen 2"
         GEN3 = "Gen 3"
+        GEN3P = "Gen 3+"
         GEN4 = "Gen 4"
+        AIO2 = "AIO 2"
         NA = "NoGen"
 
         """Pick generation from the arm_firmware_version."""
         arm_firmware_version_to_gen = {
             3: GEN3,
             8: GEN2,
-            9: GEN2,
+            9: GEN2
         }
         dtc_to_gen = {
-            "83": GEN4,
+            "22": GEN3P,
+            "83": GEN4
         }
         dtc=f"{dtc:0{4}x}"  # convert to hex  rep
         if str(dtc)[:2] == "20":       # These can only be determined by fw version
@@ -742,6 +745,7 @@ class Generation(StrEnum):
     GEN1 = "Gen 1"
     GEN2 = "Gen 2"
     GEN3 = "Gen 3"
+    GEN3P = "Gen 3+"
     GEN4 = "Gen 4"
     NA = "NoGen"
 
@@ -1166,3 +1170,76 @@ class MR(Register):
     """Meter Product Register."""
 
     _type = Register.TYPE_METER
+    
+"""
+class InverterType_2:
+    # Single Class to determine characteristics based on DTC
+    def __init__(self,dT,imP, bmP, gN, pH, cR):
+        self.invertermaxpower=imP,
+        self.batterymaxpower=bmP,
+        self.generation = gN,
+        self.devicetype = dT
+        self.phases = pH
+        self.core_regs = cR
+
+    def fw_to_gen(value): 
+        lut= {
+            3: Generation.GEN3,
+            8: Generation.GEN2,
+            9: Generation.GEN2,
+        }
+        if gen := lut.get(math.floor(int(value) / 100)):
+            return gen
+        else:
+            return Generation.GEN1
+    
+    def fw_to_batmax(fw): 
+        lut= {
+            3: Generation.GEN3,
+            8: Generation.GEN2,
+            9: Generation.GEN2,
+        }
+        if (math.floor(int(fw) / 100)) in [3,8,9]:
+            return 3600
+        else:
+            return 2600
+
+    # LUT is DeviceType, Generation, Phases, InverterMaxPower, BatteryMaxPower, Core Regs, Add Regs
+    dtc_lut = {
+    "2001": (Model.HYBRID,fw_to_gen("2001"),Phase.OnePhase,5000,fw_to_batmax("2001"),([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), #special case for "20" inverters uses fw for batterymax
+    "2002": (Model.HYBRID,fw_to_gen("2002"),Phase.OnePhase,4600,fw_to_batmax("2001"),([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), #special case for "20" inverters uses fw for batterymax
+    "2003": (Model.HYBRID,fw_to_gen("2003"),Phase.OnePhase,3600,fw_to_batmax("2001"),([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), #special case for "20" inverters uses fw for batterymax
+    "2101": (Model.HYBRID_POLAR,Generation.NA,Phase.OnePhase,5000,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
+    "2102": (Model.HYBRID_POLAR,Generation.NA,Phase.OnePhase,4600,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
+    "2103": (Model.HYBRID_POLAR,Generation.NA,Phase.OnePhase,3600,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
+    "2104": (Model.HYBRID_POLAR,Generation.NA,Phase.OnePhase,6000,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
+    "2105": (Model.HYBRID_POLAR,Generation.NA,Phase.OnePhase,7000,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
+    "2106": (Model.HYBRID_POLAR,Generation.NA,Phase.OnePhase,8000,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
+    "2201": (Model.HYBRID_GEN3_PLUS,Generation.GEN3P,Phase.OnePhase,5000,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])),
+    "2202": 4600,
+    "2203": 3600,
+    "2204": 6000,
+    "2205": 7000,
+    "2206": 8000,
+    "2301": 5000,
+    "2302": 4600,
+    "2303": 3600,
+    "2304": 6000,
+    "3001": 3000,
+    "3002": 3600,
+    "4001": 6000,
+    "4002": 8000,
+    "4003": 10000,
+    "4004": 11000,
+    "7001": 12000,
+    "8001": 6000,
+    "8101": 6000,
+    "8102": 8000,
+    "8103": 10000,
+    "8201": 6000,
+    "8202": 8000,
+    "8203": 10000,
+    "8204": 12000,
+    "8304": 6000,
+    }
+"""

@@ -55,7 +55,11 @@ async def getInvDeets(HOST):
         client=Client(HOST,8899,3)
         await client.connect()
         await client.detect_plant(additional=False)
-        await client.close()
+        try:
+            await client.close()
+        except:
+            pass
+
         if not client.plant.inverter ==None:
             GEInv=client.plant.inverter
         elif not client.plant.ems ==None:
@@ -79,7 +83,8 @@ async def getInvDeets(HOST):
         logger.info(f'Inverter {str(SN)} which is a {str(gen.name.capitalize())} - {str(model.name.capitalize())} with {str(numbats)} batteries and {str(nummeters)} meters has been found at: {str(HOST)}')
         return Stats
     except:
-        logger.debug("Gathering inverter details for " + str(HOST) + " failed.")
+        e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
+        logger.error("Gathering inverter details for " + str(HOST) + " failed.")
         return None
 
 def createsettingsjson(inv):
@@ -220,58 +225,57 @@ def findinv(networks):
                 if networks[subnet]:
                     count=0
                     # Get EVC Details
+                    logger.info("Scanning network: "+str(networks[subnet]))
                     while len(evclist)<=0:
-                        if count<2:
-                            logger.debug("EVC- Scanning network ("+str(count+1)+"):"+str(networks[subnet]))
+                        if count<2:  
                             evclist=findEVC(networks[subnet])
                             if len(evclist)>0: break
                             count=count+1
                         else:
                             break
-                    if evclist:
-                        poplist=[]
-                        for evc in evclist:
-                            sn=validateEVC(evclist[evc])
-                            if sn:
-                                logger.info("GivEVC "+str(sn)+" found at: "+str(evclist[evc]))
-                                validevclist.append([evclist[evc],sn])
-                            else:
-                                logger.debug(evclist[evc]+" is not an EVC")
-                                poplist.append(evc)
-                        for pop in poplist:
-                            evclist.pop(pop)    #remove the unknown modbus device(s)
                     # Get Inverter Details
                     count=0
                     while len(list)<=0:
                         if count<2:
-                            logger.debug("INV- Scanning network ("+str(count+1)+"):"+str(networks[subnet]))
                             list=findInvertor(networks[subnet])
                             if len(list)>0: break
                             count=count+1
                         else:
                             break
-                    if list:
-                        logger.debug(str(len(list))+" Inverters found on "+str(networks[subnet])+" - "+str(list))
-                        invList.update(list)
-                        for inv in invList:
-                            deets={}
-                            logger.debug("Getting inverter stats for: "+str(invList[inv]))
-                            count=0
-                            while not deets:
-                                if count<2:
-                                    deets=asyncio.run(getInvDeets(invList[inv]))
-                                    if deets:
-                                        inverterStats[inv]=deets
-                                        break   #If we found the deets then don't try again
-                                    count=count+1
-                                else:
-                                    break
-                    if len(invList)==0:
-                        logger.info("No inverters found...")
+            if evclist:
+                poplist=[]
+                for evc in evclist:
+                    sn=validateEVC(evclist[evc])
+                    if sn:
+                        logger.info("GivEVC "+str(sn)+" found at: "+str(evclist[evc]))
+                        validevclist.append([evclist[evc],sn])
                     else:
-                    # write data to pickle
-                        with open('invippkl.pkl', 'wb') as outp:
-                            pickle.dump(inverterStats, outp, pickle.HIGHEST_PROTOCOL)
+                        logger.debug(evclist[evc]+" is not an EVC")
+                        poplist.append(evc)
+                for pop in poplist:
+                    evclist.pop(pop)    #remove the unknown modbus device(s)
+            if list:
+                logger.debug(str(len(list))+" Inverters found on "+str(networks[subnet])+" - "+str(list))
+                invList.update(list)
+                for inv in invList:
+                    deets={}
+                    logger.debug("Getting inverter stats for: "+str(invList[inv]))
+                    count=0
+                    while not deets:
+                        if count<2:
+                            deets=asyncio.run(getInvDeets(invList[inv]))
+                            if deets:
+                                inverterStats[inv]=deets
+                                break   #If we found the deets then don't try again
+                            count=count+1
+                        else:
+                            break
+            if len(invList)==0:
+                logger.info("No inverters found...")
+            else:
+            # write data to pickle
+                with open('invippkl.pkl', 'wb') as outp:
+                    pickle.dump(inverterStats, outp, pickle.HIGHEST_PROTOCOL)
         except:
             e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
             logger.error("Error scanning for Inverters- "+str(e))
@@ -393,7 +397,7 @@ if isAddon:
                 networks[i]=ip+"/24"
             else:
                 networks[i]=str(interface['ipv4']['address'][0])
-            logger.info("Network Found: "+str(networks[i]))
+            logger.debug("Network Found: "+str(networks[i]))
         i=i+1
 else:
     # Get subnet from docker if not addon
@@ -426,7 +430,6 @@ if setts["auto_scan"]==True:
     finv={}
     i=0
     while len(finv)==0:
-        logger.info("Searching for Inverters")
         finv=findinv(networks)
         i=i+1
         if i==3: 
@@ -749,8 +752,15 @@ while True:
                     logger.error("Self Run loop process stuck. Killing and restarting...")
                     os.chdir(PATH)
                     selfRun[inv].kill()
+                    
+                    #Remove Cache in case its a problem with the cache
+                    if exists(setts['cache_location']+"/lastUpdate_"+str(inv)+".pkl"):
+                        os.remove(setts['cache_location']+"/lastUpdate_"+str(inv)+".pkl")
+
                     logger.info ("Restarting Invertor read loop every "+str(setts['self_run_timer'])+"s")
                     selfRun[inv]=subprocess.Popen(["/usr/local/bin/python3",PATH+"/read.py", "start"])
+                    # Should I remove the cache here
+
             if not gunicorn[inv].poll()==None:
                 gunicorn[inv].kill()
                 logger.error("REST API process died. Restarting...")
