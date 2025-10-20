@@ -31,7 +31,7 @@ class ThreePhaseInverter(RegisterGetter, metaclass=DynamicDoc):
         #
         # Three Phase Holding Registers 1000-1124
         #
-        "generation": Def(C.generation, None, HR(0),HR(21)),
+        #"generation": Def(C.generation, None, HR(0),HR(21)),
         "set_command_save": Def(C.bool, None, HR(1001)),
         "active_rate": Def(C.uint16, None, HR(1002)),
         "reactive_rate": Def(C.uint16, None, HR(1003)),

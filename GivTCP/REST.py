@@ -60,7 +60,7 @@ def response(id: str):
                         return response['result']            
         waittime=datetime.datetime.now()-starttime
         if waittime.total_seconds()>15:
-            return "{'result':'Error: REST Command non-responsive'}"
+            return "{'result':'Error: REST response timeout. Unknown success'}"
 
 
 @giv_api.route('/api', methods=['GET'])

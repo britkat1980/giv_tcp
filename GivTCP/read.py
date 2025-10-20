@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from givenergy_modbus_async.model.register import Model, Generation, Enable
+from givenergy_modbus_async.model.register import Model, Enable
 from givenergy_modbus_async.model.plant import Plant, Inverter
 from givenergy_modbus_async.client.client import commands
 from givenergy_modbus_async.model.register import HR
@@ -76,9 +76,7 @@ async def watch_plant(
 
         """Refresh data about the Plant."""
         try:
-#            client= await GivClientAsync.client
             client = await GivClientAsync.get_connection(cold_start=True)
-#            await client.connect()
 ######### Is there a way to just refresh plant here rather than detect again? ##########
             logger.critical("Detecting inverter characteristics...")
             await client.detect_plant()
@@ -94,9 +92,9 @@ async def watch_plant(
             if handler:
                 try:
                     handler(client.plant)
-                except Exception:
+                except Exception as err:
                     e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-                    logger.error ("Error in calling handler: "+str(e))
+                    logger.error ("Error in calling handler: "+str(err))
 
         except CommunicationError:
             logger.error ("Unable to connect to inverter on: "+str(GiV_Settings.invertorIP))
@@ -109,9 +107,14 @@ async def watch_plant(
             except:
                 pass
             return
-        except Exception:
-            e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-            logger.error ("Error in inital detect/refresh: "+str(e))
+        except Exception as e:
+            err=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+            error_type = e.__class__.__name__    # e.g., "NameError", "AttributeError"
+            error_msg  = str(e)                   # e.g., "name 'some_var' is not defined"
+            # Log or display exactly what you want
+            logger.error("%s: %s", error_type, error_msg)
+
+            logger.error ("Error in inital detect/refresh: "+str(err))
             try:
                 await client.close()
             except:
@@ -221,7 +224,7 @@ async def watch_plant(
                         for res in result:
                             if isinstance(res,TimeoutError):
                                 hasTimeout=True
-                                logger.error("Timeout Error: "+str(res))
+                                logger.error("Timeout Error: "+str(res.__class__.__name__))
                                 raise Exception(res)
                         timeoutErrors=0     # Reset timeouts if all is good this run
                         logger.debug("Data get was successful, now running handler if needed: ")
@@ -235,13 +238,13 @@ async def watch_plant(
                         if failcount>=10:
                             logger.error("Lost communications with Inverter. Restarting container to detect IP change")
                             rebootaddon()
-                    except Exception:
-                        e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+                    except Exception as err:
+
                         totalTimeoutErrors=totalTimeoutErrors+1
                         # Publish the new total timeout errors
 
                         timeoutErrors=timeoutErrors+1
-                        logger.debug("Error num "+str(timeoutErrors)+" in watch loop execute command: "+str(e))
+                        logger.debug("Error num "+str(timeoutErrors)+" in watch loop execute command: "+str(err.__context__))
                         logger.debug("Not running handler")
                         if timeoutErrors>5:
                             logger.error("5 consecutive timeout errors in watch loop. Restarting modbus connection:")
@@ -252,33 +255,18 @@ async def watch_plant(
                     if handler:
                         try:
                             handler(client.plant)
-                        except Exception:
-                            e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-                            logger.error ("Error in calling handler: "+str(e))
+                        except Exception as e:
+                            err=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+                            error_type = e.__class__.__name__    # e.g., "NameError", "AttributeError"
+                            error_msg  = str(e)                   # e.g., "name 'some_var' is not defined"
+                            # Log or display exactly what you want
+                            logger.error("%s: %s", error_type, error_msg)
+                            logger.error ("Error in calling handler: "+str(err))
             except Exception:
                 f=sys.exc_info()
                 e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
                 logger.error ("Error in Watch Loop: "+str(e))
                 await client.close()
-
-def isitoldfw(inverter):
-    # Firmware Versions for each Model
-    # AC coupled 5xx old, 2xx new. 28x, 29x beta
-    # Gen1 4xx Old, 1xx New. 19x Beta
-    # Gen 2 909+ New. 99x Beta   Schedule Pause only for Gen2+
-    # Gen 3 303+ New 39x Beta    New has 10 slots
-    # AIO 6xx New 69x Beta       ALL has 10 slots
-    if inverter['Model']==Model.AC and int(inverter['Firmware'])>500:
-        return True
-    elif inverter['Model']==Model.ALL_IN_ONE and int(inverter['Firmware'])<600:
-        return True
-    elif inverter['Generation']==Generation.GEN1 and int(inverter['Firmware'])>400:
-        return True
-    elif inverter['Generation']==Generation.GEN2 and int(inverter['Firmware'])<909:
-        return True
-    elif inverter['Generation']==Generation.GEN3 and int(inverter['Firmware'])<303:
-        return True
-    return False
 
 def getInvModel(plant: Plant):
 ##### Feels like this needs reviewing and maybe moving to the device models
@@ -290,7 +278,7 @@ def getInvModel(plant: Plant):
     elif not plant.gateway ==None:
         GEInv=plant.gateway
     inverterModel.model=GEInv.model
-    inverterModel.generation=GEInv.generation
+    #inverterModel.generation=GEInv.generation
     inverterModel.phase=GEInv.num_phases
     inverterModel.invmaxrate=GEInv.inverter_max_power
     inverterModel.batmaxrate=GEInv.battery_max_power
@@ -480,11 +468,14 @@ def getBatteries(plant: Plant, multi_output_old):
         return batteries2
     except KeyError as e:
         missing_key = e.args[0] if e.args else None
-        raise KeyError(f"Missing key {missing_key!r}") from e
-    except Exception:
-        e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
-        #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-        logger.error("Error getting Battery Data: " + str(e))
+        logger.error("Key Error getting Battery Data: " + (f"Missing key {missing_key!r}") )
+    except Exception as e:
+        err=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        error_type = e.__class__.__name__    # e.g., "NameError", "AttributeError"
+        error_msg  = str(e)                   # e.g., "name 'some_var' is not defined"
+        # Log or display exactly what you want
+        logger.error("%s: %s", error_type, error_msg)
+        logger.error("Error getting Battery Data: " + str(err))
         return None
 
 def validateTimeslot(slot,key,multi_output_old):
@@ -516,7 +507,7 @@ def getTimeslots(plant: Plant, multi_output_old=None):
     timeslots['Charge_end_time_slot_1'] = validateTimeslot(GEInv.charge_slot_1.end,"Charge_end_time_slot_1",multi_output_old)
 
     try:
-        if GEInv.model in [Model.ALL_IN_ONE, Model.AC_3PH, Model.HYBRID_3PH, Model.GATEWAY] or (GEInv.generation == Generation.GEN3 and int(GEInv.arm_firmware_version)>302) or GEInv.generation == Generation.GEN4:   #10 slots don't apply to AC/Hybrid except new fw on Gen 3
+        if GEInv.model in [Model.ALL_IN_ONE, Model.AC_3PH, Model.HYBRID_3PH, Model.GATEWAY, Model.HYBRID_GEN4] or (GEInv.model == Model.HYBRID_GEN3 and int(GEInv.arm_firmware_version)>302):   #10 slots don't apply to AC/Hybrid except new fw on Gen 3
             timeslots['Charge_start_time_slot_2'] = validateTimeslot(GEInv.charge_slot_2.start,"Charge_start_time_slot_2",multi_output_old)
             timeslots['Charge_end_time_slot_2'] = validateTimeslot(GEInv.charge_slot_2.end,"Charge_end_time_slot_2",multi_output_old)
             timeslots['Charge_start_time_slot_3'] = validateTimeslot(GEInv.charge_slot_3.start,"Charge_start_time_slot_3",multi_output_old)
@@ -921,7 +912,7 @@ def processPVInfo(plant: Plant):
         inverter['Invertor_Firmware'] = GEInv.firmware_version
         metertype = GEInv.meter_type.name.capitalize()
         inverter['Meter_Type'] = metertype
-        inverter['Invertor_Type'] = inverterModel.generation.name.capitalize() + " " + inverterModel.model.name.capitalize()
+        inverter['Invertor_Type'] = GEInv.model.name.capitalize()
         inverter['Invertor_Max_Inv_Rate'] = inverterModel.invmaxrate
         inverter['Invertor_Temperature'] = GEInv.temp_inverter_heatsink
         inverter['Export_Limit']=GEInv.grid_port_max_power_output
@@ -948,7 +939,7 @@ def processPVInfo(plant: Plant):
             multi_output['raw'] = getRaw(plant)
     except KeyError as e:
         missing_key = e.args[0] if e.args else None
-        raise KeyError(f"Missing key {missing_key!r}") from e
+        logger.error("Key Error getting Battery Data: " + (f"Missing key {missing_key!r}") )
     except Exception:
         e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
         #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
@@ -979,7 +970,7 @@ def processInverterInfo(plant: Plant):
             multi_output_old = regCacheStack[-1]
         else:
             regCacheStack = [0]
-            multi_output_old = {}
+            multi_output_old = None
 
         # Check a couple of obvious data points to reject bad reads
         if float(GEInv.modbus_version)>2 or GEInv.modbus_address>100 or GEInv.user_code>100 or GEInv.temp_inverter_heatsink>100:
@@ -1018,15 +1009,32 @@ def processInverterInfo(plant: Plant):
         energy_total_output['PV_Energy_Total_kWh'] = GEInv.e_pv_total
         energy_total_output['AC_Charge_Energy_Total_kWh'] = GEInv.e_inverter_in_total
 
-        if inverterModel.model == Model.HYBRID:
-            energy_total_output['Load_Energy_Total_kWh'] = max(0,round((energy_total_output['Invertor_Energy_Total_kWh']-energy_total_output['AC_Charge_Energy_Total_kWh']) -
+        # Calculate total Load to avoid rounding errors
+        if inverterModel.model in (Model.HYBRID_GEN1,Model.HYBRID_GEN2,Model.HYBRID_GEN3,Model.HYBRID_GEN4 ):
+            total_load = max(0,round((energy_total_output['Invertor_Energy_Total_kWh']-energy_total_output['AC_Charge_Energy_Total_kWh']) -
                                                                     (energy_total_output['Export_Energy_Total_kWh']-energy_total_output['Import_Energy_Total_kWh']), 2))
         else:
-            energy_total_output['Load_Energy_Total_kWh'] = max(0,round((energy_total_output['Invertor_Energy_Total_kWh']-energy_total_output['AC_Charge_Energy_Total_kWh']) -
+            total_load= max(0,round((energy_total_output['Invertor_Energy_Total_kWh']-energy_total_output['AC_Charge_Energy_Total_kWh']) -
                                                                     (energy_total_output['Export_Energy_Total_kWh']-energy_total_output['Import_Energy_Total_kWh'])+energy_total_output['PV_Energy_Total_kWh'], 2))
+        
+        if multi_output_old:
+            if total_load < multi_output_old["Energy"]["Total"]['Load_Energy_Total_kWh']:       #Stop any rounding calculation from making load reduce in Today stats
+                energy_total_output['Load_Energy_Total_kWh']=multi_output_old["Energy"]["Total"]['Load_Energy_Total_kWh']
+            else:
+                energy_total_output['Load_Energy_Total_kWh']=total_load
+        else:
+            energy_total_output['Load_Energy_Total_kWh']=total_load
+            
 
-        energy_total_output['Self_Consumption_Energy_Total_kWh'] = max(0,round(energy_total_output['PV_Energy_Total_kWh']-energy_total_output['Export_Energy_Total_kWh'], 2))
-
+        # Calculate Self Consumption total to avoid rounding errors
+        self_total = max(0,round(energy_total_output['PV_Energy_Total_kWh']-energy_total_output['Export_Energy_Total_kWh'], 2))
+        if multi_output_old:
+            if self_total< multi_output_old["Energy"]["Total"]['Self_Consumption_Energy_Total_kWh']:       #Stop any rounding calculation from making load reduce in Today stats
+                energy_total_output['Self_Consumption_Energy_Total_kWh']=multi_output_old["Energy"]["Total"]['Self_Consumption_Energy_Total_kWh']
+            else:
+                energy_total_output['Self_Consumption_Energy_Total_kWh']=self_total        
+        else:
+            energy_total_output['Self_Consumption_Energy_Total_kWh']=self_total
 
         # Energy Today Figures
         logger.debug("Getting Today Energy Data")
@@ -1035,15 +1043,32 @@ def processInverterInfo(plant: Plant):
         energy_today_output['Export_Energy_Today_kWh'] = GEInv.e_grid_out_day
         energy_today_output['AC_Charge_Energy_Today_kWh'] = GEInv.e_inverter_in_day
         energy_today_output['Invertor_Energy_Today_kWh'] = GEInv.e_inverter_out_day
-        energy_today_output['Self_Consumption_Energy_Today_kWh'] = max(0,round(energy_today_output['PV_Energy_Today_kWh'], 2)-round(energy_today_output['Export_Energy_Today_kWh'], 2))
-
-        if inverterModel.model == Model.HYBRID:
-            energy_today_output['Load_Energy_Today_kWh'] = max(0,round((energy_today_output['Invertor_Energy_Today_kWh']-energy_today_output['AC_Charge_Energy_Today_kWh']) -
-                                                                    (energy_today_output['Export_Energy_Today_kWh']-energy_today_output['Import_Energy_Today_kWh']), 2))
+        
+        # Calculate Self Consumption and Load to avoid rounding errors
+        today_self = max(0,round(energy_today_output['PV_Energy_Today_kWh'], 2)-round(energy_today_output['Export_Energy_Today_kWh'], 2))
+        if multi_output_old:
+            if today_self < multi_output_old["Energy"]["Today"]['Self_Consumption_Energy_Today_kWh'] and not datetime.datetime.now().time() == datetime.time(0, 0):       #Stop any rounding calculation from making load reduce in Today stats
+                energy_today_output['Self_Consumption_Energy_Today_kWh']=multi_output_old["Energy"]["Today"]['Self_Consumption_Energy_Today_kWh']
+            else:
+                energy_today_output['Self_Consumption_Energy_Today_kWh']=today_self
         else:
-            energy_today_output['Load_Energy_Today_kWh'] = max(0,round((energy_today_output['Invertor_Energy_Today_kWh']-energy_today_output['AC_Charge_Energy_Today_kWh']) -
-                                                                    (energy_today_output['Export_Energy_Today_kWh']-energy_today_output['Import_Energy_Today_kWh'])+energy_today_output['PV_Energy_Today_kWh'], 2))
+            energy_today_output['Self_Consumption_Energy_Today_kWh']=today_self
 
+        # Calculate Load to avoid rounding errors
+        if inverterModel.model in (Model.HYBRID_GEN1,Model.HYBRID_GEN2,Model.HYBRID_GEN3,Model.HYBRID_GEN4 ):
+            today_load = max(0,round((energy_today_output['Invertor_Energy_Today_kWh']-energy_today_output['AC_Charge_Energy_Today_kWh']) -
+                        (energy_today_output['Export_Energy_Today_kWh']-energy_today_output['Import_Energy_Today_kWh']), 2))
+        else:
+            today_load= max(0,round((energy_today_output['Invertor_Energy_Today_kWh']-energy_today_output['AC_Charge_Energy_Today_kWh']) -
+                        (energy_today_output['Export_Energy_Today_kWh']-energy_today_output['Import_Energy_Today_kWh'])+energy_today_output['PV_Energy_Today_kWh'], 2))
+            
+        if multi_output_old:
+            if today_load < multi_output_old["Energy"]["Today"]['Load_Energy_Today_kWh']  or datetime.datetime.now().time() == datetime.time(0, 0):       #Stop any rounding calculation from making load reduce in Today stats
+                energy_today_output['Load_Energy_Today_kWh']=multi_output_old["Energy"]["Today"]['Load_Energy_Today_kWh']
+            else:
+                energy_today_output['Load_Energy_Today_kWh']=today_load    
+        else:
+            energy_today_output['Load_Energy_Today_kWh']=today_load
     ############  Core Power Stats    ############
 
         # PV Power
@@ -1207,7 +1232,8 @@ def processInverterInfo(plant: Plant):
         else:
             freq=GEInv.f_eps_backup
         power_output['Inverter_Output_Frequency'] = freq
-        power_output['Combined_Generation_Power'] = GEInv.p_combined_generation
+        if GEInv.model in (Model.HYBRID_GEN3, Model.HYBRID_GEN4):
+            power_output['Combined_Generation_Power'] = GEInv.p_combined_generation
 
         # Power flows
         logger.debug("Getting Solar to H/B/G Power Flows")
@@ -1269,7 +1295,7 @@ def processInverterInfo(plant: Plant):
         inverter['Invertor_Firmware'] = GEInv.firmware_version
         metertype = GEInv.meter_type.name.capitalize()
         inverter['Meter_Type'] = metertype
-        inverter['Invertor_Type'] = inverterModel.generation.name.capitalize() + " " + inverterModel.model.name.capitalize()
+        inverter['Invertor_Type'] = GEInv.model.name.capitalize()
         inverter['Invertor_Max_Inv_Rate'] = inverterModel.invmaxrate
         inverter['Invertor_Max_Bat_Rate'] = inverterModel.batmaxrate
         inverter['Invertor_Temperature'] = GEInv.temp_inverter_heatsink
@@ -1310,11 +1336,14 @@ def processInverterInfo(plant: Plant):
             multi_output['raw'] = getRaw(plant)
     except KeyError as e:
         missing_key = e.args[0] if e.args else None
-        raise KeyError(f"Missing key {missing_key!r}") from e
-    except Exception:
-        e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
-        #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-        logger.error("Error processing Inverter data: " + str(e))
+        logger.error("Key Error getting Data: " + (f"Missing key {missing_key!r} at line {e.__traceback__.tb_lineno}") )
+    except Exception as e:
+        err=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        error_type = e.__class__.__name__    # e.g., "NameError", "AttributeError"
+        error_msg  = str(e)                   # e.g., "name 'some_var' is not defined"
+        # Log or display exactly what you want
+        logger.error("%s: %s", error_type, error_msg)
+        logger.error("Error processing Inverter data: " + str(err))
         return None
     return multi_output
 
@@ -1330,7 +1359,7 @@ def processEMSInfo(plant: Plant):
         ems['Car_Charge_Count']=GEInv.expected_car_charger_count
         #ems['Plant_Status']=GEInv.plant_status.name.capitalize()  # Is this mode?
         ems['Serial_Number']=GEInv.getsn()
-        ems['Invertor_Type'] = GEInv.generation + " - " + GEInv.model.name.capitalize()
+        ems['Invertor_Type'] = GEInv.model.name.capitalize()
         ems['Invertor_Firmware']=GEInv.firmware_version
         ems['Invertor_Time']=GEInv.system_time.replace(tzinfo=GivLUT.timezone).isoformat()
         ems['Remaining_Battery_Wh']=GEInv.remaining_battery_wh
@@ -1469,7 +1498,7 @@ def processEMSInfo(plant: Plant):
         multi_output['Energy']=energy
     except KeyError as e:
         missing_key = e.args[0] if e.args else None
-        raise KeyError(f"Missing key {missing_key!r}") from e
+        logger.error("Key Error getting Battery Data: " + (f"Missing key {missing_key!r}") )
     except Exception:
         e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
         #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
@@ -1492,7 +1521,7 @@ def processGatewayInfo(plant: Plant):
 
         multi_output={}
         gateway={}
-        gateway['Invertor_Type'] = GEInv.generation + " - " + GEInv.model.name.capitalize()
+        gateway['Invertor_Type'] = GEInv.model.name.capitalize()
         gateway['Invertor_Serial_Number']=plant.inverter_serial_number
         #gateway['Invertor_Firmware']=GEInv.firmware_version
         gateway['Gateway_Software_Version']=GEInv.software_version
@@ -1728,11 +1757,14 @@ def processGatewayInfo(plant: Plant):
         multi_output["Meter_Details"] = meters
     except KeyError as e:
         missing_key = e.args[0] if e.args else None
-        raise KeyError(f"Missing key {missing_key!r}") from e
-    except Exception:
-        e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
-        #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-        logger.error("Error processing Gateway data: " + str(e))
+        logger.error("Key Error getting Battery Data: " + (f"Missing key {missing_key!r}") )
+    except Exception as e:
+        err=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        error_type = e.__class__.__name__    # e.g., "NameError", "AttributeError"
+        error_msg  = str(e)                   # e.g., "name 'some_var' is not defined"
+        # Log or display exactly what you want
+        logger.error("%s: %s", error_type, error_msg)
+        logger.error("Error processing Gateway data: " + str(err))
         return None
 
     return multi_output
@@ -1932,11 +1964,14 @@ def processThreePhaseInfo(plant: Plant):
         multi_output["Control"] = controlmode
     except KeyError as e:
         missing_key = e.args[0] if e.args else None
-        raise KeyError(f"Missing key {missing_key!r}") from e
-    except Exception:
-        e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
-        #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-        logger.error("Error processing Three Phase data: " + str(e))
+        logger.error("Key Error getting Battery Data: " + (f"Missing key {missing_key!r}") )
+    except Exception as e:
+        err=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        error_type = e.__class__.__name__    # e.g., "NameError", "AttributeError"
+        error_msg  = str(e)                   # e.g., "name 'some_var' is not defined"
+        # Log or display exactly what you want
+        logger.error("%s: %s", error_type, error_msg)
+        logger.error("Error processing Three Phase data: " + str(err))
         return None
     return multi_output
 
@@ -2041,12 +2076,11 @@ def processData(plant: Plant):
 
     except KeyError as e:
         missing_key = e.args[0] if e.args else None
-        raise KeyError(f"Missing key {missing_key!r}") from e
-    except Exception:
-        e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
-        #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        logger.error("Key Error getting Battery Data: " + (f"Missing key {missing_key!r}") )
+    except Exception as e:
+        err=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
         consecFails(e)
-        logger.error("inverter Update failed so using last known good data from cache: " + str(e))
+        logger.error("inverter Update failed so using last known good data from cache: (%s: %s - %s)", e.__class__.__name__, str(e) , e.__traceback__.tb_lineno)
         result['result'] = "processData Error processing registers: " + str(e)
         return json.dumps(result)
     return json.dumps(result, indent=4, sort_keys=True, default=str)
@@ -2147,7 +2181,7 @@ def runAll2(plant: Plant):  # Read from Inverter put in cache and publish
         multi_output = pubFromPickle(result['multi_output'])
     except KeyError as e:
         missing_key = e.args[0] if e.args else None
-        raise KeyError(f"Missing key {missing_key!r}") from e
+        logger.error("Key Error getting Battery Data: " + (f"Missing key {missing_key!r}") )
     except Exception:
         e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
         logger.error("runAll2 Error processing registers: " + str(e))
@@ -2525,87 +2559,93 @@ def loop_dict(array, regCacheStack, lastUpdate, invtype,inv_time):
 
 def dataSmoother2(dataNew, dataOld, lastUpdate, invtype,inv_time):
     # perform test to validate data and smooth out spikes
-    newData = dataNew[1]
-    oldData = dataOld[1]
-    name = dataNew[0]
-    lookup = givLUT[name]
-
-    if GiV_Settings.data_smoother.lower() == "high":
-        smoothRate = 0.25
-        abssmooth=1000
-    elif GiV_Settings.data_smoother.lower() == "medium":
-        smoothRate = 0.35
-        abssmooth=5000
-    else:
-        smoothRate = 0.50
-        abssmooth=7000
-    if isinstance(newData, (int, float)):
-        if not '3ph' in invtype:
-            if isinstance(lookup.min,str):
-                min=maxvalues.single_phase[lookup.min]
+    try:
+        newData = dataNew[1]
+        oldData = dataOld[1]
+        name = dataNew[0]
+        lookup = givLUT[name]
+        if newData is not None and oldData is not None:
+            if GiV_Settings.data_smoother.lower() == "high":
+                smoothRate = 0.25
+                abssmooth=1000
+            elif GiV_Settings.data_smoother.lower() == "medium":
+                smoothRate = 0.35
+                abssmooth=5000
             else:
-                min=lookup.min
-            if isinstance(lookup.max,str):
-                max=maxvalues.single_phase[lookup.max]
-            else:
-                max=lookup.max
-        else:
-            if isinstance(lookup.min,str):
-                min=maxvalues.three_phase[lookup.min]
-            else:
-                min=lookup.min
-            if isinstance(lookup.max,str):
-                max=maxvalues.three_phase[lookup.max]
-            else:
-                max=lookup.max
-        now = inv_time
-        then = datetime.datetime.fromisoformat(lastUpdate)
-
-## Check Midnight Today as special case before checking for Zero
-        if now.minute == 0 and now.hour == 0 and "Today" in name:  # Treat Today stats as a special case
-            logger.debug("Midnight and "+str(name)+" so accepting value as is: "+str(newData))
-            return (newData)
-## Now discard non-allowed Zero datapoints
-        if newData == 0 and not lookup.allowZero:  # if zero and not allowed to be
-            logger.debug(str(name)+" is Zero so using old value")
-            return(oldData)
-## Now check Min-Max
-        if newData < float(min) or newData > float(max):  # If outside min and max ranges
-            logger.debug(str(name)+" is outside of allowable bounds so using old value. Out of bounds value is: "+str(newData) + ". Min limit: " + str(min) + ". Max limit: " + str(max))
-            return(oldData)
-## Now check if its increasing
-        if lookup.onlyIncrease:  # if data can only increase then check
-            if (oldData-newData) > 0.11:
-                logger.debug(str(name)+" has decreased so using old value")
-                return oldData
-
-## Now smooth data
-        if lookup.smooth and not GiV_Settings.data_smoother.lower() == "none":     # apply smoothing if required
-            if newData != oldData:  # Only if its not the same
-                if name in outliers:    #If the last data point was skipped then keep newdata as two dodgy reads is unlikely
-                    logger.debug("Returning new "+str(name)+" data as the last read was smoothed")
-                    outliers.remove(name)
-                    return newData
-                if any(word in name.lower() for word in ["power","_to_"]):
-                    if abs(newData-oldData)>abssmooth:                                
-                        if checkRawcache(newData,name,abssmooth): #If new data is persistently outside bounds then use new value
-                            return(newData)
-                        else:
-                            logger.debug(str(name)+" jumped too far in a single read: "+str(oldData)+"->"+str(newData)+" so using previous value")
-                            outliers.append(name)
-                            return (oldData)
+                smoothRate = 0.50
+                abssmooth=7000
+            if isinstance(newData, (int, float)):
+                if not '3ph' in invtype:
+                    if isinstance(lookup.min,str):
+                        min=maxvalues.single_phase[lookup.min]
+                    else:
+                        min=lookup.min
+                    if isinstance(lookup.max,str):
+                        max=maxvalues.single_phase[lookup.max]
+                    else:
+                        max=lookup.max
                 else:
-                    ## Only smooth data if its not already Zero (avoid div by Zero)
-                    if oldData != 0:
-                        if abs(newData-oldData) < 1: # ignore very small changes (eg. today energy stats at start of day)
-                            return (newData)
-                        timeDelta = (now-then).total_seconds()
-                        dataDelta = abs(newData-oldData)/oldData    #Should it be a ratio or an abs value as low values easily meet the threshold
-                        if dataDelta > smoothRate and timeDelta < 60:
-                            logger.debug(str(name)+" jumped too far in a single read: "+str(oldData)+"->"+str(newData)+" so using previous value")
-                            outliers.append(name)
-                            return (oldData)
+                    if isinstance(lookup.min,str):
+                        min=maxvalues.three_phase[lookup.min]
+                    else:
+                        min=lookup.min
+                    if isinstance(lookup.max,str):
+                        max=maxvalues.three_phase[lookup.max]
+                    else:
+                        max=lookup.max
+                now = inv_time
+                then = datetime.datetime.fromisoformat(lastUpdate)
 
+        ## Check Midnight Today as special case before checking for Zero
+                if now.minute == 0 and now.hour == 0 and "Today" in name:  # Treat Today stats as a special case
+                    logger.debug("Midnight and "+str(name)+" so accepting value as is: "+str(newData))
+                    return (newData)
+        ## Now discard non-allowed Zero datapoints
+                if newData == 0 and not lookup.allowZero:  # if zero and not allowed to be
+                    logger.debug(str(name)+" is Zero so using old value")
+                    return(oldData)
+        ## Now check Min-Max
+                if newData < float(min) or newData > float(max):  # If outside min and max ranges
+                    logger.debug(str(name)+" is outside of allowable bounds so using old value. Out of bounds value is: "+str(newData) + ". Min limit: " + str(min) + ". Max limit: " + str(max))
+                    return(oldData)
+        ## Now check if its increasing
+                if lookup.onlyIncrease:  # if data can only increase then check
+                    if (oldData-newData) > 0.11:
+                        logger.debug(str(name)+" has decreased so using old value")
+                        return oldData
+
+        ## Now smooth data
+                if lookup.smooth and not GiV_Settings.data_smoother.lower() == "none":     # apply smoothing if required
+                    if newData != oldData:  # Only if its not the same
+                        if name in outliers:    #If the last data point was skipped then keep newdata as two dodgy reads is unlikely
+                            logger.debug("Returning new "+str(name)+" data as the last read was smoothed")
+                            outliers.remove(name)
+                            return newData
+                        if any(word in name.lower() for word in ["power","_to_"]):
+                            if abs(newData-oldData)>abssmooth:                                
+                                if checkRawcache(newData,name,abssmooth): #If new data is persistently outside bounds then use new value
+                                    return(newData)
+                                else:
+                                    logger.debug(str(name)+" jumped too far in a single read: "+str(oldData)+"->"+str(newData)+" so using previous value")
+                                    outliers.append(name)
+                                    return (oldData)
+                        else:
+                            ## Only smooth data if its not already Zero (avoid div by Zero)
+                            if oldData != 0:
+                                if abs(newData-oldData) < 1: # ignore very small changes (eg. today energy stats at start of day)
+                                    return (newData)
+                                timeDelta = (now-then).total_seconds()
+                                dataDelta = abs(newData-oldData)/oldData    #Should it be a ratio or an abs value as low values easily meet the threshold
+                                if dataDelta > smoothRate and timeDelta < 60:
+                                    logger.debug(str(name)+" jumped too far in a single read: "+str(oldData)+"->"+str(newData)+" so using previous value")
+                                    outliers.append(name)
+                                    return (oldData)
+        else:
+            logger.debug("Nonetype in old or new data for "+str(name)+" so using new value")
+    except Exception as e:
+        err=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        logger.error("dataSmoother2 Error processing data: "+str(e)+" at line "+str(err[2]))
+        return(newData)    
     return(newData)
 
 def checkRawcache(newData,name,abssmooth):

@@ -253,21 +253,19 @@ class Client:
         elif not self.plant.ems == None:
             self.plant.device_type=self.plant.ems.model
 
-        if self.plant.device_type in (Model.ALL_IN_ONE, Model.AC_3PH, Model.HYBRID_3PH, Model.HYBRID_HV, Model.ALL_IN_ONE_HYBRID):
+        if self.plant.device_type in (Model.ALL_IN_ONE, Model.AC_3PH, Model.HYBRID_3PH, Model.HYBRID_HV_GEN3, Model.ALL_IN_ONE_HYBRID):
             self.plant.isHV = True
         else:
             self.plant.isHV= False
 #            meter_list=[]
-        if self.plant.device_type in (Model.HYBRID, Model.AC):
-            meter_list=[]
-        else:
-            meter_list=[1,2,3,4,5,6,7,8]
+
+        meter_list=[1,2,3,4,5,6,7,8]
 
         #### Set whether a device has batteries and then count them if they are allowed ####
         if self.plant.device_type in (Model.EMS,Model.GATEWAY, Model.HYBRID_GEN4):
             await self.refresh_plant(True, number_batteries=0, meter_list=meter_list, bcu_list=self.plant.bcu_list, retries=retries, timeout=timeout, return_exceptions=True) #set return exceptions to true to allow meters to not be found
         else:
-            if self.plant.device_type in (Model.AC, Model.HYBRID):
+            if self.plant.device_type in (Model.AC, Model.HYBRID_GEN1):
                 self.plant.slave_address = 0x31
             #### Determine how many BCUs and then define the battery locations to look for, then set plant.number_bcus ####
             if self.plant.isHV:

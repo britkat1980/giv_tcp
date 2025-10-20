@@ -1,5 +1,6 @@
 """GivLUT: Various objects to interface to GivEnergy inverters """
 from givenergy_modbus_async.client.client import Client
+from givenergy_modbus_async.exceptions import CommunicationError
 from settings import GiV_Settings
 import logging
 import pickle
@@ -27,9 +28,10 @@ class GivClientAsync:
                 logger.critical("Opening Modbus Connection to "+str(GiV_Settings.invertorIP))
                 await _client.connect()
             return _client
-        except:
+        except Exception as err:
             e=sys.exc_info()[0].__name__, path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-            logger.error ("Error in getting Modbus Connection: "+str(e))
+            logger.error ("Error in getting Modbus Connection: "+str(err))
+            raise CommunicationError from err
 
 class GivQueue:
     from redis import Redis
@@ -38,12 +40,11 @@ class GivQueue:
     q = Queue("GivTCP_"+str(GiV_Settings.givtcp_instance),connection=redis_connection)
 
 class InvType:
-    def __init__(self,ph,md,pw,mr,gn,bc):
+    def __init__(self,ph,md,pw,mr,bc):
         self.phase=ph
         self.model=md
         self.invmaxrate=pw
         self.batmaxrate=mr
-        self.generation=gn
         self.batterycapacity=bc
 
     # Standard values for devices

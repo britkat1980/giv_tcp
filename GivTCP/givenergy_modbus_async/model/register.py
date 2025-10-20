@@ -507,37 +507,22 @@ class Converter:
         return out
 
     @staticmethod
-    def generation(dtc, fw) -> str:
-        """Known Generations"""
+    def get_model(dtc, fw) -> str:
 
-        GEN1 = "Gen 1"
-        GEN2 = "Gen 2"
-        GEN3 = "Gen 3"
-        GEN3P = "Gen 3+"
-        GEN4 = "Gen 4"
-        AIO2 = "AIO 2"
-        NA = "NoGen"
-
-        """Pick generation from the arm_firmware_version."""
+        """Pick model from the arm_firmware_version."""
         arm_firmware_version_to_gen = {
-            3: GEN3,
-            8: GEN2,
-            9: GEN2
-        }
-        dtc_to_gen = {
-            "22": GEN3P,
-            "83": GEN4
+            3: Model.HYBRID_GEN1,
+            8: Model.HYBRID_GEN2,
+            9: Model.HYBRID_GEN2
         }
         dtc=f"{dtc:0{4}x}"  # convert to hex  rep
         if str(dtc)[:2] == "20":       # These can only be determined by fw version
             if gen := arm_firmware_version_to_gen.get(math.floor(int(fw) / 100)):
                 return gen
             else:
-                return GEN1
-        elif str(dtc)[:2] in dtc_to_gen:       # For newer Gen4+ we use dtc
-            return dtc_to_gen[str(dtc)[:2]]
-        else:
-            return NA                   # Eveerything else has no Generation
+                return Model.HYBRID_GEN1
+        return Model(dtc)
+
 
 
     @staticmethod
@@ -547,6 +532,7 @@ class Converter:
 
         dtc_to_batpower={
             "3001": 3000,
+            "2201": 5400,
             "3002": 3000,
             "8001": 6000,
             "8102": 8000,
@@ -674,9 +660,10 @@ class MeterStatus(IntEnum):
 class Model(StrEnum):
     """Known models of inverters."""
 ## Use the full mapping found in modbus docs and use first 2 chr of DTC code
-    HYBRID = "20"
-    HYBRID_POLAR = "21"
-    HYBRID_GEN3_PLUS = "22"
+    HYBRID_GEN1 = "20g1"
+    HYBRID_GEN2 = "20g2"
+    HYBRID_GEN3 = "20g3"
+    POLAR = "21"
     PV = "23"
     AC = "30"
     HYBRID_3PH = "40"
@@ -686,9 +673,9 @@ class Model(StrEnum):
     EMS_COMMERCIAL = "51"
     GATEWAY = "70"
     ALL_IN_ONE = "80"
-    HYBRID_HV = "81"
-    HYBRID_GEN4 = "83"
+    HYBRID_HV_GEN3 = "81"
     ALL_IN_ONE_HYBRID = "82"
+    HYBRID_GEN4 = "83"
 
     @classmethod
     def _missing_(cls, value):
@@ -719,7 +706,7 @@ class Model(StrEnum):
             '5': ([2040],[2040]),   #EMS
             '6': ([0, 60, 120, 180, 240,1000,1060,1120,1180,1240,1300,1360],[180,240,1000,1060,1120]),   #AC - 3ph
             '7': ([0, 60, 120, 180,1600,1660,1720,1780,1840],[0, 60, 120, 120,180,240,300]),   #Gateway
-            '8': ([0, 60, 120, 180, 240],[0, 60, 120, 120, 180, 240, 300]),   #All in One and Gen 4
+            '8': ([0, 60, 120, 180, 240],[0, 60, 120, 120, 180, 240, 300]),   #All in One and Gen 4 and Hybrid HV
         }
         return regs.get(value[0])
 
@@ -741,35 +728,13 @@ class Model(StrEnum):
 
 class Generation(StrEnum):
     """Known Generations"""
-
     GEN1 = "Gen 1"
     GEN2 = "Gen 2"
     GEN3 = "Gen 3"
     GEN3P = "Gen 3+"
     GEN4 = "Gen 4"
+    AIO2 = "AIO 2"
     NA = "NoGen"
-
-#    @classmethod
-#    def _missing_(cls, fw: str, dtc: str):
-#        """Pick generation from the arm_firmware_version."""
-#        arm_firmware_version_to_gen = {
-#            3: cls.GEN3,
-#            8: cls.GEN2,
-#            9: cls.GEN2,
-#        }
-#        dtc_to_gen = {
-#            "83": cls.GEN4,
-#        }
-#        if value[:2] == "20":       # These can only be determined by fw version
-#            if gen := arm_firmware_version_to_gen.get(math.floor(int(value) / 100)):
-#                return gen
-#            else:
-#                return cls.GEN1
-#        elif value[:2] in dtc_to_gen:       # For newer Gen4+ we use dtc
-#            return dtc_to_gen[value[:2]]
-#        else:
-#            return cls.NA                   # Eveerything else has no Generation
-
 
 class UsbDevice(IntEnum):
     """USB devices that can be inserted into inverters."""
@@ -925,7 +890,7 @@ class Phase(IntEnum):
 
     @classmethod
     def _missing_(cls, device_type_code: str):
-        """Return the appropriate model from a given dtc."""
+        """Return the appropriate phase from a given dtc."""
         __dtc_to_phases_lut__ = {
         '2': cls.OnePhase,
         '3': cls.OnePhase,
@@ -942,41 +907,6 @@ class Phase(IntEnum):
         else:
             return 'Unknown'
         
-#    @classmethod
-#    def _missing_(cls, value):
-#        """Pick model from the first digit of the device type code."""
-#        return cls.from_device_type_code(value)
-
-
-class InvertorPower(StrEnum):
-    """Map Invertor max power"""
-
-    __dtc_to_power_lut__ = {
-        '2001': 5000,
-        '2002': 4600,
-        '2003': 3600,
-        '3001': 3000,
-        '3002': 3600,
-        '4001': 6000,
-        '4002': 8000,
-        '4003': 10000,
-        '4004': 11000,
-        '8001': 6000,
-        '8304': 6000,
-    }
-
-    @classmethod
-    def from_dtc_power(cls, dtc: str):
-        """Return the appropriate model from a given serial number."""
-        if dtc in cls.__dtc_to_power_lut__:
-            return cls.__dtc_to_power_lut__[dtc]
-        else:
-            return 0
-    @classmethod
-    def _missing_(cls, value):
-        """Pick model from the device type code."""
-        return cls(value)
-
 
 @dataclass(init=False)
 class RegisterDefinition:
@@ -1170,52 +1100,35 @@ class MR(Register):
     """Meter Product Register."""
 
     _type = Register.TYPE_METER
-    
+
 """
 class InverterType_2:
     # Single Class to determine characteristics based on DTC
     def __init__(self,dT,imP, bmP, gN, pH, cR):
         self.invertermaxpower=imP,
         self.batterymaxpower=bmP,
-        self.generation = gN,
         self.devicetype = dT
         self.phases = pH
         self.core_regs = cR
-
-    def fw_to_gen(value): 
-        lut= {
-            3: Generation.GEN3,
-            8: Generation.GEN2,
-            9: Generation.GEN2,
-        }
-        if gen := lut.get(math.floor(int(value) / 100)):
-            return gen
-        else:
-            return Generation.GEN1
     
     def fw_to_batmax(fw): 
-        lut= {
-            3: Generation.GEN3,
-            8: Generation.GEN2,
-            9: Generation.GEN2,
-        }
         if (math.floor(int(fw) / 100)) in [3,8,9]:
             return 3600
         else:
             return 2600
 
-    # LUT is DeviceType, Generation, Phases, InverterMaxPower, BatteryMaxPower, Core Regs, Add Regs
+    # LUT is DeviceType, Phases, InverterMaxPower, BatteryMaxPower, Core Regs, Add Regs
     dtc_lut = {
-    "2001": (Model.HYBRID,fw_to_gen("2001"),Phase.OnePhase,5000,fw_to_batmax("2001"),([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), #special case for "20" inverters uses fw for batterymax
-    "2002": (Model.HYBRID,fw_to_gen("2002"),Phase.OnePhase,4600,fw_to_batmax("2001"),([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), #special case for "20" inverters uses fw for batterymax
-    "2003": (Model.HYBRID,fw_to_gen("2003"),Phase.OnePhase,3600,fw_to_batmax("2001"),([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), #special case for "20" inverters uses fw for batterymax
-    "2101": (Model.HYBRID_POLAR,Generation.NA,Phase.OnePhase,5000,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
-    "2102": (Model.HYBRID_POLAR,Generation.NA,Phase.OnePhase,4600,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
-    "2103": (Model.HYBRID_POLAR,Generation.NA,Phase.OnePhase,3600,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
-    "2104": (Model.HYBRID_POLAR,Generation.NA,Phase.OnePhase,6000,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
-    "2105": (Model.HYBRID_POLAR,Generation.NA,Phase.OnePhase,7000,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
-    "2106": (Model.HYBRID_POLAR,Generation.NA,Phase.OnePhase,8000,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
-    "2201": (Model.HYBRID_GEN3_PLUS,Generation.GEN3P,Phase.OnePhase,5000,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])),
+    "2001": (Model.HYBRID,Phase.OnePhase,5000,fw_to_batmax("2001"),([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), #special case for "20" inverters uses fw for batterymax
+    "2002": (Model.HYBRID,Phase.OnePhase,4600,fw_to_batmax("2001"),([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), #special case for "20" inverters uses fw for batterymax
+    "2003": (Model.HYBRID,Phase.OnePhase,3600,fw_to_batmax("2001"),([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), #special case for "20" inverters uses fw for batterymax
+    "2101": (Model.HYBRID_POLAR,Phase.OnePhase,5000,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
+    "2102": (Model.HYBRID_POLAR,Phase.OnePhase,4600,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
+    "2103": (Model.HYBRID_POLAR,Phase.OnePhase,3600,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
+    "2104": (Model.HYBRID_POLAR,Phase.OnePhase,6000,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
+    "2105": (Model.HYBRID_POLAR,Phase.OnePhase,7000,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
+    "2106": (Model.HYBRID_POLAR,Phase.OnePhase,8000,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])), 
+    "2201": (Model.HYBRID_GEN3_PLUS,Phase.OnePhase,5000,2600,([0, 60, 120, 180],[0, 60, 120, 120]),([240],[180,240,300])),
     "2202": 4600,
     "2203": 3600,
     "2204": 6000,
