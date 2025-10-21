@@ -51,7 +51,7 @@ class Client:
         # this prevents reader.read(...) from blocking forever if the
         # remote peer becomes silent. Small value (e.g. 5s) is sufficient
         # to allow occasional idle periods while still allowing cancellation.
-        self.read_timeout = 3.0
+        self.read_timeout = 7.0
         # self.debug_frames = {
         #     'all': Queue(maxsize=1000),
         #     'error': Queue(maxsize=1000),
@@ -412,8 +412,18 @@ class Client:
 
                     future = self.expected_responses.get(message.shape_hash())
 
-                    if future and not future.done():
-                        future.set_result(message)
+                    if future:
+                        try:
+                            if not future.done() and not future.cancelled():
+                                future.set_result(message)
+                        except Exception:
+                            # InvalidStateError can happen if the future was
+                            # completed/cancelled concurrently. Log and continue.
+                            _logger.debug(
+                                "Failed to set expected_responses future result (state=%s, cancelled=%s)",
+                                getattr(future, 'done', lambda: 'n/a')(),
+                                getattr(future, 'cancelled', lambda: 'n/a')(),
+                            )
                     # try:
                     self.plant.update(message)
                     # except RegisterCacheUpdateFailed as e:
@@ -430,13 +440,46 @@ class Client:
     async def _task_network_producer(self, tx_message_wait: float = 0.25):
         """Producer loop to transmit queued frames with an appropriate delay."""
         while hasattr(self, "writer") and self.writer and not self.writer.is_closing():
-            message, future = await self.tx_queue.get()
-            self.writer.write(message)
-            await self.writer.drain()
-            self.tx_queue.task_done()
+            try:
+                message, future = await self.tx_queue.get()
+            except asyncio.CancelledError:
+                break
+            try:
+                # Write and flush
+                self.writer.write(message)
+                await self.writer.drain()
+            except Exception:
+                _logger.exception("Error writing message to socket")
+                # If write fails, ensure task_done is called and re-raise to trigger close
+                try:
+                    self.tx_queue.task_done()
+                except Exception:
+                    pass
+                raise
+
+            # Mark queue item done
+            try:
+                self.tx_queue.task_done()
+            except Exception:
+                pass
+
+            # Safely complete the frame_sent future if still active
             if future:
-                future.set_result(True)
-            await asyncio.sleep(tx_message_wait)
+                try:
+                    if not future.done() and not future.cancelled():
+                        future.set_result(True)
+                except Exception:
+                    _logger.debug(
+                        "Failed to set tx_queue frame future (done=%s cancelled=%s)",
+                        getattr(future, 'done', lambda: 'n/a')(),
+                        getattr(future, 'cancelled', lambda: 'n/a')(),
+                    )
+
+            # Small delay between frames
+            try:
+                await asyncio.sleep(tx_message_wait)
+            except asyncio.CancelledError:
+                break
         _logger.debug(
             "network_producer writer is closing, cannot continue, closing connection"
         )
@@ -492,7 +535,10 @@ class Client:
                 _logger.debug(
                     "Cancelling existing in-flight request and replacing: %s", request
                 )
-                existing_response_future.cancel()
+                try:
+                    existing_response_future.cancel()
+                except Exception:
+                    _logger.debug("Failed to cancel existing response future")
             response_future: Future[
                 TransparentResponse
             ] = asyncio.get_event_loop().create_future()
@@ -534,4 +580,11 @@ class Client:
             tries,
             timeout,
         )
+        # Ensure we don't leave stale entries in expected_responses
+        try:
+            cur = self.expected_responses.get(expected_shape_hash)
+            if cur is response_future:
+                del self.expected_responses[expected_shape_hash]
+        except Exception:
+            pass
         raise asyncio.TimeoutError()

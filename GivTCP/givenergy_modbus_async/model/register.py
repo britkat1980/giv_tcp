@@ -511,7 +511,7 @@ class Converter:
 
         """Pick model from the arm_firmware_version."""
         arm_firmware_version_to_gen = {
-            3: Model.HYBRID_GEN1,
+            3: Model.HYBRID_GEN3,
             8: Model.HYBRID_GEN2,
             9: Model.HYBRID_GEN2
         }
@@ -664,6 +664,7 @@ class Model(StrEnum):
     HYBRID_GEN2 = "20g2"
     HYBRID_GEN3 = "20g3"
     POLAR = "21"
+    HYBRID_GEN3_PLUS = "22"
     PV = "23"
     AC = "30"
     HYBRID_3PH = "40"

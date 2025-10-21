@@ -224,7 +224,7 @@ async def watch_plant(
                         for res in result:
                             if isinstance(res,TimeoutError):
                                 hasTimeout=True
-                                logger.error("Timeout Error: "+str(res.__class__.__name__))
+                                logger.debug("Timeout Error: "+str(res.__class__.__name__))
                                 raise Exception(res)
                         timeoutErrors=0     # Reset timeouts if all is good this run
                         logger.debug("Data get was successful, now running handler if needed: ")
@@ -1232,7 +1232,7 @@ def processInverterInfo(plant: Plant):
         else:
             freq=GEInv.f_eps_backup
         power_output['Inverter_Output_Frequency'] = freq
-        if GEInv.model in (Model.HYBRID_GEN3, Model.HYBRID_GEN4):
+        if GEInv.model in (Model.HYBRID_GEN3, Model.HYBRID_GEN4, Model.HYBRID_HV_GEN3, Model.HYBRID_3PH, Model.ALL_IN_ONE_HYBRID, Model.AIO_COMMERCIAL):
             power_output['Combined_Generation_Power'] = GEInv.p_combined_generation
 
         # Power flows
