@@ -152,33 +152,35 @@ class HAMQTT():
             #tempObj["name"]=GiV_Settings.ha_device_prefix+" "+device.replace("_"," ")+" "+item.replace("_"," ") #Just final bit past the last "/"
             if len(str(topic).split("/"))>5:    #Its a battery
                 tempObj["name"]=item.replace("_"," ") #Just final bit past the last "/"
-                tempObj['uniq_id']=GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[4]+"_"+item
-                tempObj['default_entity_id']=GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[4]+"_"+item
+                tempObj['unique_id']=GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[4]+"_"+item
+                tempObj['object_id']=GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[4]+"_"+item
                 tempObj['device']['identifiers']=GiV_Settings.ha_device_prefix+" "+str(topic).split("/")[4]
                 tempObj['device']['name']=GiV_Settings.ha_device_prefix+" "+str(topic).split("/")[4].replace("_"," ")
+                if "capacity" in item.lower():
+                    tempObj['unit_of_meas']="Ah"
             else:
                 tempObj["name"]=item.replace("_"," ") #Just final bit past the last "/"
-                tempObj['uniq_id']=GiV_Settings.ha_device_prefix+"_"+device+"_"+item
-                tempObj['default_entity_id']=GiV_Settings.ha_device_prefix+"_"+device+"_"+item
+                tempObj['unique_id']=GiV_Settings.ha_device_prefix+"_"+device+"_"+item
+                tempObj['object_id']=GiV_Settings.ha_device_prefix+"_"+device+"_"+item
                 tempObj['device']['identifiers']=GiV_Settings.ha_device_prefix+" "+device
                 tempObj['device']['name']=GiV_Settings.ha_device_prefix+" "+device.replace("_"," ")
         elif "Meter_Details" in topic:
             #tempObj["name"]=GiV_Settings.ha_device_prefix+" "+device.replace("_"," ")+" "+item.replace("_"," ") #Just final bit past the last "/"
             tempObj["name"]=item.replace("_"," ") #Just final bit past the last "/"
-            tempObj['uniq_id']=GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[3]+"_"+item
-            tempObj['default_entity_id']=GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[3]+"_"+item
+            tempObj['unique_id']=GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[3]+"_"+item
+            tempObj['object_id']=GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[3]+"_"+item
             tempObj['device']['identifiers']=GiV_Settings.ha_device_prefix+" "+str(topic).split("/")[3]
             tempObj['device']['name']=GiV_Settings.ha_device_prefix+" "+str(topic).split("/")[3].replace("_"," ")
             # tempObj['device']['name']=GiV_Settings.ha_device_prefix+" "+GiVTCP_Device.replace("_"," ")
         elif len(SN)>10:    #If EVC and not INV
-            tempObj['uniq_id']=GiV_Settings.ha_device_prefix+"_"+SN+"_"+item
-            tempObj['default_entity_id']=GiV_Settings.ha_device_prefix+"_"+SN+"_"+item
+            tempObj['unique_id']=GiV_Settings.ha_device_prefix+"_"+SN+"_"+item
+            tempObj['object_id']=GiV_Settings.ha_device_prefix+"_"+SN+"_"+item
             tempObj['device']['identifiers']=SN+"_"+GiVTCP_Device
             tempObj['device']['name']="GivEVC"#+str(GiVTCP_Device).replace("_"," ")
             tempObj["name"]=item.replace("_"," ") #Just final bit past the last "/"
         else:
-            tempObj['uniq_id']=GiV_Settings.ha_device_prefix+"_"+SN+"_"+item
-            tempObj['default_entity_id']=GiV_Settings.ha_device_prefix+"_"+SN+"_"+item
+            tempObj['unique_id']=GiV_Settings.ha_device_prefix+"_"+SN+"_"+item
+            tempObj['object_id']=GiV_Settings.ha_device_prefix+"_"+SN+"_"+item
             tempObj['device']['identifiers']=SN+"_"+GiVTCP_Device
             #tempObj['device']['name']=GiV_Settings.ha_device_prefix+" "+SN+" "+str(GiVTCP_Device).replace("_"," ")
             tempObj['device']['name']=GiV_Settings.ha_device_prefix+" "+str(GiVTCP_Device).replace("_"," ")
@@ -197,6 +199,7 @@ class HAMQTT():
 #set device specific elements here:
         if e_type.devType=="sensor":
             tempObj['unit_of_meas']=""
+            tempObj['state_class']="measurement"
             if e_type.sensorClass=="energy":
                 tempObj['unit_of_meas']="kWh"
                 tempObj['device_class']="Energy"
@@ -214,27 +217,27 @@ class HAMQTT():
             if e_type.sensorClass=="power":
                 tempObj['unit_of_meas']="W"
                 tempObj['device_class']="Power"
-                tempObj['state_class']="measurement"
+                #tempObj['state_class']="measurement"
             if e_type.sensorClass=="temperature":
                 tempObj['unit_of_meas']="°C"
                 tempObj['device_class']="Temperature"
-                tempObj['state_class']="measurement"
+                #tempObj['state_class']="measurement"
             if e_type.sensorClass=="voltage":
                 tempObj['unit_of_meas']="V"
                 tempObj['device_class']="Voltage"
-                tempObj['state_class']="measurement"
+                #tempObj['state_class']="measurement"
             if e_type.sensorClass=="frequency":
                 tempObj['unit_of_meas']="Hz"
                 tempObj['device_class']="frequency"
-                tempObj['state_class']="measurement"
+                #tempObj['state_class']="measurement"
             if e_type.sensorClass=="current":
                 tempObj['unit_of_meas']="A"
                 tempObj['device_class']="Current"
-                tempObj['state_class']="measurement"
+                #tempObj['state_class']="measurement"
             if e_type.sensorClass=="battery":
                 tempObj['unit_of_meas']="%"
                 tempObj['device_class']="Battery"
-                tempObj['state_class']="measurement"
+                #tempObj['state_class']="measurement"
             if e_type.sensorClass=="timestamp":
                 del tempObj['unit_of_meas']
                 tempObj['device_class']="timestamp"

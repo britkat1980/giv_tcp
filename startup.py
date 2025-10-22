@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone, UTC
 from os.path import exists
 import os, pickle, subprocess, logging,shutil, shlex, schedule
+import traceback
 from time import sleep
 import json
 import zoneinfo
@@ -68,7 +69,7 @@ async def getInvDeets(HOST):
             GEInv=client.plant.gateway
 
         SN= GEInv.serial_number
-        gen=GEInv.generation
+        #gen=GEInv.generation
         model=GEInv.model
         fw=GEInv.arm_firmware_version
         numbats=client.plant.number_batteries
@@ -77,14 +78,13 @@ async def getInvDeets(HOST):
         Stats['Serial_Number']=SN
         Stats['Firmware']=fw
         Stats['Model']=model
-        Stats['Generation']=gen
+        #Stats['Generation']=gen
         Stats['Number_of_Batteries']=numbats
         Stats['IP_Address']=HOST
-        logger.info(f'Inverter {str(SN)} which is a {str(gen.name.capitalize())} - {str(model.name.capitalize())} with {str(numbats)} batteries and {str(nummeters)} meters has been found at: {str(HOST)}')
+        logger.info(f'Inverter {str(SN)} which is a {str(model.name.capitalize())} with {str(numbats)} batteries and {str(nummeters)} meters has been found at: {str(HOST)}')
         return Stats
-    except:
-        e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
-        logger.error("Gathering inverter details for " + str(HOST) + " failed.")
+    except Exception:
+        logger.error("Gathering inverter details for " + str(HOST) + " failed. Error: "+ str((traceback.format_exc())))
         return None
 
 def createsettingsjson(inv):
@@ -425,6 +425,8 @@ with open('/app/ingress/hostip.json', 'w') as f:
     f.write(json.dumps(hostIP,indent=4))
 with open('/app/ingress/ingressurl.json', 'w') as f:
     f.write(json.dumps(baseurl,indent=4))
+
+#networks[0]="192.168.1.1/24"   # Temporary static for testing
 
 if setts["auto_scan"]==True:
     finv={}
