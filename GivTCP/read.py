@@ -1189,7 +1189,6 @@ def processInverterInfo(plant: Plant):
                 discharge_power = abs(Battery_power)
                 charge_power = 0
                 power_output['Charge_Time_Remaining'] = 0
-                #power_output['Charge_Completion_Time'] = finaltime.replace(tzinfo=GivLUT.timezone).isoformat()
                 if discharge_power!=0:
                     # Time to get from current SOC to battery Reserve at the current rate
                     power_output['Discharge_Time_Remaining'] = max(int(inverterModel.batterycapacity*((power_output['SOC'] - controlmode['Battery_Power_Reserve'])/100) / (discharge_power/1000) * 60),0)
@@ -1197,12 +1196,10 @@ def processInverterInfo(plant: Plant):
                     power_output['Discharge_Completion_Time'] = finaltime.replace(tzinfo=GivLUT.timezone).isoformat()
                 else:
                     power_output['Discharge_Time_Remaining'] = 0
-                    #power_output['Discharge_Completion_Time'] = datetime.datetime.now().replace(tzinfo=GivLUT.timezone).isoformat()
             elif Battery_power <= 0:
                 discharge_power = 0
                 charge_power = abs(Battery_power)
                 power_output['Discharge_Time_Remaining'] = 0
-                #power_output['Discharge_Completion_Time'] = datetime.datetime.now().replace(tzinfo=GivLUT.timezone).isoformat()
                 if charge_power!=0:
                     # Time to get from current SOC to target SOC at the current rate (Target SOC-Current SOC)xBattery Capacity
                     power_output['Charge_Time_Remaining'] = max(int(inverterModel.batterycapacity*((controlmode['Target_SOC'] - power_output['SOC'])/100) / (charge_power/1000) * 60),0)
@@ -1210,7 +1207,6 @@ def processInverterInfo(plant: Plant):
                     power_output['Charge_Completion_Time'] = finaltime.replace(tzinfo=GivLUT.timezone).isoformat()
                 else:
                     power_output['Charge_Time_Remaining'] = 0
-                    #power_output['Charge_Time_Remaining'] = datetime.datetime.now().replace(tzinfo=GivLUT.timezone).isoformat()
             power_output['Battery_Power'] = Battery_power
             power_output['Battery_Voltage'] = GEInv.v_battery
             power_output['Battery_Current'] = GEInv.i_battery
@@ -2217,7 +2213,7 @@ def getCache():     # Get latest cache data and return it (for use in REST)
             multi_output = regCacheStack[-1]
             inv=multi_output['raw']['invertor']
             for reg in inv:
-                if isinstance(inv[reg],TimeSlot):
+                if isinstance(inv[reg],TimeSlot) and inv[reg] is not None:
                     inv[reg]= [inv[reg].start.isoformat(),inv[reg].end.isoformat()]
                 #elif not isinstance(inv[reg],(str,int,float)):
                 elif isinstance(inv[reg],list):
@@ -2231,9 +2227,10 @@ def getCache():     # Get latest cache data and return it (for use in REST)
         else:
             multi_output['result']="No register data cache exists, try again later"
         return json.dumps(multi_output, indent=4, sort_keys=True, default=str)
+#### Moight not be needed now I've traced it
     except AttributeError as err:
         e=sys.exc_info()
-        logger.error("Attribute Error: "+str(e))
+        logger.error("Attribute Error: "+str(err.__context__))
         multi_output['result']="Attribute error getting data from cache: "+str(err.__context__)
         json.dumps(multi_output, indent=4, sort_keys=True, default=str)
 #### Perhaps remove cache file here if cache is corrupt?
