@@ -566,7 +566,7 @@ def getTimeslots(plant: Plant, multi_output_old=None):
     except:
         logger.debug("New Charge/Discharge timeslots don't exist for this model")
 
-    if not GEInv.battery_pause_slot_1 == None:
+    if not plant.device_type in [Model.HYBRID_GEN1, Model.AC]:
         timeslots['Battery_pause_start_time_slot'] = validateTimeslot(GEInv.battery_pause_slot_1.start,"Battery_pause_start_time_slot",multi_output_old)
         timeslots['Battery_pause_end_time_slot'] = validateTimeslot(GEInv.battery_pause_slot_1.end,"Battery_pause_end_time_slot",multi_output_old)
     return timeslots,controlmode
@@ -2231,10 +2231,10 @@ def getCache():     # Get latest cache data and return it (for use in REST)
         else:
             multi_output['result']="No register data cache exists, try again later"
         return json.dumps(multi_output, indent=4, sort_keys=True, default=str)
-    except AttributeError:
+    except AttributeError as err:
         e=sys.exc_info()
         logger.error("Attribute Error: "+str(e))
-        multi_output['result']="Attribute error getting data from cache"+str(e)
+        multi_output['result']="Attribute error getting data from cache: "+str(err.__context__)
         json.dumps(multi_output, indent=4, sort_keys=True, default=str)
 #### Perhaps remove cache file here if cache is corrupt?
     except:
@@ -2263,6 +2263,7 @@ def publishOutput(array, SN):
     # Additional Publish options can be added here.
     # A separate file in the folder can be added with a new publish "plugin"
     # then referenced here with any settings required added into settings.py
+
     if GiV_Settings.Battery_Only==True:
         temp=array['Battery_Details']
         array={}
@@ -2270,7 +2271,6 @@ def publishOutput(array, SN):
     tempoutput = {}
     tempoutput = iterate_dict(array)
 
-#    threader = Threader(5)
     if GiV_Settings.MQTT_Output:
         if not exists(GivLUT.firstrun):
             logger.debug("Running updateFirstRun with SN= "+str(SN))

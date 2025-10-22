@@ -193,8 +193,8 @@ class TransparentResponse(TransparentMessage, ClientIncomingMessage, ABC):
             return ReadInputRegistersResponse
         elif transparent_function_code == 6:
             return WriteHoldingRegisterResponse
-        elif transparent_function_code == 134:       #Accept as the broken AC3 BPM response
-            _logger.critical("Function code 86 recieved. Gracefully handled")
+        elif transparent_function_code == 134:       #Accept as the broken Gen1 BPM response
+            _logger.debug("Function code 86 recieved. Gracefully handled")
             return WriteHoldingRegisterResponse
         elif transparent_function_code == 22:        #This is meter product responses - currently unused
             return ReadMeterProductRegistersResponse
