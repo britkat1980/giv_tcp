@@ -186,7 +186,7 @@ async def watch_plant(
                         e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
                         logger.error(str(command[0])+" request error: "+str(e)+" deleting all pending requests, please try again")
                         os.remove(GivLUT.writerequests)
-                        
+
                 logger.info("Starting data refresh cycle")
                 timesincelast=datetime.datetime.now()-lastruntime
                 now = datetime.datetime.now(tz=GivLUT.timezone)
@@ -2003,7 +2003,7 @@ def processData(plant: Plant):
         givtcpdata['Last_Updated_Time'] = datetime.datetime.now(GivLUT.timezone).isoformat()
         givtcpdata['status'] = "online"
         givtcpdata['Time_Since_Last_Update'] = 0
-        givtcpdata['GivTCP_Version']= "3.4"
+        givtcpdata['GivTCP_Version']= "3.5"
 
         count=0
         if exists(GivLUT.writecountpkl):
