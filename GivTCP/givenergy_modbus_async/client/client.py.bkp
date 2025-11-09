@@ -47,6 +47,11 @@ class Client:
         self.framer = ClientFramer()
         self.plant = Plant()
         self.tx_queue = Queue(maxsize=20)
+        # Maximum time (seconds) to wait for socket read before re-checking
+        # this prevents reader.read(...) from blocking forever if the
+        # remote peer becomes silent. Small value (e.g. 5s) is sufficient
+        # to allow occasional idle periods while still allowing cancellation.
+        self.read_timeout = 10.0
         # self.debug_frames = {
         #     'all': Queue(maxsize=1000),
         #     'error': Queue(maxsize=1000),
@@ -77,64 +82,70 @@ class Client:
 
     async def close(self) -> None:
         """Disconnect from the remote host and clean up tasks and queues."""
+        # Make close idempotent and resilient to partially-constructed
+        # client state. Ensure tasks are cancelled first, but don't block
+        # indefinitely waiting for them.
         if not self.connected:
             return
 
         _logger.debug("Disconnecting and cleaning up")
 
+        # Mark disconnected immediately so other tasks can observe state
         self.connected = False
 
+        # Cancel background tasks (consumer then producer) and await them
+        # with a short timeout so close() doesn't hang forever.
+        if getattr(self, "network_consumer_task", None):
+            self.network_consumer_task.cancel()
+            try:
+                await asyncio.wait_for(self.network_consumer_task, timeout=2.0)
+            except Exception:
+                # task may have already finished or refused to cancel quickly
+                pass
+
+        if getattr(self, "network_producer_task", None):
+            self.network_producer_task.cancel()
+            try:
+                await asyncio.wait_for(self.network_producer_task, timeout=2.0)
+            except Exception:
+                pass
+
+        # Cancel any pending futures stored in tx_queue
         if self.tx_queue:
             while not self.tx_queue.empty():
-                _, future = self.tx_queue.get_nowait()
+                try:
+                    _, future = self.tx_queue.get_nowait()
+                except Exception:
+                    break
                 if future:
                     future.cancel()
 
-        # Cancel background tasks if they're still running. Don't await them here
-        # because close() may be called from one of those tasks.
-        try:
-            current = asyncio.current_task()
-        except Exception:
-            current = None
-
-        if self.network_producer_task and self.network_producer_task is not current:
-            self.network_producer_task.cancel()
-
+        # Close the writer but don't block forever waiting for wait_closed()
         if hasattr(self, "writer") and self.writer:
             try:
                 self.writer.close()
-                # guard against a hanging wait_closed
-                await asyncio.wait_for(self.writer.wait_closed(), timeout=1.0)
-            except asyncio.TimeoutError:
-                _logger.warning("writer.wait_closed() timed out, continuing cleanup")
+                await asyncio.wait_for(self.writer.wait_closed(), timeout=2.0)
             except Exception:
-                _logger.exception("Exception while closing writer")
-            finally:
-                try:
-                    del self.writer
-                except Exception:
-                    pass
+                _logger.debug("Timed out or error waiting for writer to close")
+            try:
+                del self.writer
+            except Exception:
+                pass
 
-        if self.network_consumer_task and self.network_consumer_task is not current:
-            self.network_consumer_task.cancel()
-
+        # Safely tear down reader
         if hasattr(self, "reader") and self.reader:
             try:
-                # Signal EOF and set a cancelling exception so any awaiting readers wake
-                try:
-                    self.reader.feed_eof()
-                except Exception:
-                    pass
-                try:
-                    self.reader.set_exception(RuntimeError("cancelling"))
-                except Exception:
-                    pass
-            finally:
-                try:
-                    del self.reader
-                except Exception:
-                    pass
+                # unblock any pending read() callers
+                self.reader.feed_eof()
+                self.reader.set_exception(RuntimeError("cancelling"))
+            except Exception:
+                pass
+            try:
+                del self.reader
+            except Exception:
+                pass
 
+        # Clear expected responses map
         self.expected_responses = {}
         # self.debug_frames = {
         #     'all': Queue(maxsize=1000),
@@ -247,6 +258,7 @@ class Client:
         else:
             self.plant.isHV= False
 #            meter_list=[]
+
         meter_list=[1,2,3,4,5,6,7,8]
 
         #### Set whether a device has batteries and then count them if they are allowed ####
@@ -360,7 +372,18 @@ class Client:
         """Task for orchestrating incoming data."""
         try:
             while hasattr(self, "reader") and self.reader and not self.reader.at_eof():
-                frame = await self.reader.read(300)
+                # Protect reader.read from blocking forever by using a
+                # short wait_for timeout. If the timeout elapses we loop
+                # again which allows task cancellation to be observed.
+                try:
+                    frame = await asyncio.wait_for(
+                        self.reader.read(300), timeout=self.read_timeout
+                    )
+                except asyncio.TimeoutError:
+                    # No data arrived within read_timeout, loop back and
+                    # check reader/connected state. This prevents a silent
+                    # peer from causing an indefinite hang.
+                    continue
                 # await self.debug_frames['all'].put(frame)
                 for message in self.framer.decode(frame):
                     _logger.debug("Processing %s", message)
@@ -389,8 +412,18 @@ class Client:
 
                     future = self.expected_responses.get(message.shape_hash())
 
-                    if future and not future.done():
-                        future.set_result(message)
+                    if future:
+                        try:
+                            if not future.done() and not future.cancelled():
+                                future.set_result(message)
+                        except Exception:
+                            # InvalidStateError can happen if the future was
+                            # completed/cancelled concurrently. Log and continue.
+                            _logger.debug(
+                                "Failed to set expected_responses future result (state=%s, cancelled=%s)",
+                                getattr(future, 'done', lambda: 'n/a')(),
+                                getattr(future, 'cancelled', lambda: 'n/a')(),
+                            )
                     # try:
                     self.plant.update(message)
                     # except RegisterCacheUpdateFailed as e:
@@ -399,59 +432,81 @@ class Client:
             _logger.debug(
                 "network_consumer reader at EOF, cannot continue, closing connection"
             )
-        except asyncio.TimeoutError:
-            # Reader timed out; log and continue to allow loop to retry
-            _logger.warning("network_consumer read timeout, continuing")
-            # fail nothing here - timeouts are transient
         except Exception:
             _logger.exception("network_consumer reader exception")
-            try:
-                self._fail_all_pending(CommunicationError("network consumer failed"))
-            except Exception:
-                _logger.exception("Error failing pending futures after consumer exception")
         finally:
-            # schedule close in background to avoid deadlocks when called from inside tasks
-            try:
-                asyncio.create_task(self.close())
-            except Exception:
-                _logger.exception("Error scheduling close from consumer finally")
+            await self.close()
 
     async def _task_network_producer(self, tx_message_wait: float = 0.25):
         """Producer loop to transmit queued frames with an appropriate delay."""
-        try:
-            while hasattr(self, "writer") and self.writer and not self.writer.is_closing():
+        while hasattr(self, "writer") and self.writer and not self.writer.is_closing():
+            try:
                 message, future = await self.tx_queue.get()
+            except asyncio.CancelledError:
+                break
+            try:
+                # Write and flush
+                self.writer.write(message)
+                await self.writer.drain()
+            except Exception as e:
+                # Ensure queue bookkeeping is kept correct for this item
                 try:
-                    self.writer.write(message)
-                    await self.writer.drain()
                     self.tx_queue.task_done()
-                    if future and not future.done():
-                        future.set_result(True)
-                except (ConnectionResetError, BrokenPipeError, ConnectionAbortedError, OSError) as e:
-                    _logger.exception("network_producer write/drain failed: %s", e)
-                    # notify waiting callers and stop producer
+                except Exception:
+                    pass
+
+                # If a frame-level future was provided, notify caller with an error
+                if future and not future.done():
                     try:
-                        self._fail_all_pending(CommunicationError("Connection lost"))
+                        future.set_exception(CommunicationError(f"Failed to send frame: {e}"))
                     except Exception:
-                        _logger.exception("Error failing pending futures after producer error")
-                    break
+                        try:
+                            future.set_exception(e)
+                        except Exception:
+                            pass
+
+                # Connection-related errors should tear down the connection gracefully
+                if isinstance(e, (ConnectionResetError, BrokenPipeError, ConnectionError, OSError)):
+                    _logger.warning("Connection error writing to %s:%s - %s", self.host, self.port, e)
+                    # Close will cancel background tasks and clean up resources
+                    try:
+                        await self.close()
+                    except Exception:
+                        _logger.debug("Error while closing after write failure")
+                    # Exit producer loop without re-raising so the exception is not left un-retrieved
+                    return
+
+                # For unexpected exceptions, log full traceback and re-raise
+                _logger.exception("Unexpected error writing message to socket")
+                raise
+
+            # Mark queue item done
+            try:
+                self.tx_queue.task_done()
+            except Exception:
+                pass
+
+            # Safely complete the frame_sent future if still active
+            if future:
+                try:
+                    if not future.done() and not future.cancelled():
+                        future.set_result(True)
+                except Exception:
+                    _logger.debug(
+                        "Failed to set tx_queue frame future (done=%s cancelled=%s)",
+                        getattr(future, 'done', lambda: 'n/a')(),
+                        getattr(future, 'cancelled', lambda: 'n/a')(),
+                    )
+
+            # Small delay between frames
+            try:
                 await asyncio.sleep(tx_message_wait)
-        except asyncio.CancelledError:
-            _logger.debug("network_producer task cancelled")
-        except Exception:
-            _logger.exception("Unexpected exception in network_producer")
-            try:
-                self._fail_all_pending(CommunicationError("Producer failed"))
-            except Exception:
-                _logger.exception("Error failing pending futures after unexpected producer exception")
-        finally:
-            _logger.debug(
-                "network_producer exiting; scheduling connection close"
-            )
-            try:
-                asyncio.create_task(self.close())
-            except Exception:
-                _logger.exception("Error scheduling close from producer finally")
+            except asyncio.CancelledError:
+                break
+        _logger.debug(
+            "network_producer writer is closing, cannot continue, closing connection"
+        )
+        await self.close()
 
     # async def _task_dump_queues_to_files(self):
     #     """Task to periodically dump debug message frames to disk for debugging."""
@@ -503,7 +558,10 @@ class Client:
                 _logger.debug(
                     "Cancelling existing in-flight request and replacing: %s", request
                 )
-                existing_response_future.cancel()
+                try:
+                    existing_response_future.cancel()
+                except Exception:
+                    _logger.debug("Failed to cancel existing response future")
             response_future: Future[
                 TransparentResponse
             ] = asyncio.get_event_loop().create_future()
@@ -545,35 +603,11 @@ class Client:
             tries,
             timeout,
         )
-        raise asyncio.TimeoutError()
-
-    def _fail_all_pending(self, exc: Exception) -> None:
-        """Mark all outstanding futures as failed and clear queues.
-
-        This is used when the network connection has gone away so callers
-        waiting on responses are notified instead of hanging.
-        """
+        # Ensure we don't leave stale entries in expected_responses
         try:
-            for fut in list(self.expected_responses.values()):
-                try:
-                    if fut and not fut.done():
-                        fut.set_exception(exc)
-                except Exception:
-                    _logger.exception("Error failing expected response future")
-        finally:
-            self.expected_responses = {}
-
-        # Empty tx_queue and fail any frame-sent futures
-        try:
-            while not self.tx_queue.empty():
-                try:
-                    _, fut = self.tx_queue.get_nowait()
-                except Exception:
-                    break
-                if fut and not fut.done():
-                    try:
-                        fut.set_exception(exc)
-                    except Exception:
-                        fut.cancel()
+            cur = self.expected_responses.get(expected_shape_hash)
+            if cur is response_future:
+                del self.expected_responses[expected_shape_hash]
         except Exception:
-            _logger.exception("Error clearing tx_queue")
+            pass
+        raise asyncio.TimeoutError()
