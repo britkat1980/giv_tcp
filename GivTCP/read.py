@@ -124,6 +124,7 @@ async def watch_plant(
         lastfulltime=datetime.datetime.now()
         lastruntime=datetime.datetime.now()
         timeoutErrors=0
+        logger.info("Starting data refresh cycle")
         while True:
             try:
                 if not client.connected:
@@ -187,7 +188,6 @@ async def watch_plant(
                         logger.error(str(command[0])+" request error: "+str(e)+" deleting all pending requests, please try again")
                         os.remove(GivLUT.writerequests)
 
-                logger.info("Starting data refresh cycle")
                 timesincelast=datetime.datetime.now()-lastruntime
                 now = datetime.datetime.now(tz=GivLUT.timezone)
                 # Run resetTodayStats() once when the date changes at midnight.
