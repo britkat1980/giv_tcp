@@ -589,7 +589,7 @@ class Converter:
                 return datetime(year + 2000, month, day, hour, min, sec)
             return datetime(2000,1,1,0,0,0)
         except:
-            _logger.debug("Error processing datetime. Sending Zero Date")
+            _logger.error("Error processing datetime. Sending Zero Date")
             return datetime(2000,1,1,0,0,0)
 
 class WorkMode(IntEnum):
@@ -685,6 +685,7 @@ class Model(StrEnum):
         
     @classmethod
     def core_regs(cls, value):
+########## Currently unused  #############
         """Return core registers for each model to be pulled in a "partial" refresh. (IR,HR)"""
 
         '''

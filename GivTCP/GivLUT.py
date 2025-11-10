@@ -11,27 +11,77 @@ from time import sleep
 import sys
 
 from threading import Lock
+import asyncio
 
 logger = logging.getLogger("GivLUT")
 _client = Client(GiV_Settings.invertorIP,8899)
+_connection_lock = asyncio.Lock()
 
 class GivClientAsync:
     async def get_connection(cold_start=False):
+        """Return a shared Client instance, creating or reconnecting as required.
+
+        This function serialises connect/close activity using an asyncio.Lock so
+        multiple coroutines don't race to open/close the same connection.
+        It also uses configurable timeouts, retries and backoff (from settings
+        if provided) to make transient failures more robust.
+        """
+        global _client
+        # Configuration fallbacks
+        connect_timeout = getattr(GiV_Settings, 'connect_timeout', 7.0)
+        connect_retries = getattr(GiV_Settings, 'connect_retries', 2)
+        connect_backoff = getattr(GiV_Settings, 'connect_backoff', 0.5)
+
         try:
-            global _client
-            if cold_start:
-                # Kil any open connections if its a "cold start" to avoid any stuck connections open in the event of a watch_plant restart
-                if _client.connected:
-                    logger.info("Closing open modbus connection on start of watch_plant loop")
-                    await _client.close()
-            if not _client.connected:
-                logger.critical("Opening Modbus Connection to "+str(GiV_Settings.invertorIP))
-                await _client.connect()
-            return _client
+            # Serialise connect/close sequences so only one coroutine performs them
+            async with _connection_lock:
+                # If a cold start is requested, close any existing connection first
+                if cold_start and getattr(_client, 'connected', False):
+                    logger.info("Cold start requested: closing open modbus connection")
+                    try:
+                        await asyncio.wait_for(_client.close(), timeout=5.0)
+                    except Exception:
+                        logger.debug("Timed out or failed to close existing client during cold start")
+
+                # If already connected (maybe by another coroutine) return immediately
+                if getattr(_client, 'connected', False):
+                    return _client
+
+                logger.critical("Opening Modbus Connection to %s", str(GiV_Settings.invertorIP))
+
+                last_exc = None
+                for attempt in range(1, max(1, connect_retries) + 1):
+                    try:
+                        # Use a bounded timeout for the connect operation
+                        await asyncio.wait_for(_client.connect(), timeout=connect_timeout)
+                        # successful connect
+                        return _client
+                    except Exception as exc:
+                        last_exc = exc
+                        logger.warning(
+                            "Modbus connect attempt %d/%d failed: %s",
+                            attempt,
+                            connect_retries,
+                            exc,
+                        )
+                        # If this was the last attempt, raise after logging
+                        if attempt >= connect_retries:
+                            break
+                        # Backoff before retrying
+                        await asyncio.sleep(connect_backoff * attempt)
+
+                # If we get here connection attempts failed
+                logger.error("Failed to establish Modbus connection after %d attempts", connect_retries)
+                if last_exc:
+                    raise CommunicationError(f"Failed to connect to {GiV_Settings.invertorIP}") from last_exc
+                else:
+                    raise CommunicationError(f"Failed to connect to {GiV_Settings.invertorIP}")
+        except CommunicationError:
+            # re-raise known CommunicationError unchanged
+            raise
         except Exception as err:
-            e=sys.exc_info()[0].__name__, path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-            logger.error ("Error in getting Modbus Connection: "+str(err))
-            raise CommunicationError from err
+            logger.exception("Unexpected error in get_connection: %s", err)
+            raise CommunicationError(str(err)) from err
 
 class GivQueue:
     from redis import Redis
@@ -95,6 +145,8 @@ class GivLUT:
     fh.setFormatter(formatter)
     logger = logging.getLogger('read_logger')
     logger.addHandler(fh)
+    # Track last midnight reset date so other modules can reference a single
+    # source-of-truth instead of keeping per-module state.
     if str(GiV_Settings.Log_Level).lower()=="debug":
         logger.setLevel(logging.DEBUG)
     elif str(GiV_Settings.Log_Level).lower()=="write_debug":

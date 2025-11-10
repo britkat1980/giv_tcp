@@ -1,5 +1,5 @@
 # givtcp-vuejs builder
-FROM node:21-alpine AS givtcp_vuejs_tmp
+FROM node:current-alpine AS givtcp_vuejs_tmp
 
 # set the working directory in the container
 WORKDIR /app

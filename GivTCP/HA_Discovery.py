@@ -148,12 +148,14 @@ class HAMQTT():
         GiVTCP_Device=str(topic).split("/")[2]
         device= str(topic).split("/")[3]
 
+        e_type= Entity_Type.entity_type[item]
+
         if "Battery_Details" in topic or "Inverters" in topic:
             #tempObj["name"]=GiV_Settings.ha_device_prefix+" "+device.replace("_"," ")+" "+item.replace("_"," ") #Just final bit past the last "/"
             if len(str(topic).split("/"))>5:    #Its a battery
                 tempObj["name"]=item.replace("_"," ") #Just final bit past the last "/"
                 tempObj['unique_id']=GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[4]+"_"+item
-                tempObj['object_id']=GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[4]+"_"+item
+                tempObj['default_entity_id']=e_type.devType+"."+GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[4]+"_"+item
                 tempObj['device']['identifiers']=GiV_Settings.ha_device_prefix+" "+str(topic).split("/")[4]
                 tempObj['device']['name']=GiV_Settings.ha_device_prefix+" "+str(topic).split("/")[4].replace("_"," ")
                 if "capacity" in item.lower():
@@ -161,26 +163,26 @@ class HAMQTT():
             else:
                 tempObj["name"]=item.replace("_"," ") #Just final bit past the last "/"
                 tempObj['unique_id']=GiV_Settings.ha_device_prefix+"_"+device+"_"+item
-                tempObj['object_id']=GiV_Settings.ha_device_prefix+"_"+device+"_"+item
+                tempObj['default_entity_id']=e_type.devType+"."+GiV_Settings.ha_device_prefix+"_"+device+"_"+item
                 tempObj['device']['identifiers']=GiV_Settings.ha_device_prefix+" "+device
                 tempObj['device']['name']=GiV_Settings.ha_device_prefix+" "+device.replace("_"," ")
         elif "Meter_Details" in topic:
             #tempObj["name"]=GiV_Settings.ha_device_prefix+" "+device.replace("_"," ")+" "+item.replace("_"," ") #Just final bit past the last "/"
             tempObj["name"]=item.replace("_"," ") #Just final bit past the last "/"
             tempObj['unique_id']=GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[3]+"_"+item
-            tempObj['object_id']=GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[3]+"_"+item
+            tempObj['default_entity_id']=e_type.devType+"."+GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[3]+"_"+item
             tempObj['device']['identifiers']=GiV_Settings.ha_device_prefix+" "+str(topic).split("/")[3]
             tempObj['device']['name']=GiV_Settings.ha_device_prefix+" "+str(topic).split("/")[3].replace("_"," ")
             # tempObj['device']['name']=GiV_Settings.ha_device_prefix+" "+GiVTCP_Device.replace("_"," ")
         elif len(SN)>10:    #If EVC and not INV
             tempObj['unique_id']=GiV_Settings.ha_device_prefix+"_"+SN+"_"+item
-            tempObj['object_id']=GiV_Settings.ha_device_prefix+"_"+SN+"_"+item
+            tempObj['default_entity_id']=e_type.devType+"."+GiV_Settings.ha_device_prefix+"_"+SN+"_"+item
             tempObj['device']['identifiers']=SN+"_"+GiVTCP_Device
             tempObj['device']['name']="GivEVC"#+str(GiVTCP_Device).replace("_"," ")
             tempObj["name"]=item.replace("_"," ") #Just final bit past the last "/"
         else:
             tempObj['unique_id']=GiV_Settings.ha_device_prefix+"_"+SN+"_"+item
-            tempObj['object_id']=GiV_Settings.ha_device_prefix+"_"+SN+"_"+item
+            tempObj['default_entity_id']=e_type.devType+"."+GiV_Settings.ha_device_prefix+"_"+SN+"_"+item
             tempObj['device']['identifiers']=SN+"_"+GiVTCP_Device
             #tempObj['device']['name']=GiV_Settings.ha_device_prefix+" "+SN+" "+str(GiVTCP_Device).replace("_"," ")
             tempObj['device']['name']=GiV_Settings.ha_device_prefix+" "+str(GiVTCP_Device).replace("_"," ")
@@ -191,7 +193,7 @@ class HAMQTT():
             inv_type="EVC"
         tempObj['device']['model']=inv_type
 
-        e_type= Entity_Type.entity_type[item]
+        
 
         if not e_type.controlFunc == "":
             tempObj['command_topic']=GiV_Settings.MQTT_Topic+"/control/"+SN+"/"+e_type.controlFunc
@@ -199,45 +201,55 @@ class HAMQTT():
 #set device specific elements here:
         if e_type.devType=="sensor":
             tempObj['unit_of_meas']=""
-            tempObj['state_class']="measurement"
+            if "write_count" in str(item).lower():
+                tempObj['state_class']="measurement"
+            if "invertor_max" in str(item).lower():
+                tempObj['state_class']="measurement"
+                tempObj['device_class']="Power"
+                tempObj['unit_of_meas']="W"
+            if "kwh" in str(item).lower():
+                tempObj['unit_of_meas']="kWh"
+                tempObj['state_class']="measurement"
             if e_type.sensorClass=="energy":
                 tempObj['unit_of_meas']="kWh"
                 tempObj['device_class']="Energy"
-                if e_type.onlyIncrease:        #"soc" in str(topic.split("/")[-1]).lower() or "today" in str(topic.split("/")[-1]).lower():
+                if e_type.onlyIncrease:
                     tempObj['state_class']="total_increasing"
                 else:
                     tempObj['state_class']="total"
             if e_type.sensorClass=="money":
-                if "ppkwh" in str(topic).lower() or "rate" in str(topic).lower():
+                if "ppkwh" in str(item).lower() or "rate" in str(item).lower():
                     tempObj['unit_of_meas']="{GBP}/kWh"
                 else:
                     tempObj['unit_of_meas']="{GBP}"
+                if "state_class" in tempObj:
+                    del tempObj['state_class']
                 tempObj['device_class']="Monetary"
                 tempObj['icon_template']= "mdi:currency-gbp"
             if e_type.sensorClass=="power":
                 tempObj['unit_of_meas']="W"
                 tempObj['device_class']="Power"
-                #tempObj['state_class']="measurement"
+                tempObj['state_class']="measurement"
             if e_type.sensorClass=="temperature":
                 tempObj['unit_of_meas']="°C"
                 tempObj['device_class']="Temperature"
-                #tempObj['state_class']="measurement"
+                tempObj['state_class']="measurement"
             if e_type.sensorClass=="voltage":
                 tempObj['unit_of_meas']="V"
                 tempObj['device_class']="Voltage"
-                #tempObj['state_class']="measurement"
+                tempObj['state_class']="measurement"
             if e_type.sensorClass=="frequency":
                 tempObj['unit_of_meas']="Hz"
                 tempObj['device_class']="frequency"
-                #tempObj['state_class']="measurement"
+                tempObj['state_class']="measurement"
             if e_type.sensorClass=="current":
                 tempObj['unit_of_meas']="A"
                 tempObj['device_class']="Current"
-                #tempObj['state_class']="measurement"
+                tempObj['state_class']="measurement"
             if e_type.sensorClass=="battery":
                 tempObj['unit_of_meas']="%"
                 tempObj['device_class']="Battery"
-                #tempObj['state_class']="measurement"
+                tempObj['state_class']="measurement"
             if e_type.sensorClass=="timestamp":
                 del tempObj['unit_of_meas']
                 tempObj['device_class']="timestamp"
@@ -245,6 +257,16 @@ class HAMQTT():
                 del tempObj['unit_of_meas']
             if e_type.sensorClass=="string":
                 del tempObj['unit_of_meas']
+            if "capacity" in str(item).lower():
+                tempObj['unit_of_meas']="Ah"
+                tempObj['state_class']="measurement"
+            if "cycles" in str(item).lower():
+                tempObj['unit_of_meas']=""
+                tempObj['state_class']="measurement"
+            if "time_since" in str(item).lower():
+                tempObj['unit_of_meas']="seconds"
+                tempObj['state_class']="measurement"
+                
         elif e_type.devType=="switch":
             tempObj['payload_on']="enable"
             tempObj['payload_off']="disable"

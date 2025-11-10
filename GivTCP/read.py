@@ -24,7 +24,7 @@ import asyncio
 from typing import Callable, Optional
 from mqtt import GivMQTT
 
-logging.getLogger("givenergy_modbus_async").setLevel(logging.CRITICAL) 
+logging.getLogger("givenergy_modbus_async").setLevel(logging.ERROR) 
 logging.getLogger("rq.worker").setLevel(logging.CRITICAL)
 
 sys.path.append(GiV_Settings.default_path)
@@ -50,7 +50,7 @@ def resetTodayStats():
     # end value 0 to all "Today stats"
     Today={'Today':{'AC_Charge_Energy_Today_kWh': 0, 'Battery_Charge_Energy_Today_kWh': 0, 'Battery_Discharge_Energy_Today_kWh': 0, 'Battery_Throughput_Today_kWh': 0, 'Export_Energy_Today_kWh': 0, 'Import_Energy_Today_kWh': 0, 'Invertor_Energy_Today_kWh': 0, 'Load_Energy_Today_kWh': 0, 'PV_Energy_Today_kWh': 0, 'Self_Consumption_Energy_Today_kWh': 0}}
     GivMQTT.multi_MQTT_publish("GivEnergy/"+GiV_Settings.serial_number+"/Energy/",Today)
-    logger.info("Forcing MQTT data for Today Stats to Zero at Midnight")
+    logger.debug("Forcing MQTT data for Today Stats to Zero at Midnight")
 
 def rebootaddon():
     if GiV_Settings.isAddon:
@@ -124,6 +124,7 @@ async def watch_plant(
         lastfulltime=datetime.datetime.now()
         lastruntime=datetime.datetime.now()
         timeoutErrors=0
+        logger.info("Starting data refresh cycle")
         while True:
             try:
                 if not client.connected:
@@ -188,13 +189,16 @@ async def watch_plant(
                         os.remove(GivLUT.writerequests)
 
                 timesincelast=datetime.datetime.now()-lastruntime
-                if datetime.datetime.now(tz=GivLUT.timezone).time() == datetime.time(0, 0):
+                now = datetime.datetime.now(tz=GivLUT.timezone)
+                # Run resetTodayStats() once when the date changes at midnight.
+                # Use the shared marker on GivLUT so other modules reference the
+                # same state.
+                if now.hour == 0 and now.minute == 0:
                     resetTodayStats()
                 if timesincelast.total_seconds() < refresh_period:
                     await asyncio.sleep(0.5)
                     #if refresh period hasn't expired then just keep looping back up to write check
                     continue
-                
                 if not passive:
                     #Check time since last full_refresh
                     timesincefull=datetime.datetime.now()-lastfulltime
@@ -204,9 +208,9 @@ async def watch_plant(
                         lastfulltime=datetime.datetime.now()
                         if exists(".fullrefresh"):
                             os.remove(".fullrefresh")
-                    elif datetime.datetime.now(GivLUT.timezone).time().hour == 0 and datetime.datetime.now(GivLUT.timezone).time().minute==0:
+                    elif now.hour == 0 and now.minute == 0:
                         fullRefresh=True
-                        logger.info ("Midnight so grabbing full Energy data")
+                        logger.debug ("Midnight so grabbing full Energy data")
                         lastfulltime=datetime.datetime.now()
                         if exists(".fullrefresh"):
                             os.remove(".fullrefresh")
@@ -566,7 +570,7 @@ def getTimeslots(plant: Plant, multi_output_old=None):
     except:
         logger.debug("New Charge/Discharge timeslots don't exist for this model")
 
-    if not plant.device_type in [Model.HYBRID_GEN1, Model.AC]:
+    if not plant.device_type in [Model.HYBRID_GEN1, Model.AC] and GEInv.battery_pause_slot_1 is not None:   #Battery Pause slots not on Gen 1 Hybrid or AC only
         timeslots['Battery_pause_start_time_slot'] = validateTimeslot(GEInv.battery_pause_slot_1.start,"Battery_pause_start_time_slot",multi_output_old)
         timeslots['Battery_pause_end_time_slot'] = validateTimeslot(GEInv.battery_pause_slot_1.end,"Battery_pause_end_time_slot",multi_output_old)
     return timeslots,controlmode
@@ -959,7 +963,6 @@ def processInverterInfo(plant: Plant):
     try:
         GEInv=plant.inverter
         GEBat=plant.batteries
-        Meters=plant.meters
         isHV=plant.isHV
         inverterModel=getInvModel(plant)
 
@@ -1046,14 +1049,6 @@ def processInverterInfo(plant: Plant):
         
         # Calculate Self Consumption and Load to avoid rounding errors
         today_self = max(0,round(energy_today_output['PV_Energy_Today_kWh'], 2)-round(energy_today_output['Export_Energy_Today_kWh'], 2))
-        if multi_output_old:
-            if today_self < multi_output_old["Energy"]["Today"]['Self_Consumption_Energy_Today_kWh'] and not datetime.datetime.now().time() == datetime.time(0, 0):       #Stop any rounding calculation from making load reduce in Today stats
-                energy_today_output['Self_Consumption_Energy_Today_kWh']=multi_output_old["Energy"]["Today"]['Self_Consumption_Energy_Today_kWh']
-            else:
-                energy_today_output['Self_Consumption_Energy_Today_kWh']=today_self
-        else:
-            energy_today_output['Self_Consumption_Energy_Today_kWh']=today_self
-
         # Calculate Load to avoid rounding errors
         if inverterModel.model in (Model.HYBRID_GEN1,Model.HYBRID_GEN2,Model.HYBRID_GEN3,Model.HYBRID_GEN4 ):
             today_load = max(0,round((energy_today_output['Invertor_Energy_Today_kWh']-energy_today_output['AC_Charge_Energy_Today_kWh']) -
@@ -1062,13 +1057,24 @@ def processInverterInfo(plant: Plant):
             today_load= max(0,round((energy_today_output['Invertor_Energy_Today_kWh']-energy_today_output['AC_Charge_Energy_Today_kWh']) -
                         (energy_today_output['Export_Energy_Today_kWh']-energy_today_output['Import_Energy_Today_kWh'])+energy_today_output['PV_Energy_Today_kWh'], 2))
             
+        now=datetime.datetime.now(tz=GivLUT.timezone)
         if multi_output_old:
-            if today_load < multi_output_old["Energy"]["Today"]['Load_Energy_Today_kWh']  or datetime.datetime.now().time() == datetime.time(0, 0):       #Stop any rounding calculation from making load reduce in Today stats
+            
+            if today_self < multi_output_old["Energy"]["Today"]['Self_Consumption_Energy_Today_kWh'] and not (now.hour==0 and now.minute==0):       #Stop any rounding calculation from making load reduce in Today stats
+                energy_today_output['Self_Consumption_Energy_Today_kWh']=multi_output_old["Energy"]["Today"]['Self_Consumption_Energy_Today_kWh']
+            else:
+                energy_today_output['Self_Consumption_Energy_Today_kWh']=today_self
+
+            if now.hour == 0 and now.minute == 0 :
+                energy_today_output['Load_Energy_Today_kWh'] = 0
+            elif today_load < multi_output_old["Energy"]["Today"]['Load_Energy_Today_kWh']:       #Stop any rounding calculation from making load reduce in Today stats
                 energy_today_output['Load_Energy_Today_kWh']=multi_output_old["Energy"]["Today"]['Load_Energy_Today_kWh']
             else:
                 energy_today_output['Load_Energy_Today_kWh']=today_load    
         else:
             energy_today_output['Load_Energy_Today_kWh']=today_load
+            energy_today_output['Self_Consumption_Energy_Today_kWh']=today_self
+
     ############  Core Power Stats    ############
 
         # PV Power
@@ -1997,7 +2003,7 @@ def processData(plant: Plant):
         givtcpdata['Last_Updated_Time'] = datetime.datetime.now(GivLUT.timezone).isoformat()
         givtcpdata['status'] = "online"
         givtcpdata['Time_Since_Last_Update'] = 0
-        givtcpdata['GivTCP_Version']= "3.4"
+        givtcpdata['GivTCP_Version']= "3.5"
 
         count=0
         if exists(GivLUT.writecountpkl):
@@ -2213,15 +2219,15 @@ def getCache():     # Get latest cache data and return it (for use in REST)
             multi_output = regCacheStack[-1]
             inv=multi_output['raw']['invertor']
             for reg in inv:
-                if isinstance(inv[reg],TimeSlot) and inv[reg] is not None:
-                    inv[reg]= [inv[reg].start.isoformat(),inv[reg].end.isoformat()]
+                if isinstance(inv[reg],TimeSlot):
+                    inv[reg]= inv[reg].to_dict()
                 #elif not isinstance(inv[reg],(str,int,float)):
                 elif isinstance(inv[reg],list):
                     inv[reg]=inv[reg]
                 elif hasattr(inv[reg],"name"):
                     inv[reg]=inv[reg].name.capitalize()
                 else:
-                        inv[reg]= str(inv[reg])
+                    inv[reg]= str(inv[reg])
             multi_output['raw']['invertor']=inv
             return json.dumps(multi_output, indent=4, sort_keys=True, default=str)
         else:
@@ -2229,9 +2235,10 @@ def getCache():     # Get latest cache data and return it (for use in REST)
         return json.dumps(multi_output, indent=4, sort_keys=True, default=str)
 #### Moight not be needed now I've traced it
     except AttributeError as err:
-        e=sys.exc_info()
-        logger.error("Attribute Error: "+str(err.__context__))
-        multi_output['result']="Attribute error getting data from cache: "+str(err.__context__)
+        #e=sys.exc_info()
+        logger.error("Attribute Error: "+str(sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno))
+        logger.error("Attribute Error: "+str(err))
+        multi_output['result']="Attribute error getting data from cache: "+str(err)
         json.dumps(multi_output, indent=4, sort_keys=True, default=str)
 #### Perhaps remove cache file here if cache is corrupt?
     except:
@@ -2413,10 +2420,11 @@ def ratecalcs(multi_output, multi_output_old):
     rate_data['Day_Rate'] = GiV_Settings.day_rate
     rate_data['Night_Rate'] = GiV_Settings.night_rate
 
+    now=datetime.datetime.now(GivLUT.timezone)
     inv_time=datetime.datetime.strptime(finditem(multi_output,"Invertor_Time"), '%Y-%m-%dT%H:%M:%S%z')
     # if midnight then reset costs
-    if inv_time.hour == 0 and inv_time.minute == 0 and not exists(".midnightreset"):
-        logger.info("Midnight, so resetting Day/Night stats...")
+    if inv_time.hour == 0 and inv_time.minute == 0:
+        logger.debug("Midnight, so resetting Day/Night stats...")
         rate_data['Night_Cost'] = 0.00
         rate_data['Day_Cost'] = 0.00
         rate_data['Night_Energy_kWh'] = 0.00
@@ -2425,10 +2433,6 @@ def ratecalcs(multi_output, multi_output_old):
         rate_data['Night_Start_Energy_kWh'] = import_energy
         rate_data['Day_Energy_Total_kWh'] = 0
         rate_data['Night_Energy_Total_kWh'] = 0
-        open(".midnightreset", 'w').close() 
-    else:
-        if exists(".midnightreset"):
-            os.remove(".midnightreset")
 
 ## If we use externally triggered rates then don't do the time check but assume the rate files are set elsewhere (default to Day if not set)
     if GiV_Settings.dynamic_tariff == False:     
