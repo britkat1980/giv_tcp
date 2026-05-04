@@ -2,6 +2,8 @@ from GivLUT import GivLUT
 from settings import GiV_Settings
 import pandas as pd
 import numpy as np
+import os
+import datetime
 from entity_lut import Entity_Type
 logger = GivLUT.logger
 givLUT = Entity_Type.entity_type
@@ -81,6 +83,46 @@ def iterate_dict(array):        # Create a publish safe version of the output (c
                 safeoutput[p_load] = output
     return(safeoutput)
 
+def get_outlier_capture_path():
+    capture_dir = getattr(GiV_Settings, 'cache_location', '.')
+    try:
+        os.makedirs(capture_dir, exist_ok=True)
+    except OSError:
+        pass
+    return os.path.join(capture_dir, 'outlier_capture.csv')
+
+
+def capture_outlier_analysis(flatstack, cleanFlatStack, smoothed_items=None):
+    capture_path = get_outlier_capture_path()
+    rows = []
+    run_ts = datetime.datetime.now().isoformat()
+    smoothed_items = smoothed_items or []
+    for item, raw_values in flatstack.items():
+        if item not in cleanFlatStack or item not in smoothed_items:
+            continue
+        clean_values = cleanFlatStack[item]
+        if len(raw_values) != len(clean_values):
+            continue
+        for idx, (raw, clean) in enumerate(zip(raw_values, clean_values)):
+            try:
+                is_outlier = 1 if raw != clean else 0
+            except Exception:
+                is_outlier = 0
+            if is_outlier:  # only capture actual outliers
+                rows.append({
+                    'timestamp': run_ts,
+                    'item': item,
+                    'index': idx,
+                    'raw': raw,
+                    'cleaned': clean,
+                    'is_outlier': is_outlier
+                })
+    if rows:
+        df = pd.DataFrame(rows)
+        header = not os.path.exists(capture_path)
+        df.to_csv(capture_path, mode='a', index=False, header=header)
+
+
 def makeFlatStack(CacheStack):
     data=[]
     dp=[]
@@ -106,6 +148,7 @@ def outlierRemoval(latest_data,CacheStack):
     # get all keys from the stack
     flatstack=makeFlatStack(CacheStack)
     # iterate through a remove outliers
+    smoothed_items = []
     for item in flatstack:
         test=flatstack[item][0]
         if givLUT[item].smooth and isinstance(test,(int, float)) and not isinstance(test,bool):
@@ -119,10 +162,18 @@ def outlierRemoval(latest_data,CacheStack):
             newdf = newdf.bfill()
 #            newnewdf=outlier_smoother(df)
             cleanFlatStack[item]=newdf.to_dict(orient='list')[0]
+            smoothed_items.append(item)
         else:
             cleanFlatStack[item]=flatstack[item]
     if outliercount > 0:
         logger.info(str(outliercount)+" - outliers found, fixing with interpolated good data")
+
+    # capture the raw vs cleaned values for all smoothed items so plotting can be built later
+    try:
+        capture_outlier_analysis(flatstack, cleanFlatStack, smoothed_items)
+    except Exception as e:
+        logger.debug("Failed to write outlier capture: %s" % e)
+
 ### NOW put back in the right place...
     for item in cleanFlatStack:
         #find its location in regCache

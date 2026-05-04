@@ -924,7 +924,7 @@ def processPVInfo(plant: Plant):
         ######## Get Meter Details ########
 
         meters={}
-        if Giv_Settings.lite_query:
+        if GiV_Settings.lite_query:
             logger.debug("Lite query set, no meter stats")
         else:
             meters.update(getMeters(plant))
@@ -2059,7 +2059,6 @@ def processData(plant: Plant):
             with open(GivLUT.writecountpkl, 'rb') as inp:
                 count = pickle.load(inp)
         givtcpdata['Write_Count']= count
-        
         safecount=0
         if exists(GivLUT.safewritecountpkl):
             with open(GivLUT.safewritecountpkl, 'rb') as inp:
@@ -2081,12 +2080,12 @@ def processData(plant: Plant):
             multi_output=dataCleansing(multi_output,regCacheStack[-1])
 
 ### Outlier removal for multi_output
-        if len(regCacheStack)>20:
-            logger.debug("Running outlier removal")
-            multi_output,regCacheStack  = outlierRemoval(multi_output,regCacheStack)
-            logger.debug("outlier removal Complete")
-        else:
-            logger.debug("outlier removal not carried out: cache too small")
+#        if len(regCacheStack)>20:
+#            logger.debug("Running outlier removal")
+#            multi_output,regCacheStack  = outlierRemoval(multi_output,regCacheStack)
+#            logger.debug("outlier removal Complete")
+#        else:
+#            logger.debug("outlier removal not carried out: cache too small")
 
         # run ppkwh stats on firstrun and every half hour
         if plant.number_batteries>0:    #Don't run ratecalcs if no batteries
@@ -2115,7 +2114,7 @@ def processData(plant: Plant):
         if len(regCacheStack)>0:
             #earliest_cache_age=(datetime.datetime.now(GivLUT.timezone)-datetime.datetime.strptime(finditem(regCacheStack[0],"Invertor_Time"), '%Y-%m-%dT%H:%M:%S%z'))
             #if earliest_cache_age.seconds>3600:
-            if len(regCacheStack)>30:
+            if len(regCacheStack)>30:  # keep ~10 hours of history for outlier detection
                 regCacheStack.pop(0)
         regCacheStack.append(multi_output)
         GivLUT.put_regcache(regCacheStack)
@@ -2675,25 +2674,25 @@ def dataSmoother2(dataNew, dataOld, lastUpdate, invtype,inv_time):
 
         ## Now smooth data
 ##### Remove this if using outlier????
-#                if lookup.smooth and not GiV_Settings.data_smoother.lower() == "none":     # apply smoothing if required
-#                    if newData != oldData:  # Only if its not the same
-#                        if any(word in name.lower() for word in ["power","_to_"]):
-#                            if abs(newData-oldData)>abssmooth:                                
-#                                if checkRawcache(newData,name,abssmooth): #If new data is persistently outside bounds then use new value
-#                                    return(newData)
-#                                else:
-#                                    logger.debug(str(name)+" jumped too far in a single read: "+str(oldData)+"->"+str(newData)+" so using previous value")
-#                                    return (oldData)
-#                        else:
-#                            ## Only smooth data if its not already Zero (avoid div by Zero)
-#                            if oldData != 0:
-#                                if abs(newData-oldData) < 1: # ignore very small changes (eg. today energy stats at start of day)
-#                                    return (newData)
-#                                timeDelta = (now-then).total_seconds()
-#                                dataDelta = abs(newData-oldData)/oldData    #Should it be a ratio or an abs value as low values easily meet the threshold
-#                                if dataDelta > smoothRate and timeDelta < 60:
-#                                    logger.debug(str(name)+" jumped too far in a single read: "+str(oldData)+"->"+str(newData)+" so using previous value")
-#                                    return (oldData)
+                if lookup.smooth and not GiV_Settings.data_smoother.lower() == "none":     # apply smoothing if required
+                    if newData != oldData:  # Only if its not the same
+                        if any(word in name.lower() for word in ["power","_to_"]):
+                            if abs(newData-oldData)>abssmooth:                                
+                                if checkRawcache(newData,name,abssmooth): #If new data is persistently outside bounds then use new value
+                                    return(newData)
+                                else:
+                                    logger.debug(str(name)+" jumped too far in a single read: "+str(oldData)+"->"+str(newData)+" so using previous value")
+                                    return (oldData)
+                        else:
+                            ## Only smooth data if its not already Zero (avoid div by Zero)
+                            if oldData != 0:
+                                if abs(newData-oldData) < 1: # ignore very small changes (eg. today energy stats at start of day)
+                                    return (newData)
+                                timeDelta = (now-then).total_seconds()
+                                dataDelta = abs(newData-oldData)/oldData    #Should it be a ratio or an abs value as low values easily meet the threshold
+                                if dataDelta > smoothRate and timeDelta < 60:
+                                    logger.debug(str(name)+" jumped too far in a single read: "+str(oldData)+"->"+str(newData)+" so using previous value")
+                                    return (oldData)
         else:
             logger.debug("Nonetype in old or new data for "+str(name)+" so using new value")
     except Exception as e:

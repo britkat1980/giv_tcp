@@ -316,7 +316,8 @@ class Client:
                         "Detected additional input register support (base_register=%d)",
                         ir,
                     )
-                    self.plant.additional_input_registers.append(ir)
+                    if not ir in self.plant.additional_input_registers:
+                        self.plant.additional_input_registers.append(ir)
                 except asyncio.TimeoutError:
                     _logger.debug(
                         "Inverter did not respond to input register query (base_register=%d)",
@@ -337,7 +338,8 @@ class Client:
                         "Detected additional holding register support (base_register=%d)",
                         hr,
                     )
-                    self.plant.additional_holding_registers.append(hr)
+                    if not hr in self.plant.additional_holding_registers:
+                        self.plant.additional_holding_registers.append(hr)
                 except asyncio.TimeoutError:
                     _logger.debug(
                         "Inverter did not respond to holding register query (base_register=%d)",
