@@ -1,5 +1,5 @@
 '''Test Module for GivEVC'''
-from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.client import ModbusTcpClient
 import paho.mqtt.client as mqtt
 import logging
 import importlib
@@ -40,7 +40,7 @@ else:
     logger.setLevel(logging.ERROR)
 
 cacheLock = Lock()
-logging.getLogger("pymodbus").setLevel(logging.CRITICAL) 
+logging.getLogger("").setLevel(logging.CRITICAL) 
 
 if GiV_Settings.MQTT_Port=='':
     MQTT_Port=1883
@@ -191,12 +191,12 @@ def getEVC(client:ModbusTcpClient):
             logger.debug("Socket is already open")
         else:
             logger.debug("Socket isn't yet open")
-        result = client.read_holding_registers(0,60)
+        result = client.read_holding_registers(0,count=60)
         if not client.is_socket_open():
             logger.debug("Socket is closed")
         else:
             logger.debug("Socket is still open")
-        result2 = client.read_holding_registers(60,55)
+        result2 = client.read_holding_registers(60,count=55)
         #else:
         #    return output
 
@@ -323,7 +323,7 @@ def runAll(client):  # Read from EVC put in cache and publish
     return multi_output
 
 def self_run2():
-    client = ModbusTcpClient(GiV_Settings.evc_ip_address, auto_open=True, auto_close=True)
+    client = ModbusTcpClient(GiV_Settings.evc_ip_address)
     TimeoutError=0
     while True:
         result=runAll(client)

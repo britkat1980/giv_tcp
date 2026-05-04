@@ -11,7 +11,7 @@ import asyncio
 from GivTCP.findInvertor import findInvertor
 from GivTCP.findEVC import findEVC
 from GivTCP.givenergy_modbus_async.client.client import Client
-from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.client import ModbusTcpClient
 
 selfRun={}
 mqttClient={}
@@ -33,12 +33,12 @@ def validateEVC(HOST):
     SN=""
     try:
         client = ModbusTcpClient(HOST)
-        registers = client.read_holding_registers(97,6)
+        registers = client.read_holding_registers(97,count=6)
         if hasattr(registers,"registers"):
             regs=registers.registers
             systime=datetime(regs[0],regs[1],regs[2],regs[3],regs[4],regs[5]).replace(tzinfo=timezone.utc).isoformat()
             #get serial number here now and put in the settings file
-            sn_regs = client.read_holding_registers(38,31).registers
+            sn_regs = client.read_holding_registers(38,count=31).registers
             for num in sn_regs:
                 if not num==0:
                     SN=SN+chr(num)
