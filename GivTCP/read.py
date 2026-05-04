@@ -1924,14 +1924,16 @@ def processThreePhaseInfo(plant: Plant):
         if GiV_Settings.lite_query:
             power_output['SOC_kWh'] = 0
         else:
-            batteries2=getBatteries(plant,multi_output_old)
-
-            sockwh=0
-            count=0
-            for stack in batteries2:
-                sockwh=sockwh+batteries2[stack]['Stack_SOC_kWh']
-                count+=1
-            power_output['SOC_kWh'] = sockwh/count                                         # Average SOC of all stacks...
+            batteries2 = getBatteries(plant, multi_output_old)
+            sockwh = 0
+            count = 0
+            if batteries2:
+                for stack in batteries2:
+                    stack_data = batteries2[stack]
+                    if isinstance(stack_data, dict) and 'Stack_SOC_kWh' in stack_data:
+                        sockwh = sockwh + stack_data['Stack_SOC_kWh']
+                        count += 1
+            power_output['SOC_kWh'] = sockwh / count if count > 0 else 0                                      # Average SOC of all stacks...
 
         inverter['status']=GEInv.status.name.capitalize()
         inverter['System_Mode']=GEInv.system_mode.name.capitalize()
@@ -1946,8 +1948,11 @@ def processThreePhaseInfo(plant: Plant):
     # Calc HV stack capacity as function of stacks
         cap=0
         if not GiV_Settings.lite_query:
-            for stack in batteries2:
-                cap=cap+batteries2[stack]['Stack_Design_Capacity']
+            if batteries2:
+                for stack in batteries2:
+                    stack_data = batteries2[stack]
+                    if isinstance(stack_data, dict) and 'Stack_Design_Capacity' in stack_data:
+                        cap = cap + stack_data['Stack_Design_Capacity']
         inverter['Battery_Capacity_kWh'] = cap
 
         inverter['Inverter_Temperature']=GEInv.t_inverter

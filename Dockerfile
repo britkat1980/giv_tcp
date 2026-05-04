@@ -12,7 +12,6 @@ RUN npm install && \
     mv dist/index.html dist/config.html
 
 # set base image (host OS)
-#FROM python:3.11-rc-alpine
 FROM python:alpine3.19
 
 RUN apk add --no-cache \

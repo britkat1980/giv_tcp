@@ -435,8 +435,8 @@ class Entity_Type():
         "AC_Charge_Energy_Total_kWh":GEType("sensor","energy","",0,'maxTotalEnergy',False,False,True),
 
     ### Meters ###
-        "Import_Energy_kWh":GEType("sensor","energy","",0,'maxTotalEnergy',False,False,True),
-        "Export_Energy_kWh":GEType("sensor","energy","",0,'maxTotalEnergy',False,False,True),
+        "Import_Energy_kWh":GEType("sensor","energy","",0,'maxTotalEnergy',False,True,True),
+        "Export_Energy_kWh":GEType("sensor","energy","",0,'maxTotalEnergy',False,True,True),
         "Phase_1_Voltage":GEType("sensor","voltage","",0,300,True,True,False),
         "Phase_1_Current":GEType("sensor","current","",0,300,True,True,False),
         "Phase_1_Power":GEType("sensor","power","",'-maxPower','maxPower',True,True,False),
