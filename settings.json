@@ -1,4 +1,5 @@
 {
+    "number_of_inverters": 5,
     "v3upgrade": true,
     "auto_scan":true,
     "invertorIP_1": "",

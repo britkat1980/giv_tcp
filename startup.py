@@ -489,7 +489,7 @@ for inv in inverterStats:
     if not inverterStats[inv]['Serial_Number'] in [setts["serial_number_1"],setts["serial_number_2"],setts["serial_number_3"],setts["serial_number_4"],setts["serial_number_5"]]:
         # find next empty slot and populate with details
         logger.info("Inverter "+ str(inverterStats[inv]['Serial_Number'])+ " not in settings file")
-        for num in range(1,6):
+        for num in range(1,setts["number_of_inverters"]+1):
             if setts["invertorIP_"+str(num)]=="":
                 logger.info("Adding Inverter "+ str(inverterStats[inv]['Serial_Number'])+ " to slot "+ str(num))
                 setts["invertorIP_"+str(num)]=inverterStats[inv]['IP_Address']
@@ -497,7 +497,7 @@ for inv in inverterStats:
                 setts["inverter_enable_"+str(num)]=True             #If found for the first time, auto enable (but not if already there incase user has disabled)
                 break
     else:
-        for num in range(1,6):
+        for num in range(1,setts["number_of_inverters"]+1):
             if inverterStats[inv]['Serial_Number'] == setts["serial_number_"+str(num)]:
                 logger.debug("Inverter "+ str(inverterStats[inv]['Serial_Number'])+ " already found in settings file (slot "+str(num)+"), checking IP address is unchanged...")
                 if not setts["invertorIP_"+str(num)] == inverterStats[inv]['IP_Address']:
@@ -596,7 +596,7 @@ setting_rest=subprocess.Popen(command)
 if setts['evc_enable']==True:
     ## Create settingsfile for EVC
     foundinv=0
-    for inv in range(1,6):
+    for inv in range(1,setts['number_of_inverters']+1):
         if setts['inverter_enable_'+str(inv)]==True:
             foundinv=inv
             break   #Stop on the first enabled inverter and pass it to evc settings
@@ -612,7 +612,7 @@ if setts['evc_enable']==True:
 runninginv=[]
 
 # Change this to only use those inverters set to enabled in settings (INDENT)
-for inv in range(1,6):
+for inv in range(1,setts['number_of_inverters']+1):
     if setts['inverter_enable_'+str(inv)]==True:
         #Set up v3upgrade file
         if v3upgrade:
@@ -677,7 +677,10 @@ for inv in range(1,6):
             mqttBroker=subprocess.Popen(["/usr/sbin/mosquitto", "-c",PATH+"/mqtt.conf"])
 
         if setts['self_run']==True: # Don't autorun if isAddon to prevent autostart creating rubbish before its checked by a user
-            logger.info ("Running Invertor "+str(inv)+" ("+str(setts["serial_number_"+str(inv)])+") read loop every "+str(setts['self_run_timer'])+"/"+str(setts['self_run_timer_full'])+"s")
+            if setts["lite_query_"+str(inv)]==True:
+                logger.info ("Running Invertor "+str(inv)+" ("+str(setts["serial_number_"+str(inv)])+") read loop in lite mode every "+str(setts['self_run_timer'])+"/"+str(setts['self_run_timer_full'])+"s")
+            else:
+                logger.info ("Running Invertor "+str(inv)+" ("+str(setts["serial_number_"+str(inv)])+") read loop every "+str(setts['self_run_timer'])+"/"+str(setts['self_run_timer_full'])+"s")
             selfRun[inv]=subprocess.Popen(["/usr/local/bin/python3",PATH+"/read.py", "start"])
 
         

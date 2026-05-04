@@ -39,6 +39,8 @@ RUN rm /etc/nginx/http.d/default.conf
 # copy the content of the local src directory to the working directory
 COPY GivTCP/ ./GivTCP
 COPY WebDashboard ./WebDashboard
+
+# Remove this in favour of pulling from py-pi?
 # COPY givenergy_modbus/ /usr/local/lib/python3.11/site-packages/givenergy_modbus
 COPY GivTCP/givenergy_modbus_async/ /usr/local/lib/python3.12/site-packages/givenergy_modbus_async
 
