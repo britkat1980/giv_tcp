@@ -576,7 +576,7 @@ export const useCard = defineStore('card', {
     },
     palm: {
       title: 'Smart Target',
-      subtitle: 'Automtically update your target SOC every night based on olar prediction and historical usage',
+      subtitle: 'Automatically update your target SOC every night based on solar prediction and historical usage',
       fields: [
         ,{
           type: 'checkbox',
