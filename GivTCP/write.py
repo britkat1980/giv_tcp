@@ -72,8 +72,11 @@ def updateControlCache(entity,value,isTime: bool=False):
         value=value.split(" ")[1]
     else:
         Topic=str(GiV_Settings.MQTT_Topic+"/"+GiV_Settings.serial_number+"/Control/")+str(entity)
-    logger.debug("Pushing control update to mqtt: "+Topic+" - "+str(value))
-    GivMQTT.single_MQTT_publish(Topic,str(value))
+    if GiV_Settings.MQTT_Output:
+        logger.debug("Pushing control update to mqtt: "+Topic+" - "+str(value))
+        GivMQTT.single_MQTT_publish(Topic,str(value))
+    else:
+        logger.debug("Skipping MQTT control update because MQTT_Output is disabled")
 
     # now update the pkl cache file
     if exists(GivLUT.regcache):      # if there is a cache then grab it

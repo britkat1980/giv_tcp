@@ -43,6 +43,14 @@ class GivMQTT():
     else:
         MQTT_Topic=GiV_Settings.MQTT_Topic
 
+    def _wait_for_connection(max_wait_seconds=2.0):
+        waited = 0.0
+        while not _mqttclient.connected_flag and waited < max_wait_seconds:
+            logger.debug("Waiting for MQTT connection")
+            time.sleep(0.2)
+            waited += 0.2
+        return _mqttclient.connected_flag
+
     def get_connection():
         try:
             global _mqttclient
@@ -60,6 +68,7 @@ class GivMQTT():
         except:
             e=sys.exc_info()[0].__name__, basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
             logger.error("Error getting connection to MQTT Broker: " + str(e))
+            return None
 
     def isfloat(num):
         try:
@@ -85,23 +94,28 @@ class GivMQTT():
     def single_MQTT_publish(Topic,value):   #Recieve multiple payloads with Topics and publish in a single MQTT connection
         client=GivMQTT.get_connection()
         try:
-            while not _mqttclient.connected_flag:        			#wait in loop
-                #GivMQTT.connect()
-                logger.debug ("In wait loop (single_MQTT_publish)")
-                time.sleep(0.2)
+            if not client:
+                logger.debug("Skipping MQTT publish because broker connection could not be established")
+                return
+            if not GivMQTT._wait_for_connection():
+                logger.warning("Skipping MQTT publish because broker did not become ready in time")
+                return
             client.publish(Topic,value)
         except:
             e=sys.exc_info()[0].__name__, basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
             logger.error("Error connecting to MQTT Broker: " + str(e))
-            GivMQTT.client.disconnect()
+            client.disconnect()
 #            GivMQTT.client.loop_stop()                      			    #Stop loop
 
     def multi_MQTT_publish(rootTopic,array):                    #Recieve multiple payloads with Topics and publish in a single MQTT connection
         client=GivMQTT.get_connection()
         try:
-            while not _mqttclient.connected_flag:        			#wait in loop
-                logger.debug ("In wait loop (multi_MQTT_publish)")
-                time.sleep(0.2)
+            if not client:
+                logger.debug("Skipping MQTT publish because broker connection could not be established")
+                return
+            if not GivMQTT._wait_for_connection():
+                logger.warning("Skipping MQTT publish because broker did not become ready in time")
+                return
             for p_load in array:
                 payload=array[p_load]
                 logger.debug('Publishing: '+rootTopic+p_load)
