@@ -563,7 +563,7 @@ def setChargeMode(mode):
         logger.info("Setting Charge mode to: "+ mode)
         logger.debug("numeric value "+str(val)+ " sent to EVC")
         client=ModbusTcpClient(GiV_Settings.evc_ip_address)
-        client.write_registers(93,val)
+        client.write_registers(93,[val])
     except:
         e=sys.exc_info()
         logger.error("Error controlling EVC: "+str(e))
@@ -576,7 +576,7 @@ def setChargeControl(mode):
             logger.debug("numeric value "+str(val)+ " sent to EVC")
             try:
                 client=ModbusTcpClient(GiV_Settings.evc_ip_address)
-                client.write_registers(95,val)
+                client.write_registers(95,[val])
             except:
                 e=sys.exc_info()
                 logger.error("Error controlling EVC: "+str(e))
@@ -598,7 +598,7 @@ def setCurrentLimit(val):
             val=max(val,safeMin)  #Force to 6 if less than
             val=min(val,safeMax) # Get safe MAX value from pkl
             client=ModbusTcpClient(GiV_Settings.evc_ip_address)
-            res=client.write_registers(91,(val*10))
+            res=client.write_registers(91,[(val*10)])
             logger.info("Charge current limit set to: "+ str(val))
 
     except:
