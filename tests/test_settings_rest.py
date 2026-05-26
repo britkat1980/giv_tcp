@@ -31,6 +31,16 @@ class FakeAuthFailureClient(FakeSuccessfulClient):
         self.on_connect(self, None, None, 4, None)
 
 
+class FakeAuthFailureClientV5(FakeSuccessfulClient):
+    def loop_start(self):
+        self.on_connect(self, None, None, 134, None)
+
+
+class FakeUnauthorisedClientV5(FakeSuccessfulClient):
+    def loop_start(self):
+        self.on_connect(self, None, None, 135, None)
+
+
 class SettingsRestTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -86,6 +96,22 @@ class SettingsRestTests(unittest.TestCase):
         self.assertEqual(
             response,
             {"ok": False, "message": "Broker rejected the username or password"},
+        )
+
+    def test_mqtt_test_reports_auth_failure_for_mqtt5_reason_code(self):
+        self.module.mqtt.Client = FakeAuthFailureClientV5
+        response = self.post_json({"MQTT_Address": "broker.local", "MQTT_Port": 1883})
+        self.assertEqual(
+            response,
+            {"ok": False, "message": "Broker rejected the username or password"},
+        )
+
+    def test_mqtt_test_reports_unauthorised_failure_for_mqtt5_reason_code(self):
+        self.module.mqtt.Client = FakeUnauthorisedClientV5
+        response = self.post_json({"MQTT_Address": "broker.local", "MQTT_Port": 1883})
+        self.assertEqual(
+            response,
+            {"ok": False, "message": "Broker rejected the connection as unauthorised"},
         )
 
 
