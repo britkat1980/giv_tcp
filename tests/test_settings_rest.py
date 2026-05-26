@@ -41,6 +41,11 @@ class FakeUnauthorisedClientV5(FakeSuccessfulClient):
         self.on_connect(self, None, None, 135, None)
 
 
+class FakeConnectionRefusedClient(FakeSuccessfulClient):
+    def connect(self, host, port=1883, keepalive=10):
+        raise OSError(111, "Connection refused")
+
+
 class SettingsRestTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -112,6 +117,14 @@ class SettingsRestTests(unittest.TestCase):
         self.assertEqual(
             response,
             {"ok": False, "message": "MQTT username/password was rejected"},
+        )
+
+    def test_mqtt_test_reports_user_facing_message_for_connection_refused(self):
+        self.module.mqtt.Client = FakeConnectionRefusedClient
+        response = self.post_json({"MQTT_Address": "broker.local", "MQTT_Port": 1883})
+        self.assertEqual(
+            response,
+            {"ok": False, "message": "Could not connect to the MQTT broker at the requested host/port"},
         )
 
 

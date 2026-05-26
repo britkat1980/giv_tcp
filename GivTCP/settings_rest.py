@@ -9,6 +9,7 @@ from flask_cors import CORS
 import json
 import threading
 import uuid
+import errno
 import paho.mqtt.client as mqtt
 
 #set-up Flask details
@@ -37,6 +38,14 @@ def _mqtt_reason_message(reason_code):
     if code is None:
         return "Broker rejected the connection"
     return "Broker rejected the connection (code " + str(code) + ")"
+
+
+def _mqtt_connect_exception_message(exc):
+    if isinstance(exc, ConnectionRefusedError):
+        return "Could not connect to the MQTT broker at the requested host/port"
+    if isinstance(exc, OSError) and getattr(exc, "errno", None) in (errno.ECONNREFUSED, 111):
+        return "Could not connect to the MQTT broker at the requested host/port"
+    return str(exc)
 
 
 @giv_api.route('/reboot', methods=['POST'])
@@ -136,7 +145,7 @@ def testmqtt():
         client.loop_start()
         finished.wait(5)
     except Exception as exc:
-        return {"ok": False, "message": str(exc)}
+        return {"ok": False, "message": _mqtt_connect_exception_message(exc)}
     finally:
         try:
             client.loop_stop()
