@@ -1,11 +1,15 @@
 import importlib
 import unittest
+from typing import Any, Callable
+
+
+OnConnectCallback = Callable[[Any, Any, Any, int, Any], None]
 
 
 class FakeSuccessfulClient:
     def __init__(self, *_args, **_kwargs):
-        self.on_connect = None
-        self.on_disconnect = None
+        self.on_connect: OnConnectCallback | None = None
+        self.on_disconnect: OnConnectCallback | None = None
 
     def username_pw_set(self, username, password):
         self.username = (username, password)
@@ -16,8 +20,14 @@ class FakeSuccessfulClient:
         self.keepalive = keepalive
         return 0
 
+    def _call_on_connect(self, reason_code: int):
+        callback = self.on_connect
+        if callback is None:
+            raise AssertionError("on_connect callback was not set")
+        callback(self, None, None, reason_code, None)
+
     def loop_start(self):
-        self.on_connect(self, None, None, 0, None)
+        self._call_on_connect(0)
 
     def loop_stop(self):
         return None
@@ -28,17 +38,17 @@ class FakeSuccessfulClient:
 
 class FakeAuthFailureClient(FakeSuccessfulClient):
     def loop_start(self):
-        self.on_connect(self, None, None, 4, None)
+        self._call_on_connect(4)
 
 
 class FakeAuthFailureClientV5(FakeSuccessfulClient):
     def loop_start(self):
-        self.on_connect(self, None, None, 134, None)
+        self._call_on_connect(134)
 
 
 class FakeUnauthorisedClientV5(FakeSuccessfulClient):
     def loop_start(self):
-        self.on_connect(self, None, None, 135, None)
+        self._call_on_connect(135)
 
 
 class FakeConnectionRefusedClient(FakeSuccessfulClient):
