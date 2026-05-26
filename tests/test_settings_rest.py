@@ -95,7 +95,7 @@ class SettingsRestTests(unittest.TestCase):
         response = self.post_json({"MQTT_Address": "broker.local", "MQTT_Port": 1883})
         self.assertEqual(
             response,
-            {"ok": False, "message": "Broker rejected the username or password"},
+            {"ok": False, "message": "MQTT username/password was rejected"},
         )
 
     def test_mqtt_test_reports_auth_failure_for_mqtt5_reason_code(self):
@@ -103,7 +103,7 @@ class SettingsRestTests(unittest.TestCase):
         response = self.post_json({"MQTT_Address": "broker.local", "MQTT_Port": 1883})
         self.assertEqual(
             response,
-            {"ok": False, "message": "Broker rejected the username or password"},
+            {"ok": False, "message": "MQTT username/password was rejected"},
         )
 
     def test_mqtt_test_reports_unauthorised_failure_for_mqtt5_reason_code(self):
@@ -111,7 +111,7 @@ class SettingsRestTests(unittest.TestCase):
         response = self.post_json({"MQTT_Address": "broker.local", "MQTT_Port": 1883})
         self.assertEqual(
             response,
-            {"ok": False, "message": "Broker rejected the connection as unauthorised"},
+            {"ok": False, "message": "MQTT username/password was rejected"},
         )
 
 

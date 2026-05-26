@@ -31,9 +31,9 @@ def _mqtt_reason_message(reason_code):
     if code == 0:
         return "Connected to broker"
     if code in (4, 134):
-        return "Broker rejected the username or password"
+        return "MQTT username/password was rejected"
     if code in (5, 135):
-        return "Broker rejected the connection as unauthorised"
+        return "MQTT username/password was rejected"
     if code is None:
         return "Broker rejected the connection"
     return "Broker rejected the connection (code " + str(code) + ")"
