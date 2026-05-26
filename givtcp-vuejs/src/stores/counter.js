@@ -92,7 +92,12 @@ export const useTcpStore = defineStore('givtcp-form', {
       Log_Level: "Info",
       queue_retries: 2,
       data_smoother: "medium",
-    })
+    }),
+    mqtt_test: {
+      in_progress: false,
+      success: null,
+      message: "",
+    }
   })
 })
 
