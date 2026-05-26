@@ -30,7 +30,7 @@ def _mqtt_reason_code(reason_code):
 def _mqtt_reason_message(reason_code):
     code = _mqtt_reason_code(reason_code)
     if code == 0:
-        return "Connected to broker"
+        return "Connected to MQTT broker"
     if code in (4, 134):
         return "MQTT username/password was rejected"
     if code in (5, 135):

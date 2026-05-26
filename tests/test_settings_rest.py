@@ -92,7 +92,7 @@ class SettingsRestTests(unittest.TestCase):
         )
         self.assertEqual(
             response,
-            {"ok": True, "message": "Connected to broker"},
+            {"ok": True, "message": "Connected to MQTT broker"},
         )
 
     def test_mqtt_test_reports_auth_failure(self):
