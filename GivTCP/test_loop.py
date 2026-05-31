@@ -18,7 +18,7 @@ async def watch_plant(
         totalTimeoutErrors=0
         """Refresh data about the Plant."""
         try:
-            client=Client("192.168.2.4",8899)
+            client=Client("192.168.4.70",8899)
             await client.connect()
             logger.critical("Detecting inverter characteristics...")
             await client.detect_plant()
@@ -95,6 +95,34 @@ def savestats(plant: Plant):
         outp.write(datetime.datetime.now().isoformat()+": Grid Power is: "+str(plant.inverter.p_grid_out)+str("\n"))
 
 
+def print_new_registers(plant: Plant):
+    inv = plant.inverter or plant.ems or plant.gateway
+    print("\n=== Connection OK ===")
+    print(f"Device type:    {type(inv).__name__}")
+    print(f"Serial:         {inv.serial_number}")
+    print(f"Model:          {inv.model}")
+    print(f"Battery SOC:    {getattr(inv, 'battery_percent', 'N/A')}%")
+    print(f"Grid Power:     {getattr(inv, 'p_grid_out', 'N/A')}W")
+    print("\n=== New Registers ===")
+    eps = getattr(inv, 'enable_eps', None)
+    fog = getattr(inv, 'force_off_grid', None)
+    print(f"Enable EPS      (HR 317): {eps} ({getattr(eps, 'name', 'NOT FOUND')})")
+    print(f"Force Off Grid  (HR 331): {fog} ({getattr(fog, 'name', 'NOT FOUND')})")
+
+
+async def single_poll():
+    """Connect, do one full refresh, print new register values, and exit."""
+    logging.basicConfig(level=logging.WARNING)
+    client = Client("192.168.4.70", 8899)
+    print("Connecting to AIO at 192.168.4.70...")
+    await client.connect()
+    print("Detecting plant...")
+    await client.detect_plant()
+    await client.refresh_plant(True, number_batteries=client.plant.number_batteries, meter_list=client.plant.meter_list)
+    print_new_registers(client.plant)
+    await client.close()
+
+
 async def self_run():
     # re-run everytime watch_plant Dies
     while True:
@@ -108,6 +136,9 @@ async def self_run():
 
 def start():
     asyncio.run(self_run())
+
+def test():
+    asyncio.run(single_poll())
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:

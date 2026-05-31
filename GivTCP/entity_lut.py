@@ -261,6 +261,8 @@ class Entity_Type():
         "Eco_Mode":GEType("switch","","setEcoMode","","",False,False,False),
         "Local_control_mode":GEType("select","","setLocalControlMode","","",True,False,False),
         "Battery_pause_mode":GEType("select","","setBatteryPauseMode","","",True,False,False),
+        "Enable_EPS":GEType("sensor","string","","","",False,False,False),
+        "Force_Off_Grid":GEType("sensor","string","","","",False,False,False),
         "PV_input_mode":GEType("select","","setPVInputMode","","",True,False,False),
         "Grid_Frequency":GEType("sensor","frequency","",0,60,True,False,False),
         "Inverter_Output_Frequency":GEType("sensor","frequency","",0,60,True,True,False),
