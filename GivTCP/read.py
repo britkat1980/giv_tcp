@@ -727,6 +727,10 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
 
     if not GEInv.battery_pause_mode==None:    #Not in AC single phase
         controlmode['Battery_pause_mode'] = GivLUT.battery_pause_mode[int(GEInv.battery_pause_mode)]
+    if not GEInv.enable_eps == Enable.UNKNOWN:
+        controlmode['Enable_EPS'] = GEInv.enable_eps.name.lower()
+    if not GEInv.force_off_grid == Enable.UNKNOWN:
+        controlmode['Force_Off_Grid'] = GEInv.force_off_grid.name.lower()
     if GEInv.soc_force_adjust.name.capitalize() in GivLUT.battery_calibration:
         controlmode['Battery_Calibration'] = GEInv.soc_force_adjust.name.capitalize()
     else:

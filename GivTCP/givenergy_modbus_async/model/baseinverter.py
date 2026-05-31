@@ -230,10 +230,12 @@ class BaseInverter(RegisterGetter, metaclass=DynamicDoc):
         #
         "battery_charge_limit_ac": Def(C.uint16, None, HR(313), valid=(0, 100)),
         "battery_discharge_limit_ac": Def(C.uint16, None, HR(314), valid=(0, 100)),
+        "enable_eps": Def(C.uint16, Enable, HR(317), valid=(0, 1)),
         "battery_pause_mode": Def(C.uint16, BatteryPauseMode, HR(318), valid=(0,3)),
         "battery_pause_slot_1": Def(C.timeslot, None, HR(319), HR(320)),
         "battery_pause_slot_1_start": Def(C.uint16, None, HR(319), valid=(0, 2359)),
         "battery_pause_slot_1_end": Def(C.uint16, None, HR(320), valid=(0, 2359)),
+        "force_off_grid": Def(C.uint16, Enable, HR(331), valid=(0, 1)),
         #
         # Input Registers, block 0-59
         #
