@@ -10,6 +10,9 @@ class FakeSuccessfulClient:
     def __init__(self, *_args, **_kwargs):
         self.on_connect: OnConnectCallback | None = None
         self.on_disconnect: OnConnectCallback | None = None
+        # Stays None when the endpoint connects anonymously, so a test can tell
+        # "no credentials were set" apart from "credentials were set".
+        self.username = None
 
     def username_pw_set(self, username, password):
         self.username = (username, password)
@@ -104,6 +107,25 @@ class SettingsRestTests(unittest.TestCase):
             response,
             {"ok": True, "message": "Connected to MQTT broker"},
         )
+
+    def test_mqtt_test_connects_anonymously_when_no_username_is_supplied(self):
+        created = []
+
+        def recording_client(*args, **kwargs):
+            client = FakeSuccessfulClient(*args, **kwargs)
+            created.append(client)
+            return client
+
+        self.module.mqtt.Client = recording_client
+        response = self.post_json({"MQTT_Address": "broker.local", "MQTT_Port": 1883})
+        self.assertEqual(
+            response,
+            {"ok": True, "message": "Connected to MQTT broker"},
+        )
+        # An anonymous broker must be tested without credentials rather than with
+        # an empty username, which a broker would reject.
+        self.assertEqual(len(created), 1)
+        self.assertIsNone(created[0].username)
 
     def test_mqtt_test_reports_auth_failure(self):
         self.module.mqtt.Client = FakeAuthFailureClient
