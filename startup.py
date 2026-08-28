@@ -459,7 +459,7 @@ logger.debug("Running Redis")
 if not exists("/ssl/fullchain.pem"):
     shutil.copy("/app/ingress_no_ssl.conf","/etc/nginx/http.d/ingress.conf")
 
-subprocess.Popen(["nginx","-g","daemon off;"])
+subprocess.Popen(["nginx"])
 logger.debug("Running nginx")
 
 if SuperTimezone: 
