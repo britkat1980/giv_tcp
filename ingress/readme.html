@@ -5,9 +5,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solar Panel Inverter Controller</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <title>GivTCP Readme</title>
+    <link rel="icon" href="favicon.ico">
     <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="pages.css">
     <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
     <script>
         $(function() {
@@ -34,21 +35,23 @@
     <script type="text/javascript">
         updateurl();
       </script>
-    <div class="readme">
-    <h2 id="tcp-modbus-connection-to-mqtt-json-for-givenergy-battery-pv-invertors">TCP Modbus connection to MQTT/JSON for GivEnergy Battery/PV Invertors</h2>
-    <p>This project opens a connection to the GivEnergy invertors via TCP Modbus. Access is given through the native Wifi/Ethernet dongle and can be connected via either LAN or directly through the inbuilt SSID AP.</p>
-    <p>Typically run through the Home Assistant Addon, it is also possible to run as a standalone docker container. </p>
+    <div class="doc">
+    <nav class="card toc" id="toc"><div class="toc-title">Contents</div><ul></ul></nav>
+    <div class="card">
+    <h2 id="tcp-modbus-connection-to-mqtt-json-for-givenergy-battery-pv-invertors">TCP Modbus connection to MQTT/JSON for GivEnergy Battery/PV Inverters</h2>
+    <p>This project opens a connection to the GivEnergy inverters via TCP Modbus. Access is given through the native Wi-Fi/Ethernet dongle and can be connected via either LAN or directly through the inbuilt SSID AP.</p>
+    <p>Typically run through the Home Assistant add-on, it is also possible to run as a standalone docker container. </p>
     <h2 id="home-assistant-add-on">Home Assistant Add-on</h2>
     <p>This container can also be used as an add-on in Home Assistant.
-    The add-on requires an existing MQTT broker such as Mosquito, also available to install from the Add-on store.
+    The add-on requires an existing MQTT broker such as Mosquitto, also available to install from the Add-on store.
     To install GivTCP as an add-on, add this repository (<a href="https://github.com/britkat1980/giv_tcp">https://github.com/britkat1980/giv_tcp</a>) to the Add-on Store repository list.</p>
     <h3 id="home-assistant-usage">Home Assistant Usage</h3>
     <p>GivTCP will automatically create Home Assistant devices if &quot;HA_AUTO_D&quot; setting is True. This does require MQTT_OUTPUT to also be true and for GivTCP to publish its data to the same MQTT broker as HA is listening to.
     This will populate HA with all devices and entities for control and monitoring. The key entities and their usage are outlined below:</p>
-    <p>The Home Assistant Addon config page outlines the configuration environmental variables for set-up of GivTCP</p>
-    <p>If you have enabled the &quot;SELF_RUN&quot; setting (recommended) then the container/add-on will automatically call &quot;RunALL&quot; every &quot;SELF_LOOPTIMER&quot; seconds and you will not need to use the REST commands here. If you wish to take data from GivTCP and push to another system, then you should call &quot;getCache&quot; which will return the json data without pushing to MQTT or other defined publish settings.</p>
+    <p>The Home Assistant add-on config page outlines the configuration environment variables for setting up GivTCP.</p>
+    <p>If you have enabled the &quot;SELF_RUN&quot; setting (recommended) then the container/add-on will automatically call &quot;RunALL&quot; every &quot;SELF_LOOPTIMER&quot; seconds and you will not need to use the REST commands here. If you wish to take data from GivTCP and push to another system, then you should call &quot;getCache&quot; which will return the JSON data without pushing to MQTT or other defined publish settings.</p>
     <h2 id="givtcp-control">GivTCP Control</h2>
-    <table>
+    <div class="table-wrap"><table>
     <thead>
     <tr>
     <th>Function</th>
@@ -64,7 +67,7 @@
     <td>enableChargeTarget</td>
     <td>Sets   inverter to follow setChargeTarget value when charging from grid (will stop   charging when battery SOC= ChargeTarget)</td>
     <td>/enableChargeTarget</td>
-    <td>{&quot;state&quot;,&quot;enable&quot;}</td>
+    <td>{&quot;state&quot;:&quot;enable&quot;}</td>
     <td>enableChargeTarget</td>
     <td>enable</td>
     </tr>
@@ -72,7 +75,7 @@
     <td>disableChargeTarget</td>
     <td>Sets   inverter to ignore setChargeTarget value when charging from grid (will   continue to charge to 100% during ChargeSlot)</td>
     <td>/disableChargeTarget</td>
-    <td>{&quot;state&quot;,&quot;enable&quot;}</td>
+    <td>{&quot;state&quot;:&quot;enable&quot;}</td>
     <td>disableChargeTarget</td>
     <td>enable</td>
     </tr>
@@ -80,23 +83,23 @@
     <td>enableChargeSchedule</td>
     <td>Sets   the Charging schedule state, if disabled the battery will not charge as per   the schedule</td>
     <td>/enableChargeSchedule</td>
-    <td>{&quot;state&quot;,&quot;enable&quot;}</td>
+    <td>{&quot;state&quot;:&quot;enable&quot;}</td>
     <td>enableChargeSchedule</td>
     <td>enable</td>
     </tr>
     <tr>
     <td>enableDischargeSchedule</td>
-    <td>Sets   the Discharging schedule state, if disabled the battery will will ignore rhe   discharge schedule and discharge as per demand (similar to eco mode)</td>
+    <td>Sets   the Discharging schedule state, if disabled the battery will ignore the   discharge schedule and discharge as per demand (similar to eco mode)</td>
     <td>/enableDischargeSchedule</td>
-    <td>{&quot;state&quot;,&quot;enable&quot;}</td>
+    <td>{&quot;state&quot;:&quot;enable&quot;}</td>
     <td>enableDischargeSchedule</td>
     <td>enable</td>
     </tr>
     <tr>
     <td>enableDischarge</td>
-    <td>Enable/Disables Discharging to instantly pause discharging,   use &#39;enable&#39; or &#39;disable&#39;</td>
+    <td>Enables/disables discharging to instantly pause discharging,   use &#39;enable&#39; or &#39;disable&#39;</td>
     <td>/enableDischarge</td>
-    <td>{&quot;state&quot;,&quot;enable&quot;}</td>
+    <td>{&quot;state&quot;:&quot;enable&quot;}</td>
     <td>enableDischarge</td>
     <td>enable</td>
     </tr>
@@ -104,7 +107,7 @@
     <td>setChargeRate</td>
     <td>Sets the charge power as a percentage. 100% == 2.6kW</td>
     <td>/setChargeRate</td>
-    <td>{&quot;chargeRate&quot;,&quot;100&quot;}</td>
+    <td>{&quot;chargeRate&quot;:&quot;100&quot;}</td>
     <td>setChargeRate</td>
     <td>100</td>
     </tr>
@@ -112,7 +115,7 @@
     <td>setDischargeRate</td>
     <td>Sets the discharge power as a percentage. 100% == 2.6kW</td>
     <td>/setDischargeRate</td>
-    <td>{&quot;dischargeRate&quot;,&quot;100&quot;}</td>
+    <td>{&quot;dischargeRate&quot;:&quot;100&quot;}</td>
     <td>setDischargeRate</td>
     <td>100</td>
     </tr>
@@ -134,7 +137,7 @@
     </tr>
     <tr>
     <td>setChargeSlot1</td>
-    <td>Sets   the time and target SOC of the first chargeslot. Times must be expressed in   hhmm format. Enable flag show in the battery.api documentation is not needed   and chargeToPercent is optional</td>
+    <td>Sets   the time and target SOC of the first charge slot. Times must be expressed in   hhmm format. Enable flag shown in the battery.api documentation is not needed   and chargeToPercent is optional</td>
     <td>/setChargeSlot1</td>
     <td>{&quot;start&quot;:&quot;0100&quot;,&quot;finish&quot;:&quot;0400&quot;,&quot;chargeToPercent&quot;:&quot;55&quot;}</td>
     <td>setChargeSlot1</td>
@@ -142,7 +145,7 @@
     </tr>
     <tr>
     <td>setDischargeSlot1</td>
-    <td>Sets   the time and target SOC of the first dischargeslot. Times must be expressed   in hhmm format. Enable flag show in the battery.api documentation is not   needed and dischargeToPercent is optional</td>
+    <td>Sets   the time and target SOC of the first discharge slot. Times must be expressed   in hhmm format. Enable flag shown in the battery.api documentation is not   needed and dischargeToPercent is optional</td>
     <td>/setDischargeSlot1</td>
     <td>{&quot;start&quot;:&quot;0100&quot;,&quot;finish&quot;:&quot;0400&quot;,&quot;dischargeToPercent&quot;:&quot;55&quot;}</td>
     <td>setDischargeSlot1</td>
@@ -150,7 +153,7 @@
     </tr>
     <tr>
     <td>setDischargeSlot2</td>
-    <td>Sets   the time and target SOC of the first dischargeslot. Times must be expressed   in hhmm format. Enable flag show in the battery.api documentation is not   needed and dischargeToPercent is optional</td>
+    <td>Sets   the time and target SOC of the second discharge slot. Times must be expressed   in hhmm format. Enable flag shown in the battery.api documentation is not   needed and dischargeToPercent is optional</td>
     <td>/setDischargeSlot2</td>
     <td>{&quot;start&quot;:&quot;0100&quot;,&quot;finish&quot;:&quot;0400&quot;,&quot;dischargeToPercent&quot;:&quot;55&quot;}</td>
     <td>setDischargeSlot2</td>
@@ -166,15 +169,15 @@
     </tr>
     <tr>
     <td>setDateTime</td>
-    <td>Sets   inverter time, format must be as define in payload</td>
+    <td>Sets   inverter time, format must be as defined in payload</td>
     <td>/setDateTime</td>
-    <td>{&quot;dateTime&quot;:&quot;dd/mm/yyyy   hh:mm:ss&quot;}</td>
+    <td>{&quot;dateTime&quot;:&quot;dd/mm/yyyy hh:mm:ss&quot;}</td>
     <td>setDateTime</td>
     <td>&quot;dd/mm/yyyy hh:mm:ss&quot;</td>
     </tr>
     <tr>
     <td>setBatteryPauseMode</td>
-    <td>Sets   battery operation mode. Mode value must be one of &quot;Disabled&quot;,&quot;PauseCharge&quot;,&quot;PauseDischarge&quot; or &quot;PauseBoth&quot;</td>
+    <td>Sets   battery pause mode. Mode value must be one of &quot;Disabled&quot;,&quot;PauseCharge&quot;,&quot;PauseDischarge&quot; or &quot;PauseBoth&quot;</td>
     <td>/setBatteryPauseMode</td>
     <td>{&quot;state&quot;:&quot;Disabled&quot;}</td>
     <td>setBatteryPauseMode</td>
@@ -182,54 +185,54 @@
     </tr>
     <tr>
     <td>forceExport</td>
-    <td>Forces battery to Export (discharge at Max power) for a given duration in Minutes. command must be &quot;Cancel&quot; or an integer value. Sending 0 will also call the cancel function</td>
+    <td>Forces battery to Export (discharge at Max power) for a given duration in minutes. Command must be &quot;Cancel&quot; or an integer value. Sending 0 will also call the cancel function</td>
     <td>/forceExport</td>
-    <td>{&quot;15&quot;}</td>
+    <td>{&quot;duration&quot;:&quot;15&quot;}</td>
     <td>forceExport</td>
     <td>1</td>
     </tr>
     <tr>
     <td>forceCharge</td>
-    <td>Forces battery to charge for a given duration in Minutes. Command must be &quot;Cancel&quot; or an integer value. Sending 0 will also call the cancel function</td>
+    <td>Forces battery to charge for a given duration in minutes. Command must be &quot;Cancel&quot; or an integer value. Sending 0 will also call the cancel function</td>
     <td>/forceCharge</td>
-    <td>{&quot;15&quot;}</td>
+    <td>{&quot;duration&quot;:&quot;15&quot;}</td>
     <td>forceCharge</td>
     <td>1</td>
     </tr>
     <tr>
     <td>tempPauseCharge</td>
-    <td>Suspends charging for a for a given duration in Minutes. Command must be &quot;Cancel&quot; or an integer value. Sending 0 will also call the cancel function</td>
+    <td>Suspends charging for a given duration in minutes. Command must be &quot;Cancel&quot; or an integer value. Sending 0 will also call the cancel function</td>
     <td>/tempPauseCharge</td>
-    <td>{&quot;15&quot;}</td>
+    <td>{&quot;duration&quot;:&quot;15&quot;}</td>
     <td>tempPauseCharge</td>
     <td>1</td>
     </tr>
     <tr>
     <td>tempPauseDischarge</td>
-    <td>Suspends discharging for a given duration in Minutes. command must be &quot;Cancel&quot; or an integer value. Sending 0 will also call the cancel function</td>
+    <td>Suspends discharging for a given duration in minutes. Command must be &quot;Cancel&quot; or an integer value. Sending 0 will also call the cancel function</td>
     <td>/tempPauseDischarge</td>
-    <td>{&quot;15&quot;}</td>
+    <td>{&quot;duration&quot;:&quot;15&quot;}</td>
     <td>tempPauseDischarge</td>
     <td>1</td>
     </tr>
     </tbody>
-    </table>
-<h2 id="usage-methods-">Usage methods:</h2>
-<p>GivTCP data and control is generally available through two core methods. If you are using the Home Assistant Add-On then these are generally transparent to the user, but are working and available in the background.</p>
+    </table></div>
+<h2 id="usage-methods-">Usage methods</h2>
+<p>GivTCP data and control is generally available through two core methods. If you are using the Home Assistant add-on then these are generally transparent to the user, but are working and available in the background.</p>
 <h3 id="mqtt">MQTT</h3>
 <p>By setting MQTT_OUTPUT = True, the script will publish directly to the nominated MQTT broker (MQTT_ADDRESS) all the requested read data.</p>
-<p>Data is published to &quot;GivEnergy/<serial_number>/&quot; by default or you can nominate a specific root topic by setting &quot;MQTT_TOPIC&quot; in the settings.</p>
+<p>Data is published to <code>GivEnergy/&lt;serial_number&gt;/</code> by default or you can nominate a specific root topic by setting <code>MQTT_TOPIC</code> in the settings.</p>
 <p><img width="245" alt="image" src="https://user-images.githubusercontent.com/69121158/149670766-0d9a6c92-8ee2-44d6-9045-2d21b6db7ebf.png"></p>
 <p>Control is available using MQTT. By publishing data to the same MQTT broker as above you can trigger the control methods as per the above table.
-Root topic for control is:
-&quot;GivEnergy/control/<serial_number>/&quot;    - Default
-&quot;<MQTT_TOPIC>/control/<serial_number>/&quot; - If MQTT_TOPIC is set</p>
+Root topic for control is:</p>
+<pre>GivEnergy/control/&lt;serial_number&gt;/      Default
+&lt;MQTT_TOPIC&gt;/control/&lt;serial_number&gt;/   If MQTT_TOPIC is set</pre>
 <h3 id="restful-service">RESTful Service</h3>
 <p>GivTCP provides a wrapper function REST.py which uses Flask to expose the read and control functions as RESTful http calls. To utilise this service you will need to either use a WSGI service such as gunicorn or use the pre-built Docker container.</p>
 <p>If Docker is running in Host mode then the REST service is available on port 6345</p>
 <h4 id="givtcp-read-data">GivTCP Read data</h4>
 <p>GivTCP collects all inverter and battery data and creates a nested data structure with all data available in a structured format.</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Function</th>
@@ -259,31 +262,31 @@ Root topic for control is:
 <td>/runAll</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="web-dashboard">Web Dashboard</h2>
 <p>You can enable the built-in web dashboard if you&#39;d like a way to visualise data for your inverter(s). For more details
 please see the <a href="https://github.com/DanielGallo/GivEnergy-Smart-Home-Display/">ReadMe file in the separate repository</a>.</p>
-<p><img src="graphics/Dashboard-Example-Landscape.png" alt="Dashboard-Example-Landscape.png"></p>
+<p><img src="graphics/Dashboard-Example-Landscape.png" onerror="this.parentNode.style.display='none'" alt="Dashboard-Example-Landscape.png"></p>
 <p>The web dashboard is able to summarise data for a single inverter, or multiple inverters in either a single-phase 
 or three-phase environment.</p>
 <p>If you have any issues or feedback regarding the web dashboard, please post a question or issue <a href="https://github.com/DanielGallo/GivEnergy-Smart-Home-Display/issues">here</a>.</p>
 <h1 id="givevc">GivEVC</h1>
 <h2 id="givenergy-electric-vehicle-charger">GivEnergy Electric Vehicle Charger</h2>
-<p>From version 2.4 onwards GivTCP incorporates control and monitoring of the GE charger. Connecting via local modbus it can monitor real-time stats and provide simple control features. With the EVC cloud conrol does not use the modbus protocol, so there is minimal opportunity for changes to reflect in the official app/cloud portal. Particularly the Charging modes, which are merely mimiced in GivEVC</p>
+<p>From version 2.4 onwards GivTCP incorporates control and monitoring of the GE charger. Connecting via local Modbus it can monitor real-time stats and provide simple control features. With the EVC, cloud control does not use the Modbus protocol, so there is minimal opportunity for changes to be reflected in the official app/cloud portal. This applies particularly to the charging modes, which are merely mimicked in GivEVC.</p>
 <h2 id="configuration">Configuration</h2>
 <p>All that is required for config are the IP address and the self run timer. Setting EVC_ENABLE to True will turn on the function.</p>
 <h2 id="control">Control</h2>
 <p>Most controls are self explanatory but some require clarification on their function:</p>
-<h3 id="plug-and-go-">Plug and Go:</h3>
-<p>When turned on the vehicle will start to charge as soon as it is plugged in. When off charging will commence when triggered by RFID card or &quot;Charge Control&quot;</p>
-<h3 id="charge-control-">Charge Control:</h3>
-<p>This starts and stops vehicle charging, when &quot;Plug and Go&quot; is on.</p>
-<h3 id="charging-mode-">Charging Mode:</h3>
-<p>Mimcs the cloud based &quot;modes&quot; of charging.</p>
+<h3 id="plug-and-go-">Plug and Go</h3>
+<p>When turned on the vehicle will start to charge as soon as it is plugged in. When off, charging will commence when triggered by RFID card or &quot;Charge Control&quot;</p>
+<h3 id="charge-control-">Charge Control</h3>
+<p>This starts and stops vehicle charging when &quot;Plug and Go&quot; is on.</p>
+<h3 id="charging-mode-">Charging Mode</h3>
+<p>Mimics the cloud-based &quot;modes&quot; of charging.</p>
 <h4 id="grid">Grid</h4>
-<p>Charges at current set by &quot;Charge Limit&quot;, regardless of what energy is available (typically will pull from Grid)</p>
+<p>Charges at the current set by &quot;Charge Limit&quot;, regardless of what energy is available (typically will pull from Grid)</p>
 <h4 id="solar">Solar</h4>
-<p>Modulates the Charge Limit based on the amount of &quot;excess solar&quot; available after serving the current house Load. This requires minimum of 1.4kW (6A) excess as required by the EVSE spec.</p>
+<p>Modulates the Charge Limit based on the amount of &quot;excess solar&quot; available after serving the current house Load. This requires a minimum of 1.4kW (6A) excess as required by the EVSE spec.</p>
 <h4 id="hybrid">Hybrid</h4>
 <p>This will modulate Charge Limit to top up a base 6A grid charge with any excess solar energy. Similar to Solar but uses a constant 6A from Grid plus additional solar energy on top.</p>
 <h3 id="max-session-energy">Max Session Energy</h3>
@@ -291,6 +294,18 @@ or three-phase environment.</p>
 <h3 id="import-cap">Import Cap</h3>
 <p>This will monitor the Grid current from the first GivTCP inverter and if it is within 5% of the Import Cap setting it will reduce EVC Charge current to stay 10% under the import Cap. Setting this to 0A disables this setting.</p>
 </div>
+    </div>
+    <script type="text/javascript">
+        // Contents list built from the h1/h2 headings
+        (function() {
+            var list = document.querySelector("#toc ul");
+            document.querySelectorAll(".doc .card h1, .doc .card h2").forEach(function(h) {
+                var li = document.createElement("li");
+                li.innerHTML = "<a href=\"#" + h.id + "\">" + h.textContent.replace(/:$/, "") + "</a>";
+                list.appendChild(li);
+            });
+        })();
+    </script>
 
 </body>
 

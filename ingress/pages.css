@@ -1,0 +1,187 @@
+/* Styles for the static ingress pages (index, readme), matching the config page:
+   Vuetify cards on the base.css background with the #4fbba9 accent.
+   Kept separate from main.css, which the config page also loads. */
+:root {
+    --accent: #4fbba9;
+    --page-bg: #b6b5b5;
+    --card-bg: #ffffff;
+    --card-text: rgba(0, 0, 0, 0.87);
+    --card-sub: rgba(0, 0, 0, 0.6);
+    --divider: rgba(0, 0, 0, 0.12);
+    --stripe: rgba(0, 0, 0, 0.03);
+    --code-bg: rgba(79, 187, 169, 0.12);
+    --header-text: #2c3e50;
+    --link: #233c7b;
+    --shadow-1: 0 2px 1px -1px rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.14), 0 1px 3px 0 rgba(0,0,0,.12);
+    --shadow-8: 0 5px 5px -3px rgba(0,0,0,.2), 0 8px 10px 1px rgba(0,0,0,.14), 0 3px 14px 2px rgba(0,0,0,.12);
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --page-bg: #181818;
+        --header-text: rgba(235, 235, 235, 0.64);
+    }
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+    min-height: 100vh;
+    background: var(--page-bg);
+    color: var(--header-text);
+    line-height: 1.6;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+        Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Cards (Vuetify v-card look) ---- */
+.card {
+    display: flex;
+    flex-direction: column;
+    background: var(--card-bg);
+    color: var(--card-text);
+    border-radius: 4px;
+    box-shadow: var(--shadow-1);
+}
+.card-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 16px 4px;
+    font-size: 1.25rem;
+    font-weight: 500;
+    letter-spacing: .0125em;
+}
+.card-title svg { width: 28px; height: 28px; fill: var(--accent); flex: none; }
+.card-text {
+    flex: 1;
+    padding: 4px 16px 16px;
+    font-size: .875rem;
+    color: var(--card-sub);
+}
+.card-actions { padding: 8px 16px 16px; }
+.card .btn {
+    display: inline-block;
+    margin: 0;
+    padding: 0 16px;
+    height: 36px;
+    line-height: 36px;
+    border-radius: 4px;
+    background: var(--accent);
+    color: #fff;
+    font-size: .875rem;
+    font-weight: 500;
+    letter-spacing: .0892857143em;
+    text-transform: uppercase;
+    text-decoration: none;
+    box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
+}
+.card .btn:hover { text-decoration: none; filter: brightness(1.08); }
+
+/* ---- Index: link cards ---- */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+    max-width: 1000px;
+    margin: 0 auto 48px;
+    padding: 0 16px;
+}
+.cards .card { transition: box-shadow .2s; }
+.cards .card:hover { box-shadow: var(--shadow-8); }
+
+/* ---- Readme: long-form document in a card ---- */
+.doc {
+    max-width: 1200px;   /* wider than the index cards: the control table has six columns */
+    margin: 0 auto 48px;
+    padding: 0 16px;
+}
+.doc .card { padding: 8px 24px 24px; }
+.doc .toc {
+    margin-bottom: 24px;
+    padding: 16px 24px;
+}
+.doc .toc-title {
+    font-size: .75rem;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--card-sub);
+    margin-bottom: 4px;
+}
+.doc .toc ul { list-style: none; margin: 0; padding: 0; columns: 2 220px; }
+.doc .toc li { margin: 2px 0; }
+.doc .toc a { margin: 0; }
+.doc h1, .doc h2, .doc h3, .doc h4 {
+    color: var(--card-text);
+    line-height: 1.3;
+    scroll-margin-top: 16px;
+}
+.doc h1 {
+    font-size: 1.75rem;
+    font-weight: 400;
+    color: var(--accent);
+    margin: 40px 0 8px;
+}
+.doc h2 {
+    font-size: 1.35rem;
+    font-weight: 500;
+    margin: 32px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--accent);
+}
+.doc .card > h2:first-child { margin-top: 16px; }
+.doc h3 { font-size: 1.1rem; font-weight: 500; margin: 24px 0 8px; }
+.doc h4 { font-size: .95rem; font-weight: 600; margin: 20px 0 6px; color: var(--card-sub); }
+.doc p { margin: 0 0 12px; color: var(--card-text); }
+.doc a { margin: 0; color: var(--link); }
+.doc img { max-width: 100%; height: auto; border-radius: 4px; }
+.doc code {
+    font-family: var(--mono);
+    font-size: .85em;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+.doc pre {
+    font-family: var(--mono);
+    font-size: .85rem;
+    background: var(--code-bg);
+    padding: 12px 16px;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 0 0 12px;
+}
+
+/* Tables scroll sideways on narrow screens rather than stretching the page */
+.doc .table-wrap {
+    overflow-x: auto;
+    margin: 0 0 16px;
+    border: 1px solid var(--divider);
+    border-radius: 4px;
+}
+.doc table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.doc th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--card-sub);
+    background: var(--code-bg);
+    padding: 10px 12px;
+    white-space: nowrap;
+    border-bottom: 2px solid var(--accent);
+}
+.doc td {
+    padding: 8px 12px;
+    vertical-align: top;
+    border-bottom: 1px solid var(--divider);
+    color: var(--card-text);
+}
+.doc tbody tr:nth-child(even) { background: var(--stripe); }
+.doc tbody tr:last-child td { border-bottom: 0; }
+/* Every column except the description holds a name, URL or payload */
+.doc td:not(:nth-child(2)) { font-family: var(--mono); font-size: .8rem; }
+.doc td:first-child { font-weight: 600; white-space: nowrap; }
+.doc td:nth-child(2) { min-width: 240px; }
+/* Long JSON payloads wrap rather than pushing the MQTT columns out of view; names/URLs stay whole */
+.doc td:nth-child(3), .doc td:nth-child(5) { white-space: nowrap; }
+.doc td:nth-child(4), .doc td:nth-child(6) { overflow-wrap: anywhere; min-width: 150px; }
