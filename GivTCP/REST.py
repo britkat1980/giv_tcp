@@ -21,6 +21,56 @@ logger = GivLUT.logger
 giv_api = Flask(__name__)
 CORS(giv_api)
 
+######## REST request log: every request and its result, in its own file next to the other logs ########
+import logging
+from flask import g
+from GivLUT import SharedTimedRotatingFileHandler
+REST_LOG_MAX_BODY=500      # truncate long request/response bodies (eg. full readData output)
+# settings.py from before this change has no Debug_File_Location_REST, so fall back to the main log's folder
+restLogFile=getattr(GiV_Settings,'Debug_File_Location_REST',None) or \
+    os.path.join(os.path.dirname(GiV_Settings.Debug_File_Location),"rest_log_inv_"+str(GiV_Settings.givtcp_instance)+".log")
+restlogger = logging.getLogger('rest_logger')
+restlogger.setLevel(logging.INFO)
+restlogger.propagate = False        # keep REST traffic out of the main log
+if not restlogger.handlers:
+    try:
+        rfh = SharedTimedRotatingFileHandler(restLogFile, when='midnight', backupCount=7)      # safe with several gunicorn workers
+        rfh.setFormatter(logging.Formatter('%(asctime)s - [%(levelname)s] - %(message)s'))
+        restlogger.addHandler(rfh)
+    except Exception:
+        logger.error("Unable to open REST log file "+str(restLogFile)+": "+errDetail())
+
+def _shorten(text):
+    text=" ".join(str(text).split())      # one line per request
+    return text if len(text)<=REST_LOG_MAX_BODY else text[:REST_LOG_MAX_BODY]+"...[+"+str(len(text)-REST_LOG_MAX_BODY)+" chars]"
+
+@giv_api.before_request
+def _restLogStart():
+    g.restStart=time.monotonic()
+
+@giv_api.after_request
+def _restLogResult(resp):
+    try:
+        took=int((time.monotonic()-g.get('restStart',time.monotonic()))*1000)
+        line=str(request.remote_addr)+" "+request.method+" "+request.full_path.rstrip("?")+" -> "+str(resp.status_code)+" ("+str(took)+"ms)"
+        body=request.get_data(as_text=True)
+        if body:
+            line+=" | request: "+_shorten(body)
+        if resp.direct_passthrough:     # files (eg. send_file) - don't read the stream
+            line+=" | response: <"+str(resp.mimetype)+">"
+        else:
+            line+=" | response: "+_shorten(resp.get_data(as_text=True))
+        restlogger.log(logging.INFO if resp.status_code<400 else logging.WARNING, line)
+    except Exception:
+        logger.error("REST log failed: "+errDetail())
+    return resp
+
+def _restLogException(sender, exception, **extra):
+    # Unhandled exception in a route: log what it was (the 500 result is logged by _restLogResult)
+    restlogger.error(str(request.remote_addr)+" "+request.method+" "+request.full_path.rstrip("?")+" raised "+errDetail())
+from flask import got_request_exception
+got_request_exception.connect(_restLogException, giv_api)
+
 with open("/config/GivTCP/allsettings.json", "r") as inp:
     setts=json.load(inp)
 if setts["evc_enable"]==True:

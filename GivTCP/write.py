@@ -144,6 +144,22 @@ async def sendAsyncCommand(reqs,readloop):
     frtouch()
     return output
 
+def acLimit(kind,val):
+    # The AC charge/discharge limit (HR313/314). givenergy-modbus only allows it on single-phase AC-coupled
+    # inverters; Gateway, three-phase and HV Gen3 have no rate write it permits yet, so fail clearly
+    if GiV_Settings.inverter_type.lower()=="ac":
+        return getattr(gecommands,"set_battery_"+kind+"_limit_ac")(val)
+    raise NotImplementedError("Setting the AC "+kind+" rate is not yet supported by givenergy-modbus for "+str(GiV_Settings.inverter_type)+" inverters")
+
+def optionalAcLimit(kind,val):
+    # As acLimit, but for commands where the rate is one step of several (Force Charge/Export): skip it
+    # with a warning so the rest of the command still runs
+    try:
+        return acLimit(kind,val)
+    except NotImplementedError as e:
+        logger.warning(str(e)+" - leaving the current "+kind+" rate unchanged")
+        return []
+
 def chargeTargetSOC(device,target):
     # Set only the charge target SOC, leaving the enable bits alone (v2: set_charge_target_soc)
     if "3ph" in GiV_Settings.inverter_type.lower():
@@ -160,7 +176,7 @@ def slotTargetSOC(kind,slot,target):
 async def sbcla(device,target,readloop=False):
     temp={}
     try:
-        reqs=gecommands.set_battery_charge_limit_ac(target)
+        reqs=acLimit("charge",target)
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
             raise Exception(result['error'])
@@ -176,7 +192,7 @@ async def sbdla(device,target,readloop=False):
     temp={}
     try:
         
-        reqs=gecommands.set_battery_discharge_limit_ac(target)
+        reqs=acLimit("discharge",target)
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
             raise Exception(result['error'])
@@ -555,7 +571,7 @@ async def setChargeRate(device,payload,readloop=False):
                     logger.info("AC charge limit can't be 0%, setting 1% instead")
                     target=1
                 logger.debug ("Setting battery charge rate ac to: " + str(payload['chargeRate'])+" ("+str(target)+")")
-                reqs=gecommands.set_battery_charge_limit_ac(target)
+                reqs=acLimit("charge",target)
             else:
                 # Percent of battery capacity, capped at 50 - the same value the GivEnergy app writes.
                 # Don't jump straight to 50 at the inverter max: on large battery banks that's far above max (#562)
@@ -622,7 +638,7 @@ async def setDischargeRate(device,payload,readloop=False):
                     # The AC limit register rejects 0% (library enforces 1-100), so the closest to a pause is 1%
                     logger.info("AC discharge limit can't be 0%, setting 1% instead")
                     target=1
-                reqs=gecommands.set_battery_discharge_limit_ac(target)
+                reqs=acLimit("discharge",target)
             else:
                 # Percent of battery capacity, capped at 50 - the same value the GivEnergy app writes.
                 # Don't jump straight to 50 at the inverter max: on large battery banks that's far above max (#562)
@@ -980,7 +996,7 @@ async def FEResume(device,revert, readloop=False):
                 target=round(min((int(revert['dischargeRate'])/(batcap/2))*50,50))
             reqs.extend(device.set_battery_discharge_limit(target))
         elif "dischargeRateAC" in revert:
-            reqs.extend(gecommands.set_battery_discharge_limit_ac(revert["dischargeRateAC"]))
+            reqs.extend(optionalAcLimit("discharge",revert["dischargeRateAC"]))
         if "3ph" in GiV_Settings.inverter_type.lower():
             reqs.extend(device.set_force_discharge(revert["forceDischargeEnable"]))  # turn on Force Export in 3PH
             reqs.extend(device.set_force_charge(revert["forceChargeEnable"]))  # turn off Force Charge in 3PH
@@ -1029,7 +1045,7 @@ async def forceExport(device, exportTime,readloop=False):
             if "Force_Charge_Enable" in regCacheStack[-1]["Control"]:
                 revert["forceChargeEnable"]=regCacheStack[-1]["Control"]["Force_Charge_Enable"]
 
-        reqs=device.set_battery_soc_reserve(4,GiV_Settings.inverter_type.lower())
+        reqs=device.set_battery_soc_reserve(4)      # the device model picks the single/three-phase register itself
         finish=GivLUT.getTime(datetime.now()+timedelta(minutes=exportTime))
         slot=TimeSlot
         slot.start=datetime.strptime(GivLUT.getTime(datetime.now()),"%H:%M")
@@ -1038,7 +1054,7 @@ async def forceExport(device, exportTime,readloop=False):
         if "3ph" in GiV_Settings.inverter_type.lower():
             reqs.extend(device.set_force_discharge(True))  # turn on Force Export in 3PH
             reqs.extend(device.set_force_charge(False))  # turn off Force Charge in 3PH
-            reqs.extend(gecommands.set_battery_discharge_limit_ac(100))
+            reqs.extend(optionalAcLimit("discharge",100))
         else:
             reqs.extend(device.set_battery_discharge_limit(50))
         reqs.extend(device.set_mode_storage(discharge_slot_1=slot,discharge_for_export=True))
@@ -1085,11 +1101,11 @@ async def FCResume(device,revert,readloop=False):
                 else:
                     target=round(min((int(revert['chargeRate'])/(batcap/2))*50,50))
             if is3ph:
-                reqs=gecommands.set_battery_charge_limit_ac(target)
+                reqs=optionalAcLimit("charge",target)
             else:
                 reqs=device.set_battery_charge_limit(target)
         elif "chargeRateAC" in revert:
-            reqs=gecommands.set_battery_charge_limit_ac(revert["chargeRateAC"])
+            reqs=optionalAcLimit("charge",revert["chargeRateAC"])
         if revert["chargeScheduleEnable"]=="enable":
             enable=True
         else:
@@ -1205,7 +1221,7 @@ async def forceCharge(device, chargeTime, readloop=False):
         slot.end=datetime.strptime(finish,"%H:%M")
         reqs.extend(device.set_charge_slot(1,slot))
         if "3ph" in GiV_Settings.inverter_type.lower():
-            reqs.extend(gecommands.set_battery_charge_limit_ac(100))
+            reqs.extend(optionalAcLimit("charge",100))
             reqs.extend(device.set_force_charge(True))
             reqs.extend(device.set_ac_charge(True))
         else:

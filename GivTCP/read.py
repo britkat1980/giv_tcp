@@ -468,11 +468,9 @@ def getBatteries(plant: Plant, multi_output_old):
                     battery['Battery_Serial_Number'] = b.serial_number
                     if b.soc != 0:
                         battery['Battery_SOC'] = b.soc
-                    elif b.soc == 0 and not multi_output_old==[]:
-                        if b.serial_number in multi_output_old['Battery_Details']:
-                            battery['Battery_SOC'] = multi_output_old['Battery_Details'][b.serial_number]['Battery_SOC']
-                        else:
-                            battery['Battery_SOC'] = 1
+                    elif b.soc == 0:
+                        oldSOC=(multi_output_old or {}).get('Battery_Details',{}).get('Battery_Stack_1',{}).get(b.serial_number,{}).get('Battery_SOC')
+                        battery['Battery_SOC'] = oldSOC if oldSOC is not None else 1
                     else:
                         battery['Battery_SOC'] = 1
                     battery['Battery_Capacity'] = b.cap_calibrated
@@ -818,8 +816,8 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
             if exists(GivLUT.rtc_enabled):
                 os.remove(GivLUT.rtc_enabled)
     else:
-        controlmode['Real_Time_Control'] = regCacheStack[-1]["Control"]["Real_Time_Control"]
-        logger.debug("RTC returned Unknown status ("+str(GEInv.enable_rtc.value)+"), keeping last state")
+        controlmode['Real_Time_Control'] = (multi_output_old or {}).get("Control",{}).get("Real_Time_Control","disable")
+        logger.debug("RTC returned Unknown status, keeping last state: "+str(controlmode['Real_Time_Control']))
 
 
     if not GEInv.battery_pause_mode==None:    #Not in AC single phase
@@ -831,14 +829,10 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
     controlmode['Active_Power_Rate']= GEInv.active_power_rate
     controlmode['Reboot_Invertor']="disable"
     controlmode['Reboot_Addon']="disable"
-    if not isinstance(regCacheStack[-1], int):
-        if "Temp_Pause_Discharge" in regCacheStack[-1]:
-            controlmode['Temp_Pause_Discharge'] = regCacheStack[-1]["Control"]["Temp_Pause_Discharge"]
-        if "Temp_Pause_Charge" in regCacheStack[-1]:
-            controlmode['Temp_Pause_Charge'] = regCacheStack[-1]["Control"]["Temp_Pause_Charge"]
-    else:
-        controlmode['Temp_Pause_Charge'] = "Normal"
-        controlmode['Temp_Pause_Discharge'] = "Normal"
+    # Keep the running state of temp pauses from the last poll (the keys live under Control)
+    oldControl=(multi_output_old or {}).get("Control",{})
+    controlmode['Temp_Pause_Discharge'] = oldControl.get("Temp_Pause_Discharge","Normal")
+    controlmode['Temp_Pause_Charge'] = oldControl.get("Temp_Pause_Charge","Normal")
 
     if exists(".FCRunning"+str(GiV_Settings.givtcp_instance)):
         logger.debug("Force Charge is Running")
@@ -899,7 +893,7 @@ def processPVInfo(plant: Plant):
         if regCacheStack:
             multi_output_old = regCacheStack[-1]
         else:
-            regCacheStack = [0]
+            regCacheStack = []      # no cache yet (first poll) - previous values default to empty
             multi_output_old = {}
 
         # Check a couple of obvious data points to reject bad reads
@@ -1067,8 +1061,8 @@ def processInverterInfo(plant: Plant):
         if regCacheStack:
             multi_output_old = regCacheStack[-1]
         else:
-            regCacheStack = [0]
-            multi_output_old = None
+            regCacheStack = []      # no cache yet (first poll) - previous values default to empty
+            multi_output_old = {}
 
         # If System Time is wrong (default date) use last good time or local time if all else fails
         if GEInv.system_time.year == 2000:
@@ -1284,10 +1278,10 @@ def processInverterInfo(plant: Plant):
             logger.debug("Getting SOC")
             if GEInv.battery_soc != 0 or GEInv.battery_calibration_stage !=0:        #if we're in calibration mode accept any value
                 power_output['SOC'] = GEInv.battery_soc
-            elif GEInv.battery_soc == 0 and len(multi_output_old)>0:
+            elif GEInv.battery_soc == 0 and multi_output_old.get('Power',{}).get('Power',{}).get('SOC') is not None:
                 power_output['SOC'] = multi_output_old['Power']['Power']['SOC']
                 logger.debug("\"Battery SOC\" reported as: "+str(GEInv.battery_soc)+"% so using previous value")
-            elif GEInv.battery_soc == 0 and len(multi_output_old)==0:
+            elif GEInv.battery_soc == 0:
                 power_output['SOC'] = 1
                 logger.debug("\"Battery SOC\" reported as: "+str(GEInv.battery_soc)+"% and no previous value so setting to 1%")  
             else:
@@ -1627,8 +1621,8 @@ def processGatewayInfo(plant: Plant):
 
         regCacheStack=GivLUT.get_regcache()
         if not regCacheStack:
-            regCacheStack = [0]
-            multi_output_old=None
+            regCacheStack = []      # no cache yet (first poll) - previous values default to empty
+            multi_output_old = {}
         else:
             multi_output_old=regCacheStack[-1]
 
@@ -1876,8 +1870,8 @@ def processThreePhaseInfo(plant: Plant):
         inverter={}
         regCacheStack=GivLUT.get_regcache()
         if not regCacheStack:
-            regCacheStack = [0]
-            multi_output_old=[]
+            regCacheStack = []      # no cache yet (first poll) - previous values default to empty
+            multi_output_old = {}
         else:
             multi_output_old=regCacheStack[-1]
 
@@ -2134,7 +2128,7 @@ def processData(plant: Plant):
 
         multi_output['Stats']=givtcpdata
         regCacheStack = GivLUT.get_regcache()
-        if regCacheStack is None:  # Transient failure - retry once
+        if regCacheStack is None and exists(GivLUT.regcache):  # Transient failure - retry once (no file yet is normal on first run)
             logger.warning("regCache read failed, retrying...")
             time.sleep(1)
             regCacheStack = GivLUT.get_regcache()
