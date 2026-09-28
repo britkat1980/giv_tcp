@@ -6,28 +6,3 @@
     <span id="readme"><a href="readme.html" target="_self">Go to Readme Page</a></span>
     <span id="dashboard"><a href="http://homeassistant.local:8099/dashboard" target="_blank">View Dashboard</a></span>
 </div>
-<script> 
-    await fetch('hostip.json').then(response => {
-          return response.json();
-      }).then(json => {
-          this.n=json;
-      })
-    var a = document.createElement('a');
-    var linkText = document.createTextNode("Config Page");
-    a.appendChild(linkText);
-    a.href = "http://" + n + ":8099/config.html";
-    a.target= "_blank"
-    document.body.appendChild(a);
-    var b = document.createElement('a');
-    var linkText = document.createTextNode("Readme Page");
-    b.appendChild(linkText);
-    b.href = "http://" + n + ":8099/readme.html";
-    b.target= "_self"
-    document.body.appendChild(b);
-    var c = document.createElement('a');
-    var linkText = document.createTextNode("Dashboard");
-    c.appendChild(linkText);
-    c.href = "http://" + n + ":8099/dashboard";
-    c.target= "_blank"
-    document.body.appendChild(c);
-    </script>

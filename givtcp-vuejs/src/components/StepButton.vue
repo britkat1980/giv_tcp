@@ -74,18 +74,8 @@ export default {
       // Write to json file here
         const settingdata = JSON.stringify(data);
 
-        await fetch('hostip.json').then(response => {
-          return response.json();
-          }).then(json => {
-              this.n=json;
-          })
-        if (window.location.protocol == "https:"){
-              var host = "https://" + n +":8098/settings"
-            }
-            else{
-              var host = "http://" + n +":8099/settings"
-            }
-        const setResponse = await fetch(host,{
+        // Relative URLs resolve against the page, so this works direct (8099/8098) and via HA ingress
+        const setResponse = await fetch('settings',{
         method:"POST",
         headers:{
           "Content-Type":"application/json"
@@ -98,13 +88,7 @@ export default {
           this.message = `Error Saving config change`
         }
 
-        if (window.location.protocol == "https:"){
-          var host = "https://" + n +":8098/REST1/restart"
-        }
-        else{
-          var host = "http://" + n +":8099/REST1/restart"
-        }
-        const res = await fetch(host)
+        const res = await fetch('REST1/restart')
         console.log(res)
         if(res.ok){
           this.snackbar = true
@@ -117,18 +101,7 @@ export default {
     }
   },
   async created() {
-    await fetch('hostip.json').then(response => {
-          return response.json();
-      }).then(json => {
-          this.n=json;
-      })
-    if (window.location.protocol == "https:"){
-          var host = "https://" + n +":8098/settings"
-        }
-        else{
-          var host = "http://" + n +":8099/settings"
-        }
-    await fetch(host).then(response => {
+    await fetch('settings').then(response => {
           return response.json();
         }).then(getJSON => {
           this.applySettings(getJSON)
@@ -149,17 +122,7 @@ export default {
       // Write to json file here
         const settingdata = JSON.stringify(data);
 
-        await fetch('hostip.json').then(response => {
-          return response.json();
-          }).then(json => {
-              this.n=json;
-          })
-        if (window.location.protocol == "https:"){
-              var host = "https://" + n +":8098/settings"
-            }
-            else{
-              var host = "http://" + n +":8099/settings"
-            }
+        const host = 'settings'
         const setResponse = await fetch(host,{
         method:"POST",
         headers:{

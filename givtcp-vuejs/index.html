@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" href="favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GivTCP Config</title>
     <link rel="stylesheet" href="main.css">
@@ -20,7 +20,7 @@
         }).then(json => {
             this.n=json;
         })
-      document.getElementById("config").innerHTML = "<a href=http://" + n + ":8099/config.html target=\"_blank\">Config Page</a>";
+      document.getElementById("config").innerHTML = "<a href=config.html>Config Page</a>";
       document.getElementById("readme").innerHTML = "<a href=readme.html>Readme Page</a>";
       document.getElementById("dashboard").innerHTML = "<a href=http://" + n + ":8099/dashboard target=\"_blank\">Dashboard</a>";
       }

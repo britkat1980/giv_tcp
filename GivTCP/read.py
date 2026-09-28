@@ -453,7 +453,7 @@ def batteryNotReady(key):
     if _emptyBatteryPolls[key]>=3:
         logger.error("Battery "+str(key)+" has returned no valid data for "+str(_emptyBatteryPolls[key])+" polls, skipping")
     else:
-        logger.info("Battery "+str(key)+" data not confirmed yet (first reads after connecting), skipping this poll")
+        logger.debug("Battery "+str(key)+" data not confirmed yet (first reads after connecting), skipping this poll")
 
 def getBatteries(plant: Plant, multi_output_old):
     try:

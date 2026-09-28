@@ -6,7 +6,9 @@ slug:  "givtcp"
 homeassistant_api: true
 hassio_api: true
 init:  true
-#ingress: true
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:solar-power
 services:
   - "mqtt:want"
 map:

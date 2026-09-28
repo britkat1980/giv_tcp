@@ -15,7 +15,8 @@ export default defineConfig({
   plugins: [
     vue(),
   ],
-//  base: '/api/hassio_ingress/Sh0KGb4ov2KVn9o-o9PskOkIO_4HtHc3p63Y1aWJOGg',
+  // Relative asset paths, so the build works at any base path (direct on 8099/8098 or under HA ingress)
+  base: './',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

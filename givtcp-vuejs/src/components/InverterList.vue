@@ -141,10 +141,7 @@ export default {
     },
     async loadFound() {
       try {
-        const host = await fetch('hostip.json').then((r) => r.json())
-        const base =
-          window.location.protocol == 'https:' ? 'https://' + host + ':8098' : 'http://' + host + ':8099'
-        const res = await fetch(base + '/settings/found')
+        const res = await fetch('settings/found')
         if (res.ok) this.found = await res.json()
       } catch (e) {
         this.found = []     // no scan results available; the list simply isn't shown
