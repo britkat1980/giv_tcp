@@ -50,11 +50,25 @@ def commsFailure():
         pickle.dump(oldDataCount, outp, pickle.HIGHEST_PROTOCOL)
     return oldDataCount
 
-def resetTodayStats():
-    # end value 0 to all "Today stats"
-    Today={'Today':{'AC_Charge_Energy_Today_kWh': 0, 'Battery_Charge_Energy_Today_kWh': 0, 'Battery_Discharge_Energy_Today_kWh': 0, 'Battery_Throughput_Today_kWh': 0, 'Export_Energy_Today_kWh': 0, 'Import_Energy_Today_kWh': 0, 'Invertor_Energy_Today_kWh': 0, 'Load_Energy_Today_kWh': 0, 'PV_Energy_Today_kWh': 0, 'Self_Consumption_Energy_Today_kWh': 0}}
-    GivMQTT.multi_MQTT_publish("GivEnergy/"+GiV_Settings.serial_number+"/Energy/",Today)
-    logger.debug("Forcing MQTT data for Today Stats to Zero at Midnight")
+# The inverter resets its Today counters by its own clock, on some firmware a little after midnight
+TODAY_RESET_GRACE_MINUTES=5
+
+def newInverterDay(invTime, multi_output_old, grace=True):
+    # True when the inverter's date has moved on since the previous output, so yesterday's Today values mustn't be
+    # carried over. Comparing dates (rather than looking for a poll in the 00:00 minute) still works after a missed
+    # poll, a restart over midnight or a container clock that differs from the inverter's.
+    # With grace, it also stays True while the previous poll was within the grace period after midnight, in case
+    # that poll still carried yesterday's counters.
+    oldTime=finditem(multi_output_old,"Invertor_Time") if multi_output_old else None
+    try:
+        new=datetime.datetime.fromisoformat(str(invTime))
+        old=datetime.datetime.fromisoformat(str(oldTime))
+    except (TypeError, ValueError):
+        return False
+    if new.date()!=old.date():
+        logger.debug("New inverter day ("+str(old.date())+" -> "+str(new.date())+"), Today stats reset")
+        return True
+    return grace and old.hour==0 and old.minute<TODAY_RESET_GRACE_MINUTES
 
 def rebootaddon():
     if GiV_Settings.isAddon:
@@ -70,6 +84,21 @@ def rebootaddon():
 
 def capsFile():
     return "/config/GivTCP/"+GiV_Settings.serial_number+"_caps.pkl"
+
+# Models with no battery pause mode/slot (givenergy-modbus doesn't read HR 318-320 on them)
+PAUSE_UNSUPPORTED=[Model.HYBRID_GEN1, Model.AC]
+
+def unsupportedEntities():
+    # Entities this inverter model can't have. Older GivTCP versions created some of these in HA,
+    # and their retained discovery messages keep them there, so discovery removes them explicitly
+    try:
+        with open(capsFile(), 'rb') as inp:
+            device_type=pickle.load(inp).device_type
+    except Exception:
+        return []
+    if device_type in PAUSE_UNSUPPORTED:
+        return ['Battery_pause_mode','Battery_pause_start_time_slot','Battery_pause_end_time_slot']
+    return []
 
 async def detectPlant(client, force=False):
     # Detect only when there is no capabilities file for this inverter (startup normally creates one).
@@ -662,7 +691,7 @@ def getTimeslots(plant: Plant, multi_output_old=None):
     except:
         logger.debug("New Charge/Discharge timeslots don't exist for this model")
 
-    if not plant.capabilities.device_type in [Model.HYBRID_GEN1, Model.AC] and GEInv.battery_pause_slot_1 is not None:   #Battery Pause slots not on Gen 1 Hybrid or AC only
+    if not plant.capabilities.device_type in PAUSE_UNSUPPORTED and GEInv.battery_pause_slot_1 is not None:   #Battery Pause slots not on Gen 1 Hybrid or AC only
         timeslots['Battery_pause_start_time_slot'] = validateTimeslot(GEInv.battery_pause_slot_1.start,"Battery_pause_start_time_slot",multi_output_old)
         timeslots['Battery_pause_end_time_slot'] = validateTimeslot(GEInv.battery_pause_slot_1.end,"Battery_pause_end_time_slot",multi_output_old)
     # Unused slots report a 0% target, which HA rejects (min 4%) on every poll - don't publish them
@@ -1158,43 +1187,17 @@ def processInverterInfo(plant: Plant):
             today_load= max(0,round((energy_today_output['Invertor_Energy_Today_kWh']-energy_today_output['AC_Charge_Energy_Today_kWh']) -
                         (energy_today_output['Export_Energy_Today_kWh']-energy_today_output['Import_Energy_Today_kWh'])+energy_today_output['PV_Energy_Today_kWh'], 2))
             
-        now=datetime.datetime.now(tz=GivLUT.timezone)
-        # Robust once-per-day midnight handling
-        try:
-            last_reset = GivLUT._last_midnight_reset
-        except Exception:
-            last_reset = None
-
-        # If this is the first read in the midnight minute, run the reset and mark it
-        if now.hour == 0 and now.minute == 0 and last_reset != now.date():
-            try:
-                resetTodayStats()
-            except Exception:
-                logger.exception("Error while running resetTodayStats")
-            try:
-                GivLUT._last_midnight_reset = now.date()
-            except Exception:
-                pass
-
-        if multi_output_old:
-            # If we just reset, treat previous Today values as zero to avoid restoring yesterday's numbers
-            if now.hour == 0 and now.minute == 0 and getattr(GivLUT, '_last_midnight_reset', None) == now.date():
-                multi_output_old = copy.deepcopy(multi_output_old)
-                if "Energy" in multi_output_old and "Today" in multi_output_old["Energy"]:
-                    for k in multi_output_old["Energy"]["Today"]:
-                        multi_output_old["Energy"]["Today"][k] = 0
-
-            if today_self < multi_output_old["Energy"]["Today"]['Self_Consumption_Energy_Today_kWh'] and not (now.hour==0 and now.minute==0):       #Stop any rounding calculation from making load reduce in Today stats
+        # Load and Self Consumption are calculated, so hold them rather than let rounding make them go down -
+        # except on a new inverter day, when the counters have reset and holding would keep yesterday's totals
+        if multi_output_old and not newInverterDay(inverter['Invertor_Time'],multi_output_old):
+            if today_self < multi_output_old["Energy"]["Today"]['Self_Consumption_Energy_Today_kWh']:
                 energy_today_output['Self_Consumption_Energy_Today_kWh']=multi_output_old["Energy"]["Today"]['Self_Consumption_Energy_Today_kWh']
             else:
                 energy_today_output['Self_Consumption_Energy_Today_kWh']=today_self
-
-            if now.hour == 0 and now.minute == 0 :
-                energy_today_output['Load_Energy_Today_kWh'] = 0
-            elif today_load < multi_output_old["Energy"]["Today"]['Load_Energy_Today_kWh']:       #Stop any rounding calculation from making load reduce in Today stats
+            if today_load < multi_output_old["Energy"]["Today"]['Load_Energy_Today_kWh']:
                 energy_today_output['Load_Energy_Today_kWh']=multi_output_old["Energy"]["Today"]['Load_Energy_Today_kWh']
             else:
-                energy_today_output['Load_Energy_Today_kWh']=today_load    
+                energy_today_output['Load_Energy_Today_kWh']=today_load
         else:
             energy_today_output['Load_Energy_Today_kWh']=today_load
             energy_today_output['Self_Consumption_Energy_Today_kWh']=today_self
@@ -1891,21 +1894,6 @@ def processThreePhaseInfo(plant: Plant):
         # rather than the single-phase layout alt1 registers (IR36/37)
         energy_today_output['Battery_Discharge_Energy_Today_kWh']=GEInv.e_battery_discharge_today
         energy_today_output['Battery_Charge_Energy_Today_kWh']=GEInv.e_battery_charge_today
-        # midnight guard: ensure we run reset once and avoid restoring yesterday's Today numbers
-        now = datetime.datetime.now(tz=GivLUT.timezone)
-        try:
-            last_reset = GivLUT._last_midnight_reset
-        except Exception:
-            last_reset = None
-        if now.hour == 0 and now.minute == 0 and last_reset != now.date():
-            try:
-                resetTodayStats()
-            except Exception:
-                logger.exception("Error while running resetTodayStats")
-            try:
-                GivLUT._last_midnight_reset = now.date()
-            except Exception:
-                pass
         energy_today_output['Load_Energy_Today_kWh']=GEInv.e_load_today
         energy_today_output['Export2_Energy_Today_kWh']=GEInv.e_export2_today
         energy_today_output['PV_Energy_Today_kWh']=GEInv.e_pv_today
@@ -2416,7 +2404,7 @@ def publishOutput(array, SN):
             if GiV_Settings.HA_Auto_D:               
                 logger.info("Publishing Home Assistant Discovery messages")
                 from HA_Discovery import HAMQTT
-                HAMQTT.publish_discovery2(tempoutput, SN)
+                HAMQTT.publish_discovery2(tempoutput, SN, unsupportedEntities())
             open(GivLUT.firstrun, 'w').close()
             if exists('/config/GivTCP/.v3upgrade_'+str(GiV_Settings.givtcp_instance)):
                 os.remove('/config/GivTCP/.v3upgrade_'+str(GiV_Settings.givtcp_instance))
@@ -2554,11 +2542,9 @@ def ratecalcs(multi_output, multi_output_old):
     rate_data['Day_Rate'] = GiV_Settings.day_rate
     rate_data['Night_Rate'] = GiV_Settings.night_rate
 
-    now=datetime.datetime.now(GivLUT.timezone)
-    inv_time=datetime.datetime.strptime(finditem(multi_output,"Invertor_Time"), '%Y-%m-%dT%H:%M:%S%z')
-    # if midnight then reset costs
-    if inv_time.hour == 0 and inv_time.minute == 0:
-        logger.debug("Midnight, so resetting Day/Night stats...")
+    # New inverter day, so reset costs. No grace period needed: this is based on the import total, which doesn't reset
+    if newInverterDay(finditem(multi_output,"Invertor_Time"), multi_output_old, grace=False):
+        logger.debug("New inverter day, so resetting Day/Night stats...")
         rate_data['Night_Cost'] = 0.00
         rate_data['Day_Cost'] = 0.00
         rate_data['Night_Energy_kWh'] = 0.00

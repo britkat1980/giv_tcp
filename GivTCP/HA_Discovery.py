@@ -49,7 +49,7 @@ class HAMQTT():
         else:
             logger.error("Bad connection Returned code= "+str(reason_code))
 
-    def publish_discovery2(array,SN):   #Recieve multiple payloads with Topics and publish in a single MQTT connection
+    def publish_discovery2(array,SN,unsupported=()):   #Recieve multiple payloads with Topics and publish in a single MQTT connection
         try:
             inv_type=finditem(array,"Invertor_Type")
             if inv_type=="":
@@ -92,6 +92,8 @@ class HAMQTT():
             # Loop round HA publishing 4 times in case its not all there
             i=0
             complete=False
+            if unsupported:
+                CheckDisco.removeunsupported(SN,unsupported)
             CheckDisco.removedisco(SN,publisher)
             time.sleep(3)
             while not complete:
@@ -418,6 +420,44 @@ class CheckDisco():
             e=errDetail()
             logger.error("checkdisco: Error connecting to MQTT Broker: " + str(e))
             client.disconnect()
+
+    def removeunsupported(SN,items):
+        # Clear the retained discovery and state messages for entities this inverter can't have, so HA drops
+        # entities left behind by older GivTCP versions. Matches by name so any older topic layout is caught too
+        try:
+            client = paho_mqtt.Client(paho_mqtt.CallbackAPIVersion.VERSION2,"GivEnergy_GivTCP_removeunsupported_"+str(GiV_Settings.givtcp_instance))
+            client.on_connect = CheckDisco.on_connect
+            client.on_message = CheckDisco.on_message
+            if HAMQTT.MQTTCredentials:
+                client.username_pw_set(HAMQTT.MQTT_Username,HAMQTT.MQTT_Password)
+            client.connect(GiV_Settings.MQTT_Address, GiV_Settings.MQTT_Port, 60)
+            client.loop_start()
+            # Wait for the retained messages to stop arriving
+            found=-1
+            for _ in range(10):
+                time.sleep(1)
+                if len(CheckDisco.msgs)==found:
+                    break
+                found=len(CheckDisco.msgs)
+            stateRoot=(GiV_Settings.MQTT_Topic or "GivEnergy")+"/"+SN+"/"
+            count=0
+            for topic in list(CheckDisco.msgs):
+                for item in items:
+                    isDisco=topic.startswith("homeassistant/") and SN in topic and topic.endswith("_"+item+"/config")
+                    isState=topic.startswith(stateRoot) and topic.endswith("/"+item)
+                    if isDisco or isState:
+                        client.publish(topic,None,0,True)
+                        CheckDisco.msgs.pop(topic,None)
+                        count+=1
+                        break
+            if count:
+                logger.info("Removed "+str(count)+" retained MQTT messages for entities not supported by this inverter: "+", ".join(items))
+            time.sleep(1)
+            client.loop_stop()
+            client.disconnect()
+        except:
+            e=errDetail()
+            logger.error("removeunsupported: Error removing unsupported entities: " + str(e))
 
     def removedisco(SN,messages):
         try:
