@@ -514,7 +514,7 @@ async def setCarChargeBoost(device,payload,readloop=False):
     temp={}
     try:
         # givenergy-modbus v2 reads car_charge_boost (EMS HR 2073) but has no writer and doesn't allow the
-        # register in its write-safe set, so fail clearly (see docs/upstream-givenergy-modbus-requests.md #11)
+        # register in its write-safe set, so fail clearly (see docs/upstream-givenergy-modbus-requests.md #10)
         raise NotImplementedError("Setting Car Charge Boost is not yet supported by givenergy-modbus")
     except:
         e=errDetail()

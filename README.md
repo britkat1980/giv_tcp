@@ -246,29 +246,6 @@ Example:
 }
 ```
 
-#### Enable lite query mode
-
-When you dont use the battery charging and discharging slots (you can do this in Home Assistant automations as well), are not using the battery and meter statistics, you can enable lite mode.
-
-Lite mode does fetch the battery SOC and the generic power and energy stats, so you can see what your battery is doing currently and how much energy went through it.
-
-Stats left out in lite mode:
-1. Meter details, MQTT devices for additional meter details are not created. Meter registered in other MQTT devices are still working (Energy and Power device)
-2. BCU and individual battery statistics. None of the MQTT battery devices are created.
-3. Charging slots. GivTCP registers charging slots in two locations. Older devices have only two slots, newer have more. The data block containing the newer additional charging slots is not fetched. You can only control two slots at most.
-
-Example:
-```json
-{
-   ...
-   "inverter_enable_1": true,
-   "invertorIP_1": "192.168.34.35",
-   "serial_number_1": "TC12345678",
-   "inverterName_1": "GivTCP",
-   ...
-}
-```
-
 #### Stop GivTCP temporarily to give the inverter time to catch up
 
 When the inverter misses several update cycles, this is a signal that the inverter is overloaded. In most cases it will continue eventually, but there is a cascading effect in the inverter software where one timeout causes another etc. This could end up in BCM communication problems and the inverter stops working.

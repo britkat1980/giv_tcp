@@ -134,13 +134,7 @@ After a fresh connect, the first battery frame is held pending a corroborating r
 
 ---
 
-## 10. Reduced-refresh / lite mode (#242)
-
-Adding GivTCP's +1 to #242. Several GivTCP users with large HV stacks or newer dongle chipsets see BMS communication faults and dongle lock-ups under full polling (britkat1980/giv_tcp#471). A library-level way to poll a reduced set (core power and SOC only, battery cell data less often) would let GivTCP offer this without reaching into range internals. GivTCP now uses `refresh(max_age=…)` as an opt-in, which helps when the cloud is also polling.
-
----
-
-## 11. EMS car charge boost write (HR 2073)
+## 10. EMS car charge boost write (HR 2073)
 
 **Problem**
 
