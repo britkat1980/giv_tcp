@@ -393,7 +393,8 @@ def getRaw(plant: Plant):
         raw['HV_Battery_Stacks']=stacks
     else:
         for b in GEBat:
-            bat[b.serial_number]=b
+            if b.is_valid():        # unconfirmed batteries (first poll after connecting) have no serial yet
+                bat[b.serial_number]=b
         raw['batteries']=bat
     if Meters:
         for m in Meters:
@@ -2179,6 +2180,7 @@ def processData(plant: Plant):
             #if earliest_cache_age.seconds>3600:
             if len(regCacheStack)>30:  # keep ~10 hours of history for outlier detection
                 regCacheStack.pop(0)
+        multi_output=noneKeys(multi_output)     # clean before caching, so every later dump of the cache works too
         regCacheStack.append(multi_output)
         GivLUT.put_regcache(regCacheStack)
             
@@ -2200,7 +2202,20 @@ def processData(plant: Plant):
         logger.error("inverter Update failed so using last known good data from cache: (%s: %s - %s)", e.__class__.__name__, str(e) , e.__traceback__.tb_lineno)
         result['result'] = "processData Error processing registers: " + str(e)
         return json.dumps(result)
-    return json.dumps(result, indent=4, sort_keys=True, default=str)
+    return json.dumps(noneKeys(result), indent=4, sort_keys=True, default=str)
+
+def noneKeys(data, path=""):
+    # json.dumps(sort_keys=True) fails on a None key (eg. a device whose serial isn't known yet), which would
+    # lose the whole poll. Rename any such key and log where it was so the source can be fixed
+    if isinstance(data, dict):
+        fixed={}
+        for k,v in data.items():
+            if k is None:
+                logger.warning("Output has a None key at '"+(path or "/")+"', publishing it as 'unknown'")
+                k="unknown"
+            fixed[k]=noneKeys(v, path+"/"+str(k))
+        return fixed
+    return data
 
 def flat_iterate_dict(array):        # Create a publish safe version of the output (convert non string or int datapoints)
     safeoutput = {}
