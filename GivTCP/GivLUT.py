@@ -1,4 +1,5 @@
 """GivLUT: Various objects to interface to GivEnergy inverters """
+from giverrors import errDetail
 from givenergy_modbus.client.client import Client
 from givenergy_modbus.exceptions import CommunicationError
 from settings import GiV_Settings
@@ -241,7 +242,7 @@ class GivLUT:
                 logger.debug("regcache doesn't exist...")
                 return None
         except:
-            e=sys.exc_info()
+            e=errDetail()
             if exists(GivLUT.cachelockfile):
                 remove(GivLUT.cachelockfile)
             logger.error("Failed to get Cache: "+str(e))

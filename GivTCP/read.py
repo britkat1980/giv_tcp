@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+from giverrors import errDetail
 from givenergy_modbus.model.inverter import Model,SinglePhaseInverter
 from givenergy_modbus.model.plant import Plant, PlantCapabilities
 from givenergy_modbus.model.register import HR
-from givenergy_modbus.exceptions import CommunicationError, PlantTopologyMismatch, RefreshPartiallySucceeded
+from givenergy_modbus.exceptions import CommunicationError, RefreshPartiallySucceeded
 from givenergy_modbus.model import TimeSlot
 import sys
 import json
@@ -66,29 +67,26 @@ def rebootaddon():
 def capsFile():
     return "/config/GivTCP/"+GiV_Settings.serial_number+"_caps.pkl"
 
-async def detectPlant(client):
-    # Use cached capabilities as a detect hint, falling back to a full detect if they are unreadable or stale
-    caps=None
-    if exists(capsFile()):
+async def detectPlant(client, force=False):
+    # Detect only when there is no capabilities file for this inverter (startup normally creates one).
+    # Returns True if cached capabilities were used, so callers can re-detect if they turn out to be stale
+    if not force and exists(capsFile()):
         try:
             with open(capsFile(), 'rb') as inp:
-                caps=pickle.load(inp)
-            logger.critical("Using cached capabilities from: "+str(capsFile()))
+                client.plant.capabilities=pickle.load(inp)
+            logger.critical("Using cached capabilities from "+str(capsFile())+", skipping detect")
+            return True
         except Exception as e:
             logger.warning("Unable to load cached capabilities, running full detect: "+str(e))
-    if caps is None:
-        logger.critical("Detecting inverter characteristics...")
-    try:
-        await client.detect(prior=caps)
-    except PlantTopologyMismatch:
-        # Hardware has changed since the caps were cached (eg battery added/removed). Connection is still up.
-        logger.warning("Inverter topology has changed since capabilities were cached, running full detect")
-        await client.detect()
+    logger.critical("Detecting inverter characteristics...")
+    await client.detect()
     try:
         with open(capsFile(), 'wb') as outp:
             pickle.dump(client.plant.capabilities, outp, pickle.HIGHEST_PROTOCOL)
+        logger.critical("Saved capabilities to "+str(capsFile()))
     except Exception as e:
         logger.warning("Unable to save capabilities cache: "+str(e))
+    return False
 
 async def readPlant(client, fullRefresh):
     # Run the register reads. Partial failures still leave good data in the register cache so keep going,
@@ -119,13 +117,21 @@ async def watch_plant(
         """Refresh data about the Plant."""
         try:
             client = await GivClientAsync.get_connection(cold_start=True)
-            await detectPlant(client)
+            usedCache=await detectPlant(client)
             try:
                 logger.debug ("Running full refresh")
                 await client.load_config()
             except Exception as e:
                 logger.debug("Initial full refresh incomplete: "+str(e))
-            await readPlant(client, False)
+            try:
+                await readPlant(client, False)
+            except CommunicationError:
+                if not usedCache or not client.connected:
+                    raise
+                # Connected but nothing came back: the cached capabilities may not match this inverter any more
+                logger.warning("No data using cached capabilities, running full detect")
+                await detectPlant(client, force=True)
+                await readPlant(client, False)
             #await client.close()
             if client.plant.capabilities.is_gateway==True:
                 if client.plant.gateway.parallel_aio_num < 2:
@@ -137,7 +143,7 @@ async def watch_plant(
                 try:
                     handler(client.plant)
                 except Exception as err:
-                    e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+                    e=errDetail()
                     logger.error ("Error in calling handler: "+str(err))
 
         except CommunicationError:
@@ -152,13 +158,7 @@ async def watch_plant(
                 pass
             return
         except Exception as e:
-            err=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-            error_type = e.__class__.__name__    # e.g., "NameError", "AttributeError"
-            error_msg  = str(e)                   # e.g., "name 'some_var' is not defined"
-            # Log or display exactly what you want
-            logger.error("%s: %s", error_type, error_msg)
-
-            logger.error ("Error in inital detect/refresh: "+str(err))
+            logger.error("Error in inital detect/refresh: "+errDetail())
             try:
                 await client.close()
             except:
@@ -169,6 +169,7 @@ async def watch_plant(
         nextpoll=datetime.datetime.now()+timedelta(seconds=refresh_period)
         timeoutErrors=0
         connectErrors=0
+        partialPolls=0
         logger.info("Starting data refresh cycle")
         while True:
             try:
@@ -272,8 +273,21 @@ async def watch_plant(
                         fullRefresh=False
                         logger.debug ("Running partial refresh")
                     try:
-                        await readPlant(client, fullRefresh)
+                        failures=await readPlant(client, fullRefresh)
                         timeoutErrors=0     # Reset timeouts if all is good this run
+                        # A device that fails every poll (eg. a battery removed since the capabilities were
+                        # cached) means they are stale, so re-detect once it has persisted for a while
+                        partialPolls=partialPolls+1 if failures else 0
+                        if partialPolls>=10:
+                            logger.warning("Some devices have not responded for 10 polls, re-detecting inverter characteristics")
+                            partialPolls=0
+                            previousCaps=client.plant.capabilities
+                            try:
+                                await detectPlant(client, force=True)
+                            except Exception as e:
+                                # detect() clears capabilities on failure, which would stop every later poll
+                                client.plant.capabilities=previousCaps
+                                logger.error("Re-detect failed, keeping current capabilities: "+str(e))
                         logger.debug("Data get was successful, now running handler if needed: ")
                         if fullRefresh:
                             # Only mark full refresh done once it succeeds, so a post-write readback isn't lost
@@ -299,16 +313,9 @@ async def watch_plant(
                         try:
                             handler(client.plant)
                         except Exception as e:
-                            err=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-                            error_type = e.__class__.__name__    # e.g., "NameError", "AttributeError"
-                            error_msg  = str(e)                   # e.g., "name 'some_var' is not defined"
-                            # Log or display exactly what you want
-                            logger.error("%s: %s", error_type, error_msg)
-                            logger.error ("Error in calling handler: "+str(err))
+                            logger.error("Error in calling handler: "+errDetail())
             except Exception:
-                f=sys.exc_info()
-                e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-                logger.error ("Error in Watch Loop: "+str(f))
+                logger.error ("Error in Watch Loop: "+errDetail())
                 await client.close()
                 await asyncio.sleep(1)      #Avoid a tight loop if the error repeats
 
@@ -362,9 +369,7 @@ def getRaw(plant: Plant):
         GEInv=plant.gateway
     else:
         GEInv=plant.inverter
-    if plant.capabilities.is_hv:
-        HVStack=plant.HVStack
-    else:
+    if not plant.capabilities.is_hv:
         GEBat=plant.batteries
     
     #GEBCU=plant.bcu
@@ -378,15 +383,12 @@ def getRaw(plant: Plant):
     raw['invertor']=GEInv
     if isHV:
         stacks={}
-        for i, stck in enumerate(HVStack):
-            stack={}
-            stack=stck[0]
-            for b in stck[1]:
+        # givenergy-modbus v2: BCU values plus each valid BMU, as plain dicts so they serialise cleanly
+        for i, hvstack in enumerate(plant.hv_stacks):
+            stack=hvstack.bcu.model_dump()
+            for b in hvstack.bmus:
                 if b.is_valid():
-                    sn=b.serial_number
-                else:
-                    sn=b.getsn()
-                stack[sn]=b
+                    stack[b.serial_number]=b.model_dump()
             stacks['Stack_'+str(i)]=stack
         raw['HV_Battery_Stacks']=stacks
     else:
@@ -431,6 +433,17 @@ def getMeters(plant: Plant):
         meters['Meter_ID'+str(m)]=meter
     return meters
 
+_emptyBatteryPolls={}
+
+def batteryNotReady(key):
+    # The library withholds a battery's data until a second read confirms the first (cold-start guard),
+    # so one or two empty polls after connecting are expected. Only report it as an error if it persists
+    _emptyBatteryPolls[key]=_emptyBatteryPolls.get(key,0)+1
+    if _emptyBatteryPolls[key]>=3:
+        logger.error("Battery "+str(key)+" has returned no valid data for "+str(_emptyBatteryPolls[key])+" polls, skipping")
+    else:
+        logger.info("Battery "+str(key)+" data not confirmed yet (first reads after connecting), skipping this poll")
+
 def getBatteries(plant: Plant, multi_output_old):
     try:
         if not plant.inverter ==None:
@@ -447,8 +460,9 @@ def getBatteries(plant: Plant, multi_output_old):
         logger.debug("Getting Battery Details")
         if not isHV:
             GEBat=plant.batteries
-            for b in GEBat:
+            for num,b in enumerate(GEBat):
                 if b.is_valid():          # Check for empty battery object responses and only process if they are complete (have a serial number)
+                    _emptyBatteryPolls.pop(num+1,None)
                     logger.debug("Building battery output: ")
                     battery = {}
                     battery['Battery_Serial_Number'] = b.serial_number
@@ -479,72 +493,76 @@ def getBatteries(plant: Plant, multi_output_old):
                     stack[b.serial_number] = battery
                     logger.debug("Battery "+str(b.serial_number)+" added")
                 else:
-                    logger.error("Battery Object empty so skipping")
-                
+                    batteryNotReady(num+1)
+
                 stack['BMS_Temperature']=GEInv.t_battery
                 stack['BMS_Voltage']=GEInv.v_battery
                 # Make this always Battery_Stack_1
                 batteries2['Battery_Stack_1']=stack
         else:
-            HVStack=plant.HVStack
-            for num,stack in enumerate(HVStack):
+            # givenergy-modbus v2: each HvStack has a BCU (stack level) and a list of BMUs (per module)
+            for num,hvstack in enumerate(plant.hv_stacks):
+                bcu=hvstack.bcu
+                if not bcu.is_valid():
+                    batteryNotReady("stack "+str(num+1))
+                    continue
+                _emptyBatteryPolls.pop("stack "+str(num+1),None)
+                modules=bcu.number_of_modules or len(hvstack.bmus)
                 bcudata={}
-                bcudata['Stack_Voltage']=stack[0].battery_voltage
-                bcudata['Stack_Current']=stack[0].battery_current
-                bcudata['Stack_Power']=stack[0].battery_power
-                bcudata['Stack_SOH']=stack[0].battery_soh
-                bcudata['Stack_Load_Voltage']=stack[0].load_voltage
-                bcudata['Stack_Cycles']=stack[0].number_of_cycles
-                bcudata['Stack_SOC_Difference']=stack[0].battery_soc_max-stack[0].battery_soc_min
-                bcudata['Stack_SOC_High']=stack[0].battery_soc_max
-                bcudata['Stack_SOC_Low']=stack[0].battery_soc_min
-                bcudata['Stack_Firmware']=stack[0].pack_software_version
-
-                bcudata['Stack_Design_Capacity']=round((stack[0].battery_nominal_capacity*stack[0].number_of_module)*0.9,2)     # Usable kWh is 10% less than actual 
-                bcudata['Stack_SOC_kWh']=round((stack[0].remaining_battery_capacity*stack[0].number_of_module)*0.9,2)     # Usable kWh is 10% less than actual
-                bcudata['Stack_Discharge_Energy_Today_kWh']=stack[0].discharge_energy_today
-                bcudata['Stack_Charge_Energy_Today_kWh']=stack[0].charge_energy_today
-                bcudata['Stack_Discharge_Energy_Total_kWh']=stack[0].discharge_energy_total
-                bcudata['Stack_Charge_Energy_Total_kWh']=stack[0].charge_energy_total
-                for b in stack[1]:
-                    if b.is_valid():
-                        sn=b.serial_number
-                    else:
-                        sn=b.getsn()
-                    if sn.upper().isupper():          # Check for empty battery object responses and only process if they are complete (have a serial number)
-                        logger.debug("Building battery output: ")
-                        battery = {}
-                        battery['Battery_Serial_Number'] = sn
-                        totaltemp=0
-                        for i in range(24):
-                            battery['Battery_Cell_'+str(i+1)+'_Voltage'] = b.get('v_cell_'+str(i+1).zfill(2))
-                        
-                        if is3PH:
-                            for i in range(24):
-                                battery['Battery_Cell_'+str(i+1)+'_Temperature'] = b.get('t_cell_'+str(i+1).zfill(2))
-                                totaltemp=totaltemp+b.get('t_cell_'+str(i+1).zfill(2))
-                            bcudata['BMS_Temperature']=round(totaltemp/24,2)
-                        else:
-                            for i in range(12):
-                                battery['Battery_Cell_'+str(i+1)+'_Temperature'] = b.get('t_cell_'+str(i+1).zfill(2))
-                            bcudata['BMS_Temperature']=GEInv.t_battery
-
-                        bcudata[sn] = battery
-                        logger.debug("Battery "+str(sn)+" added")
-                    else:
-                        logger.error("Battery Object empty so skipping")
+                bcudata['Stack_Voltage']=bcu.battery_voltage
+                bcudata['Stack_Current']=bcu.battery_current
+                bcudata['Stack_Power']=bcu.battery_power
+                bcudata['Stack_SOH']=bcu.battery_soh
+                bcudata['Stack_Load_Voltage']=bcu.load_voltage
+                bcudata['Stack_Cycles']=bcu.number_of_cycles
+                if bcu.battery_soc_max is not None and bcu.battery_soc_min is not None:
+                    bcudata['Stack_SOC_Difference']=bcu.battery_soc_max-bcu.battery_soc_min
+                bcudata['Stack_SOC_High']=bcu.battery_soc_max
+                bcudata['Stack_SOC_Low']=bcu.battery_soc_min
+                bcudata['Stack_Firmware']=bcu.pack_software_version
+                # v2 reports capacity in Ah per module: kWh = Ah x 76.8V module voltage, and usable kWh is 10% less
+                if bcu.battery_nominal_capacity_ah is not None:
+                    bcudata['Stack_Design_Capacity']=round(bcu.battery_nominal_capacity_ah*76.8/1000*modules*0.9,2)
+                if bcu.remaining_battery_capacity_ah is not None:
+                    bcudata['Stack_SOC_kWh']=round(bcu.remaining_battery_capacity_ah*76.8/1000*modules*0.9,2)
+                bcudata['Stack_Discharge_Energy_Today_kWh']=bcu.discharge_energy_today
+                bcudata['Stack_Charge_Energy_Today_kWh']=bcu.charge_energy_today
+                bcudata['Stack_Discharge_Energy_Total_kWh']=bcu.discharge_energy_total
+                bcudata['Stack_Charge_Energy_Total_kWh']=bcu.charge_energy_total
+                # HV modules have 24 cells but 12 temperature sensors (the BCU reports the total sensor count)
+                numTemps=12
+                if bcu.total_temperature_sensor_count and modules:
+                    numTemps=max(1,min(24,bcu.total_temperature_sensor_count//modules))
+                stackTemps=[]
+                for b in hvstack.bmus:
+                    if not b.is_valid():          # BMU has no serial yet (not polled, or awaiting a confirming read)
+                        batteryNotReady("stack "+str(num+1)+" module "+str((b.bmu_index or 0)+1))
+                        continue
+                    _emptyBatteryPolls.pop("stack "+str(num+1)+" module "+str((b.bmu_index or 0)+1),None)
+                    sn=b.serial_number
+                    logger.debug("Building battery output: ")
+                    battery = {}
+                    battery['Battery_Serial_Number'] = sn
+                    for i in range(24):
+                        battery['Battery_Cell_'+str(i+1)+'_Voltage'] = getattr(b,'v_cell_'+str(i+1).zfill(2))
+                    for i in range(numTemps):
+                        temp=getattr(b,'t_cell_'+str(i+1).zfill(2))
+                        battery['Battery_Cell_'+str(i+1)+'_Temperature'] = temp
+                        if temp is not None:
+                            stackTemps.append(temp)
+                    bcudata[sn] = battery
+                    logger.debug("Battery "+str(sn)+" added")
+                # Average of the module sensors (the library's three-phase inverter model, also used for
+                # HV Gen3, has no single battery temperature)
+                if stackTemps:
+                    bcudata['BMS_Temperature']=round(sum(stackTemps)/len(stackTemps),2)
                 batteries2['Battery_Stack_'+str(num+1)]=bcudata
         return batteries2
     except KeyError as e:
         missing_key = e.args[0] if e.args else None
-        logger.error("Key Error getting Battery Data: " + (f"Missing key {missing_key!r}") )
+        logger.error("Key Error getting Battery Data: missing key "+repr(missing_key)+" - "+errDetail())
     except Exception as e:
-        err=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-        error_type = e.__class__.__name__    # e.g., "NameError", "AttributeError"
-        error_msg  = str(e)                   # e.g., "name 'some_var' is not defined"
-        # Log or display exactly what you want
-        logger.error("%s: %s", error_type, error_msg)
-        logger.error("Error getting Battery Data: " + str(err))
+        logger.error("Error getting Battery Data: "+errDetail())
         return None
 
 def validateTimeslot(slot,key,multi_output_old):
@@ -722,7 +740,7 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
                     pickle.dump(battery_reserve, outp, pickle.HIGHEST_PROTOCOL)
                 logger.debug ("Saving the battery reserve percentage for later: " + str(battery_reserve))
             except:
-                e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+                e=errDetail()
                 temp['result'] = "Saving the battery reserve for later failed: " + str(e)
                 logger.error (temp['result'])
         else:
@@ -1022,11 +1040,9 @@ def processPVInfo(plant: Plant):
             multi_output['raw'] = getRaw(plant)
     except KeyError as e:
         missing_key = e.args[0] if e.args else None
-        logger.error("Key Error getting Battery Data: " + (f"Missing key {missing_key!r}") )
+        logger.error("Key Error getting Battery Data: missing key "+repr(missing_key)+" - "+errDetail())
     except Exception:
-        e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
-        #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-        logger.error("Error processing Inverter data: " + str(e))
+        logger.error("Error processing Inverter data: " + errDetail())
         return None
     return multi_output
 
@@ -1414,12 +1430,12 @@ def processInverterInfo(plant: Plant):
         ######## Get Battery Details ########
 
         batteries2 = {}
-        batteries2.update(getBatteries(plant,multi_output_old))
+        batteries2.update(getBatteries(plant,multi_output_old) or {})
         if isHV:
             # Calc HV stack capacity as function of stacks
             cap=0
             for stack in batteries2:
-                cap=cap+batteries2[stack]['Stack_Design_Capacity']                  #Ah x nom voltage @ 90%
+                cap=cap+(batteries2[stack].get('Stack_Design_Capacity') or 0)      #Ah x nom voltage @ 90%
             inverter['Battery_Capacity_kWh_calc'] = cap
 
             ######## Create multioutput and publish #########
@@ -1440,14 +1456,9 @@ def processInverterInfo(plant: Plant):
             multi_output['raw'] = getRaw(plant)
     except KeyError as e:
         missing_key = e.args[0] if e.args else None
-        logger.error("Key Error getting Data: " + (f"Missing key {missing_key!r} at line {e.__traceback__.tb_lineno}") )
+        logger.error("Key Error getting Data: missing key "+repr(missing_key)+" - "+errDetail())
     except Exception as e:
-        err=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-        error_type = e.__class__.__name__    # e.g., "NameError", "AttributeError"
-        error_msg  = str(e)                   # e.g., "name 'some_var' is not defined"
-        # Log or display exactly what you want
-        logger.error("%s: %s", error_type, error_msg)
-        logger.error("Error processing Inverter data: " + str(err))
+        logger.error("Error processing Inverter data: "+errDetail())
         return None
     return multi_output
 
@@ -1602,11 +1613,9 @@ def processEMSInfo(plant: Plant):
         multi_output['Energy']=energy
     except KeyError as e:
         missing_key = e.args[0] if e.args else None
-        logger.error("Key Error getting Battery Data: " + (f"Missing key {missing_key!r}") )
+        logger.error("Key Error getting Battery Data: missing key "+repr(missing_key)+" - "+errDetail())
     except Exception:
-        e = sys.exc_info() ,sys.exc_info()[2].tb_lineno
-        #e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-        logger.error("Error processing EMS data: " + str(e))
+        logger.error("Error processing EMS data: " + errDetail())
         return None
     return multi_output
 
@@ -1852,14 +1861,9 @@ def processGatewayInfo(plant: Plant):
         multi_output["Meter_Details"] = meters
     except KeyError as e:
         missing_key = e.args[0] if e.args else None
-        logger.error("Key Error getting Battery Data: " + (f"Missing key {missing_key!r}") )
+        logger.error("Key Error getting Battery Data: missing key "+repr(missing_key)+" - "+errDetail())
     except Exception as e:
-        err=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-        error_type = e.__class__.__name__    # e.g., "NameError", "AttributeError"
-        error_msg  = str(e)                   # e.g., "name 'some_var' is not defined"
-        # Log or display exactly what you want
-        logger.error("%s: %s", error_type, error_msg)
-        logger.error("Error processing Gateway data: " + str(err))
+        logger.error("Error processing Gateway data: "+errDetail())
         return None
 
     return multi_output
@@ -2079,14 +2083,9 @@ def processThreePhaseInfo(plant: Plant):
         multi_output["Control"] = controlmode
     except KeyError as e:
         missing_key = e.args[0] if e.args else None
-        logger.error("Key Error getting Battery Data: " + (f"Missing key {missing_key!r}") )
+        logger.error("Key Error getting Battery Data: missing key "+repr(missing_key)+" - "+errDetail())
     except Exception as e:
-        err=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-        error_type = e.__class__.__name__    # e.g., "NameError", "AttributeError"
-        error_msg  = str(e)                   # e.g., "name 'some_var' is not defined"
-        # Log or display exactly what you want
-        logger.error("%s: %s", error_type, error_msg)
-        logger.error("Error processing Three Phase data: " + str(err))
+        logger.error("Error processing Three Phase data: "+errDetail())
         return None
     return multi_output
 
@@ -2200,9 +2199,9 @@ def processData(plant: Plant):
 
     except KeyError as e:
         missing_key = e.args[0] if e.args else None
-        logger.error("Key Error getting Battery Data: " + (f"Missing key {missing_key!r}") )
+        logger.error("Key Error getting Battery Data: missing key "+repr(missing_key)+" - "+errDetail())
     except Exception as e:
-        err=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        err=errDetail()
         consecFails(e)
         logger.error("inverter Update failed so using last known good data from cache: (%s: %s - %s)", e.__class__.__name__, str(e) , e.__traceback__.tb_lineno)
         result['result'] = "processData Error processing registers: " + str(e)
@@ -2313,7 +2312,7 @@ def runAll2(plant: Plant):  # Read from Inverter put in cache and publish
         logger.error("runAll2 Key Error: " + (f"Missing key {missing_key!r}") )
         return ("runAll2 Key Error: Missing key "+str(missing_key))
     except Exception:
-        e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        e=errDetail()
         logger.error("runAll2 Error processing registers: " + str(e))
         return ("runAll2 Error processing registers: " + str(e))
     return multi_output
@@ -2334,7 +2333,7 @@ def pubFromPickle(multi_output={}):  # Publish last cached Inverter Data
             multi_output['result'] = result
         return json.dumps(multi_output, indent=4, sort_keys=True, default=str)
     except:
-        e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        e=errDetail()
         logger.error("Error publishing data from pickle: "+str(e))
         multi_output['result']="Error publishing data from pickle"
         return json.dumps(multi_output, indent=4, sort_keys=True, default=str)
@@ -2348,7 +2347,8 @@ def getCache():     # Get latest cache data and return it (for use in REST)
             multi_output = regCacheStack[-1]
             inv=multi_output.get('raw',{}).get('invertor',{})
             temp={}
-            for key,reg in inv.items():
+            # raw['invertor'] is the library's device model (pydantic), which iterates as (field, value) pairs
+            for key,reg in (inv.items() if isinstance(inv,dict) else inv):
                 if isinstance(reg,TimeSlot):
                     temp[key]= str(reg)
                 #elif not isinstance(inv[reg],(str,int,float)):
@@ -2372,7 +2372,7 @@ def getCache():     # Get latest cache data and return it (for use in REST)
         return json.dumps(multi_output, indent=4, sort_keys=True, default=str)
 #### Perhaps remove cache file here if cache is corrupt?
     except:
-        e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        e=errDetail()
         logger.error("Error getting data from cache: "+str(e))
         multi_output['result']="Error getting data from cache"+str(e)
         return json.dumps(multi_output, indent=4, sort_keys=True, default=str)
@@ -2386,7 +2386,7 @@ async def self_run():
             # watch_plant only returns if initial connect/detect failed, so pause before retrying
             await asyncio.sleep(10)
         except:
-            e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+            e=errDetail()
             logger.error("Error in self_run. Re-running watch_plant: "+str(e))
             await asyncio.sleep(2)
 
@@ -2787,8 +2787,7 @@ def dataSmoother2(dataNew, dataOld, lastUpdate, invtype,inv_time):
         else:
             logger.debug("Nonetype in old or new data for "+str(name)+" so using new value")
     except Exception as e:
-        err=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-        logger.error("dataSmoother2 Error processing data: "+str(e)+" at line "+str(err[2]))
+        logger.error("dataSmoother2 Error processing "+str(dataNew[0])+": "+errDetail())
         return(newData)    
     return(newData)
 

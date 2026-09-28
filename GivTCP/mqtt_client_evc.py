@@ -1,3 +1,4 @@
+from giverrors import errDetail
 import paho.mqtt.client as mqtt
 import time, sys, importlib, time
 from settings import GiV_Settings
@@ -44,7 +45,7 @@ def on_message(client, userdata, message):
             writecommand=message.payload.decode("utf-8")
             evc.setDateTime(writecommand)
     except:
-        e = sys.exc_info()
+        e=errDetail()
         logger.error("MQTT.OnMessage Exception: "+str(e))
         return
     

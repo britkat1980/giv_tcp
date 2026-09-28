@@ -1,5 +1,6 @@
 """HA_Discovery: """
 # version 2022.01.21
+from giverrors import errDetail
 import sys
 import os
 import time
@@ -119,7 +120,7 @@ class HAMQTT():
         except gaierror:
             logger.error("Error in to MQTT Address. Check config and update.")
         except:
-            e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+            e=errDetail()
             logger.error("Error connecting to MQTT Broker: " + str(e))
 
     def sendDiscoMsg(array,SN):
@@ -353,7 +354,7 @@ class CheckDisco():
             logger.error("Error in to MQTT Address. Check config and update.")
             client.disconnect()
         except:
-            e=sys.exc_info()[0].__name__, sys.exc_info()[2].tb_lineno
+            e=errDetail()
             logger.error("Error connecting to MQTT Broker: " + str(e))
             client.disconnect()
     
@@ -411,6 +412,6 @@ class CheckDisco():
             logger.error("Error in to MQTT Address. Check config and update.")
             client.disconnect()
         except:
-            e=sys.exc_info()[0].__name__, sys.exc_info()[2].tb_lineno
-            logger.error("Error connecting to MQTT Broker: " + str(sys.exc_info()))
+            e=errDetail()
+            logger.error("Error connecting to MQTT Broker: " + errDetail())
             client.disconnect()

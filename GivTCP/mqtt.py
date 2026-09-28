@@ -1,4 +1,5 @@
 # version 2022.01.21
+from giverrors import errDetail
 import paho.mqtt.client as mqtt
 import time
 from os.path import exists, basename
@@ -58,7 +59,7 @@ class GivMQTT():
                 _mqttclient.loop_start()
             return _mqttclient
         except:
-            e=sys.exc_info()[0].__name__, basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+            e=errDetail()
             logger.error("Error getting connection to MQTT Broker: " + str(e))
 
     def isfloat(num):
@@ -101,7 +102,7 @@ class GivMQTT():
                 return
             client.publish(Topic,value)
         except:
-            e=sys.exc_info()[0].__name__, basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+            e=errDetail()
             logger.error("Error connecting to MQTT Broker: " + str(e))
             GivMQTT.client.disconnect()
 #            GivMQTT.client.loop_stop()                      			    #Stop loop
@@ -119,7 +120,7 @@ class GivMQTT():
                     if isinstance(output[value],(int, str, float, bytearray)):      #Only publish typesafe data
                         client.publish(value,output[value], retain=GivMQTT.MQTT_Retain)
         except:
-            e=sys.exc_info()[0].__name__, basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+            e=errDetail()
             logger.error("Error connecting to MQTT Broker: " + str(e))
             client.disconnect()
             client.loop_stop()                      			    #Stop loop
@@ -767,7 +768,7 @@ class GivMQTT():
                 evc.setChargeControl(payload)
                 requestcommand("setChargeControl",payload)
         except:
-            e=sys.exc_info()[0].__name__, basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+            e=errDetail()
             logger.error("MQTT.OnMessage Exception: "+str(e))
             return
     

@@ -1,4 +1,5 @@
 '''Test Module for GivEVC'''
+from giverrors import errDetail
 from pymodbus.client import ModbusTcpClient
 import paho.mqtt.client as mqtt
 import logging
@@ -175,7 +176,7 @@ class EVCLut:
                 logger.debug("regcache doesn't exist...")
                 return None
         except:
-            e=sys.exc_info()
+            e=errDetail()
             if exists(EVCLut.cachelockfile):
                 os.remove(EVCLut.cachelockfile)
             logger.error("Failed to get Cache: "+str(e))
@@ -289,7 +290,7 @@ def getEVC(client:ModbusTcpClient):
             with open(EVCLut.regcache, 'wb') as outp:
                 pickle.dump(multi_output, outp, pickle.HIGHEST_PROTOCOL)
     except Exception:
-        e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        e=errDetail()
         logger.debug("Error: "+ str(e))
     return output
 
@@ -438,7 +439,7 @@ def multi_MQTT_publish(rootTopic,array):                    #Recieve multiple pa
                 if isinstance(output[value],(int, str, float, bytearray)):      #Only publish typesafe data
                     client.publish(value,output[value], retain=GiV_Settings.MQTT_Retain)
     except:
-        e=sys.exc_info()[0].__name__, basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        e=errDetail()
         logger.error("Error connecting to MQTT Broker: " + str(e))
         client.loop_stop()                      			    #Stop loop
         client.disconnect()
@@ -537,7 +538,7 @@ def on_message(client, userdata, message):
                 writecommand=message.payload.decode("utf-8")
                 setDateTime(writecommand)
         except:
-            e = sys.exc_info()
+            e=errDetail()
             logger.error("MQTT.OnMessage Exception: "+str(e))
             return
     else:
@@ -565,7 +566,7 @@ def setChargeMode(mode):
         client=ModbusTcpClient(GiV_Settings.evc_ip_address)
         client.write_registers(93,[val])
     except:
-        e=sys.exc_info()
+        e=errDetail()
         logger.error("Error controlling EVC: "+str(e))
 
 def setChargeControl(mode):
@@ -578,12 +579,12 @@ def setChargeControl(mode):
                 client=ModbusTcpClient(GiV_Settings.evc_ip_address)
                 client.write_registers(95,[val])
             except:
-                e=sys.exc_info()
+                e=errDetail()
                 logger.error("Error controlling EVC: "+str(e))
         else:
             logger.error("Invalid selection for Charge Control ("+str(mode)+")")
     except:
-        e=sys.exc_info()
+        e=errDetail()
         logger.error("Error setting Charge Conrol: "+str(e))
 
 def setCurrentLimit(val):
@@ -602,7 +603,7 @@ def setCurrentLimit(val):
             logger.info("Charge current limit set to: "+ str(val))
 
     except:
-        e=sys.exc_info()
+        e=errDetail()
         logger.error("Error controlling EVC: "+str(e))
 
 def chargeMode(once=False):
@@ -637,7 +638,7 @@ def chargeMode(once=False):
                                 logger.info("Grid import threshold within 5%, cannot reduce Charge limit below 6A. Stopping Charge")
                                 setChargeControl("Stop")
         except:
-            e=sys.exc_info()
+            e=errDetail()
             logger.error("Error in EVC charge mode loop: "+str(e))
         if once:
             break
@@ -659,7 +660,7 @@ def hybridmode():
                     logger.info("Topping up min charge with Solar curent ("+str(spareCurrent-6)+"A), setting EVC charge to: "+str(spareCurrent)+"A")
                     setCurrentLimit(spareCurrent)
     except:
-        e=sys.exc_info()
+        e=errDetail()
         logger.error("Error in EVC hybrid mode: "+str(e))
 
 def gridmode():
@@ -687,7 +688,7 @@ def solarmode():
                         logger.info("Solar excess dropped to below 6A, stopping charge")
                         setChargeControl("Stop")
     except:
-        e=sys.exc_info()
+        e=errDetail()
         logger.error("Error setting EVC solar mode: "+str(e))
 
 def setMaxSessionEnergy(val):
@@ -701,7 +702,7 @@ def setMaxSessionEnergy(val):
                 with open(EVCLut.regcache, 'wb') as outp:
                     pickle.dump(evcRegCache, outp, pickle.HIGHEST_PROTOCOL)
     except:
-        e=sys.exc_info()
+        e=errDetail()
         logger.error("Error in setting Max Session energy: "+str(e))
 
 
@@ -717,7 +718,7 @@ def setImportCap(val):
                 with open(EVCLut.regcache, 'wb') as outp:
                     pickle.dump(evcRegCache, outp, pickle.HIGHEST_PROTOCOL)
     except:
-        e=sys.exc_info()
+        e=errDetail()
         logger.error("Error setting EVC Import Cap: "+str(e))
 
 def setChargingMode(mode):
@@ -735,7 +736,7 @@ def setChargingMode(mode):
         else:
             logger.error("Invalid selection for Charge Mode ("+str(mode)+")")
     except:
-        e=sys.exc_info()
+        e=errDetail()
         logger.error("Error setting EVC Charge Mode: "+str(e))
 
 
@@ -751,10 +752,10 @@ def setDateTime(sysTime):
             res=client.write_registers(97,[sysTime.year,sysTime.month,sysTime.day,sysTime.hour,sysTime.minute,sysTime.second])
             logger.info("Time Set")
         except:
-            e=sys.exc_info()
+            e=errDetail()
             logger.error("Error Setting EVC Time: "+str(e))
     except:
-        e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        e=errDetail()
         temp['result']="Setting inverter DateTime failed: " + str(e) 
         logger.error (temp['result'])
     return json.dumps(temp)

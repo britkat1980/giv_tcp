@@ -1,3 +1,4 @@
+from GivTCP.giverrors import errDetail
 from datetime import datetime, timedelta, timezone, UTC
 from os.path import exists
 import os, pickle, subprocess, logging,shutil, shlex, schedule
@@ -48,9 +49,23 @@ def validateEVC(HOST):
         else:
             return False
     except:
-        e=sys.exc_info()
+        e=errDetail()
         logger.error(e)
         return False
+
+def capsFile(SN):
+    return "/config/GivTCP/"+str(SN)+"_caps.pkl"
+
+def loadCaps(SN):
+    # Return the saved capabilities for this serial, or None if there are none (or they can't be read)
+    if not exists(capsFile(SN)):
+        return None
+    try:
+        with open(capsFile(SN), 'rb') as inp:
+            return pickle.load(inp)
+    except Exception as e:
+        logger.warning("Unable to read cached capabilities for "+str(SN)+", will run a full detect: "+str(e))
+        return None
 
 async def getInvDeets(HOST):
     try:
@@ -58,37 +73,34 @@ async def getInvDeets(HOST):
         client=Client(HOST,8899,3)
         await client.connect()
 
-        caps= await client.detect()
-        try:
-            await client.load_config()
-        except Exception as e:
-            pass
-        await client.refresh()
+        # Cheap identity read (HR 0-59) to get the serial number before deciding whether a full detect is needed.
+        # This serial is also used for settings.py, so read.py finds the same caps file
+        if not await client.probe_alive(timeout=3, retries=2):
+            raise Exception("No response from inverter at "+str(HOST))
+        # The identity block (HR 0-59) holds the serial, model and firmware for every device type, so
+        # nothing more needs reading here - the read loop does the full reads straight after startup
+        ident=client.plant.inverter
+        SN=ident.serial_number
+
+        caps=loadCaps(SN)
+        if caps:
+            logger.info("Using cached capabilities for "+str(SN)+", skipping detect")
+        else:
+            logger.critical("No cached capabilities for "+str(SN)+", running full detect")
+            caps= await client.detect()
+            logger.critical("Saving capabilities to cache: "+str(capsFile(SN)))
+            with open(capsFile(SN), 'wb') as outp:
+                pickle.dump(caps, outp, pickle.HIGHEST_PROTOCOL)
         try:
             await client.close()
         except:
             pass
 
-        if not client.plant.inverters ==None:
-            GEInv=client.plant.inverter
-        elif not client.plant.ems ==None:
-            GEInv=client.plant.ems
-        elif not client.plant.gateway ==None:
-            GEInv=client.plant.gateway
-
-        SN= GEInv.serial_number
-        # Name the cache by the same serial that ends up in settings.py, so read.py finds it
-        fileloc="/config/GivTCP/"+str(SN)+"_caps.pkl"
-        logger.critical("Saving capabilities to cache: "+str(fileloc))
-        with open(fileloc, 'wb') as outp:
-            pickle.dump(caps, outp, pickle.HIGHEST_PROTOCOL)
-        #gen=GEInv.generation
-        model=GEInv.model
-        fw=GEInv.arm_firmware_version
-        numbats=client.plant.number_batteries
-        if caps:    # v2 only counts LV batteries here; HV/three-phase/AIO batteries are modules
-            numbats=max(numbats, sum(n for _,n in caps.bcu_stacks), len(caps.aio_battery_module_addresses), len(caps.hv_bmu_addresses))
-        nummeters=len(client.plant.meters)
+        model=caps.device_type     # detect's resolved type; the raw device code maps HV Gen3 (81xx) to All-in-One (#565)
+        fw=ident.arm_firmware_version
+        # v2's number_batteries only counts LV batteries; HV/three-phase/AIO batteries are modules
+        numbats=max(len(caps.lv_battery_addresses), sum(n for _,n in caps.bcu_stacks), len(caps.aio_battery_module_addresses), len(caps.hv_bmu_addresses))
+        nummeters=len(caps.meter_addresses)
 
         Stats['Serial_Number']=SN
         Stats['Firmware']=fw
@@ -96,7 +108,7 @@ async def getInvDeets(HOST):
         #Stats['Generation']=gen
         Stats['Number_of_Batteries']=numbats
         Stats['IP_Address']=HOST
-        logger.info(f'Inverter {str(SN)} which is a {str(model.name.capitalize())}({GEInv.device_type_code}) with {str(numbats)} batteries and {str(nummeters)} meters has been found at: {str(HOST)}')
+        logger.info(f'Inverter {str(SN)} which is a {str(model.name.capitalize())}({ident.device_type_code}) with {str(numbats)} batteries and {str(nummeters)} meters has been found at: {str(HOST)}')
 
         return Stats
     except Exception:
@@ -294,7 +306,7 @@ def findinv(networks):
                 with open('invippkl.pkl', 'wb') as outp:
                     pickle.dump(inverterStats, outp, pickle.HIGHEST_PROTOCOL)
         except:
-            e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+            e=errDetail()
             logger.error("Error scanning for Inverters- "+str(e))
     else:
         logger.error("Unable to get host details from Supervisor / Container")
@@ -431,7 +443,7 @@ else:
         hostIP=IP
         baseurl="/"
     except:
-        e=sys.exc_info()
+        e=errDetail()
         logger.error("Could not get network info: "+ str(e))
 logger.debug("Host IP Address is: "+str(hostIP))
 
@@ -657,7 +669,7 @@ for inv in range(1,setts['number_of_inverters']+1):
         #  Always delete lockfiles and FCRunning etc... but only delete pkl if too old?
         for file in os.listdir(setts["cache_location"]):
             filename = os.fsdecode(file)
-            if not filename.__contains__("log") and not filename.startswith("rateData") and not filename.startswith("writecount") and not filename.startswith("safewritecount") and not filename.startswith(".dayRate") and not filename.startswith(".nightRate") and not filename.startswith("allsettings") and not filename.startswith("v2env") and not filename.startswith(".v3upgrade"):
+            if not filename.__contains__("log") and not filename.startswith("rateData") and not filename.startswith("writecount") and not filename.startswith("safewritecount") and not filename.startswith(".dayRate") and not filename.startswith(".nightRate") and not filename.startswith("allsettings") and not filename.startswith("v2env") and not filename.startswith(".v3upgrade") and not filename.endswith("_caps.pkl"):     # keep capabilities so detect only runs once per inverter
                 os.remove(setts['cache_location']+"/"+file)
         if exists(setts["cache_location"]+"/rateData_"+str(inv)+".pkl"):
             timezone=zoneinfo.ZoneInfo(key=setts["timezone"])
@@ -814,7 +826,7 @@ while True:
 
         ## Could we run a periodic Time Sync check? Maybe a config item??
     except:
-        e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        e=errDetail()
         logger.error("Error in watchdog loop: "+str(e))
 
     #Run jobs for smart target

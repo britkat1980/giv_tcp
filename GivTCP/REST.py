@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # version 2021.12.22
+from giverrors import errDetail
 from os.path import exists
 import sys
 from flask import Flask, request, render_template, Response, send_file
@@ -36,7 +37,7 @@ def requestcommand(command,payload):
         with open(GivLUT.writerequests,'wb') as outp:
             pickle.dump(requests, outp, pickle.HIGHEST_PROTOCOL)
     except:
-        e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        e=errDetail()
         logger.error ("Error in requesting control command: "+str(e))
 
 def response(id: str):
