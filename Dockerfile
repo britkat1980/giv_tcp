@@ -49,6 +49,11 @@ COPY startup.py startup.py
 COPY redis.conf redis.conf
 COPY settings.json ./settings.json
 COPY ingress/ ./ingress
+# Docs rendered by ingress/readme.html, settings.html and datapoints.html (via mdpage.js).
+# Kept in the same layout as the repo so their relative links and images resolve the same way.
+COPY README.md ./ingress/README.md
+COPY docs/SETTINGS-GUIDE.md docs/DATAPOINTS.md ./ingress/docs/
+COPY docs/images ./ingress/docs/images
 
 # Copy static site files
 COPY --from=givtcp_vuejs_tmp /app/dist /app/ingress/

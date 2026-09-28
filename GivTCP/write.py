@@ -510,6 +510,18 @@ async def setExportLimit(device,payload,readloop=False):
         logger.error (temp['result'])
     return json.dumps(temp)
 
+async def setCarChargeBoost(device,payload,readloop=False):
+    temp={}
+    try:
+        # givenergy-modbus v2 reads car_charge_boost (EMS HR 2073) but has no writer and doesn't allow the
+        # register in its write-safe set, so fail clearly (see docs/upstream-givenergy-modbus-requests.md #11)
+        raise NotImplementedError("Setting Car Charge Boost is not yet supported by givenergy-modbus")
+    except:
+        e=errDetail()
+        temp['result']="Setting Car Charge Boost failed: " + str(e)
+        logger.error (temp['result'])
+    return json.dumps(temp)
+
 async def setBatteryReserve(device,payload,readloop=False):
     temp={}
     try:

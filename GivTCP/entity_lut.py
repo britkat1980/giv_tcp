@@ -309,7 +309,7 @@ class Entity_Type():
         "EMS_Charge_Target_SOC_1":GEType("number","","setEMSChargeTarget1",4,100,False,False,False),
         "EMS_Charge_Target_SOC_2":GEType("number","","setEMSChargeTarget2",4,100,False,False,False),
         "EMS_Charge_Target_SOC_3":GEType("number","","setEMSChargeTarget3",4,100,False,False,False),
-        "EMS_Discharge_Target_SOC_1":GEType("number","","setEMSDischargeTarget",4,100,False,False,False),
+        "EMS_Discharge_Target_SOC_1":GEType("number","","setEMSDischargeTarget1",4,100,False,False,False),
         "EMS_Discharge_Target_SOC_2":GEType("number","","setEMSDischargeTarget2",4,100,False,False,False),
         "EMS_Discharge_Target_SOC_3":GEType("number","","setEMSDischargeTarget3",4,100,False,False,False),
         "EMS_Charge_start_time_slot_1":GEType("select","","setEMSChargeStart1","","",False,False,False),

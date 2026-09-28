@@ -1,73 +1,165 @@
 # GivTCP Settings & Control Guide
 
+This guide covers the settings you can change through GivTCP, from Home Assistant, over MQTT or over REST. For the full list of values GivTCP publishes, see [DATAPOINTS.md](DATAPOINTS.md).
+
 ## GivTCP Control (Inverters)
 GivTCP provides a wide range of inverter control settings. When using HA an MQTT device is automatically created for each inverter:
 
-<img src="docs/images/settings-1.png" width="400"> <img src="docs/images/settings-2.png" width="400">
+<img src="images/settings-1.png" width="400"> <img src="images/settings-2.png" width="400">
 
 | Control Function | Description | GivEnergy Cloud Equivalent |
 | ------------- | ------------- | ------------- |
-| Active Power Rate  | Sets the maximum active power output as a precentage. 100% = inverter rating | Inverter Max Output Active Power Percent |
+| Active Power Rate | Sets the maximum active power output as a percentage. 100% = inverter rating | Inverter Max Output Active Power Percent |
+| Battery Calibration | Starts or stops a battery calibration. One of "Off", "Start" or "Charge Only". Progress is shown in Battery Calibration Status | — |
 | Battery Charge Rate | Sets the battery charge power in Watts | Battery Charge Power |
-| Battery Charge Rate AC | Sets the inverter AC charge power as a percentage. 100% = inverter rating | Inverter Charge Power Precentage |
+| Battery Charge Rate AC | Sets the inverter AC charge power as a percentage. 100% = inverter rating | Inverter Charge Power Percentage |
 | Battery Discharge Rate | Sets the battery discharge power in Watts | Battery Discharge Power |
-| Battery Discharge Rate AC | Sets the inverter AC dischrage power as a percentage. 100% = inverter rating | Inverter Discharge Power Precentage |
-| Battery Pause Mode | Sets the battery operation mode. One of "Disabled","PauseCharge","PauseDischarge" or "PauseBoth" | Pause Battery |
-| Battery Power Cutoff | ???? | Battery Cutoff % Limit |
-| Battery Power Reserve | Sets the minimum battery discharge SOC as a precentage. 100% = battery capacity  | Battery Reserve % Limit |
-| Charge Target SOC (1-10) | Sets the target SOC when charging as a percentage. 100% = battery capacity. There are 10 slots 1-10 | AC Charge 1 Upper SOC % Limit |
-| Discharge Target (SOC 1-10) | Sets the target SOC when discharging as a percentage. Minimum = Battery Power Reserve. | AC Discharge 1 Lower SOC % Limit |
-| Eco Mode | Sets Eco mode | Enable Eco mode |
-| Enable Charge Schedule | Sets the Charging schedule state, if disabled the battery will not charge as per the schedule | xxx |
-| Enable Discharge Schedule | Sets the Discharging schedule state, if disabled the battery will not discharge as per the schedule | xxx |
-| Force Charge | Forces battery to charge for a given duration in Minutes. Select from "Normal" or an integer value | xxx |
-| Force Charge Num | Displays the Minutes remaining in Force Charge | xxx |
-| Force Export | Forces battery to discharge for a given duration in Minutes. Select from "Normal" or an integer value | xxx |
-| Force Export Num | Displays the Minutes remaining in Force Discharge | xxx |
-| Mode | Sets battery operation mode. Mode value must be one of Eco, Eco (Paused), Timed Demand or Timed Export | xxx |
-| Reboot Addon | Reboots the GivTCP addon | N/A |
-| Reboot Invertor | Reboots the Inverter | Restart Inverter |
-| Sync Time | Synchronises inverter time to current time and date | Set Date and Time |
-| Target SOC | Sets the target battery SOC when Force Charge or Discharging | xxx |
-| Temp Pause Charge | Suspends charging for a for a given duration in Minutes. Command must be "Cancel" or an integer value | Pause Battery |
-| Temp Pause Charge Num | Displays the Minutes remaining in Pause Charge | xxx |
-| Temp Pause Discharge | Suspends discharging for a for a given duration in Minutes. Command must be "Cancel" or an integer value | Pause Battery |
-| Temp Pause Discharge Num | Displays the Minutes remaining in Pause Discharge | xxx |
+| Battery Discharge Rate AC | Sets the inverter AC discharge power as a percentage. 100% = inverter rating | Inverter Discharge Power Percentage |
+| Battery Pause Mode | Pauses the battery during the pause timeslot. One of "Disabled", "PauseCharge", "PauseDischarge" or "PauseBoth" | Pause Battery |
+| Battery Pause Start/End Time Slot | Sets the time window in which Battery Pause Mode applies | — |
+| Battery Power Cutoff | Sets the SOC, as a percentage, at which the battery stops discharging altogether | Battery Cutoff % Limit |
+| Battery Power Reserve | Sets the minimum SOC the battery will discharge to in normal operation, as a percentage | Battery Reserve % Limit |
+| Charge Start/End Time Slot (1-10) | Sets the start and end time of each charge slot | — |
+| Charge Target SOC (1-10) | Sets the target SOC for each charge slot, as a percentage. Available on inverters that support a target per slot | AC Charge 1 Upper SOC % Limit |
+| Discharge Start/End Time Slot (1-10) | Sets the start and end time of each discharge slot | — |
+| Discharge Target SOC (1-10) | Sets the SOC to stop discharging at for each discharge slot, as a percentage. Minimum = Battery Power Reserve | AC Discharge 1 Lower SOC % Limit |
+| Eco Mode | Turns Eco mode on or off | Enable Eco Mode |
+| Enable Charge Schedule | Turns the charge schedule on or off. When off, the battery will not charge from the grid during the charge slots | — |
+| Enable Charge Target | When on, charging stops at Target SOC. When off, the battery charges to 100% during charge slots | — |
+| Enable Discharge | Allows or prevents the battery from discharging | — |
+| Enable Discharge Schedule | Turns the discharge schedule on or off. When off, the battery ignores the discharge slots and discharges to meet demand | — |
+| Force Charge | Charges the battery from the grid now for the chosen number of minutes. Shows "Normal" when idle and "Running" while active; choose "Cancel" to stop | — |
+| Force Charge Num | Shows the minutes remaining in Force Charge. Setting a value starts Force Charge for that many minutes | — |
+| Force Export | Discharges the battery at full power now for the chosen number of minutes. Shows "Normal" when idle and "Running" while active; choose "Cancel" to stop | — |
+| Force Export Num | Shows the minutes remaining in Force Export. Setting a value starts Force Export for that many minutes | — |
+| Mode | Sets the battery operation mode. One of "Eco", "Eco (Paused)", "Timed Demand" or "Timed Export" | — |
+| Real Time Control | Turns on the inverter's Real Time Control setting. While on, writes to registers that are safe to change often are counted in Safe Write Count instead of Write Count | — |
+| Reboot Addon | Restarts the GivTCP add-on | N/A |
+| Reboot Invertor | Restarts the inverter | Restart Inverter |
+| Sync Time | Sets the inverter's date and time to the current time | Set Date and Time |
+| Target SOC | Sets the SOC to stop charging at during a charge slot, when Enable Charge Target is on | — |
+| Temp Pause Charge | Pauses charging for the chosen number of minutes; choose "Cancel" to stop | — |
+| Temp Pause Charge Num | Shows the minutes remaining in Temp Pause Charge. Setting a value starts a pause for that many minutes | — |
+| Temp Pause Discharge | Pauses discharging for the chosen number of minutes; choose "Cancel" to stop | — |
+| Temp Pause Discharge Num | Shows the minutes remaining in Temp Pause Discharge. Setting a value starts a pause for that many minutes | — |
+
+Three-phase inverters also have:
+
+| Control Function | Description |
+| ------------- | ------------- |
+| Force Charge Enable | Forces the battery to charge |
+| Force Discharge Enable | Forces the battery to discharge |
+| Force AC Charge Enable | Allows the battery to charge from AC |
+
+An EMS has its own plant controls: Plant Control, EMS Charge/Discharge Target SOC (1-3), EMS Charge/Discharge Start/End Time Slots (1-3), Export Target SOC (1-3), Export Start/End Time Slots (1-3), Export Power Limit, Car Charge Mode and Car Charge Boost. See the EMS section of [DATAPOINTS.md](DATAPOINTS.md#ems).
 
 ## GivTCP Control (EVC)
 
-Coming soon
+When `EVC_ENABLE` is on, GivTCP creates a "GivEVC" device in HA with these controls:
 
-## GivTCP MQTT Control (Inverters)
-By enabling MQTT in the config, GivTCP will publish directly to the nominated MQTT broker all inverter data. Data is published to "GivEnergy/<serial_number>/" by default or you can nominate a specific root topic by setting "MQTT_TOPIC" in the settings.
+| Control Function | Description |
+| ------------- | ------------- |
+| Plug and Go | When on, the vehicle starts charging as soon as it is plugged in. When off, charging starts from an RFID card or Charge Control |
+| Charge Control | Starts or stops charging. One of "Start" or "Stop" |
+| Charging Mode | One of "Grid", "Solar" or "Hybrid". Grid charges at Charge Limit regardless of the energy available. Solar charges only from excess solar (needs at least 1.4kW / 6A). Hybrid charges at 6A from the grid plus any excess solar on top |
+| Charge Limit | Maximum charging current, 6-32A |
+| Import Cap | Reduces charging current to keep grid import below this current. 0 = off |
+| Max Session Energy | Stops the session after this much energy (kWh). 0 = off |
 
-Control is also available using MQTT. By publishing data to the same MQTT broker as above you can trigger the control methods as per the above table.
+## GivTCP MQTT and REST Control
+By enabling MQTT in the config, GivTCP will publish all inverter data directly to the nominated MQTT broker. Data is published to `GivEnergy/<serial_number>/` by default, or you can nominate a specific root topic by setting `MQTT_TOPIC` in the settings.
+
+Control is also available using MQTT. By publishing to the same MQTT broker you can trigger the control functions below. The MQTT payload is the plain value, not JSON.
 
 Root topic for control is:
 
-"GivEnergy/control/<serial_number>/" - Default (note lower case "control")
+`GivEnergy/control/<serial_number>/` - Default (note lower case "control")
 
-"<MQTT_TOPIC>/control/<serial_number>/" - If MQTT_TOPIC is set
+`<MQTT_TOPIC>/control/<serial_number>/` - If `MQTT_TOPIC` is set
 
-| Function                | Description                                                                                                                                                                                               | REST URL                 | REST payload                                               | MQTT Topic              | MQTT Payload                                               |
-|-------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|------------------------------------------------------------|-------------------------|------------------------------------------------------------|
-| enableChargeTarget      | Sets   inverter to follow setChargeTarget value when charging from grid (will stop   charging when battery SOC= ChargeTarget)                                                                             | /enableChargeTarget      | {"state","enable"}                                         | enableChargeTarget      | enable                                                     |
-| disableChargeTarget     | Sets   inverter to ignore setChargeTarget value when charging from grid (will   continue to charge to 100% during ChargeSlot)                                                                             | /disableChargeTarget     | {"state","enable"}                                         | disableChargeTarget     | enable                                                     |
-| enableChargeSchedule    | Sets   the Charging schedule state, if disabled the battery will not charge as per   the schedule                                                                                                         | /enableChargeSchedule    | {"state","enable"}                                         | enableChargeSchedule    | enable                                                     |
-| enableDischargeSchedule | Sets   the Discharging schedule state, if disabled the battery will will ignore rhe   discharge schedule and discharge as per demand (similar to eco mode)                                                | /enableDischargeSchedule | {"state","enable"}                                         | enableDischargeSchedule | enable                                                     |
-| enableDischarge         | Enable/Disables Discharging to instantly pause discharging,   use 'enable' or 'disable'                                                                                                                   | /enableDischarge         | {"state","enable"}                                         | enableDischarge         | enable                                                     |
-| setChargeRate           | Sets the charge power as a percentage. 100% == 2.6kW                                                                                                                                                      | /setChargeRate           | {"chargeRate","100"}                                    | setChargeRate           | 100                                                        |
-| setDischargeRate        | Sets the discharge power as a percentage. 100% == 2.6kW                                                                                                                                                   | /setDischargeRate        | {"dischargeRate","100"}                                       | setDischargeRate        | 100                                                        |
-| setChargeTarget         | Sets   the Target charge SOC                                                                                                                                                                              | /setChargeTarget         | {"chargeToPercent":"50"}                                   | setChargeTarget         | 50                                                         |
-| setBatteryReserve       | Sets   the Battery Reserve discharge cut-off limit                                                                                                                                                        | /setBatteryReserve       | {"reservePercent":"5"}                                 | setBatteryReserve       | 5                                                          |
-| setChargeSlot1          | Sets   the time and target SOC of the first chargeslot. Times must be expressed in   hh:mm format. Enable flag show in the battery.api documentation is not needed   and chargeToPercent is optional       | /setChargeSlot1          | {"start":"01:00","finish":"04:00","chargeToPercent":"55"}    | setChargeSlot1          | {"start":"01:00","finish":"04:00","chargeToPercent":"55"}    |
-| setDischargeSlot1       | Sets   the time and target SOC of the first dischargeslot. Times must be expressed   in hh:mm format. Enable flag show in the battery.api documentation is not   needed and dischargeToPercent is optional | /setDischargeSlot1       | {"start":"01:00","finish":"04:00","dischargeToPercent":"55"} | setDischargeSlot1       | {"start":"01:00","finish":"04:00","dischargeToPercent":"55"} |
-| setDischargeSlot2       | Sets   the time and target SOC of the first dischargeslot. Times must be expressed   in hh:mm format. Enable flag show in the battery.api documentation is not   needed and dischargeToPercent is optional | /setDischargeSlot2       | {"start":"01:00","finish":"04:00","dischargeToPercent":"55"} | setDischargeSlot2       | {"start":"01:00","finish":"04:00","dischargeToPercent":"55"} |
-| setBatteryMode          | Sets   battery operation mode. Mode value must be one of Eco, Timed Demand or Timed Export                                                                                                                                        | /setBatteryMode          | {"mode":"Eco"}                                               | setBatteryMode          | 1                                                          |
-| setDateTime             | Sets   inverter time, format must be as define in payload                                                                                                                                                 | /setDateTime             | {"dateTime":"dd/mm/yyyy   hh:mm:ss"}                       | setDateTime             | "dd/mm/yyyy hh:mm:ss"                                      |
-| setBatteryPauseMode          | Sets   battery operation mode. Mode value must be one of "Disabled","PauseCharge","PauseDischarge" or "PauseBoth"                                                                                                                                         | /setBatteryPauseMode          | {"state":"Disabled"}                                               | setBatteryPauseMode          | 1
-| forceExport          | Forces battery to Export (discharge at Max power) for a given duration in Minutes. command must be "Cancel" or an integer value. Sending 0 will also call the cancel function                                                                                                                                         | /forceExport          | {"15"}                                               | forceExport          | 1
-| forceCharge          | Forces battery to charge for a given duration in Minutes. Command must be "Cancel" or an integer value. Sending 0 will also call the cancel function                                                                                                                                         | /forceCharge          | {"15"}                                               | forceCharge          | 1
-| tempPauseCharge          | Suspends charging for a for a given duration in Minutes. Command must be "Cancel" or an integer value. Sending 0 will also call the cancel function                                                                                                                                         | /tempPauseCharge          | {"15"}                                               | tempPauseCharge          | 1
-| tempPauseDischarge          | Suspends discharging for a given duration in Minutes. command must be "Cancel" or an integer value. Sending 0 will also call the cancel function                                                                                                                                         | /tempPauseDischarge          | {"15"}                                               | tempPauseDischarge          | 1
+The same controls are available as REST calls. Send a `POST` with a JSON body to `http://<host>:8099/REST1/<function>` (use `REST2`, `REST3`… for other inverters), or directly to the inverter's REST port (6345 for the first inverter).
 
+### Inverter
+
+| Function | Description | REST URL | REST payload | MQTT Topic | MQTT Payload |
+|---|---|---|---|---|---|
+| enableChargeTarget | When enabled, charging from the grid stops when the battery reaches the charge target. When disabled, it charges to 100% during the charge slot | `/enableChargeTarget` | `{"state":"enable"}` | `enableChargeTarget` | `enable` / `disable` |
+| enableChargeSchedule | Turns the charge schedule on or off. When off, the battery will not charge as per the schedule | `/enableChargeSchedule` | `{"state":"enable"}` | `enableChargeSchedule` | `enable` / `disable` |
+| enableDischargeSchedule | Turns the discharge schedule on or off. When off, the battery ignores the discharge schedule and discharges to meet demand (similar to Eco mode) | `/enableDischargeSchedule` | `{"state":"enable"}` | `enableDischargeSchedule` | `enable` / `disable` |
+| enableDischarge | Allows or prevents discharging, to pause discharging instantly | `/enableDischarge` | `{"state":"enable"}` | `enableDischarge` | `enable` / `disable` |
+| setEcoMode | Turns Eco mode on or off | `/setEcoMode` | `{"state":"enable"}` | `setEcoMode` | `enable` / `disable` |
+| setBatteryMode | Sets the battery operation mode: "Eco", "Eco (Paused)", "Timed Demand" or "Timed Export" | `/setBatteryMode` | `{"mode":"Eco"}` | `setBatteryMode` | `Eco` |
+| setBatteryPauseMode | Sets the battery pause mode: "Disabled", "PauseCharge", "PauseDischarge" or "PauseBoth". Applies during the pause slot | `/setBatteryPauseMode` | `{"state":"PauseCharge"}` | `setBatteryPauseMode` | `PauseCharge` |
+| setChargeRate | Sets the battery charge power in Watts | `/setChargeRate` | `{"chargeRate":"2500"}` | `setChargeRate` | `2500` |
+| setDischargeRate | Sets the battery discharge power in Watts | `/setDischargeRate` | `{"dischargeRate":"2500"}` | `setDischargeRate` | `2500` |
+| setChargeRateAC | Sets the AC charge power as a percentage of the inverter rating | `/setChargeRateAC` | `{"chargeRate":"75"}` | `setChargeRateAC` | `75` |
+| setDischargeRateAC | Sets the AC discharge power as a percentage of the inverter rating | `/setDischargeRateAC` | `{"dischargeRate":"75"}` | `setDischargeRateAC` | `75` |
+| setActivePowerRate | Sets the maximum inverter output as a percentage of its rating | — | — | `setActivePowerRate` | `100` |
+| setChargeTarget | Sets the target charge SOC | `/setChargeTarget` | `{"chargeToPercent":"80"}` | `setChargeTarget` | `80` |
+| setChargeTarget1-10 | Sets the target SOC for charge slot 1-10 | — | — | `setChargeTarget1` | `80` |
+| setDischargeTarget | Sets the SOC to stop discharging at for a discharge slot | `/setDischargeTarget` | `{"dischargeToPercent":"20","slot":"1"}` | `setDischargeTarget1-10` | `20` |
+| setBatteryReserve | Sets the minimum SOC the battery will discharge to | `/setBatteryReserve` | `{"reservePercent":"4"}` | `setBatteryReserve` | `4` |
+| setBatteryCutoff | Sets the SOC at which the battery stops discharging altogether | `/setBatteryCutoff` | `{"dischargeToPercent":"4"}` | `setBatteryCutoff` | `4` |
+| setChargeSlot1-3 | Sets the start and end time, and optionally the target SOC, of a charge slot. Times are hh:mm | `/setChargeSlot1` | `{"start":"01:00","finish":"04:00","chargeToPercent":"55"}` | — | — |
+| setChargeSlot | As above, with the slot number in the payload | `/setChargeSlot` | `{"start":"01:00","finish":"04:00","slot":"4"}` | — | — |
+| setChargeStart1-10 / setChargeEnd1-10 | Sets the start or end time of a charge slot | — | — | `setChargeStart1` | `01:00` |
+| setDischargeSlot1-3 | Sets the start and end time, and optionally the target SOC, of a discharge slot. Times are hh:mm | `/setDischargeSlot1` | `{"start":"16:00","finish":"19:00","dischargeToPercent":"20"}` | — | — |
+| setDischargeSlot | As above, with the slot number in the payload | `/setDischargeSlot` | `{"start":"16:00","finish":"19:00","slot":"4"}` | — | — |
+| setDischargeStart1-10 / setDischargeEnd1-10 | Sets the start or end time of a discharge slot | — | — | `setDischargeStart1` | `16:00` |
+| setPauseSlot | Sets the time window for Battery Pause Mode | `/setPauseSlot` | `{"start":"16:00","finish":"19:00"}` | `setPauseStart` / `setPauseEnd` | `16:00` |
+| forceCharge | Charges the battery for the given number of minutes. Send "Cancel" or 0 to stop | `/forceCharge` | `{"duration":"30"}` | `forceCharge` | `30` |
+| forceExport | Discharges the battery at maximum power for the given number of minutes. Send "Cancel" or 0 to stop | `/forceExport` | `{"duration":"30"}` | `forceExport` | `30` |
+| tempPauseCharge | Pauses charging for the given number of minutes. Send "Cancel" or 0 to stop | `/tempPauseCharge` | `{"duration":"30"}` | `tempPauseCharge` | `30` |
+| tempPauseDischarge | Pauses discharging for the given number of minutes. Send "Cancel" or 0 to stop | `/tempPauseDischarge` | `{"duration":"30"}` | `tempPauseDischarge` | `30` |
+| setDateTime | Sets the inverter date and time | `/setDateTime` | `{"dateTime":"dd/mm/yyyy hh:mm:ss"}` | `setDateTime` | `dd/mm/yyyy hh:mm:ss` |
+| syncDateTime | Sets the inverter date and time to the current time | `/syncDateTime` | `{}` | `syncDateTime` | (any value) |
+| enableRTC | Turns the inverter's Real Time Control setting on or off | — | — | `enableRTC` | `enable` / `disable` |
+| setBatteryCalibration | Starts or stops a battery calibration: "Off", "Start" or "Charge Only" | `/setBatteryCalibration` | `{"state":"Start"}` | `setBatteryCalibration` | `Start` |
+| switchRate | Switches the tariff GivTCP uses for cost tracking between day and night | `/switchRate` | `{"rate":"day"}` | `switchRate` | `day` / `night` |
+| rebootInverter | Restarts the inverter | `/reboot` | — | `rebootInverter` | (any value) |
+| rebootAddon | Restarts GivTCP | `/restart` | — | `rebootAddon` | (any value) |
+
+### Three-phase inverters
+
+| Function | Description | REST URL | REST payload | MQTT Topic | MQTT Payload |
+|---|---|---|---|---|---|
+| setForceCharge | Forces the battery to charge | `/setForceCharge` | `{"state":"enable"}` | `setForceCharge` | `enable` / `disable` |
+| setForceDischarge | Forces the battery to discharge | `/setForceDischarge` | `{"state":"enable"}` | `setForceDischarge` | `enable` / `disable` |
+| setACCharge | Allows the battery to charge from AC | `/setACCharge` | `{"state":"enable"}` | `setACCharge` | `enable` / `disable` |
+
+### EMS
+
+| Function | Description | REST URL | REST payload | MQTT Topic | MQTT Payload |
+|---|---|---|---|---|---|
+| setEmsPlant | Lets the EMS control the plant | `/setEmsPlant` | `{"state":"enable"}` | `setEmsPlant` | `enable` / `disable` |
+| setExportLimit | Sets the maximum plant export in Watts | `/setExportLimit` | `{"state":"3600"}` | `setExportLimit` | `3600` |
+| setExportTarget | Sets the SOC to stop exporting at for an export slot | `/setExportTarget` | `{"exportToPercent":"20","slot":"1"}` | `setExportTarget1-3` | `20` |
+| setExportSlot1-3 | Sets the start and end time of an export slot | `/setExportSlot1` | `{"start":"16:00","finish":"19:00"}` | `setExportStart1-3` / `setExportEnd1-3` | `16:00` |
+| setEMSChargeTarget1-3 | Sets the target SOC for an EMS charge slot | — | — | `setEMSChargeTarget1` | `80` |
+| setEMSChargeStart1-3 / setEMSChargeEnd1-3 | Sets the start or end time of an EMS charge slot | — | — | `setEMSChargeStart1` | `01:00` |
+| setEMSDischargeStart1-3 / setEMSDischargeEnd1-3 | Sets the start or end time of an EMS discharge slot | — | — | `setEMSDischargeStart1` | `16:00` |
+| setCarChargeBoost | Sets the EV charge boost power in Watts. Not yet supported: the givenergy-modbus library can't write this register, so the command returns an error | `/setCarChargeBoost` | `{"boost":"2500"}` | `setCarChargeBoost` | `2500` |
+
+### EV Charger (EVC)
+
+EVC control topics use the charger's serial number: `GivEnergy/control/<evc_serial_number>/`.
+
+| Function | Description | REST URL | REST payload | MQTT Topic | MQTT Payload |
+|---|---|---|---|---|---|
+| Plug and Go | Starts charging as soon as a vehicle is plugged in | `/setChargeMode` | `"enable"` | `chargeMode` | `enable` / `disable` |
+| Charge Control | Starts or stops charging | `/setChargeControl` | `{"mode":"Start"}` | `controlCharge` | `Start` / `Stop` |
+| Charging Mode | Sets the charging mode: "Grid", "Solar" or "Hybrid" | `/setChargingMode` | `{"state":"Solar"}` | `setChargingMode` | `Solar` |
+| Charge Limit | Sets the maximum charging current in Amps (6-32) | `/setCurrentLimit` | `{"current":"32"}` | `setCurrentLimit` | `32` |
+| Import Cap | Sets the grid import limit in Amps. 0 = off | `/setImportCap` | `{"current":"60"}` | `setImportCap` | `60` |
+| Max Session Energy | Sets the maximum energy per session in kWh. 0 = off | `/setMaxSessionEnergy` | `{"energy":"20"}` | `setMaxSessionEnergy` | `20` |
+| System Time | Sets the charger's date and time | — | — | `setSystemTime` | `dd/mm/yyyy hh:mm:ss` |
+
+### Reading data over REST
+
+| REST URL | Method | Description |
+|---|---|---|
+| `/getCache` | GET | Latest data for the inverter as JSON, without publishing it anywhere |
+| `/readData` | GET | Latest data, also published according to the output settings |
+| `/runAll` | GET | Latest data from the cache |
+| `/getEVCCache` | GET | Latest data from the EV charger |
+| `/settings` | GET / POST | Read or save GivTCP's settings (used by the config page) |

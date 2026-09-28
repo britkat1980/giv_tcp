@@ -228,7 +228,7 @@ class GivMQTT():
                 #wr.setPVInputMode(payload)
                 requestcommand(command,payload)
             elif command=="setCarChargeBoost":
-                payload['state']=str(message.payload.decode("utf-8"))
+                payload['boost']=str(message.payload.decode("utf-8"))   # write.setCarChargeBoost reads 'boost'
                 #wr.setCarChargeBoost(payload)
                 requestcommand(command,payload)
             elif command=="setBatteryCalibration":
@@ -645,6 +645,11 @@ class GivMQTT():
                 payload['slot']=3
             #wr.setExportTarget(payload)
                 requestcommand("setExportTarget",payload)
+            elif command in ("setEMSDischargeTarget1","setEMSDischargeTarget2","setEMSDischargeTarget3"):
+                # setDischargeTarget is EMS aware, so EMS slots use the same writer
+                payload['dischargeToPercent']=str(message.payload.decode("utf-8"))
+                payload['slot']=int(command[-1])
+                requestcommand("setDischargeTarget",payload)
             elif command=="setDischargeTarget1":
                 payload['dischargeToPercent']=str(message.payload.decode("utf-8"))
                 payload['slot']=1

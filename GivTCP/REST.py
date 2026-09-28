@@ -296,7 +296,7 @@ def setExpTarget():
 def setDischrgTarget():
     """Set Discharge target SOC by defining which target slot and SOC.
 
-    Payload: {'exportToPercent':'45', 'slot':'1'}
+    Payload: {'dischargeToPercent':'45', 'slot':'1'}
     """
     payload = request.get_json(silent=True, force=True)
     requestcommand("setDischargeTarget",payload)
@@ -359,6 +359,10 @@ def setCarBoost():
 
 @giv_api.route('/setExportLimit', methods=['POST'])
 def setExpLim():
+    """Set the EMS plant export power limit in watts
+
+    Payload: {'state':'3600'}
+    """
     payload = request.get_json(silent=True, force=True)
     requestcommand("setExportLimit",payload)
     return response("setExportLimit")
@@ -448,7 +452,7 @@ def setChrgSlot3():
 def setDischrgSlot():
     """Set Discharge schedule timeslots
 
-    Payload: {'start':'16:00','finish':'19:00','slot':'1", 'dischargeToPercent':'25' (optional)}
+    Payload: {'start':'16:00','finish':'19:00','slot':'1', 'dischargeToPercent':'25' (optional)}
     """
     payload = request.get_json(silent=True, force=True)
     requestcommand("setDischargeSlot",payload)
@@ -458,7 +462,7 @@ def setDischrgSlot():
 def setDischrgSlot1():
     """Set Discharge schedule timeslot 1
 
-    Payload: {'start':'16:00','finish':'19:00", 'dischargeToPercent':'25' (optional)}
+    Payload: {'start':'16:00','finish':'19:00', 'dischargeToPercent':'25' (optional)}
     """
     payload = request.get_json(silent=True, force=True)
     payload['slot']=1
@@ -470,7 +474,7 @@ def setDischrgSlot1():
 def setDischrgSlot2():
     """Set Discharge schedule timeslot 2
 
-    Payload: {'start':'16:00','finish':'19:00", 'dischargeToPercent':'25' (optional)}
+    Payload: {'start':'16:00','finish':'19:00', 'dischargeToPercent':'25' (optional)}
     """
     payload = request.get_json(silent=True, force=True)
     payload['slot']=2
@@ -480,9 +484,9 @@ def setDischrgSlot2():
 
 @giv_api.route('/setDischargeSlot3', methods=['POST'])
 def setDischrgSlot3():
-    """Set Discharge schedule timeslot 1
+    """Set Discharge schedule timeslot 3
 
-    Payload: {'start':'16:00','finish':'19:00", 'dischargeToPercent':'25' (optional)}
+    Payload: {'start':'16:00','finish':'19:00', 'dischargeToPercent':'25' (optional)}
     """
 
     payload = request.get_json(silent=True, force=True)
@@ -637,7 +641,7 @@ def stEcoMde():
 def setBattPausMode():
     """Sets the battery pause mode setting, (requires pauseslot to be set)
 
-    Payload: {'state':'enable' or 'disable'}
+    Payload: {'state':'Disabled' or 'PauseCharge' or 'PauseDischarge' or 'PauseBoth'}
     """
     payload = request.get_json(silent=True, force=True)
     requestcommand("setBatteryPauseMode",payload)
@@ -659,7 +663,7 @@ def setDate():
 def syncDate():
     """Syncs the inverter system time and date with Container time
 
-    Payload: {'dateTime':'%d/%m/%Y %H:%M:%S'}
+    Payload: none needed
     """
     payload = request.get_json(silent=True, force=True)
     requestcommand("syncDateTime",payload)
@@ -670,7 +674,7 @@ def syncDate():
 def swRates():
     """Sets dynamic tariff rate
 
-    Payload: {'rate':'day' or "night'}
+    Payload: {'rate':'day' or 'night'}
     """
     payload = request.get_json(silent=True, force=True)
     requestcommand("switchRate",payload['rate'])
@@ -679,7 +683,7 @@ def swRates():
 
 @giv_api.route('/setImportCap', methods=['POST'])
 def impCap():
-    """Sets gird import cap for EVC charging in [A]
+    """Sets grid import cap for EVC charging in [A]
 
     Payload: {'current':'60'}
     """
@@ -699,27 +703,27 @@ def currLimit():
 def frceDischarge():
     """Enables Force Discharge on Three Phase Inverters
 
-    Payload: {'state':'enabled' or "disabled'}
+    Payload: {'state':'enable' or 'disable'}
     """
     payload = request.get_json(silent=True, force=True)
-    requestcommand("setForceDischarge",payload['state'])
+    requestcommand("setForceDischarge",payload)
     return response("setForceDischarge")
 
 @giv_api.route('/setForceCharge', methods=['POST'])
 def frceCharge():
     """Enables Force Charge on Three Phase Inverters
 
-    Payload: {'state':'enabled' or "disabled'}
+    Payload: {'state':'enable' or 'disable'}
     """
     payload = request.get_json(silent=True, force=True)
-    requestcommand("setForceCharge",payload['state'])
+    requestcommand("setForceCharge",payload)
     return response("setForceCharge")
 
 @giv_api.route('/setBatteryCalibration', methods=['POST'])
 def setCalib():
     """Trigger or stop a Battery Calibration
 
-    Payload: {'state':'off' or 'start'}
+    Payload: {'state':'Off' or 'Start' or 'Charge Only'}
     """
     payload = request.get_json(silent=True, force=True)
     requestcommand("setBatteryCalibration",payload)
@@ -729,17 +733,17 @@ def setCalib():
 def setSCChrg():
     """Enables AC Charge on Three Phase Inverters
 
-    Payload: {'state':'enabled' or "disabled'}
+    Payload: {'state':'enable' or 'disable'}
     """
     payload = request.get_json(silent=True, force=True)
-    requestcommand("setACCharge",payload['state'])
+    requestcommand("setACCharge",payload)
     return response("setACCharge")
 
 @giv_api.route('/setEmsPlant', methods=['POST'])
 def setEMSPlnt():
-    """Enables AC Charge on Three Phase Inverters
+    """Enables or disables EMS control of the plant
 
-    Payload: {'state':'enabled' or "disabled'}
+    Payload: {'state':'enable' or 'disable'}
     """
     payload = request.get_json(silent=True, force=True)
     requestcommand("setEmsPlant",payload)
@@ -747,15 +751,19 @@ def setEMSPlnt():
 
 @giv_api.route('/setChargeControl', methods=['POST'])
 def chrgeControl():
-    """starts or stops the EVC charger
+    """Starts or stops the EVC charger
 
-    Payload: {'mode':'start' or "stop'}
+    Payload: {'mode':'Start' or 'Stop'}
     """
     payload = request.get_json(silent=True, force=True)
     return evc.setChargeControl(payload['mode'])
 
 @giv_api.route('/setChargeMode', methods=['POST'])
 def chrgMode():
+    """Turns EVC Plug and Go on or off
+
+    Payload: "enable" or "disable"
+    """
     payload = request.get_json(silent=True, force=True)
     return evc.setChargeMode(payload)
 
@@ -763,7 +771,7 @@ def chrgMode():
 def chrgingMode():
     """Sets the Charging Mode for EVC
 
-    Payload: {'state':'enable' or 'disable'}
+    Payload: {'state':'Grid' or 'Hybrid' or 'Solar'}
     """
     payload = request.get_json(silent=True, force=True)
     return evc.setChargingMode(payload['state'])

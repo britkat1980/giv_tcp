@@ -309,6 +309,11 @@ class HAMQTT():
                 tempObj['min']=4
                 tempObj['max']=100
                 tempObj['mode']="slider"
+            elif "export_power_limit" in str(item).lower():   #EMS plant export limit (checked before the EVC "limit" match below)
+                tempObj['unit_of_meas']="W"
+                tempObj['min']=0
+                tempObj['max']=65535
+                tempObj['mode']="box"
             elif "limit" in str(item).lower():   #if EVC current
                 tempObj['unit_of_meas']="A"
                 tempObj['min']=6
