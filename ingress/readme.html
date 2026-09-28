@@ -15,26 +15,10 @@
            $("#includeHead").load("header.html");
         });
      </script>
-     <script type="text/javascript"> 
-       async function updateurl() 
-       { 
-         await fetch('hostip.json').then(response => {
-             return response.json();
-         }).then(json => {
-             this.n=json;
-         })
-       document.getElementById("config").innerHTML = "<a href=config.html>Config Page</a>";
-       document.getElementById("readme").innerHTML = "<a href=readme.html>Readme Page</a>";
-       document.getElementById("dashboard").innerHTML = "<a href=http://" + n + ":8099/dashboard target=\"_blank\">Dashboard</a>";   
-       } 
-       </script>
 </head>
 
 <body>
     <div id="includeHead"></div>
-    <script type="text/javascript">
-        updateurl();
-      </script>
     <div class="doc">
     <nav class="card toc" id="toc"><div class="toc-title">Contents</div><ul></ul></nav>
     <div class="card">

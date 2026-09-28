@@ -1,4 +1,4 @@
-/* Styles for the static ingress pages (index, readme), matching the config page:
+/* Page styles for the static ingress pages (index, readme), matching the config page:
    Vuetify cards on the base.css background with the #4fbba9 accent.
    Kept separate from main.css, which the config page also loads. */
 :root {
@@ -34,7 +34,7 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* ---- Cards (Vuetify v-card look) ---- */
+/* ---- Card (Vuetify v-card look); the nav cards live in header.html ---- */
 .card {
     display: flex;
     flex-direction: column;
@@ -43,53 +43,6 @@ body {
     border-radius: 4px;
     box-shadow: var(--shadow-1);
 }
-.card-title {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px 16px 4px;
-    font-size: 1.25rem;
-    font-weight: 500;
-    letter-spacing: .0125em;
-}
-.card-title svg { width: 28px; height: 28px; fill: var(--accent); flex: none; }
-.card-text {
-    flex: 1;
-    padding: 4px 16px 16px;
-    font-size: .875rem;
-    color: var(--card-sub);
-}
-.card-actions { padding: 8px 16px 16px; }
-.card .btn {
-    display: inline-block;
-    margin: 0;
-    padding: 0 16px;
-    height: 36px;
-    line-height: 36px;
-    border-radius: 4px;
-    background: var(--accent);
-    color: #fff;
-    font-size: .875rem;
-    font-weight: 500;
-    letter-spacing: .0892857143em;
-    text-transform: uppercase;
-    text-decoration: none;
-    box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
-}
-.card .btn:hover { text-decoration: none; filter: brightness(1.08); }
-
-/* ---- Index: link cards ---- */
-.cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 24px;
-    max-width: 1000px;
-    margin: 0 auto 48px;
-    padding: 0 16px;
-}
-.cards .card { transition: box-shadow .2s; }
-.cards .card:hover { box-shadow: var(--shadow-8); }
-
 /* ---- Readme: long-form document in a card ---- */
 .doc {
     max-width: 1200px;   /* wider than the index cards: the control table has six columns */
