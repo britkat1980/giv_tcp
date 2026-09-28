@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from giverrors import errDetail
 from givenergy_modbus.model.inverter import Model,SinglePhaseInverter
+from givenergy_modbus.model.inverter import WorkMode, Status
+from givenergy_modbus.model.ems import EmsInverterStatus, MAX_MANAGED_INVERTERS
+from givenergy_modbus.model.meter import MeterStatus
+from givenergy_modbus.model.battery import State
 from givenergy_modbus.model.plant import Plant, PlantCapabilities
 from givenergy_modbus.model.register import HR
 from givenergy_modbus.exceptions import CommunicationError, RefreshPartiallySucceeded
@@ -346,18 +350,24 @@ def getInvModel(plant: Plant):
         GEInv=plant.gateway
     else:
         GEInv=plant.inverter
-    inverterModel.model=GEInv.model
-    #inverterModel.generation=GEInv.generation
-    #inverterModel.phase=GEInv.num_phases
-    inverterModel.invmaxrate=GEInv.inverter_max_power
-    inverterModel.batmaxrate=GEInv.battery_max_power
-    inverterModel.batterycapacity=GEInv.battery_capacity_kwh        #for HV this is reported Ah times nom voltage (100%)
+    if plant.capabilities.is_gateway:
+        # givenergy-modbus v2's Gateway model only covers the IR 1600+ block (no model/power/capacity),
+        # so take the model from capabilities and max inverter power from the holding-register view
+        inverterModel.model=Model.GATEWAY
+        inverterModel.invmaxrate=plant.inverter.inverter_max_power
+    else:
+        inverterModel.model=GEInv.model
+        #inverterModel.generation=GEInv.generation
+        #inverterModel.phase=GEInv.num_phases
+        inverterModel.invmaxrate=GEInv.inverter_max_power
+        inverterModel.batmaxrate=GEInv.battery_max_power
+        inverterModel.batterycapacity=GEInv.battery_capacity_kwh        #for HV this is reported Ah times nom voltage (100%)
     # Calc max charge rate
     if plant.capabilities.is_three_phase:
         inverterModel.batmaxrate= 25 * 80 * batteryCount(plant)
     elif plant.capabilities.is_gateway:
-        inverterModel.batmaxrate=6000*int(GEInv.parallel_aio_num)
-        inverterModel.batterycapacity=13.5*int(GEInv.parallel_aio_num)
+        inverterModel.batmaxrate=6000*int(GEInv.parallel_aio_num or 0)
+        inverterModel.batterycapacity=13.5*int(GEInv.parallel_aio_num or 0)
     elif inverterModel.model in [Model.HYBRID_GEN4,Model.ALL_IN_ONE]:
         inverterModel.batmaxrate=6000
     return inverterModel
@@ -398,7 +408,7 @@ def getRaw(plant: Plant):
         raw['batteries']=bat
     if Meters:
         for m in Meters:
-            meters['Meter_ID_'+str(m)]=Meters[m].getall()
+            meters['Meter_ID_'+str(m)]=Meters[m].model_dump()
         raw['meters']=meters
     
     return raw
@@ -569,7 +579,7 @@ def validateTimeslot(slot,key,multi_output_old):
         output = slot.isoformat()
     elif multi_output_old:
         logger.debug("Suprious Timeslot data: using last good data")
-        output=multi_output_old['Timeslots'][key]
+        output=multi_output_old.get('Timeslots',{}).get(key,"00:00:00")
     else:
         logger.debug("Suprious Timeslot data: setting to Midnight")
         output="00:00:00"
@@ -673,6 +683,9 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
         GEInv=plant.gateway
 
     logger.debug("Getting mode control figures")
+    # On 3PH the discharge enable is HR1122 (force_discharge_enable in givenergy-modbus v2); v2's
+    # enable_discharge is the single-phase HR59, which the old library remapped to HR1122 for 3PH
+    enable_discharge = GEInv.force_discharge_enable if is3PH else GEInv.enable_discharge
     # Get Control Mode registers
     if is3PH:
         if GEInv.force_charge_enable==True and GEInv.ac_charge_enable==True:
@@ -701,8 +714,8 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
             batPowerMode="disable"    #Default to off
         controlmode['Eco_Mode'] = batPowerMode
 
-    if not GEInv.enable_discharge == None:
-        if GEInv.enable_discharge == True:
+    if not enable_discharge == None:
+        if enable_discharge == True:
             discharge_schedule = "enable"
         else:
             discharge_schedule = "disable"
@@ -777,19 +790,19 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
     logger.debug("Calculating Mode...")
     # Calc Mode
 
-    if GEInv.battery_power_mode == 1 and GEInv.enable_discharge == False and GEInv.battery_soc_reserve != 100:
+    if GEInv.battery_power_mode == 1 and enable_discharge == False and GEInv.battery_soc_reserve != 100:
         # Dynamic r27=1 r110=4 r59=0
         mode = "Eco"
-    elif GEInv.battery_power_mode == 1 and GEInv.enable_discharge == False and GEInv.battery_soc_reserve == 100:
+    elif GEInv.battery_power_mode == 1 and enable_discharge == False and GEInv.battery_soc_reserve == 100:
         # Dynamic r27=1 r110=4 r59=0
         mode = "Eco (Paused)"
-    elif GEInv.battery_power_mode == 1 and GEInv.enable_discharge == True:
+    elif GEInv.battery_power_mode == 1 and enable_discharge == True:
         # Storage (demand) r27=1 r110=100 r59=1
         mode = "Timed Demand"
-    elif GEInv.battery_power_mode == 0 and GEInv.enable_discharge == True:
+    elif GEInv.battery_power_mode == 0 and enable_discharge == True:
         # Storage (export) r27=0 r59=1
         mode = "Timed Export"
-    elif GEInv.battery_power_mode == 0 and GEInv.enable_discharge == False:
+    elif GEInv.battery_power_mode == 0 and enable_discharge == False:
         # Dynamic r27=1 r110=4 r59=0
         mode = "Export (Paused)"
     else:
@@ -800,7 +813,7 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
     controlmode['Mode'] = mode
     
     if plant.capabilities.is_three_phase:
-        controlmode['Battery_Power_Cutoff'] = GEInv.battery_power_cutoff
+        controlmode['Battery_Power_Cutoff'] = GEInv.battery_reserve_soc      # v2 name for HR1078 (battery_power_cutoff is deprecated)
     else:
         controlmode['Battery_Power_Cutoff'] = battery_cutoff
         controlmode['Battery_Power_Reserve'] = battery_reserve
@@ -1093,7 +1106,8 @@ def processInverterInfo(plant: Plant):
 
         energy_total_output['Export_Energy_Total_kWh'] = GEInv.e_grid_out_total
         energy_total_output['Import_Energy_Total_kWh'] = GEInv.e_grid_in_total
-        energy_total_output['Invertor_Energy_Total_kWh'] = GEInv.e_pv_generation_total
+        # givenergy-modbus v2 routes IR45/46 to e_inverter_out_total on AC/AIO (e_pv_generation_total is None there)
+        energy_total_output['Invertor_Energy_Total_kWh'] = GEInv.e_pv_generation_total if GEInv.e_pv_generation_total is not None else GEInv.e_inverter_out_total
         energy_total_output['PV_Energy_Total_kWh'] = GEInv.e_pv_total
         energy_total_output['AC_Charge_Energy_Total_kWh'] = GEInv.e_inverter_in_total
 
@@ -1132,8 +1146,8 @@ def processInverterInfo(plant: Plant):
 
 ### Does this neeed to be renamed from e_load_day to e_interter_in_day??
         energy_today_output['AC_Charge_Energy_Today_kWh'] = GEInv.e_ac_charge_today
-        energy_today_output['Invertor_Energy_Today_kWh'] = GEInv.e_pv_generation_today
-        
+        energy_today_output['Invertor_Energy_Today_kWh'] = GEInv.e_pv_generation_today if GEInv.e_pv_generation_today is not None else GEInv.e_inverter_out_today
+
         # Calculate Self Consumption and Load to avoid rounding errors
         today_self = max(0,round(energy_today_output['PV_Energy_Today_kWh'], 2)-round(energy_today_output['Export_Energy_Today_kWh'], 2))
         # Calculate Load to avoid rounding errors
@@ -1458,107 +1472,79 @@ def processInverterInfo(plant: Plant):
     return multi_output
 
 def processEMSInfo(plant: Plant):
+    # givenergy-modbus v2: plant.ems holds the EMS block (HR/IR 2040+). Identity values (serial, firmware,
+    # time, export limit) come from the HR(0-60) bank, which v2 polls for EMS, via the inverter view over
+    # the same register cache. IR(0-60) is not polled for EMS, so there are no inverter-style energy totals
     try:
         multi_output={}
         GEInv=plant.ems
+        GEHR=plant.inverter
+
+        regCacheStack=GivLUT.get_regcache()
+        multi_output_old=regCacheStack[-1] if regCacheStack else {}
+
+        def enumName(enum,value):
+            # v2 EMS model stores enums as raw values (use_enum_values=True)
+            if value is None:
+                return None
+            try:
+                return enum(value).name.capitalize()
+            except ValueError:
+                return str(value)
 
         ems={}
-        ems['status']=GEInv.status.name.capitalize()
+        ems['status']=enumName(Status,GEInv.ems_status)
+        ems['Plant_Status']=enumName(Status,GEInv.plant_status)
         ems['Inverter_Count']=GEInv.inverter_count
         ems['Meter_Count']=GEInv.meter_count
         ems['Car_Charge_Count']=GEInv.expected_car_charger_count
-        #ems['Plant_Status']=GEInv.plant_status.name.capitalize()  # Is this mode?
-        ems['Serial_Number']=GEInv.getsn()
-        ems['Invertor_Type'] = GEInv.model.name.capitalize()
-        ems['Invertor_Firmware']=GEInv.firmware_version
-        ems['Invertor_Time']=GEInv.system_time.replace(tzinfo=GivLUT.timezone).isoformat()
+        ems['Serial_Number']=plant.inverter_serial_number
+        ems['Invertor_Type'] = plant.capabilities.device_type.name.capitalize()
+        ems['Invertor_Firmware']=GEHR.firmware_version
+        if GEHR.system_time:
+            ems['Invertor_Time']=GEHR.system_time.replace(tzinfo=GivLUT.timezone).isoformat()
         ems['Remaining_Battery_Wh']=GEInv.remaining_battery_wh
         ems['Invertor_Serial_Number']=plant.inverter_serial_number
-        ems['Export_Limit']=GEInv.grid_port_max_power_output
-        
+        ems['Export_Limit']=GEHR.grid_port_max_power_output
+
         inverters={}
-        if GEInv.inverter_1_serial_number:
-            inv1={}
-            inv1['Power']=GEInv.inverter_1_power
-            inv1['SOC']=GEInv.inverter_1_soc
-            inv1['Temperature']=GEInv.inverter_1_temp
-            inv1['Serial_Number']=GEInv.inverter_1_serial_number
-            inv1['status']=GEInv.inverter_1_status
-            inverters[GEInv.inverter_1_serial_number]=inv1
-
-        if GEInv.inverter_2_serial_number:
-            inv2={}
-            inv2['Power']=GEInv.inverter_2_power
-            inv2['SOC']=GEInv.inverter_2_soc
-            inv2['Temperature']=GEInv.inverter_2_temp
-            inv2['Serial_Number']=GEInv.inverter_2_serial_number
-            inv2['status']=GEInv.inverter_2_status
-            inverters[GEInv.inverter_2_serial_number]=inv2
-
-        if GEInv.inverter_3_serial_number:
-            inv3={}
-            inv3['Power']=GEInv.inverter_3_power
-            inv3['SOC']=GEInv.inverter_3_soc
-            inv3['Temperature']=GEInv.inverter_3_temp
-            inv3['Serial_Number']=GEInv.inverter_3_serial_number
-            inv3['status']=GEInv.inverter_3_status
-            inverters[GEInv.inverter_3_serial_number]=inv3
-        
-        if GEInv.inverter_4_serial_number:
-            inv4={}
-            inv4['Power']=GEInv.inverter_4_power
-            inv4['SOC']=GEInv.inverter_4_soc
-            inv4['Temperature']=GEInv.inverter_4_temp
-            inv4['Serial_Number']=GEInv.inverter_4_serial_number
-            inv4['status']=GEInv.inverter_4_status
-            inverters[GEInv.inverter_4_serial_number]=inv4
-
+        for i in range(1,MAX_MANAGED_INVERTERS+1):
+            serial=getattr(GEInv,'inverter_'+str(i)+'_serial_number')
+            serial=serial.strip("\x00 ") if serial else None
+            if not serial:
+                continue
+            inv={}
+            inv['Power']=getattr(GEInv,'inverter_'+str(i)+'_power')
+            inv['SOC']=getattr(GEInv,'inverter_'+str(i)+'_soc')
+            inv['Temperature']=getattr(GEInv,'inverter_'+str(i)+'_temp')
+            inv['Serial_Number']=serial
+            # Raw EMS slot status code is undocumented; publish the lib's suspected label where it knows it
+            suspected=getattr(GEInv,'inverter_'+str(i)+'_suspected_status')
+            inv['status']=enumName(EmsInverterStatus,suspected) if suspected is not None else getattr(GEInv,'inverter_'+str(i)+'_status')
+            inverters[serial]=inv
 
         power_output={}
         power_output['Grid_Power']=GEInv.grid_meter_power
         power_output['Calculated_Load_Power']=GEInv.calc_load_power
         power_output['Measured_Load_Power']=GEInv.measured_load_power
         power_output['Generation_Load_Power']=GEInv.total_generation_load_power
-        power_output['Total_Power']=GEInv.p_inverter_active
         power_output['Battery_Power']=GEInv.total_battery_power
-        power_output['Other_Battery_Power']=GEInv.other_battery_power        
+        power_output['Other_Battery_Power']=GEInv.other_battery_power
 
         energy={}
         energy_total_output = {}
         energy_today_output = {}
-        energy_total_output['Generation_Energy_Total_kWh']=GEInv.e_generation_total
-        energy_total_output['Inverter_Out_Energy_Total_kWh']=GEInv.e_pv_generation_total
-        energy_total_output['Inverter_In_Energy_Total_kWh']=GEInv.e_inverter_in_total
-        energy_total_output['Export_Energy_Total_kWh']=GEInv.e_grid_out_total
-        energy_total_output['Import_Energy_Total_kWh']=GEInv.e_grid_in_total
-        
-        energy_today_output['Export_Energy_Today_kWh']=GEInv.e_grid_out_day
-        energy_today_output['Import_Energy_Today_kWh']=GEInv.e_grid_in_day
-        energy_today_output['Inverter_In_Energy_Today_kWh']=GEInv.e_ac_charge_today
-        energy_today_output['Inverter_Out_Energy_Today_kWh']=GEInv.e_inverter_out_today
-        energy_today_output['Generation_Energy_Today_kWh']=GEInv.e_generation_day
-        
+        if GEInv.e_active_generation_total is not None:
+            energy_total_output['Generation_Energy_Total_kWh']=GEInv.e_active_generation_total
 
         meter={}
-        meter['Meter_1_Power']=GEInv.meter_1_power
-        meter['Meter_2_Power']=GEInv.meter_2_power
-        meter['Meter_3_Power']=GEInv.meter_3_power
-        meter['Meter_4_Power']=GEInv.meter_4_power
-        meter['Meter_5_Power']=GEInv.meter_5_power
-        meter['Meter_6_Power']=GEInv.meter_6_power
-        meter['Meter_7_Power']=GEInv.meter_7_power
-        meter['Meter_8_Power']=GEInv.meter_8_power
-        meter['Meter_1_Status']=GEInv.meter_1_status
-        meter['Meter_2_Status']=GEInv.meter_2_status
-        meter['Meter_3_Status']=GEInv.meter_3_status
-        meter['Meter_4_Status']=GEInv.meter_4_status
-        meter['Meter_5_Status']=GEInv.meter_5_status
-        meter['Meter_6_Status']=GEInv.meter_6_status
-        meter['Meter_7_Status']=GEInv.meter_7_status
-        meter['Meter_8_Status']=GEInv.meter_8_status
+        for i in range(1,9):
+            meter['Meter_'+str(i)+'_Power']=getattr(GEInv,'meter_'+str(i)+'_power')
+        for i in range(1,9):
+            meter['Meter_'+str(i)+'_Status']=enumName(MeterStatus,getattr(GEInv,'meter_'+str(i)+'_status'))
 
         controlmode = {}
-        #controlmode['Plant_Control']=GEInv.enable_plant_control
+        controlmode['Plant_Control']="enable" if GEInv.plant_enabled else "disable"
         controlmode['EMS_Discharge_Target_SOC_1']=GEInv.discharge_target_1
         controlmode['EMS_Discharge_Target_SOC_2']=GEInv.discharge_target_2
         controlmode['EMS_Discharge_Target_SOC_3']=GEInv.discharge_target_3
@@ -1568,31 +1554,21 @@ def processEMSInfo(plant: Plant):
         controlmode['Export_Target_SOC_1']=GEInv.export_target_1
         controlmode['Export_Target_SOC_2']=GEInv.export_target_2
         controlmode['Export_Target_SOC_3']=GEInv.export_target_3
-        controlmode['Car_Charge_Mode']=GivLUT.car_charge_mode[GEInv.car_charge_mode]
+        controlmode['Export_Power_Limit']=GEInv.export_power_limit
+        mode=GEInv.car_charge_mode
+        controlmode['Car_Charge_Mode']=GivLUT.car_charge_mode[mode] if mode is not None and 0<=mode<len(GivLUT.car_charge_mode) else mode
         controlmode['Car_Charge_Boost']=GEInv.car_charge_boost
         controlmode['Plant_Charge_Compensation']=GEInv.plant_charge_compensation
         controlmode['Plant_Discharge_Compensation']=GEInv.plant_discharge_compensation
-        
+
         timeslots = {}
         logger.debug("Getting TimeSlot data")
-        timeslots['EMS_Discharge_start_time_slot_1'] = GEInv.discharge_slot_1.start.isoformat()
-        timeslots['EMS_Discharge_end_time_slot_1'] = GEInv.discharge_slot_1.end.isoformat()
-        timeslots['EMS_Discharge_start_time_slot_2'] = GEInv.discharge_slot_2.start.isoformat()
-        timeslots['EMS_Discharge_end_time_slot_2'] = GEInv.discharge_slot_2.end.isoformat()
-        timeslots['EMS_Discharge_start_time_slot_3'] = GEInv.discharge_slot_3.start.isoformat()
-        timeslots['EMS_Discharge_end_time_slot_3'] = GEInv.discharge_slot_3.end.isoformat()
-        timeslots['EMS_Charge_start_time_slot_1'] = GEInv.charge_slot_1.start.isoformat()
-        timeslots['EMS_Charge_end_time_slot_1'] = GEInv.charge_slot_1.end.isoformat()
-        timeslots['EMS_Charge_start_time_slot_2'] = GEInv.charge_slot_2.start.isoformat()
-        timeslots['EMS_Charge_end_time_slot_2'] = GEInv.charge_slot_2.end.isoformat()
-        timeslots['EMS_Charge_start_time_slot_3'] = GEInv.charge_slot_3.start.isoformat()
-        timeslots['EMS_Charge_end_time_slot_3'] = GEInv.charge_slot_3.end.isoformat()
-        timeslots['Export_start_time_slot_1'] = GEInv.export_slot_1.start.isoformat()
-        timeslots['Export_end_time_slot_1'] = GEInv.export_slot_1.end.isoformat()
-        timeslots['Export_start_time_slot_2'] = GEInv.export_slot_2.start.isoformat()
-        timeslots['Export_end_time_slot_2'] = GEInv.export_slot_2.end.isoformat()
-        timeslots['Export_start_time_slot_3'] = GEInv.export_slot_3.start.isoformat()
-        timeslots['Export_end_time_slot_3'] = GEInv.export_slot_3.end.isoformat()
+        for prefix,attr in (('EMS_Discharge','discharge_slot_'),('EMS_Charge','charge_slot_'),('Export','export_slot_')):
+            for i in range(1,4):
+                slot=getattr(GEInv,attr+str(i))
+                for end in ('start','end'):
+                    key=prefix+'_'+end+'_time_slot_'+str(i)
+                    timeslots[key]=validateTimeslot(getattr(slot,end) if slot else None,key,multi_output_old)
 
         if GiV_Settings.Print_Raw_Registers:
             multi_output['raw'] = getRaw(plant)
@@ -1602,13 +1578,14 @@ def processEMSInfo(plant: Plant):
         multi_output['Inverters']=inverters
         multi_output['Control']=controlmode
         multi_output['Timeslots']=timeslots
-        multi_output[GEInv.serial_number]=ems
+        multi_output[plant.inverter_serial_number]=ems
         energy['Today']=energy_today_output
         energy['Total']=energy_total_output
         multi_output['Energy']=energy
     except KeyError as e:
         missing_key = e.args[0] if e.args else None
-        logger.error("Key Error getting Battery Data: missing key "+repr(missing_key)+" - "+errDetail())
+        logger.error("Key Error getting EMS Data: missing key "+repr(missing_key)+" - "+errDetail())
+        return None
     except Exception:
         logger.error("Error processing EMS data: " + errDetail())
         return None
@@ -1617,6 +1594,9 @@ def processEMSInfo(plant: Plant):
 def processGatewayInfo(plant: Plant):
     try:
         GEInv=plant.gateway
+        # givenergy-modbus v2's Gateway model only covers the IR 1600+ block. Holding-register values
+        # (time, limits, export limit) come from the inverter view over the same register cache
+        GEHR=plant.inverter
         inverterModel=InvType
         inverterModel=getInvModel(plant)
 
@@ -1629,17 +1609,18 @@ def processGatewayInfo(plant: Plant):
 
         multi_output={}
         gateway={}
-        gateway['Invertor_Type'] = GEInv.model.name.capitalize()
+        gateway['Invertor_Type'] = Model.GATEWAY.name.capitalize()
         gateway['Invertor_Serial_Number']=plant.inverter_serial_number
         #gateway['Invertor_Firmware']=GEInv.firmware_version
         gateway['Gateway_Software_Version']=GEInv.software_version
         gateway['Parallel_Total_AIO_Number']=GEInv.parallel_aio_num
         gateway['Parallel_Total_AIO_Online_Number']=GEInv.parallel_aio_online_num
-        gateway['Gateway_State']=GEInv.aio_state.name.capitalize()
-        gateway['Gateway_Mode']=GEInv.work_mode.name.replace("_"," ").capitalize()
-        gateway['Export_Limit']=GEInv.grid_port_max_power_output
+        # v2 Gateway model stores enums as raw values (use_enum_values=True)
+        gateway['Gateway_State']=State(GEInv.aio_state).name.capitalize()
+        gateway['Gateway_Mode']=WorkMode(GEInv.work_mode).name.replace("_"," ").capitalize()
+        gateway['Export_Limit']=GEHR.grid_port_max_power_output
         gateway['Battery_Capacity_kWh'] = inverterModel.batterycapacity
-        gateway['Invertor_Time']=GEInv.system_time.replace(tzinfo=GivLUT.timezone).isoformat()
+        gateway['Invertor_Time']=GEHR.system_time.replace(tzinfo=GivLUT.timezone).isoformat()
         gateway['Invertor_Max_Inv_Rate'] = inverterModel.invmaxrate
         gateway['Invertor_Max_Bat_Rate'] = inverterModel.batmaxrate
 
@@ -1669,8 +1650,8 @@ def processGatewayInfo(plant: Plant):
         if GEInv.parallel_aio_online_num>1:
             controlmode=getControls(plant,regCacheStack,inverterModel,multi_output_old)
             #Use same approach as 3PH to generate the (dis)charge Rate controls
-            controlmode['Battery_Discharge_Rate']=int(inverterModel.batmaxrate*(GEInv.battery_discharge_limit_ac/100))
-            controlmode['Battery_Charge_Rate']=int(inverterModel.batmaxrate*(GEInv.battery_charge_limit_ac/100))
+            controlmode['Battery_Discharge_Rate']=int(inverterModel.batmaxrate*(GEHR.battery_discharge_limit_ac/100))
+            controlmode['Battery_Charge_Rate']=int(inverterModel.batmaxrate*(GEHR.battery_charge_limit_ac/100))
             logger.debug("Getting TimeSlot data")
             res = {}
             res=getTimeslots(plant, multi_output_old)
@@ -1818,8 +1799,8 @@ def processGatewayInfo(plant: Plant):
         energy_today_output['PV_Energy_Today_kWh']=GEInv.e_pv_today
         energy_today_output['Import_Energy_Today_kWh']=GEInv.e_grid_import_today
         energy_today_output['Load_Energy_Today_kWh']=GEInv.e_load_today
-        energy_today_output['Battery_Charge_Energy_Today_kWh']=GEInv.e_battery_charge_today_alt1
-        energy_today_output['Battery_Discharge_Energy_Today_kWh']=GEInv.e_battery_discharge_today_alt1
+        energy_today_output['Battery_Charge_Energy_Today_kWh']=GEInv.e_battery_charge_today
+        energy_today_output['Battery_Discharge_Energy_Today_kWh']=GEInv.e_battery_discharge_today
         energy_today_output['Parallel_Total_Charge_Energy_Today_kWh']=GEInv.e_aio_charge_today
         energy_today_output['Parallel_Total_Discharge_Energy_Today_kWh']=GEInv.e_aio_discharge_today
 
@@ -1852,7 +1833,7 @@ def processGatewayInfo(plant: Plant):
             multi_output["Timeslots"] = timeslots
         if controlmode:
             multi_output["Control"] = controlmode
-        multi_output[GEInv.serial_number]=gateway
+        multi_output[plant.inverter_serial_number]=gateway
         multi_output["Meter_Details"] = meters
     except KeyError as e:
         missing_key = e.args[0] if e.args else None
@@ -1906,8 +1887,10 @@ def processThreePhaseInfo(plant: Plant):
         energy_today_output['AC_Charge_Energy_Today_kWh']=GEInv.e_ac_charge_today
         energy_today_output['Import_Energy_Today_kWh']=GEInv.e_import_today
         energy_today_output['Export_Energy_Today_kWh']=GEInv.e_export_today
-        energy_today_output['Battery_Discharge_Energy_Today_kWh']=GEInv.e_battery_discharge_today_alt1
-        energy_today_output['Battery_Charge_Energy_Today_kWh']=GEInv.e_battery_charge_today_alt1
+        # Three-phase battery energy today (IR1388/9, IR1392/3), matching the totals below (IR1390/1, IR1394/5)
+        # rather than the single-phase layout alt1 registers (IR36/37)
+        energy_today_output['Battery_Discharge_Energy_Today_kWh']=GEInv.e_battery_discharge_today
+        energy_today_output['Battery_Charge_Energy_Today_kWh']=GEInv.e_battery_charge_today
         # midnight guard: ensure we run reset once and avoid restoring yesterday's Today numbers
         now = datetime.datetime.now(tz=GivLUT.timezone)
         try:
@@ -1952,13 +1935,13 @@ def processThreePhaseInfo(plant: Plant):
         power_output['Grid_Apparent_Power']=GEInv.p_grid_apparent
         power_output['Meter_Import_Power']=GEInv.p_meter_import
         power_output['Meter_Export_Power']=GEInv.p_meter_export
-        power_output['Load_Phase1_Power']=GEInv.p_load_ac1
-        power_output['Load_Phase2_Power']=GEInv.p_load_ac2
-        power_output['Load_Phase3_Power']=GEInv.p_load_ac3
+        power_output['Load_Phase1_Power']=GEInv.p_meter_active_ac1
+        power_output['Load_Phase2_Power']=GEInv.p_meter_active_ac2
+        power_output['Load_Phase3_Power']=GEInv.p_meter_active_ac3
         power_output['Load_Power']=GEInv.p_load_all
-        power_output['Export_Phase1_Power']=GEInv.p_out_ac1
-        power_output['Export_Phase2_Power']=GEInv.p_out_ac2
-        power_output['Export_Phase3_Power']=GEInv.p_out_ac3
+        power_output['Export_Phase1_Power']=GEInv.p_inverter_active_ac1
+        power_output['Export_Phase2_Power']=GEInv.p_inverter_active_ac2
+        power_output['Export_Phase3_Power']=GEInv.p_inverter_active_ac3
         power_output['PV_Voltage_String_1']=GEInv.v_pv1
         power_output['PV_Voltage_String_2']=GEInv.v_pv2
         power_output['PV_Current_String_1']=GEInv.i_pv1
@@ -1998,14 +1981,15 @@ def processThreePhaseInfo(plant: Plant):
         power_output['SOC_kWh'] = sockwh / count if count > 0 else 0                                      # Average SOC of all stacks...
 
         inverter['status']=GEInv.status.name.capitalize()
-        inverter['System_Mode']=GEInv.system_mode.name.capitalize()
+        # givenergy-modbus v2 decodes system_mode and battery_priority as plain ints (the old lib used enums)
+        inverter['System_Mode']=GivLUT.tph_system_mode.get(GEInv.system_mode,str(GEInv.system_mode))
         inverter['Start_Delay_Time']=GEInv.start_delay_time
         inverter['Power_Factor']=GEInv.power_factor
         inverter['Battery_Type'] = GEInv.battery_type.name.capitalize()
         inverter['Invertor_Type'] = "Gen 3 - " + GEInv.model.name.capitalize()
         inverter['Invertor_Max_Bat_Rate'] = inverterModel.batmaxrate
         inverter['Invertor_Max_Inv_Rate'] = GEInv.inverter_max_power
-        inverter['Battery_Priority']=GEInv.battery_priority.name.capitalize()
+        inverter['Battery_Priority']=GivLUT.tph_battery_priority.get(GEInv.battery_priority,str(GEInv.battery_priority))
 
     # Calc HV stack capacity as function of stacks
         cap=0
@@ -2031,22 +2015,24 @@ def processThreePhaseInfo(plant: Plant):
 
         controlmode.update(getControls(plant,regCacheStack,inverterModel,multi_output_old))
 
-        if not GEInv.enable_discharge==None:
-            controlmode['Force_Discharge_Enable']=GEInv.enable_discharge
+        # v2 decodes these as bools (HR1122 is force_discharge_enable; enable_discharge is now the
+        # single-phase HR59), but the HA switches and the Force Charge/Export revert expect "enable"/"disable"
+        if not GEInv.force_discharge_enable==None:
+            controlmode['Force_Discharge_Enable']="enable" if GEInv.force_discharge_enable else "disable"
         elif multi_output_old:
             controlmode['Force_Discharge_Enable']=multi_output_old['Control']['Force_Discharge_Enable']
         else:
             controlmode['Force_Discharge_Enable']="disable"    #Default to off
 
         if not GEInv.force_charge_enable==None:
-            controlmode['Force_Charge_Enable']=GEInv.force_charge_enable
+            controlmode['Force_Charge_Enable']="enable" if GEInv.force_charge_enable else "disable"
         elif multi_output_old:
             controlmode['Force_Charge_Enable']=multi_output_old['Control']['Force_Charge_Enable']
         else:
             controlmode['Force_Charge_Enable']="disable"    #Default to off
 
         if not GEInv.ac_charge_enable==None:
-            controlmode['Force_AC_Charge_Enable']=GEInv.ac_charge_enable
+            controlmode['Force_AC_Charge_Enable']="enable" if GEInv.ac_charge_enable else "disable"
         elif multi_output_old:
             controlmode['Force_AC_Charge_Enable']=multi_output_old['Control']['Force_AC_Charge_Enable']
         else:
@@ -2326,7 +2312,9 @@ def runAll2(plant: Plant):  # Read from Inverter put in cache and publish
         return ("runAll2 Error processing registers: " + str(e))
     return multi_output
 
-def pubFromPickle(multi_output={}):  # Publish last cached Inverter Data
+def pubFromPickle(multi_output=None):  # Publish last cached Inverter Data
+    if multi_output is None:
+        multi_output = {}
     result = "Success"
     if not exists(GivLUT.regcache) and multi_output=={}:  # if there is no cache, create it
         result = "Please get data from Inverter first, either by calling runAll or waiting until the self-run has completed"
@@ -2337,6 +2325,11 @@ def pubFromPickle(multi_output={}):  # Publish last cached Inverter Data
                 if regCacheStack:
                     multi_output = regCacheStack[-1]
             SN = finditem(multi_output,'Invertor_Serial_Number')
+            if not SN:
+                # No good data has been processed yet, so there's nothing valid to publish
+                logger.warning("No good inverter data in cache yet, skipping publish")
+                multi_output['result'] = "No good inverter data in cache yet"
+                return json.dumps(multi_output, indent=4, sort_keys=True, default=str)
             publishOutput(multi_output, SN)
         else:
             multi_output['result'] = result

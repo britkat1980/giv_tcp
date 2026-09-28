@@ -14,6 +14,7 @@ import pickle,os
 import GivLUT
 from GivLUT import GivLUT, GivQueue
 from givenergy_modbus.model import TimeSlot
+from givenergy_modbus.model.ems import Ems
 from givenergy_modbus.client import commands as gecommands     # v2 exposes some writes only as module functions
 import requests
 import importlib
@@ -22,7 +23,7 @@ from logging.handlers import TimedRotatingFileHandler
 
 from GivLUT import GivClientAsync, SharedTimedRotatingFileHandler
 
-logging.getLogger("givenergy_modbus_async").setLevel(logging.CRITICAL)
+logging.getLogger("givenergy_modbus").setLevel(logging.CRITICAL)
 
  
 logging.basicConfig(format='%(asctime)s - Inv'+ str(GiV_Settings.givtcp_instance)+ \
@@ -159,6 +160,21 @@ def optionalAcLimit(kind,val):
     except NotImplementedError as e:
         logger.warning(str(e)+" - leaving the current "+kind+" rate unchanged")
         return []
+
+def revert3phFlags(device,revert,keys):
+    # Restore 3PH force/AC charge enables saved before a Force Charge/Export. The saved values are the
+    # published "enable"/"disable" strings; givenergy-modbus treats any non-empty string as True, so convert
+    # them. Only restore what was saved (Force Charge doesn't save the force discharge state)
+    setters={"forceDischargeEnable":device.set_force_discharge,"forceChargeEnable":device.set_force_charge,"forceACChargeEnable":device.set_ac_charge}
+    reqs=[]
+    for key in keys:
+        if key in revert:
+            reqs.extend(setters[key](revert[key] in (True,1,"1","enable","Enable")))
+    return reqs
+
+def isEMS(device):
+    # givenergy-modbus v2's Ems model has its own EMS-named slot/target writers (set_ems_*), not the inverter ones
+    return isinstance(device, Ems)
 
 def chargeTargetSOC(device,target):
     # Set only the charge target SOC, leaving the enable bits alone (v2: set_charge_target_soc)
@@ -472,6 +488,28 @@ async def setEmsPlant(device,payload,readloop=False):
         logger.error (temp['result'])
     return json.dumps(temp)
 
+async def setExportLimit(device,payload,readloop=False):
+    temp={}
+    try:
+        if type(payload) is not dict: payload=json.loads(payload)
+        # givenergy-modbus only provides an export power limit write for the EMS plant (HR 2071)
+        if not isEMS(device):
+            raise NotImplementedError("Setting the Export Limit is not yet supported by givenergy-modbus for "+str(GiV_Settings.inverter_type)+" inverters")
+        limit=int(float(payload['state']))
+        logger.debug("Setting Export Limit to: "+str(limit)+"w")
+        reqs=device.set_ems_export_power_limit(limit)
+        result= await sendAsyncCommand(reqs,readloop)
+        if 'error' in result:
+            raise Exception(result['error'])
+        updateControlCache("Export_Power_Limit",limit)
+        temp['result']="Setting Export Limit to "+str(limit)+"w was a success"
+        logger.info(temp['result'])
+    except:
+        e=errDetail()
+        temp['result']="Setting Export Limit failed: " + str(e)
+        logger.error (temp['result'])
+    return json.dumps(temp)
+
 async def setBatteryReserve(device,payload,readloop=False):
     temp={}
     try:
@@ -697,13 +735,16 @@ async def setChargeSlot(device,payload,readloop=False):
     try:
         logger.debug("Setting Charge Slot "+str(payload['slot'])+" to: "+str(payload['start'])+" - "+str(payload['finish']))
         #temp= await scs(payload,readloop)
-        slot=TimeSlot
-        slot.start=datetime.strptime(payload['start'],"%H:%M")
-        slot.end=datetime.strptime(payload['finish'],"%H:%M")
+        slot=TimeSlot(datetime.strptime(payload['start'],"%H:%M"),datetime.strptime(payload['finish'],"%H:%M"))
 ##############
-        reqs=device.set_charge_slot(int(payload['slot']),slot)
-        if 'chargeToPercent' in payload.keys():
-            reqs.extend(chargeTargetSOC(device,int(payload['chargeToPercent'])))
+        if isEMS(device):
+            reqs=device.set_ems_charge_slot(int(payload['slot']),slot)
+            if 'chargeToPercent' in payload.keys():
+                reqs.extend(device.set_ems_charge_target_soc(int(payload['slot']),int(payload['chargeToPercent'])))
+        else:
+            reqs=device.set_charge_slot(int(payload['slot']),slot)
+            if 'chargeToPercent' in payload.keys():
+                reqs.extend(chargeTargetSOC(device,int(payload['chargeToPercent'])))
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
             raise Exception(result['error'])
@@ -727,9 +768,7 @@ async def setPauseSlot(device,payload,readloop=False):
     try:
         logger.debug("Setting Battery Pause slot to: "+str(payload['start'])+" - "+str(payload['finish']))
         #temp= await sps(payload,readloop)
-        slot=TimeSlot
-        slot.start=datetime.strptime(payload['start'],"%H:%M")
-        slot.end=datetime.strptime(payload['finish'],"%H:%M")
+        slot=TimeSlot(datetime.strptime(payload['start'],"%H:%M"),datetime.strptime(payload['finish'],"%H:%M"))
         reqs=gecommands.set_pause_slot(slot)
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
@@ -751,7 +790,10 @@ async def setChargeSlotStart(device,payload,readloop=False):
     try:
         logger.debug("Setting Charge Slot "+str(payload['slot'])+" Start to: "+str(payload['start']))
         #temp= await scss(payload,readloop)
-        reqs=device.set_charge_slot_start(int(payload['slot']),datetime.strptime(payload['start'],"%H:%M"))
+        if isEMS(device):
+            reqs=device.set_ems_charge_slot_start(int(payload['slot']),datetime.strptime(payload['start'],"%H:%M"))
+        else:
+            reqs=device.set_charge_slot_start(int(payload['slot']),datetime.strptime(payload['start'],"%H:%M"))
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
             raise Exception(result['error'])
@@ -774,7 +816,10 @@ async def setChargeSlotEnd(device,payload,readloop=False):
     try:
         logger.debug("Setting Charge Slot End "+str(payload['slot'])+" to: "+str(payload['finish']))
         #temp= await scse(payload,readloop)
-        reqs=device.set_charge_slot_end(int(payload['slot']),datetime.strptime(payload['finish'],"%H:%M"))
+        if isEMS(device):
+            reqs=device.set_ems_charge_slot_end(int(payload['slot']),datetime.strptime(payload['finish'],"%H:%M"))
+        else:
+            reqs=device.set_charge_slot_end(int(payload['slot']),datetime.strptime(payload['finish'],"%H:%M"))
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
             raise Exception(result['error'])
@@ -833,7 +878,8 @@ async def setDischargeSlot(device,payload,readloop=False):
 ######## EMS aware ######
     if type(payload) is not dict: payload=json.loads(payload)
     # Should this include DischargePercent, or drop?
-    if 'dischargeToPercent' in payload.keys():
+    # EMS has a per-slot discharge target instead of the inverter's battery reserve, so it's sent with the slot below
+    if 'dischargeToPercent' in payload.keys() and not isEMS(device):
         pload={}
         pload['reservePercent']=payload['dischargeToPercent']
         result=await setBatteryReserve(device,pload,readloop)
@@ -841,10 +887,13 @@ async def setDischargeSlot(device,payload,readloop=False):
 
         logger.debug("Setting Discharge Slot "+str(payload['slot'])+" to: "+str(payload['start'])+" - "+str(payload['finish']))
         #temp= await sds(payload,readloop)
-        slot=TimeSlot
-        slot.start=datetime.strptime(payload['start'],"%H:%M")
-        slot.end=datetime.strptime(payload['finish'],"%H:%M")
-        reqs=device.set_discharge_slot(int(payload['slot']),slot)
+        slot=TimeSlot(datetime.strptime(payload['start'],"%H:%M"),datetime.strptime(payload['finish'],"%H:%M"))
+        if isEMS(device):
+            reqs=device.set_ems_discharge_slot(int(payload['slot']),slot)
+            if 'dischargeToPercent' in payload.keys():
+                reqs.extend(device.set_ems_discharge_target_soc(int(payload['slot']),int(payload['dischargeToPercent'])))
+        else:
+            reqs=device.set_discharge_slot(int(payload['slot']),slot)
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
             raise Exception(result['error'])
@@ -868,9 +917,7 @@ async def setExportSlot(device,payload,readloop=False):
     try:
         logger.debug("Setting Export Slot "+str(payload['slot'])+" to: "+str(payload['start'])+" - "+str(payload['finish']))
         #temp= await ses(payload,readloop)
-        slot=TimeSlot
-        slot.start=datetime.strptime(payload['start'],"%H:%M")
-        slot.end=datetime.strptime(payload['finish'],"%H:%M")
+        slot=TimeSlot(datetime.strptime(payload['start'],"%H:%M"),datetime.strptime(payload['finish'],"%H:%M"))
         reqs=device.set_export_slot(int(payload['slot']),slot)
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
@@ -892,7 +939,10 @@ async def setDischargeSlotStart(device,payload,readloop=False):
     try:
         logger.debug("Setting Discharge Slot start "+str(payload['slot'])+" Start to: "+str(payload['start']))
         #temp= await sdss(payload,readloop)
-        reqs=device.set_discharge_slot_start(int(payload['slot']),datetime.strptime(payload['start'],"%H:%M"))
+        if isEMS(device):
+            reqs=device.set_ems_discharge_slot_start(int(payload['slot']),datetime.strptime(payload['start'],"%H:%M"))
+        else:
+            reqs=device.set_discharge_slot_start(int(payload['slot']),datetime.strptime(payload['start'],"%H:%M"))
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
             raise Exception(result['error'])
@@ -915,7 +965,10 @@ async def setDischargeSlotEnd(device,payload,readloop=False):
     try:
         logger.debug("Setting Discharge Slot End "+str(payload['slot'])+" to: "+str(payload['finish']))
         #temp= await sdse(payload,readloop)
-        reqs=device.set_discharge_slot_end(int(payload['slot']),datetime.strptime(payload['finish'],"%H:%M"))
+        if isEMS(device):
+            reqs=device.set_ems_discharge_slot_end(int(payload['slot']),datetime.strptime(payload['finish'],"%H:%M"))
+        else:
+            reqs=device.set_discharge_slot_end(int(payload['slot']),datetime.strptime(payload['finish'],"%H:%M"))
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
             raise Exception(result['error'])
@@ -977,9 +1030,7 @@ async def FEResume(device,revert, readloop=False):
         payload["mode"]=revert["mode"]
         result=await setBatteryMode(device,payload,readloop)
         reqs=device.set_battery_soc_reserve(revert["reservePercent"])
-        slot=TimeSlot
-        slot.start=datetime.strptime(revert['start_time'],"%H:%M")
-        slot.end=datetime.strptime(revert['end_time'],"%H:%M")
+        slot=TimeSlot(datetime.strptime(revert['start_time'],"%H:%M"),datetime.strptime(revert['end_time'],"%H:%M"))
         reqs.extend(device.set_charge_slot(1,slot))
         if revert["discharge_schedule"]=="enable":
             enabled=True
@@ -998,8 +1049,7 @@ async def FEResume(device,revert, readloop=False):
         elif "dischargeRateAC" in revert:
             reqs.extend(optionalAcLimit("discharge",revert["dischargeRateAC"]))
         if "3ph" in GiV_Settings.inverter_type.lower():
-            reqs.extend(device.set_force_discharge(revert["forceDischargeEnable"]))  # turn on Force Export in 3PH
-            reqs.extend(device.set_force_charge(revert["forceChargeEnable"]))  # turn off Force Charge in 3PH
+            reqs.extend(revert3phFlags(device,revert,["forceDischargeEnable","forceChargeEnable"]))  # turn back Force Export/Charge in 3PH
         if "batteryPauseMode" in revert:
             reqs.extend(gecommands.set_battery_pause_mode(GivLUT.battery_pause_mode.index(revert["batteryPauseMode"])))
         
@@ -1047,9 +1097,7 @@ async def forceExport(device, exportTime,readloop=False):
 
         reqs=device.set_battery_soc_reserve(4)      # the device model picks the single/three-phase register itself
         finish=GivLUT.getTime(datetime.now()+timedelta(minutes=exportTime))
-        slot=TimeSlot
-        slot.start=datetime.strptime(GivLUT.getTime(datetime.now()),"%H:%M")
-        slot.end=datetime.strptime(finish,"%H:%M")
+        slot=TimeSlot(datetime.strptime(GivLUT.getTime(datetime.now()),"%H:%M"),datetime.strptime(finish,"%H:%M"))
 
         if "3ph" in GiV_Settings.inverter_type.lower():
             reqs.extend(device.set_force_discharge(True))  # turn on Force Export in 3PH
@@ -1111,17 +1159,13 @@ async def FCResume(device,revert,readloop=False):
         else:
             enable=False
         reqs.extend(device.set_enable_charge(enable))
-        slot=TimeSlot
-        slot.start=datetime.strptime(revert['start_time'],"%H:%M")
-        slot.end=datetime.strptime(revert['end_time'],"%H:%M")
+        slot=TimeSlot(datetime.strptime(revert['start_time'],"%H:%M"),datetime.strptime(revert['end_time'],"%H:%M"))
         reqs.extend(device.set_charge_slot(1,slot))
         reqs.extend(chargeTargetSOC(device,int(revert["targetSOC"])))
         if "batteryPauseMode" in revert:
             reqs.extend(gecommands.set_battery_pause_mode(GivLUT.battery_pause_mode.index(revert["batteryPauseMode"])))
         if "3ph" in GiV_Settings.inverter_type.lower():
-            reqs.extend(device.set_force_discharge(revert["forceDischargeEnable"]))  # turn back Force Export in 3PH
-            reqs.extend(device.set_force_charge(revert["forceChargeEnable"]))  # turn back Force Charge in 3PH
-            reqs.extend(device.set_ac_charge(revert["forceACChargeEnable"]))  # turn back AC Charge enable in 3PH
+            reqs.extend(revert3phFlags(device,revert,["forceDischargeEnable","forceChargeEnable","forceACChargeEnable"]))  # turn back Force Export/Charge/AC Charge in 3PH
 
         result = await sendAsyncCommand(reqs,readloop)
         if result:
@@ -1216,9 +1260,7 @@ async def forceCharge(device, chargeTime, readloop=False):
 
         finish=GivLUT.getTime(datetime.now()+timedelta(minutes=chargeTime))
         reqs=chargeTargetSOC(device,100)
-        slot=TimeSlot
-        slot.start=datetime.strptime(GivLUT.getTime(datetime.now()),"%H:%M")
-        slot.end=datetime.strptime(finish,"%H:%M")
+        slot=TimeSlot(datetime.strptime(GivLUT.getTime(datetime.now()),"%H:%M"),datetime.strptime(finish,"%H:%M"))
         reqs.extend(device.set_charge_slot(1,slot))
         if "3ph" in GiV_Settings.inverter_type.lower():
             reqs.extend(optionalAcLimit("charge",100))

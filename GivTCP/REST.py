@@ -742,7 +742,7 @@ def setEMSPlnt():
     Payload: {'state':'enabled' or "disabled'}
     """
     payload = request.get_json(silent=True, force=True)
-    requestcommand("setEmsPlant",payload['state'])
+    requestcommand("setEmsPlant",payload)
     return response("setEmsPlant")
 
 @giv_api.route('/setChargeControl', methods=['POST'])

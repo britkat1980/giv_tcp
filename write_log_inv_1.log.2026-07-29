@@ -1,0 +1,8 @@
+2026-07-29 20:48:23,730 - write - [INFO] - Closing non readloop modbus connection
+2026-07-29 20:49:08,351 - write - [INFO] - Setting Eco mode was a success
+2026-07-29 20:51:09,688 - write - [INFO] - Closing non readloop modbus connection
+2026-07-29 20:51:36,557 - write - [INFO] - Setting Timed Demand mode was a success
+2026-07-29 21:53:25,096 - write - [INFO] - Setting Charge Target 75 was a success
+2026-07-29 21:57:51,184 - write - [INFO] - Setting Charge Target 100 was a success
+2026-07-29 22:06:59,244 - write - [INFO] - Closing non readloop modbus connection
+2026-07-29 22:07:09,542 - write - [INFO] - Setting Charge Slot 1 to: 00:01 - 00:02 was a success

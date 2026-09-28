@@ -311,6 +311,9 @@ class GivLUT:
     rates=["Day","Night"]
     battery_pause_mode=["Disabled","PauseCharge","PauseDischarge","PauseBoth",]
     car_charge_mode=["Stop","Eco","Eco+","Fast"]
+    # Three phase IR(1075)/IR(1120): givenergy-modbus v2 returns ints; names match the old library's enums
+    tph_system_mode={0:"Offline",1:"Grid_tied"}
+    tph_battery_priority={0:"Load",1:"Battery",2:"Grid"}
     local_control_mode=["Load","Battery","Grid"]
     pv_input_mode=["Independent","1x2"]
     charge_control=['Ready','Start','Stop']

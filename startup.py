@@ -366,7 +366,7 @@ logger = logging.getLogger()
 logger.addHandler(fh)
 logger.setLevel(logging.INFO)
 
-logging.getLogger("givenergy_modbus_async").setLevel(logging.CRITICAL)
+logging.getLogger("givenergy_modbus").setLevel(logging.CRITICAL)
 
 
 SuperTimezone={}

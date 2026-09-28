@@ -341,7 +341,7 @@ class Entity_Type():
         "Meter_6_Status":GEType("sensor","","","","",False,False,False),
         "Meter_7_Status":GEType("sensor","","","","",False,False,False),
         "Meter_8_Status":GEType("sensor","","","","",False,False,False),
-        "Plant_Control":GEType("switch","","","","",False,False,False),
+        "Plant_Control":GEType("switch","","setEmsPlant","","",False,False,False),
         "Plant_Status":GEType("sensor","string","","","",False,False,False),
         "Car_Charge_Mode":GEType("select","","","","",False,False,False),
         "Car_Charge_Boost":GEType("number","","setCarChargeBoost",0,65536,False,False,False),
