@@ -1,11 +1,9 @@
 import paho.mqtt.client as mqtt
 import time, sys, importlib, time
-from os.path import exists
 from settings import GiV_Settings
 import evc as evc
-import pickle, settings
+import settings
 from GivLUT import GivLUT
-from pickletools import read_uint1
 
 sys.path.append(GiV_Settings.default_path)
 

@@ -4,9 +4,7 @@ Settings file for use with palm.py: Compatible with v0.9, v0.10, v1.0.x and v1.1
 """
 from settings import GiV_Settings
 from GivLUT import GivLUT
-import pickle
 from os.path import exists
-import os
 
 class pg:
     """PALM global variable definitions. Used by palm_utils and project-specific wrappers"""

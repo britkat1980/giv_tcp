@@ -7,7 +7,6 @@ import json
 import paho.mqtt.client as paho_mqtt
 from socket import gaierror
 from settings import GiV_Settings
-from givenergy_modbus_async.model.register import Model
 from mqtt import GivMQTT
 from GivLUT import GivLUT
 from entity_lut import Entity_Type
@@ -158,7 +157,7 @@ class HAMQTT():
                 tempObj['default_entity_id']=e_type.devType+"."+GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[4]+"_"+item
                 tempObj['device']['identifiers']=GiV_Settings.ha_device_prefix+" "+str(topic).split("/")[4]
                 tempObj['device']['name']=GiV_Settings.ha_device_prefix+" "+str(topic).split("/")[4].replace("_"," ")
-                if "capacity" in item.lower():
+                if "capacity" in item.lower() and not "kwh" in item.lower():
                     tempObj['unit_of_meas']="Ah"
             else:
                 tempObj["name"]=item.replace("_"," ") #Just final bit past the last "/"
@@ -258,7 +257,10 @@ class HAMQTT():
             if e_type.sensorClass=="string":
                 del tempObj['unit_of_meas']
             if "capacity" in str(item).lower():
-                tempObj['unit_of_meas']="Ah"
+                if "kwh" in str(item).lower():      # eg. Battery_Capacity_kWh is energy, not charge
+                    tempObj['unit_of_meas']="kWh"
+                else:
+                    tempObj['unit_of_meas']="Ah"
                 tempObj['state_class']="measurement"
             if "cycles" in str(item).lower():
                 tempObj['unit_of_meas']=""

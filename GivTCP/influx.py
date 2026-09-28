@@ -1,7 +1,8 @@
 # version 2022.01.31
 from influxdb_client import InfluxDBClient, WriteApi, WriteOptions
+from influxdb_client.client.write_api import SYNCHRONOUS
 import logging
-from logging.handlers import TimedRotatingFileHandler
+from GivLUT import SharedTimedRotatingFileHandler
 from settings import GiV_Settings
 
 logger = logging.getLogger("GivTCP_Influx_"+str(GiV_Settings.givtcp_instance))
@@ -9,7 +10,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - [%(levelname)s] - %(message
 formatter = logging.Formatter(
     '%(asctime)s - %(name)s - [%(levelname)s] - %(message)s')
 if GiV_Settings.Debug_File_Location!="":
-    fh = TimedRotatingFileHandler(GiV_Settings.Debug_File_Location, when='D', interval=1, backupCount=7)
+    fh = SharedTimedRotatingFileHandler(GiV_Settings.Debug_File_Location, when='midnight', backupCount=7)   # same file and schedule as the main log
     fh.setFormatter(formatter)
     logger.addHandler(fh)
 if GiV_Settings.Log_Level.lower()=="debug":
@@ -69,10 +70,15 @@ class GivInflux():
         influxdb_debug = False
         if GiV_Settings.Log_Level.lower()=="debug":
             influxdb_debug = True
-        _db_client = InfluxDBClient(url=GiV_Settings.influxURL, token=GiV_Settings.influxToken, org=GiV_Settings.influxOrg, debug=influxdb_debug)
-        _write_api = _db_client.write_api(write_options=WriteOptions(batch_size=1))
-        _write_api.write(bucket=GiV_Settings.influxBucket, record=data1)
-        logging.info("Written to InfluxDB")
-
-        _write_api.close()
-        _db_client.close()
+        # Synchronous write with a short timeout and no retries: this runs inside the read loop, and the
+        # batching API's default retry backoff stalled polling for minutes when Influx was unavailable
+        _db_client = InfluxDBClient(url=GiV_Settings.influxURL, token=GiV_Settings.influxToken, org=GiV_Settings.influxOrg, debug=influxdb_debug, timeout=5000, retries=False)
+        try:
+            _write_api = _db_client.write_api(write_options=SYNCHRONOUS)
+            _write_api.write(bucket=GiV_Settings.influxBucket, record=data1)
+            logging.info("Written to InfluxDB")
+            _write_api.close()
+        except Exception as e:
+            logger.error("Unable to write to InfluxDB at "+str(GiV_Settings.influxURL)+": "+str(e.__class__.__name__)+" "+str(e))
+        finally:
+            _db_client.close()

@@ -14,7 +14,6 @@ import datetime
 import json
 from settings import GiV_Settings
 from inspect import getmembers, isfunction, getsource
-from givenergy_modbus_async.model import TimeSlot
 
 logger = GivLUT.logger
 #set-up Flask details
@@ -131,7 +130,7 @@ def getAll():
 def reboot():
     """Restart the Inverter
     """
-    requestcommand("rebootinverter")
+    requestcommand("rebootinverter",{})
     return response("rebootinverter")
 
 @giv_api.route('/restart', methods=['GET','POST'])

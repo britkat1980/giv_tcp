@@ -10,7 +10,8 @@ import requests
 import asyncio
 from GivTCP.findInvertor import findInvertor
 from GivTCP.findEVC import findEVC
-from GivTCP.givenergy_modbus_async.client.client import Client
+#from GivTCP.givenergy_modbus_async.client.client import Client
+from givenergy_modbus.client.client import Client
 from pymodbus.client import ModbusTcpClient
 
 selfRun={}
@@ -19,6 +20,7 @@ gunicorn={}
 webDash={}
 rqWorker={}
 redis={}
+mqttBroker=None     # only set when GivTCP runs its own Mosquitto
 networks={}
 SuperTimezone=""
 
@@ -55,13 +57,19 @@ async def getInvDeets(HOST):
         Stats={}
         client=Client(HOST,8899,3)
         await client.connect()
-        await client.detect_plant(additional=False)
+
+        caps= await client.detect()
+        try:
+            await client.load_config()
+        except Exception as e:
+            pass
+        await client.refresh()
         try:
             await client.close()
         except:
             pass
 
-        if not client.plant.inverter ==None:
+        if not client.plant.inverters ==None:
             GEInv=client.plant.inverter
         elif not client.plant.ems ==None:
             GEInv=client.plant.ems
@@ -69,11 +77,18 @@ async def getInvDeets(HOST):
             GEInv=client.plant.gateway
 
         SN= GEInv.serial_number
+        # Name the cache by the same serial that ends up in settings.py, so read.py finds it
+        fileloc="/config/GivTCP/"+str(SN)+"_caps.pkl"
+        logger.critical("Saving capabilities to cache: "+str(fileloc))
+        with open(fileloc, 'wb') as outp:
+            pickle.dump(caps, outp, pickle.HIGHEST_PROTOCOL)
         #gen=GEInv.generation
         model=GEInv.model
         fw=GEInv.arm_firmware_version
         numbats=client.plant.number_batteries
-        nummeters=len(client.plant.meter_list)
+        if caps:    # v2 only counts LV batteries here; HV/three-phase/AIO batteries are modules
+            numbats=max(numbats, sum(n for _,n in caps.bcu_stacks), len(caps.aio_battery_module_addresses), len(caps.hv_bmu_addresses))
+        nummeters=len(client.plant.meters)
 
         Stats['Serial_Number']=SN
         Stats['Firmware']=fw
@@ -106,7 +121,6 @@ def createsettingsjson(inv):
         outp.write("    serial_number=\""+str(setts["serial_number_"+str(inv)])+"\"\n")
         outp.write("    inverter_type=\""+str(setts["Model_"+str(inv)])+"\"\n")
         outp.write("    Battery_Only="+str(setts["inverter_battery_only_"+str(inv)]).capitalize()+"\n")
-        outp.write("    lite_query="+str(setts["lite_query_"+str(inv)]).capitalize()+"\n")
         outp.write("    MQTT_Address=\""+str(setts["MQTT_Address"])+"\"\n")
         outp.write("    MQTT_Username=\""+str(setts["MQTT_Username"])+"\"\n")
         outp.write("    MQTT_Password=\""+str(setts["MQTT_Password"])+"\"\n")
@@ -133,6 +147,7 @@ def createsettingsjson(inv):
         outp.write("    first_run_evc= True\n")
         outp.write("    self_run_timer="+str(setts["self_run_timer"])+"\n")
         outp.write("    self_run_timer_full="+str(setts["self_run_timer_full"])+"\n")
+        outp.write("    refresh_max_age="+str(float(setts.get("refresh_max_age") or 0))+"\n")
         outp.write("    queue_retries="+str(setts["queue_retries"])+"\n")    
         outp.write("    givtcp_instance="+str(inv)+"\n")
         outp.write("    default_path=\""+str(PATH)+"\"\n")
@@ -677,10 +692,7 @@ for inv in range(1,setts['number_of_inverters']+1):
             mqttBroker=subprocess.Popen(["/usr/sbin/mosquitto", "-c",PATH+"/mqtt.conf"])
 
         if setts['self_run']==True: # Don't autorun if isAddon to prevent autostart creating rubbish before its checked by a user
-            if setts["lite_query_"+str(inv)]==True:
-                logger.info ("Running Invertor "+str(inv)+" ("+str(setts["serial_number_"+str(inv)])+") read loop in lite mode every "+str(setts['self_run_timer'])+"/"+str(setts['self_run_timer_full'])+"s")
-            else:
-                logger.info ("Running Invertor "+str(inv)+" ("+str(setts["serial_number_"+str(inv)])+") read loop every "+str(setts['self_run_timer'])+"/"+str(setts['self_run_timer_full'])+"s")
+            logger.info ("Running Invertor "+str(inv)+" ("+str(setts["serial_number_"+str(inv)])+") read loop every "+str(setts['self_run_timer'])+"/"+str(setts['self_run_timer_full'])+"s")
             selfRun[inv]=subprocess.Popen(["/usr/local/bin/python3",PATH+"/read.py", "start"])
 
         
@@ -778,7 +790,7 @@ while True:
                 command=shlex.split("/usr/local/bin/gunicorn -w 3 -b :"+str(GUPORT)+" REST:giv_api")
                 gunicorn[inv]=subprocess.Popen(command)
         
-        if setts['MQTT_Address']=="127.0.0.1":
+        if setts['MQTT_Address']=="127.0.0.1" and mqttBroker is not None:
             if not mqttBroker.poll()==None:
                 mqttBroker.kill()
                 logger.error("MQTT Broker process died. Restarting...")

@@ -1,0 +1,12 @@
+2026-06-04 13:08:35,739 - write - [INFO] - Closing non readloop modbus connection
+2026-06-04 13:08:36,099 - write - [INFO] - Setting Charge Target 76 was a success
+2026-06-04 13:11:11,409 - write - [INFO] - Closing non readloop modbus connection
+2026-06-04 13:11:11,700 - write - [INFO] - Setting Charge Target 76 was a success
+2026-06-04 13:12:37,922 - write - [INFO] - Closing non readloop modbus connection
+2026-06-04 13:12:38,223 - write - [INFO] - Setting Charge Target 76 was a success
+2026-06-04 13:13:49,291 - write - [INFO] - Closing non readloop modbus connection
+2026-06-04 13:13:49,592 - write - [INFO] - Setting Charge Target 100 was a success
+2026-06-04 13:15:32,377 - write - [INFO] - Closing non readloop modbus connection
+2026-06-04 13:15:32,673 - write - [INFO] - Setting Charge Target 100 was a success
+2026-06-04 13:16:31,053 - write - [INFO] - Closing non readloop modbus connection
+2026-06-04 13:16:31,340 - write - [INFO] - Setting Charge Target 76 was a success

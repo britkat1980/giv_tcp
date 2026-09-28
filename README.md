@@ -215,7 +215,6 @@ Example:
    "invertorIP_1": "192.168.34.35",
    "serial_number_1": "TC12345678",
    "inverterName_1": "GivTCP",
-   "lite_query_1": false,
    ...
    "auto_scan": false,
    ...
@@ -240,7 +239,6 @@ Example:
    "invertorIP_1": "192.168.34.35",
    "serial_number_1": "TC12345678",
    "inverterName_1": "GivTCP",
-   "lite_query_1": false,
    ...
    "self_run_timer": 90,
    "self_run_timer_full": 270,
@@ -267,7 +265,6 @@ Example:
    "invertorIP_1": "192.168.34.35",
    "serial_number_1": "TC12345678",
    "inverterName_1": "GivTCP",
-   "lite_query_1": true,
    ...
 }
 ```

@@ -1,0 +1,12 @@
+2026-06-03 00:06:29,746 - write - [INFO] - Closing non readloop modbus connection
+2026-06-03 00:06:43,971 - write - [INFO] - Setting Charge Schedule to disable was a success
+2026-06-03 00:08:59,350 - write - [INFO] - Closing non readloop modbus connection
+2026-06-03 00:08:59,635 - write - [INFO] - Setting Charge Schedule to disable was a success
+2026-06-03 19:25:55,197 - write - [INFO] - Setting Charge Target 68 was a success
+2026-06-03 19:25:59,395 - write - [INFO] - Setting Charge Target 100 was a success
+2026-06-03 19:45:22,366 - write - [ERROR] - Setting Charge Target failed: ('TypeError', 'write.py', 336)
+2026-06-03 19:53:03,721 - write - [ERROR] - Setting Charge Target failed: ('TypeError', 'write.py', 336)
+2026-06-03 19:56:02,778 - write - [INFO] - Closing non readloop modbus connection
+2026-06-03 19:56:03,065 - write - [INFO] - Setting Charge Target 65 was a success
+2026-06-03 19:56:19,987 - write - [INFO] - Closing non readloop modbus connection
+2026-06-03 19:56:20,277 - write - [INFO] - Setting Charge Target 69 was a success

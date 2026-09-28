@@ -82,13 +82,23 @@ class GivMQTT():
         else:
             logger.error("Bad connection Returned code= "+str(reason_code))
 
+    def wait_for_connection(timeout=5):
+        # Wait for the broker connection, but never block forever (the read loop calls this)
+        deadline=time.monotonic()+timeout
+        while not _mqttclient.connected_flag:
+            if time.monotonic()>deadline:
+                logger.error("MQTT broker "+str(GivMQTT.MQTT_Address)+" not connected after "+str(timeout)+"s, skipping publish")
+                return False
+            time.sleep(0.2)
+        return True
+
     def single_MQTT_publish(Topic,value):   #Recieve multiple payloads with Topics and publish in a single MQTT connection
+        if not GiV_Settings.MQTT_Output:
+            return
         client=GivMQTT.get_connection()
         try:
-            while not _mqttclient.connected_flag:        			#wait in loop
-                #GivMQTT.connect()
-                logger.debug ("In wait loop (single_MQTT_publish)")
-                time.sleep(0.2)
+            if not GivMQTT.wait_for_connection():
+                return
             client.publish(Topic,value)
         except:
             e=sys.exc_info()[0].__name__, basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
@@ -99,9 +109,8 @@ class GivMQTT():
     def multi_MQTT_publish(rootTopic,array):                    #Recieve multiple payloads with Topics and publish in a single MQTT connection
         client=GivMQTT.get_connection()
         try:
-            while not _mqttclient.connected_flag:        			#wait in loop
-                logger.debug ("In wait loop (multi_MQTT_publish)")
-                time.sleep(0.2)
+            if not GivMQTT.wait_for_connection():
+                return
             for p_load in array:
                 payload=array[p_load]
                 logger.debug('Publishing: '+rootTopic+p_load)
@@ -181,7 +190,7 @@ class GivMQTT():
                 requestcommand(command,payload)
             elif command=="rebootInverter":
                 #wr.rebootinverter()
-                requestcommand(command,payload)
+                requestcommand("rebootinverter",payload)    # write function is lower case
             elif command=="rebootAddon":
                 #wr.rebootAddon()
                 requestcommand(command,payload)

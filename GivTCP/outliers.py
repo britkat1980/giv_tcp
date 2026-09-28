@@ -180,7 +180,7 @@ def outlierRemoval(latest_data,CacheStack):
         outp=list(find(item,CacheStack[0]))
         if not outp == []:
             path=outp[0][1:].split('.')
-            for i in range (0, len(CacheStack)-1):  
+            for i in range (0, len(CacheStack)):    # include the newest entry - it's the one that gets published
                 try:
                     newdata=cleanFlatStack[item][i]
                     if len(path)==0:

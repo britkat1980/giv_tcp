@@ -1,6 +1,6 @@
 """GivLUT: Various objects to interface to GivEnergy inverters """
-from givenergy_modbus_async.client.client import Client
-from givenergy_modbus_async.exceptions import CommunicationError
+from givenergy_modbus.client.client import Client
+from givenergy_modbus.exceptions import CommunicationError
 from settings import GiV_Settings
 import logging
 import pickle
@@ -12,6 +12,45 @@ import sys
 
 from threading import Lock
 import asyncio
+import os
+import time
+from logging.handlers import TimedRotatingFileHandler
+
+class SharedTimedRotatingFileHandler(TimedRotatingFileHandler):
+    """TimedRotatingFileHandler for a log file written by several processes (read loop, REST workers,
+    MQTT client, RQ worker). Only the first process to reach midnight rotates; the others reopen the new
+    file instead of rotating again, and every process follows the file if another one has moved it."""
+
+    def _reopen_if_moved(self):
+        if self.stream is None:
+            return
+        try:
+            sres=os.stat(self.baseFilename)
+        except FileNotFoundError:
+            sres=None
+        fres=os.fstat(self.stream.fileno())
+        if sres is None or (sres.st_dev,sres.st_ino)!=(fres.st_dev,fres.st_ino):
+            self.stream.close()
+            self.stream=self._open()
+
+    def emit(self, record):
+        try:
+            self._reopen_if_moved()
+        except Exception:
+            pass
+        super().emit(record)
+
+    def doRollover(self):
+        timeTuple=time.localtime(self.rolloverAt-self.interval)
+        dfn=self.rotation_filename(self.baseFilename+"."+time.strftime(self.suffix, timeTuple))
+        if os.path.exists(dfn):
+            # Another process has already rotated this period: just move on to the new file
+            if self.stream:
+                self.stream.close()
+            self.stream=self._open()
+            self.rolloverAt=self.computeRollover(int(time.time()))
+            return
+        super().doRollover()
 
 logger = logging.getLogger("GivLUT")
 _client = Client(GiV_Settings.invertorIP,8899)
@@ -102,16 +141,16 @@ class maxvalues:
     single_phase={
         'maxInvPower':20000,
         'maxPower':20000,
-        'maxBatPower':13000,
+        'maxBatPower':20000,        # parallel AIOs behind a Gateway exceed 13kW (#543)
         '-maxInvPower':-20000,
         '-maxPower':-20000,
-        '-maxBatPower':-13000,
+        '-maxBatPower':-20000,
         'maxExport':20000,
         'maxTemp':100,
         '-maxTemp':-100,
         'maxCellVoltage':350,
         'maxTotalEnergy':10000000,
-        'maxTodayEnergy':100,
+        'maxTodayEnergy':1000,      # 100kWh/day is reachable with heat pumps and EVs (#473)
         'maxCost':100,
         'maxRate':2
         }
@@ -141,7 +180,7 @@ class GivLUT:
                         ' - %(module)-11s -  [%(levelname)-8s] - %(message)s')
     formatter = logging.Formatter(
         '%(asctime)s - %(module)s - [%(levelname)s] - %(message)s')
-    fh = TimedRotatingFileHandler(GiV_Settings.Debug_File_Location, when='midnight', backupCount=7)
+    fh = SharedTimedRotatingFileHandler(GiV_Settings.Debug_File_Location, when='midnight', backupCount=7)
     fh.setFormatter(formatter)
     logger = logging.getLogger('read_logger')
     logger.addHandler(fh)

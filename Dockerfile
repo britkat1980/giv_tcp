@@ -12,7 +12,7 @@ RUN npm install && \
     mv dist/index.html dist/config.html
 
 # set base image (host OS)
-FROM python:alpine3.19
+FROM python:3.14.5-alpine
 
 RUN apk add --no-cache \
     git \
@@ -42,7 +42,7 @@ COPY WebDashboard ./WebDashboard
 
 # Remove this in favour of pulling from py-pi?
 # COPY givenergy_modbus/ /usr/local/lib/python3.11/site-packages/givenergy_modbus
-COPY GivTCP/givenergy_modbus_async/ /usr/local/lib/python3.12/site-packages/givenergy_modbus_async
+#COPY GivTCP/givenergy_modbus_async/ /usr/local/lib/python3.12/site-packages/givenergy_modbus_async
 
 COPY api.json ./GivTCP/api.json
 COPY startup.py startup.py

@@ -1,6 +1,6 @@
 gunicorn
 paho-mqtt
-givenergy-modbus-async
+givenergy-modbus==2.12.0
 scapy
 schedule
 influxdb_client
