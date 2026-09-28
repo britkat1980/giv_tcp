@@ -28,6 +28,30 @@ SuperTimezone=""
 
 # Check if config directory exists and creates it if not
 
+INVERTER_KEY_DEFAULTS={"inverter_enable_":False,"invertorIP_":"","serial_number_":"","Model_":"","inverter_battery_only_":False}
+
+def invPort(inv):
+    # REST API port for inverter slot N. Slots 1-5 keep their historic 6345-6349 (Predbat etc. point at them);
+    # 6350 is the settings API, so slot 6 onwards start at 6356
+    inv=int(inv)
+    return 6344+inv if inv<=5 else 6350+inv
+
+def ensureInverterSlots(setts):
+    # Give every slot 1..number_of_inverters its full set of keys, so slots added by the web UI or a scan work
+    for num in range(1,int(setts.get("number_of_inverters",0) or 0)+1):
+        for key,default in INVERTER_KEY_DEFAULTS.items():
+            setts.setdefault(key+str(num),default)
+        setts.setdefault("inverterName_"+str(num),"GivTCP" if num==1 else "GivTCP"+str(num))
+    return setts
+
+def writeRestRoutes(setts):
+    # nginx routes /RESTn/ to each inverter's REST API. Generated for however many slots are configured
+    # (ingress*.conf includes this folder; an empty folder is valid, so nginx still starts if this fails)
+    os.makedirs("/etc/nginx/givtcp_rest", exist_ok=True)
+    with open("/etc/nginx/givtcp_rest/rest.conf","w") as outp:
+        for num in range(1,int(setts.get("number_of_inverters",0) or 0)+1):
+            outp.write("location /REST"+str(num)+"/ {\n    proxy_pass http://127.0.0.1:"+str(invPort(num))+"/;\n}\n")
+
 def palm_job():
     subprocess.Popen(["/usr/local/bin/python3","/app/GivTCP_1/palm_soc.py"])
 
@@ -306,6 +330,14 @@ def findinv(networks):
             # write data to pickle
                 with open('invippkl.pkl', 'wb') as outp:
                     pickle.dump(inverterStats, outp, pickle.HIGHEST_PROTOCOL)
+                # JSON copy for the web config page's "found on last scan" list
+                try:
+                    found=[{"Serial_Number":d['Serial_Number'],"IP_Address":d['IP_Address'],"Model":d['Model'].name.capitalize(),
+                            "Firmware":d['Firmware'],"Number_of_Batteries":d['Number_of_Batteries']} for d in inverterStats.values()]
+                    with open('/config/GivTCP/found_inverters.json','w') as outp:
+                        outp.write(json.dumps(found,indent=4))
+                except Exception:
+                    logger.error("Unable to save found inverters list: "+errDetail())
         except:
             e=errDetail()
             logger.error("Error scanning for Inverters- "+str(e))
@@ -490,6 +522,7 @@ logger.debug("Running Redis")
 if not exists("/ssl/fullchain.pem"):
     shutil.copy("/app/ingress_no_ssl.conf","/etc/nginx/http.d/ingress.conf")
 
+writeRestRoutes(setts)
 subprocess.Popen(["nginx","-g","daemon off;"])
 logger.debug("Running nginx")
 
@@ -511,30 +544,36 @@ if hasMQTT:
 if setts["MQTT_Address"]=="": setts['MQTT_Output']=False
 if setts["Host_IP"]=="": setts["Host_IP"]=hostIP
 
+ensureInverterSlots(setts)
+slotsBefore=setts["number_of_inverters"]
 for inv in inverterStats:
     logger.debug("Using found Inverter data to autosetup settings.json")
-    # Check if serial number is already here and only update if IP address has changed
-    if not inverterStats[inv]['Serial_Number'] in [setts["serial_number_1"],setts["serial_number_2"],setts["serial_number_3"],setts["serial_number_4"],setts["serial_number_5"]]:
-        # find next empty slot and populate with details
-        logger.info("Inverter "+ str(inverterStats[inv]['Serial_Number'])+ " not in settings file")
-        for num in range(1,setts["number_of_inverters"]+1):
-            if setts["invertorIP_"+str(num)]=="":
-                logger.info("Adding Inverter "+ str(inverterStats[inv]['Serial_Number'])+ " to slot "+ str(num))
-                setts["invertorIP_"+str(num)]=inverterStats[inv]['IP_Address']
-                setts["serial_number_"+str(num)]=inverterStats[inv]['Serial_Number']
-                setts["inverter_enable_"+str(num)]=True             #If found for the first time, auto enable (but not if already there incase user has disabled)
-                break
+    SN=inverterStats[inv]['Serial_Number']
+    slots=range(1,setts["number_of_inverters"]+1)
+    slot=next((num for num in slots if setts["serial_number_"+str(num)]==SN),None)
+    if slot:
+        # Already configured: only update the IP address if it has changed
+        logger.debug("Inverter "+str(SN)+" already found in settings file (slot "+str(slot)+"), checking IP address is unchanged...")
+        if not setts["invertorIP_"+str(slot)] == inverterStats[inv]['IP_Address']:
+            logger.info("Inverter "+str(SN)+" IP Address is different, updating: "+str(setts["invertorIP_"+str(slot)])+" -> "+str(inverterStats[inv]['IP_Address']))
+            setts["invertorIP_"+str(slot)]=inverterStats[inv]['IP_Address']
     else:
-        for num in range(1,setts["number_of_inverters"]+1):
-            if inverterStats[inv]['Serial_Number'] == setts["serial_number_"+str(num)]:
-                logger.debug("Inverter "+ str(inverterStats[inv]['Serial_Number'])+ " already found in settings file (slot "+str(num)+"), checking IP address is unchanged...")
-                if not setts["invertorIP_"+str(num)] == inverterStats[inv]['IP_Address']:
-                    #If IP has changed, update it
-                    logger.info("Inverter "+ str(inverterStats[inv]['Serial_Number'])+ " IP Address is different, updating: "+str(setts["invertorIP_"+str(num)])+" -> "+str(inverterStats[inv]['IP_Address']))
-                    setts["invertorIP_"+str(num)]=inverterStats[inv]['IP_Address']
-                break
-    setts['Model_'+str(inv)]=inverterStats[inv]['Model'].name.capitalize()
-        
+        # New inverter: use the first empty slot, or add a slot if they are all in use
+        logger.info("Inverter "+str(SN)+" not in settings file")
+        slot=next((num for num in slots if setts["invertorIP_"+str(num)]==""),None)
+        if slot is None:
+            setts["number_of_inverters"]+=1
+            slot=setts["number_of_inverters"]
+            ensureInverterSlots(setts)
+        logger.info("Adding Inverter "+str(SN)+" to slot "+str(slot))
+        setts["invertorIP_"+str(slot)]=inverterStats[inv]['IP_Address']
+        setts["serial_number_"+str(slot)]=SN
+        setts["inverter_enable_"+str(slot)]=True             #If found for the first time, auto enable (but not if already there incase user has disabled)
+    setts['Model_'+str(slot)]=inverterStats[inv]['Model'].name.capitalize()
+if setts["number_of_inverters"]>slotsBefore:
+    # The scan added slots after nginx started, so give them their /RESTn/ routes too
+    writeRestRoutes(setts)
+    subprocess.Popen(["nginx","-s","reload"])
 
 if len(evcList)>0:
     logger.debug("evcList: "+str(evcList))
@@ -592,7 +631,7 @@ if exists("/config/GivTCP/v2env.pkl") and v3upgrade:
         setts['evc_enable']=False
 
     ## Match HAPREFIX to inverterIP
-    for num in range(1,6):
+    for num in range(1,setts['number_of_inverters']+1):
         for inv in range(0, len(v2invertersettings)):
             if "IP_Address" in v2invertersettings[inv]:
                 if setts["invertorIP_"+str(num)]==v2invertersettings[inv]['IP_Address']:
@@ -639,6 +678,7 @@ if setts['evc_enable']==True:
 
 runninginv=[]
 
+webConfigLogged=False      # the config page address is the same for every inverter, so only log it once
 # Change this to only use those inverters set to enabled in settings (INDENT)
 for inv in range(1,setts['number_of_inverters']+1):
     if setts['inverter_enable_'+str(inv)]==True:
@@ -687,13 +727,15 @@ for inv in range(1,setts['number_of_inverters']+1):
         # Still need to run the below process per inverter  #
         #####################################################
         
-        logger.info("==============================================================")
-        logger.info("====             Web Gui Config is at                     ====")
-        logger.info("====     http://"+str(hostIP)+":8099/config.html             ====")
-        if not setts['self_run']==True:
-            logger.info("====  Self Run is off, so no data collection is happening ====")
-            logger.info("====     Log into Web Gui and complete startup settings   ====")
-        logger.info("==============================================================")
+        if not webConfigLogged:
+            logger.info("==============================================================")
+            logger.info("====             Web Gui Config is at                     ====")
+            logger.info("====     http://"+str(hostIP)+":8099/config.html             ====")
+            if not setts['self_run']==True:
+                logger.info("====  Self Run is off, so no data collection is happening ====")
+                logger.info("====     Log into Web Gui and complete startup settings   ====")
+            logger.info("==============================================================")
+            webConfigLogged=True
 
         os.chdir(PATH)
 
@@ -709,7 +751,7 @@ for inv in range(1,setts['number_of_inverters']+1):
             selfRun[inv]=subprocess.Popen(["/usr/local/bin/python3",PATH+"/read.py", "start"])
 
         
-        GUPORT=6344+inv
+        GUPORT=invPort(inv)
         logger.debug ("Starting Gunicorn on port "+str(GUPORT))
         command=shlex.split("/usr/local/bin/gunicorn -w 3 -b :"+str(GUPORT)+" REST:giv_api")
         gunicorn[inv]=subprocess.Popen(command)
@@ -725,7 +767,7 @@ if setts['Web_Dash']==True:
         count=0
         for inv in runninginv:
             count += 1
-            GUPORT = 6344 + inv
+            GUPORT = invPort(inv)
             if count > 1:
                 outp.write("  ,{\n")
             else:
@@ -798,7 +840,7 @@ while True:
                 gunicorn[inv].kill()
                 logger.error("REST API process died. Restarting...")
                 os.chdir(PATH)
-                GUPORT=6344+inv
+                GUPORT=invPort(inv)
                 logger.info ("Starting Gunicorn on port "+str(GUPORT))
                 command=shlex.split("/usr/local/bin/gunicorn -w 3 -b :"+str(GUPORT)+" REST:giv_api")
                 gunicorn[inv]=subprocess.Popen(command)

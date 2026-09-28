@@ -4,7 +4,7 @@ from os.path import exists
 import os
 import sys
 import requests
-from flask import Flask, request
+from flask import Flask, request, Response
 from flask_cors import CORS
 import json
 
@@ -39,7 +39,13 @@ def savesetts():
         SFILE="/config/GivTCP/allsettings.json"
     else:
         SFILE="/app/allsettings.json"
-    setts = request.get_json()
+    # Merge into the existing file rather than replacing it, so settings the config page doesn't manage
+    # (Model_N, Host_IP, serial_number_evc, auto_scan...) aren't wiped back to template defaults on save
+    setts={}
+    if exists(SFILE):
+        with open(SFILE, 'r') as f1:
+            setts=json.load(f1)
+    setts.update(request.get_json())
     with open(SFILE, 'w') as f:
         f.write(json.dumps(setts,indent=4))
     return "Settings Updated"
@@ -55,6 +61,16 @@ def returnsetts():
     with open(SFILE, 'r') as f1:
         setts=json.load(f1)
         return setts
+
+@giv_api.route('/settings/found', methods=['GET'])
+def foundinverters():
+    """Return the inverters found on the last network scan (written by startup.py), for the config page
+    """
+    found=[]
+    if exists("/config/GivTCP/found_inverters.json"):
+        with open("/config/GivTCP/found_inverters.json", 'r') as f1:
+            found=json.load(f1)
+    return Response(json.dumps(found), mimetype='application/json')
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:

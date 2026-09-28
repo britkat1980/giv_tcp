@@ -32,13 +32,18 @@
       <div class="d-flex flex-1-1-100 justify-center ma-5">
         <StepButton />
       </div>
-      <FormCard v-if="storeStep.step >= 0" :card="storeCard[timelineList[storeStep.step]]" />
+      <InverterList
+        v-if="storeStep.step >= 0 && timelineList[storeStep.step] === 'inverters'"
+        :card="storeCard.inverters"
+      />
+      <FormCard v-else-if="storeStep.step >= 0" :card="storeCard[timelineList[storeStep.step]]" />
     </v-container>
   </div>
 </template>
 
 <script>
 import FormCard from '@/components/FormCard.vue'
+import InverterList from '@/components/InverterList.vue'
 import StepButton from '@/components/StepButton.vue'
 import { useTcpStore, useStep, useCard } from '@/stores/counter'
 
@@ -46,6 +51,7 @@ export default {
   name: 'Setup',
   components: {
     FormCard,
+    InverterList,
     StepButton
   },
   data() {

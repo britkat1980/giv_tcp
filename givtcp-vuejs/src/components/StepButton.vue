@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import { useTcpStore, useStep } from '@/stores/counter'
+import { useTcpStore, useStep, invertersFromSettings, invertersToSettings } from '@/stores/counter'
 import Setup from './Setup.vue'
 
 const settingfile = "allsettings.json"
@@ -46,19 +46,31 @@ export default {
     }
   },
   methods: {
+    // Flat settings object for allsettings.json; inverters are stored as a list and flattened here
+    collectSettings() {
+      return {
+        ...this.storeTCP.web,
+        ...this.storeTCP.mqtt,
+        ...invertersToSettings(this.storeTCP.inverters.list || []),
+        ...this.storeTCP.influx,
+        ...this.storeTCP.selfrun,
+        ...this.storeTCP.tariffs,
+        ...this.storeTCP.misc,
+        ...this.storeTCP.palm,
+        ...this.storeTCP.evc
+      }
+    },
+    applySettings(getJSON) {
+      this.storeTCP.inverters.list = invertersFromSettings(getJSON)
+      for (const section of ['web', 'mqtt', 'influx', 'selfrun', 'tariffs', 'misc', 'palm', 'evc']) {
+        for (const key of Object.keys(this.storeTCP[section])) {
+          if (key in getJSON) this.storeTCP[section][key] = getJSON[key]
+        }
+      }
+    },
     async restartgivtcp() {
       try{
-        const data = {
-          ...this.storeTCP.web,
-          ...this.storeTCP.mqtt,
-          ...this.storeTCP.inverters,
-          ...this.storeTCP.influx,
-          ...this.storeTCP.selfrun,
-          ...this.storeTCP.tariffs,
-          ...this.storeTCP.misc,
-          ...this.storeTCP.palm,
-          ...this.storeTCP.evc
-        }
+        const data = this.collectSettings()
       // Write to json file here
         const settingdata = JSON.stringify(data);
 
@@ -119,40 +131,7 @@ export default {
     await fetch(host).then(response => {
           return response.json();
         }).then(getJSON => {
-          const data = {
-          ...this.storeTCP.web,
-          ...this.storeTCP.mqtt,
-          ...this.storeTCP.inverters,
-          ...this.storeTCP.influx,
-          ...this.storeTCP.selfrun,
-          ...this.storeTCP.tariffs,
-          ...this.storeTCP.misc,
-          ...this.storeTCP.palm,
-          ...this.storeTCP.evc
-        }
-          Object.keys(data).map((key)=>{
-          if(key in this.storeTCP.web){
-            this.storeTCP.web[key] = getJSON[key]
-          }else if(key in this.storeTCP.mqtt){
-            this.storeTCP.mqtt[key] = getJSON[key]
-          }else if(key in this.storeTCP.inverters){
-            this.storeTCP.inverters[key] = getJSON[key]
-          }else if(key in this.storeTCP.influx){
-            this.storeTCP.influx[key] = getJSON[key]
-          }else if(key in this.storeTCP.selfrun){
-            this.storeTCP.selfrun[key] = getJSON[key]
-          }else if(key in this.storeTCP.tariffs){
-            this.storeTCP.tariffs[key] = getJSON[key]
-          }else if(key in this.storeTCP.misc){
-            this.storeTCP.misc[key] = getJSON[key]
-          }else if(key in this.storeTCP.palm){
-            this.storeTCP.palm[key] = getJSON[key]
-          }else if(key in this.storeTCP.evc){
-            this.storeTCP.evc[key] = getJSON[key]
-          }else {
-            return
-          }
-          })
+          this.applySettings(getJSON)
         }).catch(err => {
             this.snackbar = true
             this.message = `Error: ${err}`
@@ -166,17 +145,7 @@ export default {
           this.snackbar = false
           this.message = ""
 
-          const data = {
-          ...this.storeTCP.web,
-          ...this.storeTCP.mqtt,
-          ...this.storeTCP.inverters,
-          ...this.storeTCP.influx,
-          ...this.storeTCP.selfrun,
-          ...this.storeTCP.tariffs,
-          ...this.storeTCP.misc,
-          ...this.storeTCP.palm,
-          ...this.storeTCP.evc
-        }
+          const data = this.collectSettings()
       // Write to json file here
         const settingdata = JSON.stringify(data);
 
@@ -212,29 +181,7 @@ export default {
           return response.json();
         }).then(getJSON => {
           
-        Object.keys(data).map((key)=>{
-          if(key in this.storeTCP.web){
-            this.storeTCP.web[key] = getJSON[key]
-          }else if(key in this.storeTCP.mqtt){
-            this.storeTCP.mqtt[key] = getJSON[key]
-          }else if(key in this.storeTCP.inverters){
-            this.storeTCP.inverters[key] = getJSON[key]
-          }else if(key in this.storeTCP.influx){
-            this.storeTCP.influx[key] = getJSON[key]
-          }else if(key in this.storeTCP.selfrun){
-            this.storeTCP.selfrun[key] = getJSON[key]
-          }else if(key in this.storeTCP.tariffs){
-            this.storeTCP.tariffs[key] = getJSON[key]
-          }else if(key in this.storeTCP.misc){
-            this.storeTCP.misc[key] = getJSON[key]
-          }else if(key in this.storeTCP.palm){
-            this.storeTCP.palm[key] = getJSON[key]
-          }else if(key in this.storeTCP.evc){
-            this.storeTCP.evc[key] = getJSON[key]
-          }else {
-            return
-          }
-        });
+        this.applySettings(getJSON);
         }).catch(err => {
             this.snackbar = true
             this.message = `Error: ${err}`
