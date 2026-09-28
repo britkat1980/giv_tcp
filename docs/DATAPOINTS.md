@@ -285,6 +285,8 @@ Three-phase inverters add:
 
 `GivEnergy/<serial>/Timeslots/…`: charge, discharge and pause schedules. Times are `HH:MM:SS`, in one-minute steps.
 
+Each timeslot appears in Home Assistant twice: as a `select` (a drop-down of one-minute steps) and, on Home Assistant 2026.5 or later, as a `time` entity with a time picker, e.g. `time.givtcp_<serial>_charge_start_time_slot_1`. Both use the same MQTT topics, so changing one updates the other.
+
 | Name | Type | Command | Description |
 |---|---|---|---|
 | `Charge_start_time_slot_N` / `Charge_end_time_slot_N` | select | `setChargeStartN` / `setChargeEndN` | Start / end of charge slot N (1–10) |

@@ -83,6 +83,9 @@ class HAMQTT():
                     #        client.publish("homeassistant2/binary_sensor/GivEnergy/"+str(topic).split("/")[-1]+"/config",HAMQTT.create_binary_sensor_payload(topic,SN),retain=True)
                         elif e_type.devType=="select":
                             publisher.append(["homeassistant/select/GivEnergy/"+SN+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
+                            # Timeslots also get a native HA time picker alongside the select (HA 2026.5+)
+                            if "time_slot" in str(topic).split("/")[-1].lower():
+                                publisher.append(["homeassistant/time/GivEnergy/"+SN+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_time_payload(topic,SN,inv_type)])
                         elif e_type.devType=="button":
                             publisher.append(["homeassistant/button/GivEnergy/"+SN+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
 
@@ -136,6 +139,18 @@ class HAMQTT():
         time.sleep(1)
         unpub=CheckDisco.checkdisco(array)  #Check what is in broker vs what was sent and return missing items
         return unpub
+
+    def create_time_payload(topic,SN,inv_type="EVC"):
+        # HA "time" entity for a timeslot. It shares the select's state topic (HH:MM:SS) and command topic:
+        # HA sends ISO HH:MM:SS, and the timeslot MQTT handlers already take the first 5 chars (HH:MM)
+        tempObj=json.loads(HAMQTT.create_device_payload(topic,SN,inv_type))
+        tempObj.pop('options',None)
+        item=str(topic).split("/")[-1]
+        tempObj['name']=item.replace("_time_slot","_slot").replace("_"," ")     # eg. "Charge start slot 1"
+        tempObj['unique_id']=tempObj['unique_id']+"_time"
+        tempObj['default_entity_id']="time."+tempObj['default_entity_id'].split(".",1)[1]
+        tempObj['icon']="mdi:clock-outline"
+        return json.dumps(tempObj)
 
     def create_device_payload(topic,SN,inv_type="EVC"):
         tempObj={}
