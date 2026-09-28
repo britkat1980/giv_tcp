@@ -5,18 +5,100 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solar Panel Inverter Controller</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <title>GivTCP</title>
+    <link rel="icon" href="favicon.ico">
     <link rel="stylesheet" href="main.css">
+    <style>
+        /* Mirrors the config page (Vuetify cards on the base.css background, #4fbba9 accent) */
+        :root {
+            --accent: #4fbba9;
+            --page-bg: #b6b5b5;
+            --card-bg: #ffffff;
+            --card-text: rgba(0, 0, 0, 0.87);
+            --card-sub: rgba(0, 0, 0, 0.6);
+            --header-text: #2c3e50;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --page-bg: #181818;
+                --header-text: rgba(235, 235, 235, 0.64);
+            }
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            background: var(--page-bg);
+            color: var(--header-text);
+            line-height: 1.6;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+                Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            font-size: 15px;
+            -webkit-font-smoothing: antialiased;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            max-width: 1000px;
+            margin: 0 auto 48px;
+            padding: 0 16px;
+        }
+        .card {
+            display: flex;
+            flex-direction: column;
+            background: var(--card-bg);
+            color: var(--card-text);
+            border-radius: 4px;
+            box-shadow: 0 2px 1px -1px rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.14), 0 1px 3px 0 rgba(0,0,0,.12);
+            transition: box-shadow .2s;
+        }
+        .card:hover {
+            box-shadow: 0 5px 5px -3px rgba(0,0,0,.2), 0 8px 10px 1px rgba(0,0,0,.14), 0 3px 14px 2px rgba(0,0,0,.12);
+        }
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 16px 4px;
+            font-size: 1.25rem;
+            font-weight: 500;
+            letter-spacing: .0125em;
+        }
+        .card-title svg { width: 28px; height: 28px; fill: var(--accent); flex: none; }
+        .card-text {
+            flex: 1;
+            padding: 4px 16px 16px;
+            font-size: .875rem;
+            color: var(--card-sub);
+        }
+        .card-actions { padding: 8px 16px 16px; }
+        .card .btn {
+            display: inline-block;
+            margin: 0;
+            padding: 0 16px;
+            height: 36px;
+            line-height: 36px;
+            border-radius: 4px;
+            background: var(--accent);
+            color: #fff;
+            font-size: .875rem;
+            font-weight: 500;
+            letter-spacing: .0892857143em;
+            text-transform: uppercase;
+            text-decoration: none;
+            box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
+        }
+        .card .btn:hover { text-decoration: none; filter: brightness(1.08); }
+    </style>
     <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
     <script>
         $(function() {
            $("#includeHead").load("header.html");
         });
-     </script>
-    <script type="text/javascript"> 
-       async function updateurl() 
-       { 
+    </script>
+    <script type="text/javascript">
+       async function updateurl()
+       {
          await fetch('hostip.json').then(response => {
              return response.json();
          }).then(json => {
@@ -25,17 +107,53 @@
        document.getElementById("config").innerHTML = "<a href=config.html>Config Page</a>";
        document.getElementById("readme").innerHTML = "<a href=readme.html>Readme Page</a>";
        document.getElementById("dashboard").innerHTML = "<a href=http://" + n + ":8099/dashboard target=\"_blank\">Dashboard</a>";
-           
-       } 
-       </script>
-    
+       document.getElementById("dashboard-btn").href = "http://" + n + ":8099/dashboard";
+       }
+    </script>
 </head>
 
 <body>
     <div id="includeHead"></div>
+
+    <div class="cards">
+        <div class="card">
+            <div class="card-title">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/></svg>
+                Config
+            </div>
+            <div class="card-text">
+                Set up your inverters, MQTT, Home Assistant, tariffs and self run.
+                Restart GivTCP after saving any changes.
+            </div>
+            <div class="card-actions"><a class="btn" href="config.html">Open Config</a></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13,9H18.5L13,3.5V9M6,2H14L20,8V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V4C4,2.89 4.89,2 6,2M15,18V16H6V18H15M18,14V12H6V14H18Z"/></svg>
+                Readme
+            </div>
+            <div class="card-text">
+                Documentation and notes for this version of GivTCP.
+            </div>
+            <div class="card-actions"><a class="btn" href="readme.html">Open Readme</a></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13,3V9H21V3M13,21H21V11H13M3,21H11V15H3M3,13H11V3H3V13Z"/></svg>
+                Dashboard
+            </div>
+            <div class="card-text">
+                Live view of your inverter and battery. Opens in a new tab.
+            </div>
+            <div class="card-actions"><a class="btn" id="dashboard-btn" href="dashboard/" target="_blank">Open Dashboard</a></div>
+        </div>
+    </div>
+
     <script type="text/javascript">
         updateurl();
-      </script>
+    </script>
 </body>
 
 </html>
