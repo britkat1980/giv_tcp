@@ -107,16 +107,16 @@ async def detectPlant(client, force=False):
         try:
             with open(capsFile(), 'rb') as inp:
                 client.plant.capabilities=pickle.load(inp)
-            logger.critical("Using cached capabilities from "+str(capsFile())+", skipping detect")
+            logger.info("Using cached capabilities from "+str(capsFile())+", skipping detect")
             return True
         except Exception as e:
             logger.warning("Unable to load cached capabilities, running full detect: "+str(e))
-    logger.critical("Detecting inverter characteristics...")
+    logger.info("Detecting inverter characteristics...")
     await client.detect()
     try:
         with open(capsFile(), 'wb') as outp:
             pickle.dump(client.plant.capabilities, outp, pickle.HIGHEST_PROTOCOL)
-        logger.critical("Saved capabilities to "+str(capsFile()))
+        logger.info("Saved capabilities to "+str(capsFile()))
     except Exception as e:
         logger.warning("Unable to save capabilities cache: "+str(e))
     return False
@@ -208,7 +208,7 @@ async def watch_plant(
             try:
                 if not client.connected:
                     #in case the client has died, reopen it
-                    logger.critical("Re-opening Modbus Connecion to: "+str(GiV_Settings.invertorIP))
+                    logger.info("Re-opening Modbus Connecion to: "+str(GiV_Settings.invertorIP))
                     try:
                         await GivClientAsync.get_connection()
                         connectErrors=0
