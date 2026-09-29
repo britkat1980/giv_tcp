@@ -110,9 +110,9 @@ async def getInvDeets(HOST):
         if caps:
             logger.info("Using cached capabilities for "+str(SN)+", skipping detect")
         else:
-            logger.critical("No cached capabilities for "+str(SN)+", running full detect")
+            logger.info("No cached capabilities for "+str(SN)+", running full detect")
             caps= await client.detect()
-            logger.critical("Saving capabilities to cache: "+str(capsFile(SN)))
+            logger.info("Saving capabilities to cache: "+str(capsFile(SN)))
             with open(capsFile(SN), 'wb') as outp:
                 pickle.dump(caps, outp, pickle.HIGHEST_PROTOCOL)
         try:

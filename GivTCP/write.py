@@ -1293,7 +1293,7 @@ async def forceCharge(device, chargeTime, readloop=False):
         if exists(".FCRunning"+str(GiV_Settings.givtcp_instance)):    # If a forcecharge is already running, change time of revert job to new end time
             logger.info("Force Charge already running, changing end time")
             revert=getFCArgs()[0]   # set new revert object and cancel old revert job
-            logger.critical("new revert= "+ str(revert))
+            logger.info("new revert= "+ str(revert))
         fcjob=GivQueue.q.enqueue_in(timedelta(minutes=chargeTime),queueWrite,"FCResume",revert)
         with open(".FCRunning"+str(GiV_Settings.givtcp_instance), 'w') as f:
             f.write('\n'.join([str(fcjob.id),str(finish)]))

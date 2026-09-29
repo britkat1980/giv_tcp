@@ -351,7 +351,7 @@ def publishOutput(array, SN):
         if GiV_Settings.first_run_evc:
             updateFirstRun(SN)              # 09=July=23 - Always do this first irrespective of HA setting.
             if GiV_Settings.HA_Auto_D:        # Home Assistant MQTT Discovery
-                logger.critical("Publishing Home Assistant Discovery messages")
+                logger.info("Publishing Home Assistant Discovery messages")
                 from EVC_HA_Discovery import HAMQTT
                 HAMQTT.publish_discovery2(tempoutput, SN)
             GiV_Settings.first_run_evc = False  

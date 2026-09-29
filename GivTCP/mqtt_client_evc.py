@@ -77,7 +77,7 @@ if GiV_Settings.MQTT_Topic=='':
 else:
     MQTT_Topic=GiV_Settings.MQTT_Topic
 
-logger.critical("Connecting to MQTT broker for EVC control- "+str(GiV_Settings.MQTT_Address))
+logger.info("Connecting to MQTT broker for EVC control- "+str(GiV_Settings.MQTT_Address))
 #loop till serial number has been found
 count=0          # 09-July-2023  set start point
 
