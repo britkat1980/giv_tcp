@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GivTCP Logs</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="pages.css">
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script>
+        $(function() {
+           $("#includeHead").load("header.html");
+        });
+    </script>
+</head>
+
+<body>
+    <div id="includeHead"></div>
+    <!-- Logs come from /config/GivTCP/logs via nginx (see ingress.conf) and are read by logviewer.js -->
+    <div class="doc logviewer">
+        <div class="card">
+            <div class="lv-tabs" id="lv-tabs" role="tablist"></div>
+            <div class="lv-toolbar">
+                <label>Day
+                    <select id="lv-day"></select>
+                </label>
+                <label>Level
+                    <select id="lv-level">
+                        <option value="ALL">All</option>
+                        <option value="INFO">Info and above</option>
+                        <option value="WARNING">Warnings and errors</option>
+                        <option value="ERROR">Errors only</option>
+                    </select>
+                </label>
+                <input id="lv-filter" type="search" placeholder="Filter text…" aria-label="Filter text">
+                <label class="lv-check"><input id="lv-follow" type="checkbox" checked> Follow</label>
+                <span class="lv-spacer"></span>
+                <button id="lv-earlier" class="lv-btn" type="button">Load earlier</button>
+                <button id="lv-refresh" class="lv-btn" type="button">Refresh</button>
+                <a id="lv-download" class="lv-btn" href="#">Download</a>
+            </div>
+            <div class="lv-log" id="lv-log"></div>
+            <div class="lv-status" id="lv-status">Loading…</div>
+        </div>
+    </div>
+    <script src="logviewer.js"></script>
+</body>
+
+</html>

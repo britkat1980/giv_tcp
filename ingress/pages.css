@@ -141,3 +141,109 @@ body {
 .doc ul, .doc ol { margin: 0 0 12px; padding-left: 24px; color: var(--card-text); }
 .doc li { margin: 2px 0; }
 .doc hr { border: 0; border-top: 1px solid var(--divider); margin: 24px 0; }
+
+/* ---- Log viewer (logs.html) ---- */
+.logviewer .card { padding: 0; overflow: hidden; }
+.lv-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--divider);
+    padding: 0 8px;
+}
+.lv-tab {
+    background: none;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    padding: 12px 14px 9px;
+    font: inherit;
+    font-size: .875rem;
+    font-weight: 500;
+    color: var(--card-sub);
+    cursor: pointer;
+    white-space: nowrap;
+}
+.lv-tab:hover { color: var(--card-text); background: var(--stripe); }
+.lv-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.lv-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+    padding: 12px 16px;
+    font-size: .85rem;
+    color: var(--card-sub);
+}
+.lv-toolbar label { display: flex; align-items: center; gap: 6px; }
+.lv-toolbar select, .lv-toolbar input[type=search] {
+    font: inherit;
+    color: var(--card-text);
+    background: #fff;
+    border: 1px solid var(--divider);
+    border-radius: 4px;
+    padding: 5px 8px;
+}
+.lv-toolbar input[type=search] { min-width: 180px; flex: 0 1 240px; }
+.lv-check input { accent-color: var(--accent); }
+.lv-spacer { flex: 1; }
+.lv-btn {
+    font: inherit;
+    font-weight: 500;
+    font-size: .8rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: none;
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 5px 12px;
+    margin: 0;
+    cursor: pointer;
+    text-decoration: none;
+}
+.lv-btn:hover { background: var(--code-bg); text-decoration: none; }
+.lv-btn:disabled { opacity: .4; cursor: default; background: none; }
+/* Terminal-style log area; dark in both themes so the level colours read the same */
+.lv-log {
+    height: 65vh;
+    min-height: 300px;
+    overflow: auto;
+    background: #1e1f22;
+    color: #d4d4d4;
+    font-family: var(--mono);
+    font-size: .78rem;
+    line-height: 1.45;
+    padding: 8px 0;
+}
+.lv-line { padding: 0 16px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.lv-line:hover { background: rgba(255,255,255,.05); }
+.lv-debug { color: #8b8f96; }
+.lv-info { color: #d4d4d4; }
+.lv-warning { color: #e5c07b; }
+.lv-error, .lv-critical { color: #f28b82; }
+.lv-critical { font-weight: 700; }
+.lv-empty { padding: 24px 16px; color: #8b8f96; font-family: inherit; }
+.lv-status {
+    padding: 8px 16px;
+    font-size: .78rem;
+    color: var(--card-sub);
+    border-top: 1px solid var(--divider);
+}
+/* Source label on each entry in the "All logs" tab */
+.lv-src {
+    display: inline-block;
+    width: 13ch;
+    margin-right: 1ch;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: top;
+}
+.lv-src-0 { color: #4fbba9; }
+.lv-src-1 { color: #61afef; }
+.lv-src-2 { color: #c678dd; }
+.lv-src-3 { color: #56b6c2; }
+.lv-src-4 { color: #d19a66; }
+.lv-src-5 { color: #98c379; }
+.lv-src-6 { color: #e06c9f; }
+.lv-src-7 { color: #a9b1d6; }
