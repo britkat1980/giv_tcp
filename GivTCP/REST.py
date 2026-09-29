@@ -25,7 +25,11 @@ CORS(giv_api)
 import logging
 from flask import g
 from GivLUT import SharedTimedRotatingFileHandler
-REST_LOG_MAX_BODY=500      # truncate long request/response bodies (eg. full readData output)
+REST_LOG_MAX_BODY=500      # truncate long request/response bodies
+# Routes whose response is the full data dump: log its size rather than the start of the JSON
+REST_LOG_NO_RESPONSE={'/readData','/getCache','/runAll','/fullCache','/getEVCCache','/showdata','/api'}
+# Settings can hold credentials (eg. MQTT password), so never log their request or response bodies
+REST_LOG_NO_BODIES={'/settings'}
 # settings.py from before this change has no Debug_File_Location_REST, so fall back to the main log's folder
 restLogFile=getattr(GiV_Settings,'Debug_File_Location_REST',None) or \
     os.path.join(os.path.dirname(GiV_Settings.Debug_File_Location),"rest_log_inv_"+str(GiV_Settings.givtcp_instance)+".log")
@@ -53,11 +57,14 @@ def _restLogResult(resp):
     try:
         took=int((time.monotonic()-g.get('restStart',time.monotonic()))*1000)
         line=str(request.remote_addr)+" "+request.method+" "+request.full_path.rstrip("?")+" -> "+str(resp.status_code)+" ("+str(took)+"ms)"
+        private=request.path in REST_LOG_NO_BODIES
         body=request.get_data(as_text=True)
         if body:
-            line+=" | request: "+_shorten(body)
+            line+=" | request: "+("<"+str(len(body))+" chars>" if private else _shorten(body))
         if resp.direct_passthrough:     # files (eg. send_file) - don't read the stream
             line+=" | response: <"+str(resp.mimetype)+">"
+        elif private or request.path in REST_LOG_NO_RESPONSE:
+            line+=" | response: <"+str(resp.mimetype)+", "+str(resp.calculate_content_length() or 0)+" bytes>"
         else:
             line+=" | response: "+_shorten(resp.get_data(as_text=True))
         restlogger.log(logging.INFO if resp.status_code<400 else logging.WARNING, line)
