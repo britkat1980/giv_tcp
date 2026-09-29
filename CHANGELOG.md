@@ -2,6 +2,13 @@
 
 All notable changes to GivTCP are documented in this file.
 
+## [3.5.66] - 2026-09-29
+
+### Added
+- **Log viewer** in the web UI, under Logs in the header menu. It has a tab for each log in `/config/GivTCP/logs`: startup, each inverter's main, write and REST logs, and the EV charger logs. An "All logs" tab merges them into one timeline, with a coloured label showing which log each entry came from.
+- In the viewer you can pick a rotated day, filter by level or text, follow new lines as they're written, load earlier lines and download a log file.
+- Only the log files are served. Nothing else in `/config/GivTCP`, such as `allsettings.json`, can be reached through the viewer.
+
 ## [3.5.64] - 2026-09-29
 
 Key changes since the last dev build published on the `dev3` branch (3.5.22).
@@ -12,13 +19,12 @@ Key changes since the last dev build published on the `dev3` branch (3.5.22).
 - The config page lists inverters so you can add or remove them, with no fixed limit of five. Inverters found by the last network scan are shown so you can add them in one click. Slots 1–5 keep REST ports 6345–6349, and slot 6 onwards start at 6356.
 - Saving from the config page no longer resets settings the page doesn't manage back to their defaults.
 - The config page now runs inside the Home Assistant sidebar (ingress) and no longer needs opening in a new tab by IP address.
-- The web pages have a new header menu (Config, Readme, Settings Guide, Datapoints, Logs, Dashboard) and restyled pages to match the config page.
+- The web pages have a new header menu (Config, Readme, Settings Guide, Datapoints, Dashboard) and restyled pages to match the config page.
 - Redis now only listens on localhost.
 
 ### Added
 - **Time picker controls for timeslots** in Home Assistant 2026.5 or later, alongside the existing drop-downs. For example, "Charge start slot 1" sits next to "Charge start time slot 1". Both stay in sync.
 - **Settings Guide and Datapoints pages** in the web UI, generated from [docs/SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md) and the new [docs/DATAPOINTS.md](docs/DATAPOINTS.md), which describes every value GivTCP publishes.
-- **Log viewer** in the web UI (Logs in the header menu): a tab for each log in `/config/GivTCP/logs`, including startup, each inverter's main, write and REST logs, and the EV charger logs, plus an "All logs" tab that merges them all by time. You can pick a rotated day, filter by level or text, follow new lines as they're written, load earlier lines and download the file.
 - **REST request log**: each REST request and its result are written to their own log file alongside the main log.
 - **Data age stat** (`Data_Age`): shows how old the inverter data is, so values held from the last good read can be spotted.
 - Better support for HV Gen 3, three-phase, All-in-One, EMS and Gateway systems, including battery counts and stack details for HV batteries.
