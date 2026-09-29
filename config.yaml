@@ -1,164 +1,22 @@
 name:  "GivTCP"
 description:  "TCP Modbus connection to MQTT/JSON for Givenergy Battery/PV Invertors"
-version:  "2.4.9"
-image: britkat/giv_tcp-ma
-slug:  "givtcp"
+version:  "3.5.68"
+image: givtcp.docker.scarf.sh/britkat/giv_tcp-ma
+slug:  "givtcp-dev"
 homeassistant_api: true
 hassio_api: true
 init:  true
 ingress: true
-ingress_port: 8099
-panel_icon: mdi:solar-power
+ingress_entry: readme.html
 services:
   - "mqtt:want"
 map:
   - config:rw
+  - ssl
 boot:  auto
 url:  https://github.com/britkat1980/giv_tcp
 legacy:  true
 arch: 
   - aarch64
   - amd64
-  - armhf
-  - armv7
-  - i386
 host_network: true
-options:
-  AUTO_SCAN: true
-  NUMINVERTORS: 1
-  INVERTOR_IP_1:  ""
-  INVERTOR_NAME_1: "Inv1"
-  INVERTOR_AIO_1: False
-  INVERTOR_AC_1: True
-  NUMBATTERIES_1:  1
-    HADEVICEPREFIX: "GivTCP"
-  INVERTOR_IP_2:  ""
-  INVERTOR_NAME_2: "Inv2"
-  NUMBATTERIES_2:  1
-  INVERTOR_AIO_2: False
-  INVERTOR_AC_2: True
-  HADEVICEPREFIX_2: "GivTCP2"
-  INVERTOR_IP_3:  ""
-  INVERTOR_NAME_3: "Inv3"
-  NUMBATTERIES_3:  1
-  INVERTOR_AIO_3: False
-  INVERTOR_AC_3: True
-  HADEVICEPREFIX_3: "GivTCP3"
-  MQTT_OUTPUT: True
-  MQTT_ADDRESS: "core-mosquitto"
-  MQTT_USERNAME: ""
-  MQTT_PASSWORD: ""
-  MQTT_TOPIC: ""
-  MQTT_TOPIC_2: ""
-  MQTT_TOPIC_3: ""
-  MQTT_PORT: 1883
-  MQTT_RETAIN: False
-  LOG_LEVEL: "Info"
-  PRINT_RAW: True
-  SELF_RUN: True
-  SELF_RUN_LOOP_TIMER: 15
-  SELF_RUN_LOOP_TIMER_FULL: 120
-  QUEUE_RETRIES: 2
-  HA_AUTO_D: True
-  DYNAMICTARIFF: False
-  DAYRATE: "0.155"
-  NIGHTRATE: "0.055"
-  EXPORTRATE: "0.04"
-  DAYRATESTART: "04:30"
-  NIGHTRATESTART: "00:30"
-  INFLUX_OUTPUT: False
-  INFLUX_URL: ""
-  INFLUX_TOKEN: ""
-  INFLUX_BUCKET: ""
-  INFLUX_ORG: ""
-  PYTHONPATH: "/app"  
-  TZ: "Europe/London"
-  WEB_DASH: False
-  WEB_DASH_PORT: 3000
-  CACHELOCATION: "/config/GivTCP"
-  DATASMOOTHER: "medium"
-  SMARTTARGET: False
-  PALM_WINTER: "01,02,11,12"
-  PALM_SHOULDER: "03,04,09,10"
-  PALM_MIN_SOC_TARGET: 25
-  PALM_MAX_SOC_TARGET: 45
-  PALM_BATT_RESERVE: 4
-  PALM_BATT_UTILISATION: 0.85
-  PALM_WEIGHT: 35
-  GEAPI: ""
-  SOLCASTAPI: ""
-  SOLCASTSITEID: ""
-  SOLCASTSITEID2: ""
-  LOAD_HIST_WEIGHT: "1"
-  EVC_ENABLE: False
-  EVC_IP_ADDRESS: ""
-  EVC_SELF_RUN_TIMER: 5
-schema: 
-  NUMINVERTORS: int
-  INVERTOR_IP_1:  str
-  INVERTOR_NAME_1: str
-  NUMBATTERIES_1:  int
-  INVERTOR_AIO_1: bool
-  INVERTOR_AC_1: bool
-  HADEVICEPREFIX: "str?"
-  INVERTOR_IP_2:  "str?"
-  INVERTOR_NAME_2: "str?"
-  NUMBATTERIES_2:  "int?"
-  INVERTOR_AIO_2: bool
-  INVERTOR_AC_2: bool
-  HADEVICEPREFIX_2: "str?"
-  INVERTOR_IP_3:  "str?"
-  INVERTOR_NAME_3: "str?"
-  NUMBATTERIES_3:  "int?"
-  INVERTOR_AIO_3: bool
-  INVERTOR_AC_3: bool
-  HADEVICEPREFIX_3: "str?"
-  MQTT_OUTPUT: bool
-  MQTT_ADDRESS: str
-  MQTT_USERNAME: "str?"
-  MQTT_PASSWORD: "str?"
-  MQTT_TOPIC: "str?"
-  MQTT_TOPIC_2: "str?"
-  MQTT_TOPIC_3: "str?"
-  MQTT_PORT: int
-  MQTT_RETAIN: bool
-  LOG_LEVEL: str
-  PRINT_RAW: bool
-  SELF_RUN: bool
-  SELF_RUN_LOOP_TIMER: int
-  SELF_RUN_LOOP_TIMER_FULL: int
-  QUEUE_RETRIES: int
-  HA_AUTO_D: bool
-  DYNAMICTARIFF: bool
-  DAYRATE: "str?"
-  NIGHTRATE: "str?"
-  EXPORTRATE: "str?"
-  DAYRATESTART: "str?"
-  NIGHTRATESTART: "str?"
-  INFLUX_OUTPUT: bool
-  INFLUX_URL: "str?"
-  INFLUX_TOKEN: "str?"
-  INFLUX_BUCKET: "str?"
-  INFLUX_ORG: "str?"
-  PYTHONPATH: str
-  TZ: str
-  WEB_DASH: bool
-  WEB_DASH_PORT: int
-  CACHELOCATION: "str?"
-  DATASMOOTHER: "str?"
-  SMARTTARGET: bool
-  PALM_WINTER: "str"
-  PALM_SHOULDER: "str"
-  PALM_MIN_SOC_TARGET: int
-  PALM_MAX_SOC_TARGET: int
-  PALM_BATT_RESERVE: int
-  PALM_BATT_UTILISATION: float
-  PALM_WEIGHT: float
-  GEAPI: "str?"
-  SOLCASTAPI: "str?"
-  SOLCASTSITEID: "str?"
-  SOLCASTSITEID2: "str?"
-  LOAD_HIST_WEIGHT: "str?"
-  EVC_ENABLE: bool
-  EVC_IP_ADDRESS: "str?"
-  EVC_SELF_RUN_TIMER: int
