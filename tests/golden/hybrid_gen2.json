@@ -1,0 +1,7349 @@
+{
+ "detect": {
+  "capabilities": {
+   "batteries": 1,
+   "device_type": "HYBRID_GEN2",
+   "failed_reads": [],
+   "inverter_address": 17,
+   "is_ems": false,
+   "is_gateway": false,
+   "is_hv": false,
+   "is_three_phase": false
+  }
+ },
+ "direct": {
+  "enableChargeSchedule({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Schedule to disable was a success"
+    },
+    "writes": [
+     [
+      17,
+      96,
+      0
+     ]
+    ]
+   }
+  ],
+  "enableChargeSchedule({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Schedule to enable was a success"
+    },
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ]
+    ]
+   }
+  ],
+  "enableChargeTarget({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Disabling Charge Target was a success"
+    },
+    "writes": [
+     [
+      17,
+      20,
+      0
+     ],
+     [
+      17,
+      116,
+      100
+     ]
+    ]
+   }
+  ],
+  "enableChargeTarget({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Enabling Charge Target was a success"
+    },
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      20,
+      0
+     ],
+     [
+      17,
+      116,
+      100
+     ]
+    ]
+   }
+  ],
+  "enableDischargeSchedule({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Schedule to disable was a success"
+    },
+    "writes": [
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "enableDischargeSchedule({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Schedule to enable was a success"
+    },
+    "writes": [
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "enableRTC({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Disabling Real Time Control was a success"
+    },
+    "writes": [
+     [
+      17,
+      166,
+      0
+     ]
+    ]
+   }
+  ],
+  "enableRTC({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Enabling Real Time Control was a success"
+    },
+    "writes": [
+     [
+      17,
+      166,
+      1
+     ]
+    ]
+   }
+  ],
+  "forceCharge(30)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Charge successfully forced for 30 minutes"
+    },
+    "writes": [
+     [
+      17,
+      116,
+      100
+     ],
+     [
+      17,
+      94,
+      1200
+     ],
+     [
+      17,
+      95,
+      1230
+     ],
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      111,
+      50
+     ]
+    ]
+   }
+  ],
+  "forceCharge(30) then FCResume": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Charge successfully forced for 30 minutes"
+    },
+    "writes": [
+     [
+      17,
+      116,
+      100
+     ],
+     [
+      17,
+      94,
+      1200
+     ],
+     [
+      17,
+      95,
+      1230
+     ],
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      111,
+      50
+     ]
+    ]
+   },
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Force Charge Reverted successfully"
+    },
+    "writes": [
+     [
+      17,
+      111,
+      16
+     ],
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      94,
+      2330
+     ],
+     [
+      17,
+      95,
+      530
+     ],
+     [
+      17,
+      116,
+      100
+     ]
+    ]
+   }
+  ],
+  "forceExport(30)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Export successfully forced for 30 minutes"
+    },
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      112,
+      50
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      56,
+      1200
+     ],
+     [
+      17,
+      57,
+      1230
+     ],
+     [
+      17,
+      44,
+      0
+     ],
+     [
+      17,
+      45,
+      0
+     ]
+    ]
+   }
+  ],
+  "forceExport(30) then FEResume": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Export successfully forced for 30 minutes"
+    },
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      112,
+      50
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      56,
+      1200
+     ],
+     [
+      17,
+      57,
+      1230
+     ],
+     [
+      17,
+      44,
+      0
+     ],
+     [
+      17,
+      45,
+      0
+     ]
+    ]
+   },
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Force Export Reverted successfully"
+    },
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      59,
+      0
+     ],
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      94,
+      0
+     ],
+     [
+      17,
+      95,
+      0
+     ],
+     [
+      17,
+      59,
+      0
+     ],
+     [
+      17,
+      112,
+      38
+     ]
+    ]
+   }
+  ],
+  "rebootinverter({})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Rebooting Inverter was a success"
+    },
+    "writes": [
+     [
+      17,
+      163,
+      100
+     ]
+    ]
+   }
+  ],
+  "setACCharge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setACCharge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setActivePowerRate({'activePowerRate': '80'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting active power rate 80 was a success"
+    },
+    "writes": [
+     [
+      17,
+      50,
+      80
+     ]
+    ]
+   }
+  ],
+  "setBatteryCalibration({'state': 'Charge Only'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Battery Calibration Charge Only was a success"
+    },
+    "writes": [
+     [
+      17,
+      29,
+      3
+     ]
+    ]
+   }
+  ],
+  "setBatteryCalibration({'state': 'Off'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Battery Calibration Off was a success"
+    },
+    "writes": [
+     [
+      17,
+      29,
+      0
+     ]
+    ]
+   }
+  ],
+  "setBatteryCalibration({'state': 'Start'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Battery Calibration Start was a success"
+    },
+    "writes": [
+     [
+      17,
+      29,
+      1
+     ]
+    ]
+   }
+  ],
+  "setBatteryCutoff({'dischargeToPercent': '10'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery power reserve to 10 was a success"
+    },
+    "writes": [
+     [
+      17,
+      114,
+      10
+     ]
+    ]
+   }
+  ],
+  "setBatteryMode({'mode': 'Eco (Paused)'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
+    },
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "setBatteryMode({'mode': 'Eco'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Eco mode was a success"
+    },
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "setBatteryMode({'mode': 'Timed Demand'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Timed Demand mode was a success"
+    },
+    "writes": [
+     [
+      17,
+      110,
+      100
+     ],
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "setBatteryMode({'mode': 'Timed Export'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Timed Export mode was a success"
+    },
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "setBatteryPauseMode({'state': 'Disabled'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode({'state': 'PauseBoth'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode({'state': 'PauseCharge'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode({'state': 'PauseDischarge'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryReserve({'reservePercent': '2'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery reserve 4 was a success"
+    },
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ]
+    ]
+   }
+  ],
+  "setBatteryReserve({'reservePercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery reserve 20 was a success"
+    },
+    "writes": [
+     [
+      17,
+      110,
+      20
+     ]
+    ]
+   }
+  ],
+  "setCarChargeBoost({'boost': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setChargeRate({'chargeRate': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery charge rate 2500 was a success"
+    },
+    "writes": [
+     [
+      17,
+      111,
+      26
+     ]
+    ]
+   }
+  ],
+  "setChargeRate({'chargeRate': '99999'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery charge rate 99999 was a success"
+    },
+    "writes": [
+     [
+      17,
+      111,
+      50
+     ]
+    ]
+   }
+  ],
+  "setChargeRateAC({'chargeRate': '75'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting battery charge rate 75 failed"
+     ]
+    ],
+    "result": {
+     "result": "Setting battery charge rate 75 failed"
+    },
+    "writes": []
+   }
+  ],
+  "setChargeSlot({'start': '01:30', 'finish': '04:30', 'slot': '1', 'chargeToPercent': '90'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 1 to: 01:30 - 04:30 was a success"
+    },
+    "writes": [
+     [
+      17,
+      94,
+      130
+     ],
+     [
+      17,
+      95,
+      430
+     ],
+     [
+      17,
+      116,
+      90
+     ]
+    ]
+   }
+  ],
+  "setChargeSlot({'start': '01:30', 'finish': '04:30', 'slot': '2'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 2 to: 01:30 - 04:30 was a success"
+    },
+    "writes": [
+     [
+      17,
+      31,
+      130
+     ],
+     [
+      17,
+      32,
+      430
+     ]
+    ]
+   }
+  ],
+  "setChargeSlotEnd({'finish': '05:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot End 1 to: 05:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      95,
+      500
+     ]
+    ]
+   }
+  ],
+  "setChargeSlotEnd({'finish': '05:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot End 2 to: 05:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      32,
+      500
+     ]
+    ]
+   }
+  ],
+  "setChargeSlotStart({'start': '02:00', 'slot': 1, 'EMS': True})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 1 Start to: 02:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      94,
+      200
+     ]
+    ]
+   }
+  ],
+  "setChargeSlotStart({'start': '02:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 1 Start to: 02:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      94,
+      200
+     ]
+    ]
+   }
+  ],
+  "setChargeSlotStart({'start': '02:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 2 Start to: 02:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      31,
+      200
+     ]
+    ]
+   }
+  ],
+  "setChargeTarget({'chargeToPercent': '85'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Target 85 was a success"
+    },
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      20,
+      1
+     ],
+     [
+      17,
+      116,
+      85
+     ]
+    ]
+   }
+  ],
+  "setChargeTarget2({'chargeToPercent': '85', 'slot': 1, 'EMS': True})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setChargeTarget2({'chargeToPercent': '85', 'slot': 10})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 10 failed: NotImplementedError: Charge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Target 10 failed: NotImplementedError: Charge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setChargeTarget2({'chargeToPercent': '85', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setChargeTarget2({'chargeToPercent': '85', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 2 failed: NotImplementedError: Charge target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Target 2 failed: NotImplementedError: Charge target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setDateTime({'dateTime': '01/01/2026 12:00:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setDischargeRate({'dischargeRate': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery discharge limit 2500 was a success"
+    },
+    "writes": [
+     [
+      17,
+      112,
+      26
+     ]
+    ]
+   }
+  ],
+  "setDischargeRateAC({'dischargeRate': '75'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting battery discharge rate 75 failed"
+     ]
+    ],
+    "result": {
+     "result": "Setting battery discharge rate 75 failed"
+    },
+    "writes": []
+   }
+  ],
+  "setDischargeSlot({'start': '16:00', 'finish': '19:00', 'slot': '1', 'dischargeToPercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot 1 to: 16:00 - 19:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      110,
+      20
+     ],
+     [
+      17,
+      56,
+      1600
+     ],
+     [
+      17,
+      57,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlot({'start': '16:00', 'finish': '19:00', 'slot': '2'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot 2 to: 16:00 - 19:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      44,
+      1600
+     ],
+     [
+      17,
+      45,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlotEnd({'finish': '05:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot End 1 to: 05:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      57,
+      500
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlotEnd({'finish': '05:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot End 2 to: 05:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      45,
+      500
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlotStart({'start': '02:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot start 1 Start to: 02:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      56,
+      200
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlotStart({'start': '02:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot start 2 Start to: 02:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      44,
+      200
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlotStart({'start': '16:00', 'slot': 1, 'EMS': True})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot start 1 Start to: 16:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      56,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setDischargeTarget({'dischargeToPercent': '30', 'slot': '1'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setDischargeTarget({'dischargeToPercent': '30', 'slot': '10'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 10 failed: NotImplementedError: Discharge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge Target 10 failed: NotImplementedError: Discharge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setEcoMode({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Eco Mode disable was a success"
+    },
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ]
+    ]
+   }
+  ],
+  "setEcoMode({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Eco Mode enable was a success"
+    },
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ]
+    ]
+   }
+  ],
+  "setEmsPlant({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setEmsPlant({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setExportLimit({'state': '3600'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Limit failed: NotImplementedError: Setting the Export Limit is not yet supported by givenergy-modbus for Hybrid_gen2 inverters (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Limit failed: NotImplementedError: Setting the Export Limit is not yet supported by givenergy-modbus for Hybrid_gen2 inverters (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setExportSlot({'start': '16:00', 'finish': '19:00', 'slot': '1'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setExportSlotEnd({'finish': '05:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setExportSlotEnd({'finish': '05:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setExportSlotStart({'start': '02:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setExportSlotStart({'start': '02:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setExportTarget({'exportToPercent': '30', 'slot': '1'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Target 1 failed: NotImplementedError: Export target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Target 1 failed: NotImplementedError: Export target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setForceCharge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setForceCharge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setForceDischarge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setForceDischarge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setLocalControlMode({'state': 'Battery'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {},
+    "writes": []
+   }
+  ],
+  "setLocalControlMode({'state': 'Grid'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {},
+    "writes": []
+   }
+  ],
+  "setLocalControlMode({'state': 'Load'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {},
+    "writes": []
+   }
+  ],
+  "setPauseEnd({'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(320) is not permitted for HYBRID_GEN2 inverter (registers: 320)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for HYBRID_GEN2 inverter'} (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for HYBRID_GEN2 inverter'} (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setPauseSlot({'start': '16:00', 'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(319) is not permitted for HYBRID_GEN2 inverter (registers: 319, 320)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setPauseStart({'start': '16:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(319) is not permitted for HYBRID_GEN2 inverter (registers: 319)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for HYBRID_GEN2 inverter'} (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for HYBRID_GEN2 inverter'} (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "switchRate(day)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "External rate setting not allowed. Enable Dynamic Tariff in settings"
+     ]
+    ],
+    "result": {
+     "result": "External rate setting not allowed. Enable Dynamic Tariff in settings"
+    },
+    "writes": []
+   }
+  ],
+  "syncDateTime({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting inverter time was a success"
+    },
+    "writes": [
+     [
+      17,
+      35,
+      26
+     ],
+     [
+      17,
+      36,
+      6
+     ],
+     [
+      17,
+      37,
+      15
+     ],
+     [
+      17,
+      38,
+      12
+     ],
+     [
+      17,
+      39,
+      0
+     ],
+     [
+      17,
+      40,
+      0
+     ]
+    ]
+   }
+  ],
+  "tempPauseCharge(30)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Charge paused for 1800.0 seconds"
+    },
+    "writes": [
+     [
+      17,
+      111,
+      0
+     ]
+    ]
+   }
+  ],
+  "tempPauseCharge(30) then tmpPCResume": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Charge paused for 1800.0 seconds"
+    },
+    "writes": [
+     [
+      17,
+      111,
+      0
+     ]
+    ]
+   },
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Temp Pause Charge Reverted"
+    },
+    "writes": [
+     [
+      17,
+      111,
+      16
+     ]
+    ]
+   }
+  ],
+  "tempPauseDischarge(30)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Discharge paused for 1800.0 seconds"
+    },
+    "writes": [
+     [
+      17,
+      112,
+      0
+     ]
+    ]
+   }
+  ],
+  "tempPauseDischarge(30) then tmpPDResume": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Discharge paused for 1800.0 seconds"
+    },
+    "writes": [
+     [
+      17,
+      112,
+      0
+     ]
+    ]
+   },
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Temp Pause Discharge Reverted"
+    },
+    "writes": [
+     [
+      17,
+      112,
+      38
+     ]
+    ]
+   }
+  ]
+ },
+ "mqtt": {
+  "enableChargeSchedule(disable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "enableChargeSchedule",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      96,
+      0
+     ]
+    ]
+   }
+  ],
+  "enableChargeSchedule(enable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "enableChargeSchedule",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ]
+    ]
+   }
+  ],
+  "enableChargeTarget(disable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "enableChargeTarget",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      20,
+      0
+     ],
+     [
+      17,
+      116,
+      100
+     ]
+    ]
+   }
+  ],
+  "enableChargeTarget(enable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "enableChargeTarget",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      20,
+      0
+     ],
+     [
+      17,
+      116,
+      100
+     ]
+    ]
+   }
+  ],
+  "enableDischarge(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: enableDischarge - ignoring"
+     ]
+    ],
+    "queued": [
+     [
+      "enableDischarge",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "enableDischarge(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: enableDischarge - ignoring"
+     ]
+    ],
+    "queued": [
+     [
+      "enableDischarge",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "enableDischargeSchedule(disable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "enableDischargeSchedule",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "enableDischargeSchedule(enable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "enableDischargeSchedule",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "enableRTC(disable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "enableRTC",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      166,
+      0
+     ]
+    ]
+   }
+  ],
+  "enableRTC(enable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "enableRTC",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      166,
+      1
+     ]
+    ]
+   }
+  ],
+  "forceCharge(30)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "queued": [
+     [
+      "forceCharge",
+      30.0
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      116,
+      100
+     ],
+     [
+      17,
+      94,
+      1200
+     ],
+     [
+      17,
+      95,
+      1230
+     ],
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      111,
+      50
+     ]
+    ]
+   }
+  ],
+  "forceCharge(Cancel)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "queued": [
+     [
+      "forceCharge",
+      30.0
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      116,
+      100
+     ],
+     [
+      17,
+      94,
+      1200
+     ],
+     [
+      17,
+      95,
+      1230
+     ],
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      111,
+      50
+     ]
+    ]
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Write request error: TypeError: cancelJob() takes from 1 to 2 positional arguments but 3 were given deleting all pending requests, please try again"
+     ]
+    ],
+    "queued": [
+     [
+      "cancelJob",
+      "jobN"
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "forceExport(30)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "queued": [
+     [
+      "forceExport",
+      30.0
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      112,
+      50
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      56,
+      1200
+     ],
+     [
+      17,
+      57,
+      1230
+     ],
+     [
+      17,
+      44,
+      0
+     ],
+     [
+      17,
+      45,
+      0
+     ]
+    ]
+   }
+  ],
+  "forceExport(Cancel)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "queued": [
+     [
+      "forceExport",
+      30.0
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      112,
+      50
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      56,
+      1200
+     ],
+     [
+      17,
+      57,
+      1230
+     ],
+     [
+      17,
+      44,
+      0
+     ],
+     [
+      17,
+      45,
+      0
+     ]
+    ]
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Write request error: TypeError: cancelJob() takes from 1 to 2 positional arguments but 3 were given deleting all pending requests, please try again"
+     ]
+    ],
+    "queued": [
+     [
+      "cancelJob",
+      "jobN"
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "rebootInverter()": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "rebootinverter",
+      {}
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      163,
+      100
+     ]
+    ]
+   }
+  ],
+  "setACCharge(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setACCharge",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setACCharge(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setACCharge",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setActivePowerRate(80)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setActivePowerRate",
+      {
+       "activePowerRate": "80"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      50,
+      80
+     ]
+    ]
+   }
+  ],
+  "setBatteryCalibration(Charge Only)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryCalibration",
+      {
+       "state": "Charge Only"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      29,
+      3
+     ]
+    ]
+   }
+  ],
+  "setBatteryCalibration(Off)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryCalibration",
+      {
+       "state": "Off"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      29,
+      0
+     ]
+    ]
+   }
+  ],
+  "setBatteryCalibration(Start)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryCalibration",
+      {
+       "state": "Start"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      29,
+      1
+     ]
+    ]
+   }
+  ],
+  "setBatteryCutoff(10)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryCutoff",
+      {
+       "dischargeToPercent": "10"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      114,
+      10
+     ]
+    ]
+   }
+  ],
+  "setBatteryMode(Eco (Paused))": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryMode",
+      {
+       "mode": "Eco (Paused)"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "setBatteryMode(Eco)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryMode",
+      {
+       "mode": "Eco"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "setBatteryMode(Timed Demand)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryMode",
+      {
+       "mode": "Timed Demand"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      110,
+      100
+     ],
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "setBatteryMode(Timed Export)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryMode",
+      {
+       "mode": "Timed Export"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "setBatteryPauseMode(Disabled)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryPauseMode",
+      {
+       "state": "Disabled"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode(PauseBoth)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryPauseMode",
+      {
+       "state": "PauseBoth"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode(PauseCharge)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryPauseMode",
+      {
+       "state": "PauseCharge"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode(PauseDischarge)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryPauseMode",
+      {
+       "state": "PauseDischarge"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryReserve(20)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryReserve",
+      {
+       "reservePercent": "20"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      110,
+      20
+     ]
+    ]
+   }
+  ],
+  "setCarChargeBoost(2500)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setCarChargeBoost",
+      {
+       "boost": "2500"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd1(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      95,
+      500
+     ]
+    ]
+   }
+  ],
+  "setChargeEnd10(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 10 failed: ValueError: Charge slot index (10) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 10
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd2(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      32,
+      500
+     ]
+    ]
+   }
+  ],
+  "setChargeEnd3(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd4(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 4 failed: ValueError: Charge slot index (4) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 4
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd5(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 5 failed: ValueError: Charge slot index (5) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 5
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd6(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 6 failed: ValueError: Charge slot index (6) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 6
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd7(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 7 failed: ValueError: Charge slot index (7) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 7
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd8(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 8 failed: ValueError: Charge slot index (8) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 8
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd9(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 9 failed: ValueError: Charge slot index (9) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 9
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeRate(2500)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeRate",
+      {
+       "chargeRate": "2500"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      111,
+      26
+     ]
+    ]
+   }
+  ],
+  "setChargeRateAC(75)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting battery charge rate 75 failed"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeRateAC",
+      {
+       "chargeRate": "75"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart1(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 1,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      94,
+      200
+     ]
+    ]
+   }
+  ],
+  "setChargeStart10(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 10 failed: ValueError: Charge slot index (10) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 10,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart2(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 2,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      31,
+      200
+     ]
+    ]
+   }
+  ],
+  "setChargeStart3(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 3,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart4(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 4 failed: ValueError: Charge slot index (4) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 4,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart5(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 5 failed: ValueError: Charge slot index (5) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 5,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart6(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 6 failed: ValueError: Charge slot index (6) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 6,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart7(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 7 failed: ValueError: Charge slot index (7) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 7,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart8(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 8 failed: ValueError: Charge slot index (8) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 8,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart9(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 9 failed: ValueError: Charge slot index (9) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 9,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget(85)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeTarget",
+      {
+       "chargeToPercent": "85"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      20,
+      1
+     ],
+     [
+      17,
+      116,
+      85
+     ]
+    ]
+   }
+  ],
+  "setChargeTarget1(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget10(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 10 failed: NotImplementedError: Charge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 10
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget2(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 2 failed: NotImplementedError: Charge target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget3(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 3 failed: NotImplementedError: Charge target SOC for slot 3 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget4(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 4 failed: NotImplementedError: Charge target SOC for slot 4 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 4
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget5(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 5 failed: NotImplementedError: Charge target SOC for slot 5 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 5
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget6(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 6 failed: NotImplementedError: Charge target SOC for slot 6 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 6
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget7(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 7 failed: NotImplementedError: Charge target SOC for slot 7 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 7
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget8(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 8 failed: NotImplementedError: Charge target SOC for slot 8 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 8
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget9(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 9 failed: NotImplementedError: Charge target SOC for slot 9 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 9
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDateTime(01/01/2026 12:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDateTime",
+      {
+       "dateTime": "01/01/2026 12:00:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd1(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      57,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setDischargeEnd10(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 10 failed: ValueError: Discharge slot index (10) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 10
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd2(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      45,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setDischargeEnd3(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd4(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 4 failed: ValueError: Discharge slot index (4) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 4
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd5(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 5 failed: ValueError: Discharge slot index (5) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 5
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd6(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 6 failed: ValueError: Discharge slot index (6) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 6
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd7(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 7 failed: ValueError: Discharge slot index (7) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 7
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd8(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 8 failed: ValueError: Discharge slot index (8) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 8
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd9(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 9 failed: ValueError: Discharge slot index (9) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 9
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeRate(2500)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeRate",
+      {
+       "dischargeRate": "2500"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      112,
+      26
+     ]
+    ]
+   }
+  ],
+  "setDischargeRateAC(75)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting battery discharge rate 75 failed"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeRateAC",
+      {
+       "dischargeRate": "75"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart1(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 1,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      56,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setDischargeStart10(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 10 failed: ValueError: Discharge slot index (10) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 10,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart2(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 2,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      44,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setDischargeStart3(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 3,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart4(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 4 failed: ValueError: Discharge slot index (4) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 4,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart5(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 5 failed: ValueError: Discharge slot index (5) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 5,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart6(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 6 failed: ValueError: Discharge slot index (6) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 6,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart7(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 7 failed: ValueError: Discharge slot index (7) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 7,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart8(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 8 failed: ValueError: Discharge slot index (8) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 8,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart9(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 9 failed: ValueError: Discharge slot index (9) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 9,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget1(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget10(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 10 failed: NotImplementedError: Discharge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 10
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget2(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 2 failed: NotImplementedError: Discharge target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget3(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 3 failed: NotImplementedError: Discharge target SOC for slot 3 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget4(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 4 failed: NotImplementedError: Discharge target SOC for slot 4 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 4
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget5(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 5 failed: NotImplementedError: Discharge target SOC for slot 5 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 5
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget6(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 6 failed: NotImplementedError: Discharge target SOC for slot 6 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 6
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget7(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 7 failed: NotImplementedError: Discharge target SOC for slot 7 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 7
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget8(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 8 failed: NotImplementedError: Discharge target SOC for slot 8 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 8
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget9(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 9 failed: NotImplementedError: Discharge target SOC for slot 9 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 9
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEMSChargeEnd1(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "05:00",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      95,
+      500
+     ]
+    ]
+   }
+  ],
+  "setEMSChargeEnd2(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "05:00",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      32,
+      500
+     ]
+    ]
+   }
+  ],
+  "setEMSChargeEnd3(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "05:00",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEMSChargeStart1(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 1,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      94,
+      200
+     ]
+    ]
+   }
+  ],
+  "setEMSChargeStart2(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 2,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      31,
+      200
+     ]
+    ]
+   }
+  ],
+  "setEMSChargeStart3(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 3,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEMSChargeTarget1(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "EMS": true,
+       "chargeToPercent": "85",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEMSChargeTarget2(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 2 failed: NotImplementedError: Charge target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "EMS": true,
+       "chargeToPercent": "85",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEMSChargeTarget3(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 3 failed: NotImplementedError: Charge target SOC for slot 3 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "EMS": true,
+       "chargeToPercent": "85",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEMSDischargeEnd1(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "19:00",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      57,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setEMSDischargeEnd2(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "19:00",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      45,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setEMSDischargeEnd3(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "19:00",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEMSDischargeStart1(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 1,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      56,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setEMSDischargeStart2(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 2,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      44,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setEMSDischargeStart3(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 3,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEcoMode(disable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setEcoMode",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ]
+    ]
+   }
+  ],
+  "setEcoMode(enable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setEcoMode",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ]
+    ]
+   }
+  ],
+  "setEmsPlant(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setEmsPlant",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEmsPlant(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setEmsPlant",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportEnd1(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportEnd2(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportEnd3(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 3 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportLimit(3600)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Limit failed: NotImplementedError: Setting the Export Limit is not yet supported by givenergy-modbus for Hybrid_gen2 inverters (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportLimit",
+      {
+       "state": "3600"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportStart1(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportSlotStart",
+      {
+       "slot": 1,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportStart2(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportSlotStart",
+      {
+       "slot": 2,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportStart3(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 3 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportSlotStart",
+      {
+       "slot": 3,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportTarget1(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Target 1 failed: NotImplementedError: Export target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportTarget",
+      {
+       "exportToPercent": "30",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportTarget2(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Target 2 failed: NotImplementedError: Export target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportTarget",
+      {
+       "exportToPercent": "30",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportTarget3(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Target 3 failed: NotImplementedError: Export target SOC for slot 3 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportTarget",
+      {
+       "exportToPercent": "30",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setForceCharge(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setForceCharge",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setForceCharge(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setForceCharge",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setForceDischarge(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setForceDischarge",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setForceDischarge(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setForceDischarge",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setLocalControlMode(Battery)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setLocalControlMode",
+      {
+       "state": "Battery"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setLocalControlMode(Grid)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setLocalControlMode",
+      {
+       "state": "Grid"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setLocalControlMode(Load)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setLocalControlMode",
+      {
+       "state": "Load"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setPVInputMode(1x2)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: setPVInputMode - ignoring"
+     ]
+    ],
+    "queued": [
+     [
+      "setPVInputMode",
+      {
+       "state": "1x2"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setPVInputMode(Independent)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: setPVInputMode - ignoring"
+     ]
+    ],
+    "queued": [
+     [
+      "setPVInputMode",
+      {
+       "state": "Independent"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setPauseEnd(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(320) is not permitted for HYBRID_GEN2 inverter (registers: 320)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for HYBRID_GEN2 inverter'} (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setPauseEnd",
+      {
+       "finish": "19:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setPauseStart(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(319) is not permitted for HYBRID_GEN2 inverter (registers: 319)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for HYBRID_GEN2 inverter'} (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setPauseStart",
+      {
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "switchRate(day)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "External rate setting not allowed. Enable Dynamic Tariff in settings"
+     ]
+    ],
+    "queued": [
+     [
+      "switchRate",
+      "day"
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "syncDateTime(enable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "syncDateTime",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      35,
+      26
+     ],
+     [
+      17,
+      36,
+      6
+     ],
+     [
+      17,
+      37,
+      15
+     ],
+     [
+      17,
+      38,
+      12
+     ],
+     [
+      17,
+      39,
+      0
+     ],
+     [
+      17,
+      40,
+      0
+     ]
+    ]
+   }
+  ],
+  "tempPauseCharge(30)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "queued": [
+     [
+      "tempPauseCharge",
+      30.0
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      111,
+      0
+     ]
+    ]
+   }
+  ],
+  "tempPauseCharge(Cancel)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "queued": [
+     [
+      "tempPauseCharge",
+      30.0
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      111,
+      0
+     ]
+    ]
+   },
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [],
+    "writes": []
+   }
+  ],
+  "tempPauseDischarge(30)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "queued": [
+     [
+      "tempPauseDischarge",
+      30.0
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      112,
+      0
+     ]
+    ]
+   }
+  ],
+  "tempPauseDischarge(Cancel)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "queued": [
+     [
+      "tempPauseDischarge",
+      30.0
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      112,
+      0
+     ]
+    ]
+   },
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [],
+    "writes": []
+   }
+  ]
+ },
+ "read": {
+  "cycle 1 logs": [
+   [
+    "read_logger",
+    "ERROR",
+    "publish_discovery2: Error connecting to MQTT Broker: KeyError: 'Battery_BMS_Current' (HA_Discovery.py:N)"
+   ]
+  ],
+  "cycle 1 output": {
+   "Battery_Details": {
+    "Battery_Stack_1": {
+     "BMS_Temperature": 23.0,
+     "BMS_Voltage": 52.39,
+     "DF2244G000": {
+      "Battery_BMS_Current": 0.0,
+      "Battery_Capacity": 184.82,
+      "Battery_Cell_10_Voltage": 3.266,
+      "Battery_Cell_11_Voltage": 3.267,
+      "Battery_Cell_12_Voltage": 3.267,
+      "Battery_Cell_13_Voltage": 3.266,
+      "Battery_Cell_14_Voltage": 3.267,
+      "Battery_Cell_15_Voltage": 3.267,
+      "Battery_Cell_16_Voltage": 3.267,
+      "Battery_Cell_1_Temperature": 22.8,
+      "Battery_Cell_1_Voltage": 3.265,
+      "Battery_Cell_2_Temperature": 23.2,
+      "Battery_Cell_2_Voltage": 3.266,
+      "Battery_Cell_3_Temperature": 23.6,
+      "Battery_Cell_3_Voltage": 3.267,
+      "Battery_Cell_4_Temperature": 21.8,
+      "Battery_Cell_4_Voltage": 3.267,
+      "Battery_Cell_5_Voltage": 3.265,
+      "Battery_Cell_6_Voltage": 3.267,
+      "Battery_Cell_7_Voltage": 3.266,
+      "Battery_Cell_8_Voltage": 3.265,
+      "Battery_Cell_9_Voltage": 3.266,
+      "Battery_Cells": 16,
+      "Battery_Cycles": 1179,
+      "Battery_Design_Capacity": 186.0,
+      "Battery_Firmware_Version": 3020,
+      "Battery_Remaining_Capacity": 83.87,
+      "Battery_SOC": 45,
+      "Battery_Serial_Number": "DF2244G000",
+      "Battery_Temperature": 26.1,
+      "Battery_USB_present": 0,
+      "Battery_Voltage": 52.263
+     }
+    }
+   },
+   "Control": {
+    "Active_Power_Rate": 100,
+    "Battery_Calibration": "Off",
+    "Battery_Charge_Rate": 1523,
+    "Battery_Discharge_Rate": 3600,
+    "Battery_Power_Cutoff": 4,
+    "Battery_Power_Reserve": 4,
+    "Eco_Mode": "enable",
+    "Enable_Charge_Schedule": "enable",
+    "Enable_Charge_Target": "disable",
+    "Enable_Discharge_Schedule": "disable",
+    "Force_Charge": "Normal",
+    "Force_Charge_Num": 0,
+    "Force_Export": "Normal",
+    "Force_Export_Num": 0,
+    "Mode": "Eco",
+    "Real_Time_Control": "enable",
+    "Reboot_Addon": "disable",
+    "Reboot_Invertor": "disable",
+    "Sync_Time": "disable",
+    "Target_SOC": 100,
+    "Temp_Pause_Charge": "Normal",
+    "Temp_Pause_Charge_Num": 0,
+    "Temp_Pause_Discharge": "Normal",
+    "Temp_Pause_Discharge_Num": 0
+   },
+   "EA2302G000": {
+    "Battery_Calibration_Status": "Off",
+    "Battery_Capacity_kWh": 9.523200000000001,
+    "Battery_Type": "Lithium",
+    "Export_Limit": 6000,
+    "Invertor_Firmware": "D0.920-A0.920",
+    "Invertor_Max_Bat_Rate": 3600,
+    "Invertor_Max_Inv_Rate": 3600,
+    "Invertor_Serial_Number": "EA2302G000",
+    "Invertor_Temperature": 37.4,
+    "Invertor_Time": "2026-07-13T23:22:19+01:00",
+    "Invertor_Type": "Hybrid",
+    "Meter_Type": "Em115",
+    "Modbus_Version": "1.40"
+   },
+   "Energy": {
+    "Rates": {
+     "Battery_Value": 0,
+     "Battery_ppkwh": 0,
+     "Current_Rate": 0.3,
+     "Current_Rate_Type": "Day",
+     "Day_Cost": 0.0,
+     "Day_Energy_Total_kWh": 0,
+     "Day_Energy_kWh": 0.0,
+     "Day_Rate": 0.3,
+     "Day_Start_Energy_kWh": 31457.8,
+     "Export_Rate": 0.15,
+     "Import_ppkwh_Today": 0,
+     "Night_Cost": 0.0,
+     "Night_Energy_Total_kWh": 0.0,
+     "Night_Energy_kWh": 0.0,
+     "Night_Rate": 0.07,
+     "Night_Start_Energy_kWh": 31457.8
+    },
+    "Today": {
+     "AC_Charge_Energy_Today_kWh": 4.8,
+     "Battery_Charge_Energy_Today_kWh": 4.7,
+     "Battery_Discharge_Energy_Today_kWh": 5.5,
+     "Battery_Throughput_Today_kWh": 10.2,
+     "Export_Energy_Today_kWh": 18.9,
+     "Import_Energy_Today_kWh": 22.7,
+     "Invertor_Energy_Today_kWh": 28.6,
+     "Load_Energy_Today_kWh": 52.1,
+     "PV_Energy_Today_kWh": 24.5,
+     "Self_Consumption_Energy_Today_kWh": 5.600000000000001
+    },
+    "Total": {
+     "AC_Charge_Energy_Total_kWh": 3413.9,
+     "Battery_Charge_Energy_Total_kWh": null,
+     "Battery_Discharge_Energy_Total_kWh": null,
+     "Battery_Throughput_Total_kWh": 7397.7,
+     "Export_Energy_Total_kWh": 8053.0,
+     "Import_Energy_Total_kWh": 31457.8,
+     "Invertor_Energy_Total_kWh": 9035.7,
+     "Load_Energy_Total_kWh": 35466.5,
+     "PV_Energy_Total_kWh": 6439.9,
+     "Self_Consumption_Energy_Total_kWh": 0
+    }
+   },
+   "Meter_Details": {
+    "Meter_ID1": {
+     "Export_Energy_kWh": 1499.4,
+     "Frequency": 49.98,
+     "Import_Energy_kWh": 5243.4,
+     "Phase_1_Current": 2.14,
+     "Phase_1_Power": -4,
+     "Phase_1_Power_Factor": null,
+     "Phase_1_Voltage": 244.6,
+     "Phase_2_Current": 0.0,
+     "Phase_2_Power": 0,
+     "Phase_2_Power_Factor": 0.0,
+     "Phase_2_Voltage": 0.0,
+     "Phase_3_Current": 0.0,
+     "Phase_3_Power": 0,
+     "Phase_3_Power_Factor": 0.0,
+     "Phase_3_Voltage": 0.0
+    }
+   },
+   "Power": {
+    "Flows": {
+     "Battery_to_Grid": 0,
+     "Battery_to_House": 441,
+     "Grid_to_Battery": 0,
+     "Grid_to_House": 5,
+     "Solar_to_Battery": 0,
+     "Solar_to_Grid": 0,
+     "Solar_to_House": 0
+    },
+    "Power": {
+     "AC_Charge_Power": 0,
+     "Battery_Current": 8.18,
+     "Battery_Power": 441,
+     "Battery_Voltage": 52.39,
+     "Charge_Completion_Time": "2026-06-15T12:00:00+01:00",
+     "Charge_Power": 0,
+     "Charge_Time_Remaining": 0,
+     "Discharge_Completion_Time": "2026-06-15T21:04:00+01:00",
+     "Discharge_Power": 441,
+     "Discharge_Time_Remaining": 544,
+     "EPS_Power": 0,
+     "Export_Power": 0,
+     "Grid_Current": 2.14,
+     "Grid_Frequency": 49.98,
+     "Grid_Power": -5,
+     "Grid_Voltage": 244.5,
+     "Import_Power": 5,
+     "Inverter_Output_Frequency": 49.99,
+     "Invertor_Power": 371,
+     "Load_Power": 376,
+     "PV_Current_String_1": 0.0,
+     "PV_Current_String_2": 0.0,
+     "PV_Power": 0,
+     "PV_Power_String_1": 0,
+     "PV_Power_String_2": 0,
+     "PV_Voltage_String_1": 0.0,
+     "PV_Voltage_String_2": 10.8,
+     "SOC": 46,
+     "SOC_kWh": 4.38,
+     "Self_Consumption_Power": 371
+    }
+   },
+   "Stats": {
+    "Data_Age": "<varies>",
+    "GivTCP_Version": "3.5",
+    "Last_Updated_Time": "2026-06-15T12:00:00+01:00",
+    "Safe_Write_Count": 0,
+    "Time_Since_Last_Update": 0,
+    "Write_Count": 0,
+    "status": "online"
+   },
+   "Timeslots": {
+    "Charge_end_time_slot_1": "05:30:00",
+    "Charge_start_time_slot_1": "23:30:00",
+    "Discharge_end_time_slot_1": "00:00:00",
+    "Discharge_end_time_slot_2": "00:00:00",
+    "Discharge_start_time_slot_1": "00:00:00",
+    "Discharge_start_time_slot_2": "00:00:00"
+   },
+   "raw": {
+    "batteries": {
+     "DF2244G000": "v_cell_01=3.265 v_cell_02=3.266 v_cell_03=3.267 v_cell_04=3.267 v_cell_05=3.265 v_cell_06=3.267 v_cell_07=3.266 v_cell_08=3.265 v_cell_09=3.266 v_cell_10=3.266 v_cell_11=3.267 v_cell_12=3.267 v_cell_13=3.266 v_cell_14=3.267 v_cell_15=3.267 v_cell_16=3.267 t_cells_01_04=22.8 t_cells_05_08=23.2 t_cells_09_12=23.6 t_cells_13_16=21.8 v_cells_sum=52.263 t_bms_mosfet=26.1 v_out=52.501 cap_calibrated=184.82 cap_design=186.0 cap_remaining=83.87 status_1=0 status_2=0 status_3=14 status_4=16 status_5=0 status_6=0 status_7=0 warning_1=0 warning_2=0 i_battery=0.0 num_cycles=1179 num_cells=16 bms_firmware_version=3020 soc=45 cap_design2=186.0 t_max=23.6 t_min=21.7 e_battery_discharge_total=3744.5 e_battery_charge_total=3653.2 force_discharge_flag=0 serial_number='DF2244G000' usb_device_inserted=0 remaining_energy_nominal_wh=4294 remaining_energy_measured_wh=4403"
+    },
+    "invertor": "device_type_code='2003' model=<Model.HYBRID: '2'> module='00030824' num_mppt=0 num_phases=0 enable_ammeter=True serial_number='EA2302G000' first_battery_bms_firmware_version=3020 dsp_firmware_version=920 enable_charge_target=False arm_firmware_version=920 firmware_version='D0.920-A0.920' usb_device_inserted=<UsbDevice.DISK: 2> select_arm_chip=False variable_address=49152 variable_value=66 grid_port_max_power_output=6000 battery_power_mode=<BatteryPowerMode.SELF_CONSUMPTION: 1> enable_60hz_freq_mode=False battery_calibration_stage=<BatteryCalibrationStage.OFF: 0> modbus_address=17 charge_slot_2=TimeSlot(start=datetime.time(0, 1), end=datetime.time(0, 4)) user_code=7 modbus_version='1.40' system_time=datetime.datetime(2026, 7, 13, 23, 22, 19) enable_drm_rj45_port=False enable_reversed_ct_clamp=True charge_soc=0 discharge_soc=0 discharge_slot_2=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) bms_firmware_version=101 meter_type=<MeterType.EM115: 1> enable_reversed_115_meter=False enable_reversed_418_meter=False active_power_rate=100 reactive_power_rate=0 power_factor=-1.0 enable_inverter_auto_restart=False enable_inverter=True battery_type=<BatteryType.LITHIUM: 1> battery_capacity_ah=186 discharge_slot_1=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) enable_auto_judge_battery_type=True enable_discharge=False v_pv_start=130.0 start_countdown_timer=30 restart_delay_time=30 v_ac_low_limit_trip=184.0 v_ac_high_limit_trip=262.2 f_ac_low_limit_trip=47.5 f_ac_high_limit_trip=52.0 t_ac_low_voltage_trip=1.25 t_ac_high_voltage_trip=0.5 t_ac_low_freq_trip=10.0 t_ac_high_freq_trip=0.25 v_ac_low_limit_reconnect=180.0 v_ac_high_limit_reconnect=273.0 f_ac_low_limit_reconnect=47.0 f_ac_high_limit_reconnect=52.0 t_ac_low_voltage_reconnect=1.22 t_ac_high_voltage_reconnect=0.25 t_ac_low_freq_reconnect=0.25 t_ac_high_freq_reconnect=0.25 v_ac_low_limit_grid=188.0 v_ac_high_limit_grid=258.0 f_ac_low_limit_grid=47.6 f_ac_high_limit_grid=51.9 v_ac_10min_protect=262.2 iso_protection_1=21313 iso_protection_2=12590 gfci_protection_value_1=12288 gfci_protection_time_1=0 gfci_protection_value_2=0 gfci_protection_time_2=0 dci_protection_value_1=0 dci_protection_time_1=0 dci_protection_value_2=0 dci_protection_time_2=0 charge_slot_1=TimeSlot(start=datetime.time(23, 30), end=datetime.time(5, 30)) enable_charge=True battery_low_voltage_protection_limit=43.2 battery_high_voltage_protection_limit=58.5 string_1_voltage_adjustment=0 string_2_voltage_adjustment=0 grid_import_limit=100 grid_import_limit_enabled=False enable_lora=False enable_battery_self_heating=False battery_voltage_adjust=0.0 string_1_power_adjustment=0 string_2_power_adjustment=0 battery_low_force_charge_time=6 enable_bms_read=True battery_soc_reserve=4 battery_charge_limit=16 battery_discharge_limit=50 enable_buzzer=False battery_discharge_min_power_reserve=4 charge_target_soc=100 charge_soc_stop_2=0 discharge_soc_stop_2=0 charge_soc_stop_1=0 discharge_soc_stop_1=0 enable_local_command_test=False power_factor_function_model=<PowerFactorFunctionModel.PF_1: 0> frequency_load_limit_rate=24 enable_low_voltage_fault_ride_through=False enable_frequency_derating=True enable_above_6kw_system=False start_system_auto_test=False enable_spi=True power_factor_cmd_memory_state=1 power_factor_point_1_load_percent=255 power_factor_point_1_power_factor=20000 power_factor_point_2_load_percent=255 power_factor_point_2_power_factor=20000 power_factor_point_3_load_percent=255 power_factor_point_3_power_factor=20000 power_factor_point_4_load_percent=255 power_factor_point_4_power_factor=20000 cei021_v1s_q=248.4 cei021_v2s_q=253.0 cei021_v1l_q=211.6 cei021_v2l_q=207.0 cei021_lock_in_active_power=20 cei021_lock_out_active_power=5 cei021_lock_in_grid_voltage=241.5 cei021_lock_out_grid_voltage=230.0 lvfrt_reactive_rate=0 lvfrt_low_fault_value_1=0 lvfrt_low_fault_time_1=0 lvfrt_low_fault_value_2=0 lvfrt_low_fault_time_2=0 lvfrt_low_fault_value_3=0 lvfrt_low_fault_time_3=0 lvfrt_low_fault_value_4=0 lvfrt_low_fault_time_4=0 lvfrt_high_fault_value_1=0 lvfrt_high_fault_time_1=0 inverter_reboot=0 enable_rtc=True threephase_balance_mode=0 threephase_abc=0 threephase_balance_1=0 threephase_balance_2=0 threephase_balance_3=0 enable_battery_on_pv_or_grid=False debug_inverter=15 enable_ups_mode=False enable_g100_limit_switch=False enable_battery_cable_impedance_alarm=False enable_inverter_parallel_mode=None cmd_bms_flash_update=None inverter_errors=None inverter_fault_messages=None charge_target_soc_1=None charge_slot_2_x=None charge_target_soc_2=None charge_slot_3=None charge_target_soc_3=None charge_slot_4=None charge_target_soc_4=None charge_slot_5=None charge_target_soc_5=None charge_slot_6=None charge_target_soc_6=None charge_slot_7=None charge_target_soc_7=None charge_slot_8=None charge_target_soc_8=None charge_slot_9=None charge_target_soc_9=None charge_slot_10=None charge_target_soc_10=None discharge_target_soc_1=None discharge_target_soc_2=None discharge_slot_3=None discharge_target_soc_3=None discharge_slot_4=None discharge_target_soc_4=None discharge_slot_5=None discharge_target_soc_5=None discharge_slot_6=None discharge_target_soc_6=None discharge_slot_7=None discharge_target_soc_7=None discharge_slot_8=None discharge_target_soc_8=None discharge_slot_9=None discharge_target_soc_9=None discharge_slot_10=None discharge_target_soc_10=None smart_load_slot_1=None smart_load_slot_2=None smart_load_slot_3=None smart_load_slot_4=None smart_load_slot_5=None smart_load_slot_6=None smart_load_slot_7=None smart_load_slot_8=None smart_load_slot_9=None smart_load_slot_10=None enable_plant_mode=None plant_role=None plant_meters=None overfrequency_load_drop_recovery_delay=None mppt_operating_mode=None connection_loading_slope=None eps_nominal_voltage=None battery_nominal_power=None battery_nominal_current=None battery_max_charge_pct=None export_priority=None underfrequency_add_load_delay=None battery_charge_limit_ac=None battery_discharge_limit_ac=None en50549_zero_current_lower_voltage_limit=None en50549_zero_current_upper_voltage_limit=None enable_eps=None battery_pause_mode=None battery_pause_slot_1=None overfrequency_derating_start_point=None enable_tariff_pricing_battery_logic=None import_price_battery_discharge_threshold=None import_price_battery_charge_threshold=None export_price_battery_discharge_threshold=None underfrequency_derating_start_point=None underfrequency_loading_slope=None overfrequency_derating_stop_point=None enable_bms_ocv_calibration=None gateway_power_off_setting=None force_off_grid=None enable_micro_grid=None enable_ev_charger=None ev_charger_import_limit=None ev_charger_reconnection_wait_time=None ev_charger_soc_limit=None enable_fan=None fan_speed=None enable_gateway=None bms_communication_mode=None n_pe_relay_toggle=None afci_setting=None enable_generator=None generator_start_soc=None generator_stop_soc=None generator_charge_power=None disable_leds=None lcd_screen_idle_timeout=None lead_acid_battery_calibration_upper_limit=None lead_acid_battery_calibration_lower_limit=None inverter_operating_mode=None hv_cabinet_count=None hv_racks_per_cabinet=None hv_batteries_per_rack=None hv_cells_per_battery=None hv_total_cells=None hv_temp_sensors_per_battery=None hv_total_temp_sensors=None hv_max_pcs_power=None hv_max_charge_voltage=None hv_min_discharge_voltage=None hv_max_charge_current=None hv_parallel_count=None peak_shaving_export_limit_enabled=None peak_shaving_export_limit=None peak_shaving_enabled=None peak_shaving_threshold=None peak_shaving_import_limit_enabled=None peak_shaving_import_limit=None peak_shaving_power=None valley_filling_power=None pv_power_setting=None e_battery_discharge_total_alt2=None e_battery_charge_total_alt2=None e_battery_discharge_today_alt3=None e_battery_charge_today_alt3=None e_inverter_export_total=None status=<Status.NORMAL: 1> v_pv1=0.0 v_pv2=10.8 v_p_bus=427.9 v_n_bus=0.0 v_ac1=244.5 e_battery_throughput=7397.7 i_pv1=0.0 i_pv2=0.0 i_ac1=1.7 e_pv_total=6439.9 f_ac1=49.98 charge_status=5 charge_status_label=<ChargeStatus.DISCHARGING: 5> v_highbrigh_bus=284.8 pf_inverter_output_now=-0.026 e_pv1_day=12.2 p_pv1=0 e_pv2_day=12.3 p_pv2=0 e_grid_out_total=8053.0 e_solar_diverter=0.0 p_grid_out_ph1=371 e_grid_out_day=18.9 e_grid_in_day=22.7 e_inverter_in_total=3413.9 e_discharge_year=0.0 p_grid_out=-5 p_backup=0 e_grid_in_total=31457.8 e_ac_charge_today=4.8 e_battery_charge_today_alt1=4.7 e_battery_discharge_today_alt1=5.5 countdown=0 inverter_fault_code='0000' inverter_warning_code='0000' t_inverter_heatsink=37.4 p_load_demand=376 p_grid_apparent=525 e_pv_generation_today=28.6 e_pv_generation_total=9035.7 work_time_total_hours=11243 system_mode=1 v_battery=52.39 i_battery=8.18 p_battery=441 v_ac1_output=241.2 f_ac1_output=49.99 t_charger=39.4 t_battery=23.0 charger_warning_code=0 charger_warning_messages=[] i_grid_port=2.14 battery_soc=46 e_battery_discharge_total_alt1=0.0 e_battery_charge_total_alt1=0.0 e_battery_discharge_today_alt2=0.0 e_battery_charge_today_alt2=0.0 p_combined_generation=None e_inverter_out_today=None e_inverter_out_total=None e_battery_charge_today=None e_battery_discharge_today=None e_battery_charge_total=None e_battery_discharge_total=None grid_import_power=5 grid_export_power=0 battery_charge_power=0 battery_discharge_power=441 battery_capacity_kwh=9.523200000000001 battery_max_power=3600 inverter_max_power=3600 is_ac_coupled=False e_consumption_today=27.599999999999998 e_self_consumption_today=9.700000000000003 e_self_consumption_total=982.7000000000007 e_pv_direct_today=None",
+    "meters": {
+     "Meter_ID_1": {
+      "e_export_active": 1499.4,
+      "e_export_reactive": 0.0,
+      "e_import_active": 5243.4,
+      "e_import_reactive": 0.0,
+      "frequency": 49.98,
+      "i_ln": 0.0,
+      "i_phase_1": 2.14,
+      "i_phase_2": 0.0,
+      "i_phase_3": 0.0,
+      "i_total": 0.0,
+      "p_active_phase_1": -4,
+      "p_active_phase_2": 0,
+      "p_active_phase_3": 0,
+      "p_active_total": 0,
+      "p_apparent_phase_1": 52.5,
+      "p_apparent_phase_2": 0.0,
+      "p_apparent_phase_3": 0.0,
+      "p_apparent_total": 0.0,
+      "p_reactive_phase_1": 0,
+      "p_reactive_phase_2": 0,
+      "p_reactive_phase_3": 0,
+      "p_reactive_total": 0,
+      "pf_phase_1": null,
+      "pf_phase_2": 0.0,
+      "pf_phase_3": 0.0,
+      "pf_total": 0.0,
+      "v_phase_1": 244.6,
+      "v_phase_2": 0.0,
+      "v_phase_3": 0.0
+     }
+    }
+   }
+  },
+  "cycle 2 logs": [],
+  "cycle 2 output": {
+   "Battery_Details": {
+    "Battery_Stack_1": {
+     "BMS_Temperature": 23.0,
+     "BMS_Voltage": 52.39,
+     "DF2244G000": {
+      "Battery_BMS_Current": 0.0,
+      "Battery_Capacity": 184.82,
+      "Battery_Cell_10_Voltage": 3.266,
+      "Battery_Cell_11_Voltage": 3.267,
+      "Battery_Cell_12_Voltage": 3.267,
+      "Battery_Cell_13_Voltage": 3.266,
+      "Battery_Cell_14_Voltage": 3.267,
+      "Battery_Cell_15_Voltage": 3.267,
+      "Battery_Cell_16_Voltage": 3.267,
+      "Battery_Cell_1_Temperature": 22.8,
+      "Battery_Cell_1_Voltage": 3.265,
+      "Battery_Cell_2_Temperature": 23.2,
+      "Battery_Cell_2_Voltage": 3.266,
+      "Battery_Cell_3_Temperature": 23.6,
+      "Battery_Cell_3_Voltage": 3.267,
+      "Battery_Cell_4_Temperature": 21.8,
+      "Battery_Cell_4_Voltage": 3.267,
+      "Battery_Cell_5_Voltage": 3.265,
+      "Battery_Cell_6_Voltage": 3.267,
+      "Battery_Cell_7_Voltage": 3.266,
+      "Battery_Cell_8_Voltage": 3.265,
+      "Battery_Cell_9_Voltage": 3.266,
+      "Battery_Cells": 16,
+      "Battery_Cycles": 1179,
+      "Battery_Design_Capacity": 186.0,
+      "Battery_Firmware_Version": 3020,
+      "Battery_Remaining_Capacity": 83.87,
+      "Battery_SOC": 45,
+      "Battery_Serial_Number": "DF2244G000",
+      "Battery_Temperature": 26.1,
+      "Battery_USB_present": 0,
+      "Battery_Voltage": 52.263
+     }
+    }
+   },
+   "Control": {
+    "Active_Power_Rate": 100,
+    "Battery_Calibration": "Off",
+    "Battery_Charge_Rate": 1523,
+    "Battery_Discharge_Rate": 3600,
+    "Battery_Power_Cutoff": 4,
+    "Battery_Power_Reserve": 4,
+    "Eco_Mode": "enable",
+    "Enable_Charge_Schedule": "enable",
+    "Enable_Charge_Target": "disable",
+    "Enable_Discharge_Schedule": "disable",
+    "Force_Charge": "Normal",
+    "Force_Charge_Num": 0,
+    "Force_Export": "Normal",
+    "Force_Export_Num": 0,
+    "Mode": "Eco",
+    "Real_Time_Control": "enable",
+    "Reboot_Addon": "disable",
+    "Reboot_Invertor": "disable",
+    "Sync_Time": "disable",
+    "Target_SOC": 100,
+    "Temp_Pause_Charge": "Normal",
+    "Temp_Pause_Charge_Num": 0,
+    "Temp_Pause_Discharge": "Normal",
+    "Temp_Pause_Discharge_Num": 0
+   },
+   "EA2302G000": {
+    "Battery_Calibration_Status": "Off",
+    "Battery_Capacity_kWh": 9.523200000000001,
+    "Battery_Type": "Lithium",
+    "Export_Limit": 6000,
+    "Invertor_Firmware": "D0.920-A0.920",
+    "Invertor_Max_Bat_Rate": 3600,
+    "Invertor_Max_Inv_Rate": 3600,
+    "Invertor_Serial_Number": "EA2302G000",
+    "Invertor_Temperature": 37.4,
+    "Invertor_Time": "2026-07-13T23:22:19+01:00",
+    "Invertor_Type": "Hybrid",
+    "Meter_Type": "Em115",
+    "Modbus_Version": "1.40"
+   },
+   "Energy": {
+    "Rates": {
+     "Battery_Value": 0,
+     "Battery_ppkwh": 0,
+     "Current_Rate": 0.3,
+     "Current_Rate_Type": "Day",
+     "Day_Cost": 0.0,
+     "Day_Energy_Total_kWh": 0,
+     "Day_Energy_kWh": 0.0,
+     "Day_Rate": 0.3,
+     "Day_Start_Energy_kWh": 31457.8,
+     "Export_Rate": 0.15,
+     "Import_ppkwh_Today": 0,
+     "Night_Cost": 0.0,
+     "Night_Energy_Total_kWh": 0.0,
+     "Night_Energy_kWh": 0.0,
+     "Night_Rate": 0.07,
+     "Night_Start_Energy_kWh": 31457.8
+    },
+    "Today": {
+     "AC_Charge_Energy_Today_kWh": 4.8,
+     "Battery_Charge_Energy_Today_kWh": 4.7,
+     "Battery_Discharge_Energy_Today_kWh": 5.5,
+     "Battery_Throughput_Today_kWh": 10.2,
+     "Export_Energy_Today_kWh": 18.9,
+     "Import_Energy_Today_kWh": 22.7,
+     "Invertor_Energy_Today_kWh": 28.6,
+     "Load_Energy_Today_kWh": 52.1,
+     "PV_Energy_Today_kWh": 24.5,
+     "Self_Consumption_Energy_Today_kWh": 5.600000000000001
+    },
+    "Total": {
+     "AC_Charge_Energy_Total_kWh": 3413.9,
+     "Battery_Charge_Energy_Total_kWh": null,
+     "Battery_Discharge_Energy_Total_kWh": null,
+     "Battery_Throughput_Total_kWh": 7397.7,
+     "Export_Energy_Total_kWh": 8053.0,
+     "Import_Energy_Total_kWh": 31457.8,
+     "Invertor_Energy_Total_kWh": 9035.7,
+     "Load_Energy_Total_kWh": 35466.5,
+     "PV_Energy_Total_kWh": 6439.9,
+     "Self_Consumption_Energy_Total_kWh": 0
+    }
+   },
+   "Meter_Details": {
+    "Meter_ID1": {
+     "Export_Energy_kWh": 1499.4,
+     "Frequency": 49.98,
+     "Import_Energy_kWh": 5243.4,
+     "Phase_1_Current": 2.14,
+     "Phase_1_Power": -4,
+     "Phase_1_Power_Factor": null,
+     "Phase_1_Voltage": 244.6,
+     "Phase_2_Current": 0.0,
+     "Phase_2_Power": 0,
+     "Phase_2_Power_Factor": 0.0,
+     "Phase_2_Voltage": 0.0,
+     "Phase_3_Current": 0.0,
+     "Phase_3_Power": 0,
+     "Phase_3_Power_Factor": 0.0,
+     "Phase_3_Voltage": 0.0
+    }
+   },
+   "Power": {
+    "Flows": {
+     "Battery_to_Grid": 0,
+     "Battery_to_House": 441,
+     "Grid_to_Battery": 0,
+     "Grid_to_House": 5,
+     "Solar_to_Battery": 0,
+     "Solar_to_Grid": 0,
+     "Solar_to_House": 0
+    },
+    "Power": {
+     "AC_Charge_Power": 0,
+     "Battery_Current": 8.18,
+     "Battery_Power": 441,
+     "Battery_Voltage": 52.39,
+     "Charge_Power": 0,
+     "Charge_Time_Remaining": 0,
+     "Discharge_Completion_Time": "2026-06-15T21:04:00+01:00",
+     "Discharge_Power": 441,
+     "Discharge_Time_Remaining": 544,
+     "EPS_Power": 0,
+     "Export_Power": 0,
+     "Grid_Current": 2.14,
+     "Grid_Frequency": 49.98,
+     "Grid_Power": -5,
+     "Grid_Voltage": 244.5,
+     "Import_Power": 5,
+     "Inverter_Output_Frequency": 49.99,
+     "Invertor_Power": 371,
+     "Load_Power": 376,
+     "PV_Current_String_1": 0.0,
+     "PV_Current_String_2": 0.0,
+     "PV_Power": 0,
+     "PV_Power_String_1": 0,
+     "PV_Power_String_2": 0,
+     "PV_Voltage_String_1": 0.0,
+     "PV_Voltage_String_2": 10.8,
+     "SOC": 46,
+     "SOC_kWh": 4.38,
+     "Self_Consumption_Power": 371
+    }
+   },
+   "Stats": {
+    "Data_Age": "<varies>",
+    "GivTCP_Version": "3.5",
+    "Last_Updated_Time": "2026-06-15T12:00:00+01:00",
+    "Safe_Write_Count": 0,
+    "Time_Since_Last_Update": 0.0,
+    "Write_Count": 0,
+    "status": "online"
+   },
+   "Timeslots": {
+    "Charge_end_time_slot_1": "05:30:00",
+    "Charge_start_time_slot_1": "23:30:00",
+    "Discharge_end_time_slot_1": "00:00:00",
+    "Discharge_end_time_slot_2": "00:00:00",
+    "Discharge_start_time_slot_1": "00:00:00",
+    "Discharge_start_time_slot_2": "00:00:00"
+   },
+   "raw": {
+    "batteries": {
+     "DF2244G000": "v_cell_01=3.265 v_cell_02=3.266 v_cell_03=3.267 v_cell_04=3.267 v_cell_05=3.265 v_cell_06=3.267 v_cell_07=3.266 v_cell_08=3.265 v_cell_09=3.266 v_cell_10=3.266 v_cell_11=3.267 v_cell_12=3.267 v_cell_13=3.266 v_cell_14=3.267 v_cell_15=3.267 v_cell_16=3.267 t_cells_01_04=22.8 t_cells_05_08=23.2 t_cells_09_12=23.6 t_cells_13_16=21.8 v_cells_sum=52.263 t_bms_mosfet=26.1 v_out=52.501 cap_calibrated=184.82 cap_design=186.0 cap_remaining=83.87 status_1=0 status_2=0 status_3=14 status_4=16 status_5=0 status_6=0 status_7=0 warning_1=0 warning_2=0 i_battery=0.0 num_cycles=1179 num_cells=16 bms_firmware_version=3020 soc=45 cap_design2=186.0 t_max=23.6 t_min=21.7 e_battery_discharge_total=3744.5 e_battery_charge_total=3653.2 force_discharge_flag=0 serial_number='DF2244G000' usb_device_inserted=0 remaining_energy_nominal_wh=4294 remaining_energy_measured_wh=4403"
+    },
+    "invertor": "device_type_code='2003' model=<Model.HYBRID: '2'> module='00030824' num_mppt=0 num_phases=0 enable_ammeter=True serial_number='EA2302G000' first_battery_bms_firmware_version=3020 dsp_firmware_version=920 enable_charge_target=False arm_firmware_version=920 firmware_version='D0.920-A0.920' usb_device_inserted=<UsbDevice.DISK: 2> select_arm_chip=False variable_address=49152 variable_value=66 grid_port_max_power_output=6000 battery_power_mode=<BatteryPowerMode.SELF_CONSUMPTION: 1> enable_60hz_freq_mode=False battery_calibration_stage=<BatteryCalibrationStage.OFF: 0> modbus_address=17 charge_slot_2=TimeSlot(start=datetime.time(0, 1), end=datetime.time(0, 4)) user_code=7 modbus_version='1.40' system_time=datetime.datetime(2026, 7, 13, 23, 22, 19) enable_drm_rj45_port=False enable_reversed_ct_clamp=True charge_soc=0 discharge_soc=0 discharge_slot_2=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) bms_firmware_version=101 meter_type=<MeterType.EM115: 1> enable_reversed_115_meter=False enable_reversed_418_meter=False active_power_rate=100 reactive_power_rate=0 power_factor=-1.0 enable_inverter_auto_restart=False enable_inverter=True battery_type=<BatteryType.LITHIUM: 1> battery_capacity_ah=186 discharge_slot_1=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) enable_auto_judge_battery_type=True enable_discharge=False v_pv_start=130.0 start_countdown_timer=30 restart_delay_time=30 v_ac_low_limit_trip=184.0 v_ac_high_limit_trip=262.2 f_ac_low_limit_trip=47.5 f_ac_high_limit_trip=52.0 t_ac_low_voltage_trip=1.25 t_ac_high_voltage_trip=0.5 t_ac_low_freq_trip=10.0 t_ac_high_freq_trip=0.25 v_ac_low_limit_reconnect=180.0 v_ac_high_limit_reconnect=273.0 f_ac_low_limit_reconnect=47.0 f_ac_high_limit_reconnect=52.0 t_ac_low_voltage_reconnect=1.22 t_ac_high_voltage_reconnect=0.25 t_ac_low_freq_reconnect=0.25 t_ac_high_freq_reconnect=0.25 v_ac_low_limit_grid=188.0 v_ac_high_limit_grid=258.0 f_ac_low_limit_grid=47.6 f_ac_high_limit_grid=51.9 v_ac_10min_protect=262.2 iso_protection_1=21313 iso_protection_2=12590 gfci_protection_value_1=12288 gfci_protection_time_1=0 gfci_protection_value_2=0 gfci_protection_time_2=0 dci_protection_value_1=0 dci_protection_time_1=0 dci_protection_value_2=0 dci_protection_time_2=0 charge_slot_1=TimeSlot(start=datetime.time(23, 30), end=datetime.time(5, 30)) enable_charge=True battery_low_voltage_protection_limit=43.2 battery_high_voltage_protection_limit=58.5 string_1_voltage_adjustment=0 string_2_voltage_adjustment=0 grid_import_limit=100 grid_import_limit_enabled=False enable_lora=False enable_battery_self_heating=False battery_voltage_adjust=0.0 string_1_power_adjustment=0 string_2_power_adjustment=0 battery_low_force_charge_time=6 enable_bms_read=True battery_soc_reserve=4 battery_charge_limit=16 battery_discharge_limit=50 enable_buzzer=False battery_discharge_min_power_reserve=4 charge_target_soc=100 charge_soc_stop_2=0 discharge_soc_stop_2=0 charge_soc_stop_1=0 discharge_soc_stop_1=0 enable_local_command_test=False power_factor_function_model=<PowerFactorFunctionModel.PF_1: 0> frequency_load_limit_rate=24 enable_low_voltage_fault_ride_through=False enable_frequency_derating=True enable_above_6kw_system=False start_system_auto_test=False enable_spi=True power_factor_cmd_memory_state=1 power_factor_point_1_load_percent=255 power_factor_point_1_power_factor=20000 power_factor_point_2_load_percent=255 power_factor_point_2_power_factor=20000 power_factor_point_3_load_percent=255 power_factor_point_3_power_factor=20000 power_factor_point_4_load_percent=255 power_factor_point_4_power_factor=20000 cei021_v1s_q=248.4 cei021_v2s_q=253.0 cei021_v1l_q=211.6 cei021_v2l_q=207.0 cei021_lock_in_active_power=20 cei021_lock_out_active_power=5 cei021_lock_in_grid_voltage=241.5 cei021_lock_out_grid_voltage=230.0 lvfrt_reactive_rate=0 lvfrt_low_fault_value_1=0 lvfrt_low_fault_time_1=0 lvfrt_low_fault_value_2=0 lvfrt_low_fault_time_2=0 lvfrt_low_fault_value_3=0 lvfrt_low_fault_time_3=0 lvfrt_low_fault_value_4=0 lvfrt_low_fault_time_4=0 lvfrt_high_fault_value_1=0 lvfrt_high_fault_time_1=0 inverter_reboot=0 enable_rtc=True threephase_balance_mode=0 threephase_abc=0 threephase_balance_1=0 threephase_balance_2=0 threephase_balance_3=0 enable_battery_on_pv_or_grid=False debug_inverter=15 enable_ups_mode=False enable_g100_limit_switch=False enable_battery_cable_impedance_alarm=False enable_inverter_parallel_mode=None cmd_bms_flash_update=None inverter_errors=None inverter_fault_messages=None charge_target_soc_1=None charge_slot_2_x=None charge_target_soc_2=None charge_slot_3=None charge_target_soc_3=None charge_slot_4=None charge_target_soc_4=None charge_slot_5=None charge_target_soc_5=None charge_slot_6=None charge_target_soc_6=None charge_slot_7=None charge_target_soc_7=None charge_slot_8=None charge_target_soc_8=None charge_slot_9=None charge_target_soc_9=None charge_slot_10=None charge_target_soc_10=None discharge_target_soc_1=None discharge_target_soc_2=None discharge_slot_3=None discharge_target_soc_3=None discharge_slot_4=None discharge_target_soc_4=None discharge_slot_5=None discharge_target_soc_5=None discharge_slot_6=None discharge_target_soc_6=None discharge_slot_7=None discharge_target_soc_7=None discharge_slot_8=None discharge_target_soc_8=None discharge_slot_9=None discharge_target_soc_9=None discharge_slot_10=None discharge_target_soc_10=None smart_load_slot_1=None smart_load_slot_2=None smart_load_slot_3=None smart_load_slot_4=None smart_load_slot_5=None smart_load_slot_6=None smart_load_slot_7=None smart_load_slot_8=None smart_load_slot_9=None smart_load_slot_10=None enable_plant_mode=None plant_role=None plant_meters=None overfrequency_load_drop_recovery_delay=None mppt_operating_mode=None connection_loading_slope=None eps_nominal_voltage=None battery_nominal_power=None battery_nominal_current=None battery_max_charge_pct=None export_priority=None underfrequency_add_load_delay=None battery_charge_limit_ac=None battery_discharge_limit_ac=None en50549_zero_current_lower_voltage_limit=None en50549_zero_current_upper_voltage_limit=None enable_eps=None battery_pause_mode=None battery_pause_slot_1=None overfrequency_derating_start_point=None enable_tariff_pricing_battery_logic=None import_price_battery_discharge_threshold=None import_price_battery_charge_threshold=None export_price_battery_discharge_threshold=None underfrequency_derating_start_point=None underfrequency_loading_slope=None overfrequency_derating_stop_point=None enable_bms_ocv_calibration=None gateway_power_off_setting=None force_off_grid=None enable_micro_grid=None enable_ev_charger=None ev_charger_import_limit=None ev_charger_reconnection_wait_time=None ev_charger_soc_limit=None enable_fan=None fan_speed=None enable_gateway=None bms_communication_mode=None n_pe_relay_toggle=None afci_setting=None enable_generator=None generator_start_soc=None generator_stop_soc=None generator_charge_power=None disable_leds=None lcd_screen_idle_timeout=None lead_acid_battery_calibration_upper_limit=None lead_acid_battery_calibration_lower_limit=None inverter_operating_mode=None hv_cabinet_count=None hv_racks_per_cabinet=None hv_batteries_per_rack=None hv_cells_per_battery=None hv_total_cells=None hv_temp_sensors_per_battery=None hv_total_temp_sensors=None hv_max_pcs_power=None hv_max_charge_voltage=None hv_min_discharge_voltage=None hv_max_charge_current=None hv_parallel_count=None peak_shaving_export_limit_enabled=None peak_shaving_export_limit=None peak_shaving_enabled=None peak_shaving_threshold=None peak_shaving_import_limit_enabled=None peak_shaving_import_limit=None peak_shaving_power=None valley_filling_power=None pv_power_setting=None e_battery_discharge_total_alt2=None e_battery_charge_total_alt2=None e_battery_discharge_today_alt3=None e_battery_charge_today_alt3=None e_inverter_export_total=None status=<Status.NORMAL: 1> v_pv1=0.0 v_pv2=10.8 v_p_bus=427.9 v_n_bus=0.0 v_ac1=244.5 e_battery_throughput=7397.7 i_pv1=0.0 i_pv2=0.0 i_ac1=1.7 e_pv_total=6439.9 f_ac1=49.98 charge_status=5 charge_status_label=<ChargeStatus.DISCHARGING: 5> v_highbrigh_bus=284.8 pf_inverter_output_now=-0.026 e_pv1_day=12.2 p_pv1=0 e_pv2_day=12.3 p_pv2=0 e_grid_out_total=8053.0 e_solar_diverter=0.0 p_grid_out_ph1=371 e_grid_out_day=18.9 e_grid_in_day=22.7 e_inverter_in_total=3413.9 e_discharge_year=0.0 p_grid_out=-5 p_backup=0 e_grid_in_total=31457.8 e_ac_charge_today=4.8 e_battery_charge_today_alt1=4.7 e_battery_discharge_today_alt1=5.5 countdown=0 inverter_fault_code='0000' inverter_warning_code='0000' t_inverter_heatsink=37.4 p_load_demand=376 p_grid_apparent=525 e_pv_generation_today=28.6 e_pv_generation_total=9035.7 work_time_total_hours=11243 system_mode=1 v_battery=52.39 i_battery=8.18 p_battery=441 v_ac1_output=241.2 f_ac1_output=49.99 t_charger=39.4 t_battery=23.0 charger_warning_code=0 charger_warning_messages=[] i_grid_port=2.14 battery_soc=46 e_battery_discharge_total_alt1=0.0 e_battery_charge_total_alt1=0.0 e_battery_discharge_today_alt2=0.0 e_battery_charge_today_alt2=0.0 p_combined_generation=None e_inverter_out_today=None e_inverter_out_total=None e_battery_charge_today=None e_battery_discharge_today=None e_battery_charge_total=None e_battery_discharge_total=None grid_import_power=5 grid_export_power=0 battery_charge_power=0 battery_discharge_power=441 battery_capacity_kwh=9.523200000000001 battery_max_power=3600 inverter_max_power=3600 is_ac_coupled=False e_consumption_today=27.599999999999998 e_self_consumption_today=9.700000000000003 e_self_consumption_total=982.7000000000007 e_pv_direct_today=None",
+    "meters": {
+     "Meter_ID_1": {
+      "e_export_active": 1499.4,
+      "e_export_reactive": 0.0,
+      "e_import_active": 5243.4,
+      "e_import_reactive": 0.0,
+      "frequency": 49.98,
+      "i_ln": 0.0,
+      "i_phase_1": 2.14,
+      "i_phase_2": 0.0,
+      "i_phase_3": 0.0,
+      "i_total": 0.0,
+      "p_active_phase_1": -4,
+      "p_active_phase_2": 0,
+      "p_active_phase_3": 0,
+      "p_active_total": 0,
+      "p_apparent_phase_1": 52.5,
+      "p_apparent_phase_2": 0.0,
+      "p_apparent_phase_3": 0.0,
+      "p_apparent_total": 0.0,
+      "p_reactive_phase_1": 0,
+      "p_reactive_phase_2": 0,
+      "p_reactive_phase_3": 0,
+      "p_reactive_total": 0,
+      "pf_phase_1": null,
+      "pf_phase_2": 0.0,
+      "pf_phase_3": 0.0,
+      "pf_total": 0.0,
+      "v_phase_1": 244.6,
+      "v_phase_2": 0.0,
+      "v_phase_3": 0.0
+     }
+    }
+   }
+  },
+  "discovery removed": [],
+  "discovery topics": [],
+  "mqtt topics": [
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/BMS_Temperature",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/BMS_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_BMS_Current",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Capacity",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_10_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_11_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_12_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_13_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_14_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_15_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_16_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_1_Temperature",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_1_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_2_Temperature",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_2_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_3_Temperature",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_3_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_4_Temperature",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_4_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_5_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_6_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_7_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_8_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_9_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cells",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cycles",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Design_Capacity",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Firmware_Version",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Remaining_Capacity",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_SOC",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Serial_Number",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Temperature",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_USB_present",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Voltage",
+   "GivEnergy/EA2302G000/Control/Active_Power_Rate",
+   "GivEnergy/EA2302G000/Control/Battery_Calibration",
+   "GivEnergy/EA2302G000/Control/Battery_Charge_Rate",
+   "GivEnergy/EA2302G000/Control/Battery_Discharge_Rate",
+   "GivEnergy/EA2302G000/Control/Battery_Power_Cutoff",
+   "GivEnergy/EA2302G000/Control/Battery_Power_Reserve",
+   "GivEnergy/EA2302G000/Control/Eco_Mode",
+   "GivEnergy/EA2302G000/Control/Enable_Charge_Schedule",
+   "GivEnergy/EA2302G000/Control/Enable_Charge_Target",
+   "GivEnergy/EA2302G000/Control/Enable_Discharge_Schedule",
+   "GivEnergy/EA2302G000/Control/Force_Charge",
+   "GivEnergy/EA2302G000/Control/Force_Charge_Num",
+   "GivEnergy/EA2302G000/Control/Force_Export",
+   "GivEnergy/EA2302G000/Control/Force_Export_Num",
+   "GivEnergy/EA2302G000/Control/Mode",
+   "GivEnergy/EA2302G000/Control/Real_Time_Control",
+   "GivEnergy/EA2302G000/Control/Reboot_Addon",
+   "GivEnergy/EA2302G000/Control/Reboot_Invertor",
+   "GivEnergy/EA2302G000/Control/Sync_Time",
+   "GivEnergy/EA2302G000/Control/Target_SOC",
+   "GivEnergy/EA2302G000/Control/Temp_Pause_Charge",
+   "GivEnergy/EA2302G000/Control/Temp_Pause_Charge_Num",
+   "GivEnergy/EA2302G000/Control/Temp_Pause_Discharge",
+   "GivEnergy/EA2302G000/Control/Temp_Pause_Discharge_Num",
+   "GivEnergy/EA2302G000/EA2302G000/Battery_Calibration_Status",
+   "GivEnergy/EA2302G000/EA2302G000/Battery_Capacity_kWh",
+   "GivEnergy/EA2302G000/EA2302G000/Battery_Type",
+   "GivEnergy/EA2302G000/EA2302G000/Export_Limit",
+   "GivEnergy/EA2302G000/EA2302G000/Invertor_Firmware",
+   "GivEnergy/EA2302G000/EA2302G000/Invertor_Max_Bat_Rate",
+   "GivEnergy/EA2302G000/EA2302G000/Invertor_Max_Inv_Rate",
+   "GivEnergy/EA2302G000/EA2302G000/Invertor_Serial_Number",
+   "GivEnergy/EA2302G000/EA2302G000/Invertor_Temperature",
+   "GivEnergy/EA2302G000/EA2302G000/Invertor_Time",
+   "GivEnergy/EA2302G000/EA2302G000/Invertor_Type",
+   "GivEnergy/EA2302G000/EA2302G000/Meter_Type",
+   "GivEnergy/EA2302G000/EA2302G000/Modbus_Version",
+   "GivEnergy/EA2302G000/Energy/Rates/Battery_Value",
+   "GivEnergy/EA2302G000/Energy/Rates/Battery_ppkwh",
+   "GivEnergy/EA2302G000/Energy/Rates/Current_Rate",
+   "GivEnergy/EA2302G000/Energy/Rates/Current_Rate_Type",
+   "GivEnergy/EA2302G000/Energy/Rates/Day_Cost",
+   "GivEnergy/EA2302G000/Energy/Rates/Day_Energy_Total_kWh",
+   "GivEnergy/EA2302G000/Energy/Rates/Day_Energy_kWh",
+   "GivEnergy/EA2302G000/Energy/Rates/Day_Rate",
+   "GivEnergy/EA2302G000/Energy/Rates/Day_Start_Energy_kWh",
+   "GivEnergy/EA2302G000/Energy/Rates/Export_Rate",
+   "GivEnergy/EA2302G000/Energy/Rates/Import_ppkwh_Today",
+   "GivEnergy/EA2302G000/Energy/Rates/Night_Cost",
+   "GivEnergy/EA2302G000/Energy/Rates/Night_Energy_Total_kWh",
+   "GivEnergy/EA2302G000/Energy/Rates/Night_Energy_kWh",
+   "GivEnergy/EA2302G000/Energy/Rates/Night_Rate",
+   "GivEnergy/EA2302G000/Energy/Rates/Night_Start_Energy_kWh",
+   "GivEnergy/EA2302G000/Energy/Today/AC_Charge_Energy_Today_kWh",
+   "GivEnergy/EA2302G000/Energy/Today/Battery_Charge_Energy_Today_kWh",
+   "GivEnergy/EA2302G000/Energy/Today/Battery_Discharge_Energy_Today_kWh",
+   "GivEnergy/EA2302G000/Energy/Today/Battery_Throughput_Today_kWh",
+   "GivEnergy/EA2302G000/Energy/Today/Export_Energy_Today_kWh",
+   "GivEnergy/EA2302G000/Energy/Today/Import_Energy_Today_kWh",
+   "GivEnergy/EA2302G000/Energy/Today/Invertor_Energy_Today_kWh",
+   "GivEnergy/EA2302G000/Energy/Today/Load_Energy_Today_kWh",
+   "GivEnergy/EA2302G000/Energy/Today/PV_Energy_Today_kWh",
+   "GivEnergy/EA2302G000/Energy/Today/Self_Consumption_Energy_Today_kWh",
+   "GivEnergy/EA2302G000/Energy/Total/AC_Charge_Energy_Total_kWh",
+   "GivEnergy/EA2302G000/Energy/Total/Battery_Throughput_Total_kWh",
+   "GivEnergy/EA2302G000/Energy/Total/Export_Energy_Total_kWh",
+   "GivEnergy/EA2302G000/Energy/Total/Import_Energy_Total_kWh",
+   "GivEnergy/EA2302G000/Energy/Total/Invertor_Energy_Total_kWh",
+   "GivEnergy/EA2302G000/Energy/Total/Load_Energy_Total_kWh",
+   "GivEnergy/EA2302G000/Energy/Total/PV_Energy_Total_kWh",
+   "GivEnergy/EA2302G000/Energy/Total/Self_Consumption_Energy_Total_kWh",
+   "GivEnergy/EA2302G000/Meter_Details/Meter_ID1/Export_Energy_kWh",
+   "GivEnergy/EA2302G000/Meter_Details/Meter_ID1/Frequency",
+   "GivEnergy/EA2302G000/Meter_Details/Meter_ID1/Import_Energy_kWh",
+   "GivEnergy/EA2302G000/Meter_Details/Meter_ID1/Phase_1_Current",
+   "GivEnergy/EA2302G000/Meter_Details/Meter_ID1/Phase_1_Power",
+   "GivEnergy/EA2302G000/Meter_Details/Meter_ID1/Phase_1_Voltage",
+   "GivEnergy/EA2302G000/Meter_Details/Meter_ID1/Phase_2_Current",
+   "GivEnergy/EA2302G000/Meter_Details/Meter_ID1/Phase_2_Power",
+   "GivEnergy/EA2302G000/Meter_Details/Meter_ID1/Phase_2_Power_Factor",
+   "GivEnergy/EA2302G000/Meter_Details/Meter_ID1/Phase_2_Voltage",
+   "GivEnergy/EA2302G000/Meter_Details/Meter_ID1/Phase_3_Current",
+   "GivEnergy/EA2302G000/Meter_Details/Meter_ID1/Phase_3_Power",
+   "GivEnergy/EA2302G000/Meter_Details/Meter_ID1/Phase_3_Power_Factor",
+   "GivEnergy/EA2302G000/Meter_Details/Meter_ID1/Phase_3_Voltage",
+   "GivEnergy/EA2302G000/Power/Flows/Battery_to_Grid",
+   "GivEnergy/EA2302G000/Power/Flows/Battery_to_House",
+   "GivEnergy/EA2302G000/Power/Flows/Grid_to_Battery",
+   "GivEnergy/EA2302G000/Power/Flows/Grid_to_House",
+   "GivEnergy/EA2302G000/Power/Flows/Solar_to_Battery",
+   "GivEnergy/EA2302G000/Power/Flows/Solar_to_Grid",
+   "GivEnergy/EA2302G000/Power/Flows/Solar_to_House",
+   "GivEnergy/EA2302G000/Power/Power/AC_Charge_Power",
+   "GivEnergy/EA2302G000/Power/Power/Battery_Current",
+   "GivEnergy/EA2302G000/Power/Power/Battery_Power",
+   "GivEnergy/EA2302G000/Power/Power/Battery_Voltage",
+   "GivEnergy/EA2302G000/Power/Power/Charge_Power",
+   "GivEnergy/EA2302G000/Power/Power/Charge_Time_Remaining",
+   "GivEnergy/EA2302G000/Power/Power/Discharge_Completion_Time",
+   "GivEnergy/EA2302G000/Power/Power/Discharge_Power",
+   "GivEnergy/EA2302G000/Power/Power/Discharge_Time_Remaining",
+   "GivEnergy/EA2302G000/Power/Power/EPS_Power",
+   "GivEnergy/EA2302G000/Power/Power/Export_Power",
+   "GivEnergy/EA2302G000/Power/Power/Grid_Current",
+   "GivEnergy/EA2302G000/Power/Power/Grid_Frequency",
+   "GivEnergy/EA2302G000/Power/Power/Grid_Power",
+   "GivEnergy/EA2302G000/Power/Power/Grid_Voltage",
+   "GivEnergy/EA2302G000/Power/Power/Import_Power",
+   "GivEnergy/EA2302G000/Power/Power/Inverter_Output_Frequency",
+   "GivEnergy/EA2302G000/Power/Power/Invertor_Power",
+   "GivEnergy/EA2302G000/Power/Power/Load_Power",
+   "GivEnergy/EA2302G000/Power/Power/PV_Current_String_1",
+   "GivEnergy/EA2302G000/Power/Power/PV_Current_String_2",
+   "GivEnergy/EA2302G000/Power/Power/PV_Power",
+   "GivEnergy/EA2302G000/Power/Power/PV_Power_String_1",
+   "GivEnergy/EA2302G000/Power/Power/PV_Power_String_2",
+   "GivEnergy/EA2302G000/Power/Power/PV_Voltage_String_1",
+   "GivEnergy/EA2302G000/Power/Power/PV_Voltage_String_2",
+   "GivEnergy/EA2302G000/Power/Power/SOC",
+   "GivEnergy/EA2302G000/Power/Power/SOC_kWh",
+   "GivEnergy/EA2302G000/Power/Power/Self_Consumption_Power",
+   "GivEnergy/EA2302G000/Stats/Data_Age",
+   "GivEnergy/EA2302G000/Stats/GivTCP_Version",
+   "GivEnergy/EA2302G000/Stats/Last_Updated_Time",
+   "GivEnergy/EA2302G000/Stats/Safe_Write_Count",
+   "GivEnergy/EA2302G000/Stats/Time_Since_Last_Update",
+   "GivEnergy/EA2302G000/Stats/Write_Count",
+   "GivEnergy/EA2302G000/Stats/status",
+   "GivEnergy/EA2302G000/Timeslots/Charge_end_time_slot_1",
+   "GivEnergy/EA2302G000/Timeslots/Charge_start_time_slot_1",
+   "GivEnergy/EA2302G000/Timeslots/Discharge_end_time_slot_1",
+   "GivEnergy/EA2302G000/Timeslots/Discharge_end_time_slot_2",
+   "GivEnergy/EA2302G000/Timeslots/Discharge_start_time_slot_1",
+   "GivEnergy/EA2302G000/Timeslots/Discharge_start_time_slot_2",
+   "GivEnergy/EA2302G000/raw/batteries/DF2244G000",
+   "GivEnergy/EA2302G000/raw/invertor",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/e_export_active",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/e_export_reactive",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/e_import_active",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/e_import_reactive",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/frequency",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/i_ln",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/i_phase_1",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/i_phase_2",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/i_phase_3",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/i_total",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/p_active_phase_1",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/p_active_phase_2",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/p_active_phase_3",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/p_active_total",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/p_apparent_phase_1",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/p_apparent_phase_2",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/p_apparent_phase_3",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/p_apparent_total",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/p_reactive_phase_1",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/p_reactive_phase_2",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/p_reactive_phase_3",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/p_reactive_total",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/pf_phase_2",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/pf_phase_3",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/pf_total",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/v_phase_1",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/v_phase_2",
+   "GivEnergy/EA2302G000/raw/meters/Meter_ID_1/v_phase_3"
+  ]
+ },
+ "rest": {
+  "/enableChargeSchedule({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Schedule to disable was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      96,
+      0
+     ]
+    ]
+   }
+  ],
+  "/enableChargeSchedule({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Schedule to enable was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ]
+    ]
+   }
+  ],
+  "/enableChargeTarget({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Disabling Charge Target was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      20,
+      0
+     ],
+     [
+      17,
+      116,
+      100
+     ]
+    ]
+   }
+  ],
+  "/enableChargeTarget({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Enabling Charge Target was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      20,
+      0
+     ],
+     [
+      17,
+      116,
+      100
+     ]
+    ]
+   }
+  ],
+  "/enableDischarge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: enableDischarge - ignoring"
+     ]
+    ],
+    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/enableDischarge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: enableDischarge - ignoring"
+     ]
+    ],
+    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/enableDischargeSchedule({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Schedule to disable was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "/enableDischargeSchedule({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Schedule to enable was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "/forceCharge(Cancel)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Charge successfully forced for 30 minutes"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      116,
+      100
+     ],
+     [
+      17,
+      94,
+      1200
+     ],
+     [
+      17,
+      95,
+      1230
+     ],
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      111,
+      50
+     ]
+    ]
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Write request error: TypeError: cancelJob() takes from 1 to 2 positional arguments but 3 were given deleting all pending requests, please try again"
+     ]
+    ],
+    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/forceCharge({'duration': '30'})": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Charge successfully forced for 30 minutes"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      116,
+      100
+     ],
+     [
+      17,
+      94,
+      1200
+     ],
+     [
+      17,
+      95,
+      1230
+     ],
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      111,
+      50
+     ]
+    ]
+   }
+  ],
+  "/forceExport(Cancel)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Export successfully forced for 30 minutes"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      112,
+      50
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      56,
+      1200
+     ],
+     [
+      17,
+      57,
+      1230
+     ],
+     [
+      17,
+      44,
+      0
+     ],
+     [
+      17,
+      45,
+      0
+     ]
+    ]
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Write request error: TypeError: cancelJob() takes from 1 to 2 positional arguments but 3 were given deleting all pending requests, please try again"
+     ]
+    ],
+    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/forceExport({'duration': '30'})": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Export successfully forced for 30 minutes"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      112,
+      50
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      56,
+      1200
+     ],
+     [
+      17,
+      57,
+      1230
+     ],
+     [
+      17,
+      44,
+      0
+     ],
+     [
+      17,
+      45,
+      0
+     ]
+    ]
+   }
+  ],
+  "/reboot({})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Rebooting Inverter was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      163,
+      100
+     ]
+    ]
+   }
+  ],
+  "/setACCharge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setACCharge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryCalibration({'state': 'Charge Only'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Battery Calibration Charge Only was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      29,
+      3
+     ]
+    ]
+   }
+  ],
+  "/setBatteryCalibration({'state': 'Off'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Battery Calibration Off was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      29,
+      0
+     ]
+    ]
+   }
+  ],
+  "/setBatteryCalibration({'state': 'Start'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Battery Calibration Start was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      29,
+      1
+     ]
+    ]
+   }
+  ],
+  "/setBatteryCutoff({'dischargeToPercent': '10'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery power reserve to 10 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      114,
+      10
+     ]
+    ]
+   }
+  ],
+  "/setBatteryMode({'mode': 'Eco (Paused)'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "/setBatteryMode({'mode': 'Eco'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Eco mode was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "/setBatteryMode({'mode': 'Timed Demand'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Timed Demand mode was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      110,
+      100
+     ],
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "/setBatteryMode({'mode': 'Timed Export'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Timed Export mode was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "/setBatteryPauseMode({'state': 'Disabled'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryPauseMode({'state': 'PauseBoth'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryPauseMode({'state': 'PauseCharge'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryPauseMode({'state': 'PauseDischarge'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryReserve({'reservePercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery reserve 20 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      110,
+      20
+     ]
+    ]
+   }
+  ],
+  "/setCarChargeBoost({'boost': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setChargeRate({'chargeRate': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery charge rate 2500 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      111,
+      26
+     ]
+    ]
+   }
+  ],
+  "/setChargeRateAC({'chargeRate': '75'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting battery charge rate 75 failed"
+     ]
+    ],
+    "result": {
+     "result": "Setting battery charge rate 75 failed"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setChargeSlot({'start': '01:30', 'finish': '04:30', 'slot': '1', 'chargeToPercent': '90'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 1 to: 01:30 - 04:30 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      94,
+      130
+     ],
+     [
+      17,
+      95,
+      430
+     ],
+     [
+      17,
+      116,
+      90
+     ]
+    ]
+   }
+  ],
+  "/setChargeSlot1({'start': '01:30', 'finish': '04:30', 'chargeToPercent': '90'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 1 to: 01:30 - 04:30 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      94,
+      130
+     ],
+     [
+      17,
+      95,
+      430
+     ],
+     [
+      17,
+      116,
+      90
+     ]
+    ]
+   }
+  ],
+  "/setChargeSlot2({'start': '01:30', 'finish': '04:30', 'chargeToPercent': '90'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 2 to: 01:30 - 04:30 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      31,
+      130
+     ],
+     [
+      17,
+      32,
+      430
+     ],
+     [
+      17,
+      116,
+      90
+     ]
+    ]
+   }
+  ],
+  "/setChargeSlot3({'start': '01:30', 'finish': '04:30', 'chargeToPercent': '90'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setChargeTarget({'chargeToPercent': '85'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Target 85 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      20,
+      1
+     ],
+     [
+      17,
+      116,
+      85
+     ]
+    ]
+   }
+  ],
+  "/setDateTime({'dateTime': '01/01/2026 12:00:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setDischargeRate({'dischargeRate': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery discharge limit 2500 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      112,
+      26
+     ]
+    ]
+   }
+  ],
+  "/setDischargeRateAC({'dischargeRate': '75'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting battery discharge rate 75 failed"
+     ]
+    ],
+    "result": {
+     "result": "Setting battery discharge rate 75 failed"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setDischargeSlot({'start': '16:00', 'finish': '19:00', 'slot': '1', 'dischargeToPercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot 1 to: 16:00 - 19:00 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      110,
+      20
+     ],
+     [
+      17,
+      56,
+      1600
+     ],
+     [
+      17,
+      57,
+      1900
+     ]
+    ]
+   }
+  ],
+  "/setDischargeSlot1({'start': '16:00', 'finish': '19:00', 'dischargeToPercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot 1 to: 16:00 - 19:00 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      110,
+      20
+     ],
+     [
+      17,
+      56,
+      1600
+     ],
+     [
+      17,
+      57,
+      1900
+     ]
+    ]
+   }
+  ],
+  "/setDischargeSlot2({'start': '16:00', 'finish': '19:00', 'dischargeToPercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot 2 to: 16:00 - 19:00 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      110,
+      20
+     ],
+     [
+      17,
+      44,
+      1600
+     ],
+     [
+      17,
+      45,
+      1900
+     ]
+    ]
+   }
+  ],
+  "/setDischargeSlot3({'start': '16:00', 'finish': '19:00', 'dischargeToPercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge Slot 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      110,
+      20
+     ]
+    ]
+   }
+  ],
+  "/setDischargeTarget({'dischargeToPercent': '30', 'slot': '1'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setEcoMode({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Eco Mode disable was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ]
+    ]
+   }
+  ],
+  "/setEcoMode({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Eco Mode enable was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ]
+    ]
+   }
+  ],
+  "/setEmsPlant({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setEmsPlant({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setExportLimit({'state': '3600'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Limit failed: NotImplementedError: Setting the Export Limit is not yet supported by givenergy-modbus for Hybrid_gen2 inverters (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Limit failed: NotImplementedError: Setting the Export Limit is not yet supported by givenergy-modbus for Hybrid_gen2 inverters (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setExportSlot1({'start': '16:00', 'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setExportSlot2({'start': '16:00', 'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setExportSlot3({'start': '16:00', 'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 3 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Slot 3 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setExportTarget({'exportToPercent': '30', 'slot': '1'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Target 1 failed: NotImplementedError: Export target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Target 1 failed: NotImplementedError: Export target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setForceCharge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setForceCharge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setForceDischarge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setForceDischarge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setPauseSlot({'start': '16:00', 'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(319) is not permitted for HYBRID_GEN2 inverter (registers: 319, 320)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for HYBRID_GEN2 inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/switchRate({'rate': 'day'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "External rate setting not allowed. Enable Dynamic Tariff in settings"
+     ]
+    ],
+    "result": {
+     "result": "External rate setting not allowed. Enable Dynamic Tariff in settings"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/syncDateTime({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting inverter time was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      35,
+      26
+     ],
+     [
+      17,
+      36,
+      6
+     ],
+     [
+      17,
+      37,
+      15
+     ],
+     [
+      17,
+      38,
+      12
+     ],
+     [
+      17,
+      39,
+      0
+     ],
+     [
+      17,
+      40,
+      0
+     ]
+    ]
+   }
+  ],
+  "/tempPauseCharge(Cancel)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Charge paused for 1800.0 seconds"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      111,
+      0
+     ]
+    ]
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "rest_logger",
+      "ERROR",
+      "127.0.0.1 POST /tempPauseCharge raised FileNotFoundError: [Errno 2] No such file or directory: \".tpcRunning','r\" (REST.py:N)"
+     ],
+     [
+      "REST",
+      "ERROR",
+      "Exception on /tempPauseCharge [POST]"
+     ],
+     [
+      "rest_logger",
+      "WARNING",
+      "127.0.0.1 POST /tempPauseCharge -> 500 (Nms) | request: {\"duration\": \"Cancel\"} | response: <!doctype html> <html lang=en> <title>500 Internal Server Error</title> <h1>Internal Server Error</h1> <p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>"
+     ]
+    ],
+    "result": "<!doctype html>\n<html lang=en>\n<title>500 Internal Server Error</title>\n<h1>Internal Server Error</h1>\n<p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>\n",
+    "status": 500,
+    "writes": []
+   }
+  ],
+  "/tempPauseCharge({'duration': '30'})": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Charge paused for 1800.0 seconds"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      111,
+      0
+     ]
+    ]
+   }
+  ],
+  "/tempPauseDischarge(Cancel)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Discharge paused for 1800.0 seconds"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      112,
+      0
+     ]
+    ]
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "rest_logger",
+      "ERROR",
+      "127.0.0.1 POST /tempPauseDischarge raised FileNotFoundError: [Errno 2] No such file or directory: \".tpdRunning','r\" (REST.py:N)"
+     ],
+     [
+      "REST",
+      "ERROR",
+      "Exception on /tempPauseDischarge [POST]"
+     ],
+     [
+      "rest_logger",
+      "WARNING",
+      "127.0.0.1 POST /tempPauseDischarge -> 500 (Nms) | request: {\"duration\": \"Cancel\"} | response: <!doctype html> <html lang=en> <title>500 Internal Server Error</title> <h1>Internal Server Error</h1> <p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>"
+     ]
+    ],
+    "result": "<!doctype html>\n<html lang=en>\n<title>500 Internal Server Error</title>\n<h1>Internal Server Error</h1>\n<p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>\n",
+    "status": 500,
+    "writes": []
+   }
+  ],
+  "/tempPauseDischarge({'duration': '30'})": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Discharge paused for 1800.0 seconds"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      112,
+      0
+     ]
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,6416 @@
+{
+ "detect": {
+  "capabilities": {
+   "batteries": 0,
+   "device_type": "EMS",
+   "failed_reads": [],
+   "inverter_address": 17,
+   "is_ems": true,
+   "is_gateway": false,
+   "is_hv": false,
+   "is_three_phase": false
+  }
+ },
+ "direct": {
+  "enableChargeSchedule({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting charge schedule disable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting charge schedule disable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "enableChargeSchedule({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting charge schedule enable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting charge schedule enable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "enableChargeTarget({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'disable_charge_target' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'disable_charge_target' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "enableChargeTarget({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "enableDischargeSchedule({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "enableDischargeSchedule({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "enableRTC({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Real Time Control failed: AttributeError: 'Ems' object has no attribute 'set_enable_rtc' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Real Time Control failed: AttributeError: 'Ems' object has no attribute 'set_enable_rtc' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "enableRTC({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Real Time Control failed: AttributeError: 'Ems' object has no attribute 'set_enable_rtc' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Real Time Control failed: AttributeError: 'Ems' object has no attribute 'set_enable_rtc' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "forceCharge(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "forceCharge(30) then FCResume": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+    },
+    "writes": []
+   },
+   {
+    "skipped": "the previous step scheduled no job"
+   }
+  ],
+  "forceExport(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "forceExport(30) then FEResume": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+    },
+    "writes": []
+   },
+   {
+    "skipped": "the previous step scheduled no job"
+   }
+  ],
+  "rebootinverter({})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Reboot inverter failed: AttributeError: 'Ems' object has no attribute 'set_inverter_reboot' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Reboot inverter failed: AttributeError: 'Ems' object has no attribute 'set_inverter_reboot' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setACCharge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting AC Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setACCharge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting AC Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setActivePowerRate({'activePowerRate': '80'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Active Power Rate failed: AttributeError: 'Ems' object has no attribute 'set_active_power_rate' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Active Power Rate failed: AttributeError: 'Ems' object has no attribute 'set_active_power_rate' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryCalibration({'state': 'Charge Only'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryCalibration({'state': 'Off'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryCalibration({'state': 'Start'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryCutoff({'dischargeToPercent': '10'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Cutoff failed: AttributeError: 'Ems' object has no attribute 'set_battery_power_reserve' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Cutoff failed: AttributeError: 'Ems' object has no attribute 'set_battery_power_reserve' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryMode({'mode': 'Eco (Paused)'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryMode({'mode': 'Eco'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryMode({'mode': 'Timed Demand'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_to_match_demand' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_to_match_demand' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryMode({'mode': 'Timed Export'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_max_power' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_max_power' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode({'state': 'Disabled'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode({'state': 'PauseBoth'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode({'state': 'PauseCharge'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode({'state': 'PauseDischarge'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryReserve({'reservePercent': '2'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Reserve failed: AttributeError: 'Ems' object has no attribute 'set_battery_soc_reserve' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Reserve failed: AttributeError: 'Ems' object has no attribute 'set_battery_soc_reserve' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryReserve({'reservePercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Reserve failed: AttributeError: 'Ems' object has no attribute 'set_battery_soc_reserve' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Reserve failed: AttributeError: 'Ems' object has no attribute 'set_battery_soc_reserve' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setCarChargeBoost({'boost': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setChargeRate({'chargeRate': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "raised": "TypeError: float() argument must be a string or a real number, not 'NoneType' (write.py:N)",
+    "writes": []
+   }
+  ],
+  "setChargeRate({'chargeRate': '99999'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "raised": "TypeError: float() argument must be a string or a real number, not 'NoneType' (write.py:N)",
+    "writes": []
+   }
+  ],
+  "setChargeRateAC({'chargeRate': '75'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting battery charge rate 75 failed"
+     ]
+    ],
+    "result": {
+     "result": "Setting battery charge rate 75 failed"
+    },
+    "writes": []
+   }
+  ],
+  "setChargeSlot({'start': '01:30', 'finish': '04:30', 'slot': '1', 'chargeToPercent': '90'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 1 to: 01:30 - 04:30 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2053,
+      130
+     ],
+     [
+      17,
+      2054,
+      430
+     ],
+     [
+      17,
+      2055,
+      90
+     ]
+    ]
+   }
+  ],
+  "setChargeSlot({'start': '01:30', 'finish': '04:30', 'slot': '2'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 2 to: 01:30 - 04:30 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2056,
+      130
+     ],
+     [
+      17,
+      2057,
+      430
+     ]
+    ]
+   }
+  ],
+  "setChargeSlotEnd({'finish': '05:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot End 1 to: 05:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2054,
+      500
+     ]
+    ]
+   }
+  ],
+  "setChargeSlotEnd({'finish': '05:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot End 2 to: 05:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2057,
+      500
+     ]
+    ]
+   }
+  ],
+  "setChargeSlotStart({'start': '02:00', 'slot': 1, 'EMS': True})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 1 Start to: 02:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2053,
+      200
+     ]
+    ]
+   }
+  ],
+  "setChargeSlotStart({'start': '02:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 1 Start to: 02:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2053,
+      200
+     ]
+    ]
+   }
+  ],
+  "setChargeSlotStart({'start': '02:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 2 Start to: 02:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2056,
+      200
+     ]
+    ]
+   }
+  ],
+  "setChargeTarget({'chargeToPercent': '85'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setChargeTarget2({'chargeToPercent': '85', 'slot': 1, 'EMS': True})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Target 1 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2055,
+      85
+     ]
+    ]
+   }
+  ],
+  "setChargeTarget2({'chargeToPercent': '85', 'slot': 10})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 10 failed: ValueError: EMS charge slot index (10) must be in [1-3] (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Target 10 failed: ValueError: EMS charge slot index (10) must be in [1-3] (commands.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setChargeTarget2({'chargeToPercent': '85', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Target 1 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2055,
+      85
+     ]
+    ]
+   }
+  ],
+  "setChargeTarget2({'chargeToPercent': '85', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Target 2 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2058,
+      85
+     ]
+    ]
+   }
+  ],
+  "setDateTime({'dateTime': '01/01/2026 12:00:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setDischargeRate({'dischargeRate': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "raised": "TypeError: int() argument must be a string, a bytes-like object or a real number, not 'NoneType' (write.py:N)",
+    "writes": []
+   }
+  ],
+  "setDischargeRateAC({'dischargeRate': '75'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting battery discharge rate 75 failed"
+     ]
+    ],
+    "result": {
+     "result": "Setting battery discharge rate 75 failed"
+    },
+    "writes": []
+   }
+  ],
+  "setDischargeSlot({'start': '16:00', 'finish': '19:00', 'slot': '1', 'dischargeToPercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot 1 to: 16:00 - 19:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2044,
+      1600
+     ],
+     [
+      17,
+      2045,
+      1900
+     ],
+     [
+      17,
+      2046,
+      20
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlot({'start': '16:00', 'finish': '19:00', 'slot': '2'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot 2 to: 16:00 - 19:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2047,
+      1600
+     ],
+     [
+      17,
+      2048,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlotEnd({'finish': '05:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot End 1 to: 05:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2045,
+      500
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlotEnd({'finish': '05:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot End 2 to: 05:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2048,
+      500
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlotStart({'start': '02:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot start 1 Start to: 02:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2044,
+      200
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlotStart({'start': '02:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot start 2 Start to: 02:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2047,
+      200
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlotStart({'start': '16:00', 'slot': 1, 'EMS': True})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot start 1 Start to: 16:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2044,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setDischargeTarget({'dischargeToPercent': '30', 'slot': '1'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Target 1 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2046,
+      30
+     ]
+    ]
+   }
+  ],
+  "setDischargeTarget({'dischargeToPercent': '30', 'slot': '10'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 10 failed: ValueError: EMS discharge slot index (10) must be in [1-3] (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge Target 10 failed: ValueError: EMS discharge slot index (10) must be in [1-3] (commands.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setEcoMode({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "raised": "UnboundLocalError: cannot access local variable 'result' where it is not associated with a value (write.py:N)",
+    "writes": []
+   }
+  ],
+  "setEcoMode({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "raised": "UnboundLocalError: cannot access local variable 'result' where it is not associated with a value (write.py:N)",
+    "writes": []
+   }
+  ],
+  "setEmsPlant({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Disabling EMS Plant Operation was a success"
+    },
+    "writes": [
+     [
+      17,
+      2040,
+      0
+     ]
+    ]
+   }
+  ],
+  "setEmsPlant({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Enabling EMS Plant Operation was a success"
+    },
+    "writes": [
+     [
+      17,
+      2040,
+      1
+     ]
+    ]
+   }
+  ],
+  "setExportLimit({'state': '3600'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export Limit to 3600w was a success"
+    },
+    "writes": [
+     [
+      17,
+      2071,
+      3600
+     ]
+    ]
+   }
+  ],
+  "setExportSlot({'start': '16:00', 'finish': '19:00', 'slot': '1'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export Slot 1 to: 16:00 - 19:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2062,
+      1600
+     ],
+     [
+      17,
+      2063,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setExportSlotEnd({'finish': '05:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export Slot End 1 to: 05:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2063,
+      500
+     ]
+    ]
+   }
+  ],
+  "setExportSlotEnd({'finish': '05:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export Slot End 2 to: 05:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2066,
+      500
+     ]
+    ]
+   }
+  ],
+  "setExportSlotStart({'start': '02:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export Slot 1 Start to: 02:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2062,
+      200
+     ]
+    ]
+   }
+  ],
+  "setExportSlotStart({'start': '02:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export Slot 2 Start to: 02:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2065,
+      200
+     ]
+    ]
+   }
+  ],
+  "setExportTarget({'exportToPercent': '30', 'slot': '1'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export Target 1 was a success"
+    },
+    "writes": [
+     [
+      17,
+      2064,
+      30
+     ]
+    ]
+   }
+  ],
+  "setForceCharge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setForceCharge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setForceDischarge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Discharge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setForceDischarge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Discharge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setLocalControlMode({'state': 'Battery'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {},
+    "writes": []
+   }
+  ],
+  "setLocalControlMode({'state': 'Grid'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {},
+    "writes": []
+   }
+  ],
+  "setLocalControlMode({'state': 'Load'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {},
+    "writes": []
+   }
+  ],
+  "setPauseEnd({'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(320) is not permitted for EMS inverter (registers: 320)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for EMS inverter'} (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for EMS inverter'} (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setPauseSlot({'start': '16:00', 'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter (registers: 319, 320)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setPauseStart({'start': '16:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter (registers: 319)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter'} (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter'} (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "switchRate(day)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "External rate setting not allowed. Enable Dynamic Tariff in settings"
+     ]
+    ],
+    "result": {
+     "result": "External rate setting not allowed. Enable Dynamic Tariff in settings"
+    },
+    "writes": []
+   }
+  ],
+  "syncDateTime({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Syncing inverter DateTime failed: AttributeError: 'Ems' object has no attribute 'set_system_date_time' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Syncing inverter DateTime failed: AttributeError: 'Ems' object has no attribute 'set_system_date_time' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "tempPauseCharge(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "tempPauseCharge(30) then tmpPCResume": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+    },
+    "writes": []
+   },
+   {
+    "skipped": "the previous step scheduled no job"
+   }
+  ],
+  "tempPauseDischarge(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "tempPauseDischarge(30) then tmpPDResume": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+    },
+    "writes": []
+   },
+   {
+    "skipped": "the previous step scheduled no job"
+   }
+  ]
+ },
+ "mqtt": {
+  "enableChargeSchedule(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting charge schedule disable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "enableChargeSchedule",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "enableChargeSchedule(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting charge schedule enable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "enableChargeSchedule",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "enableChargeTarget(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'disable_charge_target' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "enableChargeTarget",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "enableChargeTarget(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "enableChargeTarget",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "enableDischarge(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: enableDischarge - ignoring"
+     ]
+    ],
+    "queued": [
+     [
+      "enableDischarge",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "enableDischarge(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: enableDischarge - ignoring"
+     ]
+    ],
+    "queued": [
+     [
+      "enableDischarge",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "enableDischargeSchedule(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "enableDischargeSchedule",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "enableDischargeSchedule(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "enableDischargeSchedule",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "enableRTC(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Real Time Control failed: AttributeError: 'Ems' object has no attribute 'set_enable_rtc' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "enableRTC",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "enableRTC(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Real Time Control failed: AttributeError: 'Ems' object has no attribute 'set_enable_rtc' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "enableRTC",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "forceCharge(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "forceCharge",
+      30.0
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "forceCharge(Cancel)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "forceCharge",
+      30.0
+     ]
+    ],
+    "writes": []
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Force Charge is not currently running"
+     ]
+    ],
+    "queued": [],
+    "writes": []
+   }
+  ],
+  "forceExport(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "forceExport",
+      30.0
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "forceExport(Cancel)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "forceExport",
+      30.0
+     ]
+    ],
+    "writes": []
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Force Export is not currently running"
+     ]
+    ],
+    "queued": [],
+    "writes": []
+   }
+  ],
+  "rebootInverter()": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Reboot inverter failed: AttributeError: 'Ems' object has no attribute 'set_inverter_reboot' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "rebootinverter",
+      {}
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setACCharge(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setACCharge",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setACCharge(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setACCharge",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setActivePowerRate(80)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Active Power Rate failed: AttributeError: 'Ems' object has no attribute 'set_active_power_rate' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setActivePowerRate",
+      {
+       "activePowerRate": "80"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryCalibration(Charge Only)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryCalibration",
+      {
+       "state": "Charge Only"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryCalibration(Off)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryCalibration",
+      {
+       "state": "Off"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryCalibration(Start)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryCalibration",
+      {
+       "state": "Start"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryCutoff(10)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Cutoff failed: AttributeError: 'Ems' object has no attribute 'set_battery_power_reserve' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryCutoff",
+      {
+       "dischargeToPercent": "10"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryMode(Eco (Paused))": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryMode",
+      {
+       "mode": "Eco (Paused)"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryMode(Eco)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryMode",
+      {
+       "mode": "Eco"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryMode(Timed Demand)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_to_match_demand' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryMode",
+      {
+       "mode": "Timed Demand"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryMode(Timed Export)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_max_power' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryMode",
+      {
+       "mode": "Timed Export"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode(Disabled)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryPauseMode",
+      {
+       "state": "Disabled"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode(PauseBoth)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryPauseMode",
+      {
+       "state": "PauseBoth"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode(PauseCharge)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryPauseMode",
+      {
+       "state": "PauseCharge"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode(PauseDischarge)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryPauseMode",
+      {
+       "state": "PauseDischarge"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryReserve(20)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Reserve failed: AttributeError: 'Ems' object has no attribute 'set_battery_soc_reserve' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryReserve",
+      {
+       "reservePercent": "20"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setCarChargeBoost(2500)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setCarChargeBoost",
+      {
+       "boost": "2500"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd1(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2054,
+      500
+     ]
+    ]
+   }
+  ],
+  "setChargeEnd10(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 10 failed: ValueError: Charge slot index (10) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 10
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd2(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2057,
+      500
+     ]
+    ]
+   }
+  ],
+  "setChargeEnd3(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2060,
+      500
+     ]
+    ]
+   }
+  ],
+  "setChargeEnd4(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 4 failed: ValueError: Charge slot index (4) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 4
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd5(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 5 failed: ValueError: Charge slot index (5) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 5
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd6(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 6 failed: ValueError: Charge slot index (6) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 6
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd7(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 7 failed: ValueError: Charge slot index (7) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 7
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd8(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 8 failed: ValueError: Charge slot index (8) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 8
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd9(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 9 failed: ValueError: Charge slot index (9) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 9
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeRate(2500)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Write request error: TypeError: float() argument must be a string or a real number, not 'NoneType' deleting all pending requests, please try again"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeRate",
+      {
+       "chargeRate": "2500"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeRateAC(75)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting battery charge rate 75 failed"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeRateAC",
+      {
+       "chargeRate": "75"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart1(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 1,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2053,
+      200
+     ]
+    ]
+   }
+  ],
+  "setChargeStart10(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 10 failed: ValueError: Charge slot index (10) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 10,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart2(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 2,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2056,
+      200
+     ]
+    ]
+   }
+  ],
+  "setChargeStart3(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 3,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2059,
+      200
+     ]
+    ]
+   }
+  ],
+  "setChargeStart4(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 4 failed: ValueError: Charge slot index (4) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 4,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart5(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 5 failed: ValueError: Charge slot index (5) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 5,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart6(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 6 failed: ValueError: Charge slot index (6) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 6,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart7(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 7 failed: ValueError: Charge slot index (7) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 7,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart8(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 8 failed: ValueError: Charge slot index (8) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 8,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart9(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 9 failed: ValueError: Charge slot index (9) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 9,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget",
+      {
+       "chargeToPercent": "85"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget1(85)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2055,
+      85
+     ]
+    ]
+   }
+  ],
+  "setChargeTarget10(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 10 failed: ValueError: EMS charge slot index (10) must be in [1-3] (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 10
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget2(85)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2058,
+      85
+     ]
+    ]
+   }
+  ],
+  "setChargeTarget3(85)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2061,
+      85
+     ]
+    ]
+   }
+  ],
+  "setChargeTarget4(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 4 failed: ValueError: EMS charge slot index (4) must be in [1-3] (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 4
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget5(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 5 failed: ValueError: EMS charge slot index (5) must be in [1-3] (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 5
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget6(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 6 failed: ValueError: EMS charge slot index (6) must be in [1-3] (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 6
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget7(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 7 failed: ValueError: EMS charge slot index (7) must be in [1-3] (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 7
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget8(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 8 failed: ValueError: EMS charge slot index (8) must be in [1-3] (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 8
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget9(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 9 failed: ValueError: EMS charge slot index (9) must be in [1-3] (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 9
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDateTime(01/01/2026 12:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDateTime",
+      {
+       "dateTime": "01/01/2026 12:00:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd1(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2045,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setDischargeEnd10(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 10 failed: ValueError: Discharge slot index (10) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 10
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd2(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2048,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setDischargeEnd3(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2051,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setDischargeEnd4(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 4 failed: ValueError: Discharge slot index (4) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 4
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd5(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 5 failed: ValueError: Discharge slot index (5) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 5
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd6(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 6 failed: ValueError: Discharge slot index (6) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 6
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd7(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 7 failed: ValueError: Discharge slot index (7) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 7
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd8(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 8 failed: ValueError: Discharge slot index (8) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 8
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd9(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 9 failed: ValueError: Discharge slot index (9) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 9
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeRate(2500)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Write request error: TypeError: int() argument must be a string, a bytes-like object or a real number, not 'NoneType' deleting all pending requests, please try again"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeRate",
+      {
+       "dischargeRate": "2500"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeRateAC(75)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting battery discharge rate 75 failed"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeRateAC",
+      {
+       "dischargeRate": "75"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart1(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 1,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2044,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setDischargeStart10(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 10 failed: ValueError: Discharge slot index (10) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 10,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart2(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 2,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2047,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setDischargeStart3(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 3,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2050,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setDischargeStart4(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 4 failed: ValueError: Discharge slot index (4) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 4,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart5(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 5 failed: ValueError: Discharge slot index (5) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 5,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart6(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 6 failed: ValueError: Discharge slot index (6) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 6,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart7(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 7 failed: ValueError: Discharge slot index (7) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 7,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart8(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 8 failed: ValueError: Discharge slot index (8) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 8,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart9(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 9 failed: ValueError: Discharge slot index (9) must be in [1-3] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 9,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget1(30)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2046,
+      30
+     ]
+    ]
+   }
+  ],
+  "setDischargeTarget10(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 10 failed: ValueError: EMS discharge slot index (10) must be in [1-3] (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 10
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget2(30)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2049,
+      30
+     ]
+    ]
+   }
+  ],
+  "setDischargeTarget3(30)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2052,
+      30
+     ]
+    ]
+   }
+  ],
+  "setDischargeTarget4(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 4 failed: ValueError: EMS discharge slot index (4) must be in [1-3] (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 4
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget5(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 5 failed: ValueError: EMS discharge slot index (5) must be in [1-3] (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 5
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget6(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 6 failed: ValueError: EMS discharge slot index (6) must be in [1-3] (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 6
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget7(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 7 failed: ValueError: EMS discharge slot index (7) must be in [1-3] (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 7
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget8(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 8 failed: ValueError: EMS discharge slot index (8) must be in [1-3] (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 8
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget9(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 9 failed: ValueError: EMS discharge slot index (9) must be in [1-3] (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 9
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEMSChargeEnd1(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "05:00",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2054,
+      500
+     ]
+    ]
+   }
+  ],
+  "setEMSChargeEnd2(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "05:00",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2057,
+      500
+     ]
+    ]
+   }
+  ],
+  "setEMSChargeEnd3(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "05:00",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2060,
+      500
+     ]
+    ]
+   }
+  ],
+  "setEMSChargeStart1(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 1,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2053,
+      200
+     ]
+    ]
+   }
+  ],
+  "setEMSChargeStart2(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 2,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2056,
+      200
+     ]
+    ]
+   }
+  ],
+  "setEMSChargeStart3(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 3,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2059,
+      200
+     ]
+    ]
+   }
+  ],
+  "setEMSChargeTarget1(85)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "EMS": true,
+       "chargeToPercent": "85",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2055,
+      85
+     ]
+    ]
+   }
+  ],
+  "setEMSChargeTarget2(85)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "EMS": true,
+       "chargeToPercent": "85",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2058,
+      85
+     ]
+    ]
+   }
+  ],
+  "setEMSChargeTarget3(85)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "EMS": true,
+       "chargeToPercent": "85",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2061,
+      85
+     ]
+    ]
+   }
+  ],
+  "setEMSDischargeEnd1(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "19:00",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2045,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setEMSDischargeEnd2(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "19:00",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2048,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setEMSDischargeEnd3(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "19:00",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2051,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setEMSDischargeStart1(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 1,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2044,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setEMSDischargeStart2(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 2,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2047,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setEMSDischargeStart3(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 3,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2050,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setEcoMode(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Write request error: UnboundLocalError: cannot access local variable 'result' where it is not associated with a value deleting all pending requests, please try again"
+     ]
+    ],
+    "queued": [
+     [
+      "setEcoMode",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEcoMode(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Write request error: UnboundLocalError: cannot access local variable 'result' where it is not associated with a value deleting all pending requests, please try again"
+     ]
+    ],
+    "queued": [
+     [
+      "setEcoMode",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEmsPlant(disable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setEmsPlant",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2040,
+      0
+     ]
+    ]
+   }
+  ],
+  "setEmsPlant(enable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setEmsPlant",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2040,
+      1
+     ]
+    ]
+   }
+  ],
+  "setExportEnd1(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setExportSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2063,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setExportEnd2(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setExportSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2066,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setExportEnd3(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setExportSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2069,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setExportLimit(3600)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setExportLimit",
+      {
+       "state": "3600"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2071,
+      3600
+     ]
+    ]
+   }
+  ],
+  "setExportStart1(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setExportSlotStart",
+      {
+       "slot": 1,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2062,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setExportStart2(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setExportSlotStart",
+      {
+       "slot": 2,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2065,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setExportStart3(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setExportSlotStart",
+      {
+       "slot": 3,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2068,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setExportTarget1(30)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setExportTarget",
+      {
+       "exportToPercent": "30",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2064,
+      30
+     ]
+    ]
+   }
+  ],
+  "setExportTarget2(30)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setExportTarget",
+      {
+       "exportToPercent": "30",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2067,
+      30
+     ]
+    ]
+   }
+  ],
+  "setExportTarget3(30)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setExportTarget",
+      {
+       "exportToPercent": "30",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      2070,
+      30
+     ]
+    ]
+   }
+  ],
+  "setForceCharge(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setForceCharge",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setForceCharge(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setForceCharge",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setForceDischarge(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setForceDischarge",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setForceDischarge(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setForceDischarge",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setLocalControlMode(Battery)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setLocalControlMode",
+      {
+       "state": "Battery"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setLocalControlMode(Grid)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setLocalControlMode",
+      {
+       "state": "Grid"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setLocalControlMode(Load)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setLocalControlMode",
+      {
+       "state": "Load"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setPVInputMode(1x2)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: setPVInputMode - ignoring"
+     ]
+    ],
+    "queued": [
+     [
+      "setPVInputMode",
+      {
+       "state": "1x2"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setPVInputMode(Independent)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: setPVInputMode - ignoring"
+     ]
+    ],
+    "queued": [
+     [
+      "setPVInputMode",
+      {
+       "state": "Independent"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setPauseEnd(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(320) is not permitted for EMS inverter (registers: 320)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for EMS inverter'} (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setPauseEnd",
+      {
+       "finish": "19:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setPauseStart(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter (registers: 319)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter'} (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setPauseStart",
+      {
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "switchRate(day)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "External rate setting not allowed. Enable Dynamic Tariff in settings"
+     ]
+    ],
+    "queued": [
+     [
+      "switchRate",
+      "day"
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "syncDateTime(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Syncing inverter DateTime failed: AttributeError: 'Ems' object has no attribute 'set_system_date_time' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "syncDateTime",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "tempPauseCharge(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "tempPauseCharge",
+      30.0
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "tempPauseCharge(Cancel)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "tempPauseCharge",
+      30.0
+     ]
+    ],
+    "writes": []
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Temp Pause Charge is not currently running"
+     ]
+    ],
+    "queued": [],
+    "writes": []
+   }
+  ],
+  "tempPauseDischarge(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "tempPauseDischarge",
+      30.0
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "tempPauseDischarge(Cancel)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "tempPauseDischarge",
+      30.0
+     ]
+    ],
+    "writes": []
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Temp Pause Charge is not currently running"
+     ]
+    ],
+    "queued": [],
+    "writes": []
+   }
+  ]
+ },
+ "read": {
+  "cycle 1 logs": [],
+  "cycle 1 output": {
+   "Control": {
+    "Car_Charge_Boost": 0,
+    "Car_Charge_Mode": "Stop",
+    "EMS_Charge_Target_SOC_1": 100,
+    "EMS_Charge_Target_SOC_2": 100,
+    "EMS_Charge_Target_SOC_3": 100,
+    "EMS_Discharge_Target_SOC_1": 4,
+    "EMS_Discharge_Target_SOC_2": 4,
+    "EMS_Discharge_Target_SOC_3": 4,
+    "Export_Power_Limit": 9500,
+    "Export_Target_SOC_1": 4,
+    "Export_Target_SOC_2": 4,
+    "Export_Target_SOC_3": 4,
+    "Plant_Charge_Compensation": 0,
+    "Plant_Control": "enable",
+    "Plant_Discharge_Compensation": 0
+   },
+   "EMS2522000": {
+    "Car_Charge_Count": 0,
+    "Export_Limit": 0,
+    "Inverter_Count": 2,
+    "Invertor_Firmware": "D0.0-A0.1036",
+    "Invertor_Serial_Number": "EMS2522000",
+    "Invertor_Time": "2026-05-27T23:05:37+01:00",
+    "Invertor_Type": "Ems",
+    "Meter_Count": 2,
+    "Plant_Status": "Normal",
+    "Remaining_Battery_Wh": 4105,
+    "Serial_Number": "EMS2522000",
+    "status": "Normal"
+   },
+   "Energy": {
+    "Today": {},
+    "Total": {}
+   },
+   "Inverters": {
+    "CE2231G001": {
+     "Power": 1042,
+     "SOC": 31,
+     "Serial_Number": "CE2231G001",
+     "Temperature": 50.3,
+     "status": "Online"
+    },
+    "CE2231G002": {
+     "Power": 1469,
+     "SOC": 16,
+     "Serial_Number": "CE2231G002",
+     "Temperature": 50.3,
+     "status": "Online"
+    }
+   },
+   "Power": {
+    "Battery_Power": 2511,
+    "Calculated_Load_Power": 677,
+    "Generation_Load_Power": 0,
+    "Grid_Power": -1834,
+    "Measured_Load_Power": 0,
+    "Meters": {
+     "Meter_1_Power": -1834,
+     "Meter_1_Status": "Online",
+     "Meter_2_Power": 0,
+     "Meter_2_Status": "Disabled",
+     "Meter_3_Power": -3,
+     "Meter_3_Status": "Online",
+     "Meter_4_Power": 0,
+     "Meter_4_Status": "Disabled",
+     "Meter_5_Power": 0,
+     "Meter_5_Status": "Disabled",
+     "Meter_6_Power": 0,
+     "Meter_6_Status": "Disabled",
+     "Meter_7_Power": 0,
+     "Meter_7_Status": "Disabled",
+     "Meter_8_Power": 0,
+     "Meter_8_Status": "Disabled"
+    },
+    "Other_Battery_Power": 0
+   },
+   "Stats": {
+    "Data_Age": "<varies>",
+    "GivTCP_Version": "3.5",
+    "Last_Updated_Time": "2026-06-15T12:00:00+01:00",
+    "Safe_Write_Count": 0,
+    "Time_Since_Last_Update": 0,
+    "Write_Count": 0,
+    "status": "online"
+   },
+   "Timeslots": {
+    "EMS_Charge_end_time_slot_1": "00:00:00",
+    "EMS_Charge_end_time_slot_2": "00:00:00",
+    "EMS_Charge_end_time_slot_3": "00:00:00",
+    "EMS_Charge_start_time_slot_1": "00:00:00",
+    "EMS_Charge_start_time_slot_2": "00:00:00",
+    "EMS_Charge_start_time_slot_3": "00:00:00",
+    "EMS_Discharge_end_time_slot_1": "23:59:00",
+    "EMS_Discharge_end_time_slot_2": "00:00:00",
+    "EMS_Discharge_end_time_slot_3": "00:00:00",
+    "EMS_Discharge_start_time_slot_1": "23:30:00",
+    "EMS_Discharge_start_time_slot_2": "00:00:00",
+    "EMS_Discharge_start_time_slot_3": "00:00:00",
+    "Export_end_time_slot_1": "23:30:00",
+    "Export_end_time_slot_2": "00:00:00",
+    "Export_end_time_slot_3": "00:00:00",
+    "Export_start_time_slot_1": "22:05:00",
+    "Export_start_time_slot_2": "00:00:00",
+    "Export_start_time_slot_3": "00:00:00"
+   },
+   "raw": {
+    "batteries": {},
+    "invertor": "plant_status=1 expected_inverter_count=0 expected_meter_count=0 expected_car_charger_count=0 discharge_slot_1=TimeSlot(start=datetime.time(23, 30), end=datetime.time(23, 59)) discharge_target_1=4 discharge_slot_2=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_2=4 discharge_slot_3=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_3=4 charge_slot_1=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_1=100 charge_slot_2=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_2=100 charge_slot_3=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_3=100 export_slot_1=TimeSlot(start=datetime.time(22, 5), end=datetime.time(23, 30)) export_target_1=4 export_slot_2=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) export_target_2=4 export_slot_3=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) export_target_3=4 export_power_limit=9500 car_charge_mode=0 car_charge_boost=0 plant_charge_compensation=0 plant_discharge_compensation=0 ems_status=1 meter_count=2 meter_types=16 meter_1_status=1 meter_2_status=0 meter_3_status=1 meter_4_status=0 meter_5_status=0 meter_6_status=0 meter_7_status=0 meter_8_status=0 inverter_count=2 inverter_1_status='2' inverter_2_status='2' inverter_3_status='0' inverter_4_status='0' inverter_1_suspected_status=2 inverter_2_suspected_status=2 inverter_3_suspected_status=0 inverter_4_suspected_status=0 meter_1_power=-1834 meter_2_power=0 meter_3_power=-3 meter_4_power=0 meter_5_power=0 meter_6_power=0 meter_7_power=0 meter_8_power=0 inverter_1_power=1042 inverter_2_power=1469 inverter_3_power=0 inverter_4_power=0 inverter_1_soc=31 inverter_2_soc=16 inverter_3_soc=0 inverter_4_soc=0 inverter_1_temp=50.3 inverter_2_temp=50.3 inverter_3_temp=0.0 inverter_4_temp=0.0 inverter_1_serial_number='CE2231G001' inverter_2_serial_number='CE2231G002' inverter_3_serial_number='' inverter_4_serial_number='' e_active_generation_total=None calc_load_power=677 measured_load_power=0 total_generation_load_power=0 grid_meter_power=-1834 total_battery_power=2511 remaining_battery_wh=4105 other_battery_power=0 plant_enabled=True",
+    "meters": {
+     "Meter_ID_1": {
+      "e_export_active": 5536.5,
+      "e_export_reactive": 5311.1,
+      "e_import_active": 2372.8,
+      "e_import_reactive": 56.0,
+      "frequency": 49.9,
+      "i_ln": 0.0,
+      "i_phase_1": 0.81,
+      "i_phase_2": 0.0,
+      "i_phase_3": 0.0,
+      "i_total": 0.81,
+      "p_active_phase_1": -1836,
+      "p_active_phase_2": 0,
+      "p_active_phase_3": 0,
+      "p_active_total": -1836,
+      "p_apparent_phase_1": 1960.4,
+      "p_apparent_phase_2": 0.0,
+      "p_apparent_phase_3": 0.0,
+      "p_apparent_total": 1960.4,
+      "p_reactive_phase_1": -620,
+      "p_reactive_phase_2": 0,
+      "p_reactive_phase_3": 0,
+      "p_reactive_total": -620,
+      "pf_phase_1": -0.9463,
+      "pf_phase_2": 0.0,
+      "pf_phase_3": 0.0,
+      "pf_total": -0.9463,
+      "v_phase_1": 241.7,
+      "v_phase_2": 0.0,
+      "v_phase_3": 0.0
+     },
+     "Meter_ID_3": {
+      "e_export_active": 17.2,
+      "e_export_reactive": 13.8,
+      "e_import_active": 269.5,
+      "e_import_reactive": 536.9,
+      "frequency": 49.85,
+      "i_ln": 0.0,
+      "i_phase_1": 0.03,
+      "i_phase_2": 0.0,
+      "i_phase_3": 0.0,
+      "i_total": 0.03,
+      "p_active_phase_1": -3,
+      "p_active_phase_2": 0,
+      "p_active_phase_3": 0,
+      "p_active_total": -3,
+      "p_apparent_phase_1": 96.3,
+      "p_apparent_phase_2": 0.0,
+      "p_apparent_phase_3": 0.0,
+      "p_apparent_total": 96.3,
+      "p_reactive_phase_1": 97,
+      "p_reactive_phase_2": 0,
+      "p_reactive_phase_3": 0,
+      "p_reactive_total": 97,
+      "pf_phase_1": -0.0294,
+      "pf_phase_2": 0.0,
+      "pf_phase_3": 0.0,
+      "pf_total": -0.0294,
+      "v_phase_1": 242.1,
+      "v_phase_2": 0.0,
+      "v_phase_3": 0.0
+     }
+    }
+   }
+  },
+  "cycle 2 logs": [],
+  "cycle 2 output": {
+   "Control": {
+    "Car_Charge_Boost": 0,
+    "Car_Charge_Mode": "Stop",
+    "EMS_Charge_Target_SOC_1": 100,
+    "EMS_Charge_Target_SOC_2": 100,
+    "EMS_Charge_Target_SOC_3": 100,
+    "EMS_Discharge_Target_SOC_1": 4,
+    "EMS_Discharge_Target_SOC_2": 4,
+    "EMS_Discharge_Target_SOC_3": 4,
+    "Export_Power_Limit": 9500,
+    "Export_Target_SOC_1": 4,
+    "Export_Target_SOC_2": 4,
+    "Export_Target_SOC_3": 4,
+    "Plant_Charge_Compensation": 0,
+    "Plant_Control": "enable",
+    "Plant_Discharge_Compensation": 0
+   },
+   "EMS2522000": {
+    "Car_Charge_Count": 0,
+    "Export_Limit": 0,
+    "Inverter_Count": 2,
+    "Invertor_Firmware": "D0.0-A0.1036",
+    "Invertor_Serial_Number": "EMS2522000",
+    "Invertor_Time": "2026-05-27T23:05:37+01:00",
+    "Invertor_Type": "Ems",
+    "Meter_Count": 2,
+    "Plant_Status": "Normal",
+    "Remaining_Battery_Wh": 4105,
+    "Serial_Number": "EMS2522000",
+    "status": "Normal"
+   },
+   "Energy": {
+    "Today": {},
+    "Total": {}
+   },
+   "Inverters": {
+    "CE2231G001": {
+     "Power": 1042,
+     "SOC": 31,
+     "Serial_Number": "CE2231G001",
+     "Temperature": 50.3,
+     "status": "Online"
+    },
+    "CE2231G002": {
+     "Power": 1469,
+     "SOC": 16,
+     "Serial_Number": "CE2231G002",
+     "Temperature": 50.3,
+     "status": "Online"
+    }
+   },
+   "Power": {
+    "Battery_Power": 2511,
+    "Calculated_Load_Power": 677,
+    "Generation_Load_Power": 0,
+    "Grid_Power": -1834,
+    "Measured_Load_Power": 0,
+    "Meters": {
+     "Meter_1_Power": -1834,
+     "Meter_1_Status": "Online",
+     "Meter_2_Power": 0,
+     "Meter_2_Status": "Disabled",
+     "Meter_3_Power": -3,
+     "Meter_3_Status": "Online",
+     "Meter_4_Power": 0,
+     "Meter_4_Status": "Disabled",
+     "Meter_5_Power": 0,
+     "Meter_5_Status": "Disabled",
+     "Meter_6_Power": 0,
+     "Meter_6_Status": "Disabled",
+     "Meter_7_Power": 0,
+     "Meter_7_Status": "Disabled",
+     "Meter_8_Power": 0,
+     "Meter_8_Status": "Disabled"
+    },
+    "Other_Battery_Power": 0
+   },
+   "Stats": {
+    "Data_Age": "<varies>",
+    "GivTCP_Version": "3.5",
+    "Last_Updated_Time": "2026-06-15T12:00:00+01:00",
+    "Safe_Write_Count": 0,
+    "Time_Since_Last_Update": 0.0,
+    "Write_Count": 0,
+    "status": "online"
+   },
+   "Timeslots": {
+    "EMS_Charge_end_time_slot_1": "00:00:00",
+    "EMS_Charge_end_time_slot_2": "00:00:00",
+    "EMS_Charge_end_time_slot_3": "00:00:00",
+    "EMS_Charge_start_time_slot_1": "00:00:00",
+    "EMS_Charge_start_time_slot_2": "00:00:00",
+    "EMS_Charge_start_time_slot_3": "00:00:00",
+    "EMS_Discharge_end_time_slot_1": "23:59:00",
+    "EMS_Discharge_end_time_slot_2": "00:00:00",
+    "EMS_Discharge_end_time_slot_3": "00:00:00",
+    "EMS_Discharge_start_time_slot_1": "23:30:00",
+    "EMS_Discharge_start_time_slot_2": "00:00:00",
+    "EMS_Discharge_start_time_slot_3": "00:00:00",
+    "Export_end_time_slot_1": "23:30:00",
+    "Export_end_time_slot_2": "00:00:00",
+    "Export_end_time_slot_3": "00:00:00",
+    "Export_start_time_slot_1": "22:05:00",
+    "Export_start_time_slot_2": "00:00:00",
+    "Export_start_time_slot_3": "00:00:00"
+   },
+   "raw": {
+    "batteries": {},
+    "invertor": "plant_status=1 expected_inverter_count=0 expected_meter_count=0 expected_car_charger_count=0 discharge_slot_1=TimeSlot(start=datetime.time(23, 30), end=datetime.time(23, 59)) discharge_target_1=4 discharge_slot_2=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_2=4 discharge_slot_3=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_3=4 charge_slot_1=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_1=100 charge_slot_2=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_2=100 charge_slot_3=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_3=100 export_slot_1=TimeSlot(start=datetime.time(22, 5), end=datetime.time(23, 30)) export_target_1=4 export_slot_2=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) export_target_2=4 export_slot_3=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) export_target_3=4 export_power_limit=9500 car_charge_mode=0 car_charge_boost=0 plant_charge_compensation=0 plant_discharge_compensation=0 ems_status=1 meter_count=2 meter_types=16 meter_1_status=1 meter_2_status=0 meter_3_status=1 meter_4_status=0 meter_5_status=0 meter_6_status=0 meter_7_status=0 meter_8_status=0 inverter_count=2 inverter_1_status='2' inverter_2_status='2' inverter_3_status='0' inverter_4_status='0' inverter_1_suspected_status=2 inverter_2_suspected_status=2 inverter_3_suspected_status=0 inverter_4_suspected_status=0 meter_1_power=-1834 meter_2_power=0 meter_3_power=-3 meter_4_power=0 meter_5_power=0 meter_6_power=0 meter_7_power=0 meter_8_power=0 inverter_1_power=1042 inverter_2_power=1469 inverter_3_power=0 inverter_4_power=0 inverter_1_soc=31 inverter_2_soc=16 inverter_3_soc=0 inverter_4_soc=0 inverter_1_temp=50.3 inverter_2_temp=50.3 inverter_3_temp=0.0 inverter_4_temp=0.0 inverter_1_serial_number='CE2231G001' inverter_2_serial_number='CE2231G002' inverter_3_serial_number='' inverter_4_serial_number='' e_active_generation_total=None calc_load_power=677 measured_load_power=0 total_generation_load_power=0 grid_meter_power=-1834 total_battery_power=2511 remaining_battery_wh=4105 other_battery_power=0 plant_enabled=True",
+    "meters": {
+     "Meter_ID_1": {
+      "e_export_active": 5536.5,
+      "e_export_reactive": 5311.1,
+      "e_import_active": 2372.8,
+      "e_import_reactive": 56.0,
+      "frequency": 49.9,
+      "i_ln": 0.0,
+      "i_phase_1": 0.81,
+      "i_phase_2": 0.0,
+      "i_phase_3": 0.0,
+      "i_total": 0.81,
+      "p_active_phase_1": -1836,
+      "p_active_phase_2": 0,
+      "p_active_phase_3": 0,
+      "p_active_total": -1836,
+      "p_apparent_phase_1": 1960.4,
+      "p_apparent_phase_2": 0.0,
+      "p_apparent_phase_3": 0.0,
+      "p_apparent_total": 1960.4,
+      "p_reactive_phase_1": -620,
+      "p_reactive_phase_2": 0,
+      "p_reactive_phase_3": 0,
+      "p_reactive_total": -620,
+      "pf_phase_1": -0.9463,
+      "pf_phase_2": 0.0,
+      "pf_phase_3": 0.0,
+      "pf_total": -0.9463,
+      "v_phase_1": 241.7,
+      "v_phase_2": 0.0,
+      "v_phase_3": 0.0
+     },
+     "Meter_ID_3": {
+      "e_export_active": 17.2,
+      "e_export_reactive": 13.8,
+      "e_import_active": 269.5,
+      "e_import_reactive": 536.9,
+      "frequency": 49.85,
+      "i_ln": 0.0,
+      "i_phase_1": 0.03,
+      "i_phase_2": 0.0,
+      "i_phase_3": 0.0,
+      "i_total": 0.03,
+      "p_active_phase_1": -3,
+      "p_active_phase_2": 0,
+      "p_active_phase_3": 0,
+      "p_active_total": -3,
+      "p_apparent_phase_1": 96.3,
+      "p_apparent_phase_2": 0.0,
+      "p_apparent_phase_3": 0.0,
+      "p_apparent_total": 96.3,
+      "p_reactive_phase_1": 97,
+      "p_reactive_phase_2": 0,
+      "p_reactive_phase_3": 0,
+      "p_reactive_total": 97,
+      "pf_phase_1": -0.0294,
+      "pf_phase_2": 0.0,
+      "pf_phase_3": 0.0,
+      "pf_total": -0.0294,
+      "v_phase_1": 242.1,
+      "v_phase_2": 0.0,
+      "v_phase_3": 0.0
+     }
+    }
+   }
+  },
+  "discovery removed": [],
+  "discovery topics": [
+   "homeassistant/number/GivEnergy/EMS2522000_Car_Charge_Boost/config",
+   "homeassistant/number/GivEnergy/EMS2522000_Car_Charge_Count/config",
+   "homeassistant/number/GivEnergy/EMS2522000_EMS_Charge_Target_SOC_1/config",
+   "homeassistant/number/GivEnergy/EMS2522000_EMS_Charge_Target_SOC_2/config",
+   "homeassistant/number/GivEnergy/EMS2522000_EMS_Charge_Target_SOC_3/config",
+   "homeassistant/number/GivEnergy/EMS2522000_EMS_Discharge_Target_SOC_1/config",
+   "homeassistant/number/GivEnergy/EMS2522000_EMS_Discharge_Target_SOC_2/config",
+   "homeassistant/number/GivEnergy/EMS2522000_EMS_Discharge_Target_SOC_3/config",
+   "homeassistant/number/GivEnergy/EMS2522000_Export_Power_Limit/config",
+   "homeassistant/number/GivEnergy/EMS2522000_Export_Target_SOC_1/config",
+   "homeassistant/number/GivEnergy/EMS2522000_Export_Target_SOC_2/config",
+   "homeassistant/number/GivEnergy/EMS2522000_Export_Target_SOC_3/config",
+   "homeassistant/number/GivEnergy/EMS2522000_Plant_Charge_Compensation/config",
+   "homeassistant/number/GivEnergy/EMS2522000_Plant_Discharge_Compensation/config",
+   "homeassistant/select/GivEnergy/EMS2522000_Car_Charge_Mode/config",
+   "homeassistant/select/GivEnergy/EMS2522000_EMS_Charge_end_time_slot_1/config",
+   "homeassistant/select/GivEnergy/EMS2522000_EMS_Charge_end_time_slot_2/config",
+   "homeassistant/select/GivEnergy/EMS2522000_EMS_Charge_end_time_slot_3/config",
+   "homeassistant/select/GivEnergy/EMS2522000_EMS_Charge_start_time_slot_1/config",
+   "homeassistant/select/GivEnergy/EMS2522000_EMS_Charge_start_time_slot_2/config",
+   "homeassistant/select/GivEnergy/EMS2522000_EMS_Charge_start_time_slot_3/config",
+   "homeassistant/select/GivEnergy/EMS2522000_EMS_Discharge_end_time_slot_1/config",
+   "homeassistant/select/GivEnergy/EMS2522000_EMS_Discharge_end_time_slot_2/config",
+   "homeassistant/select/GivEnergy/EMS2522000_EMS_Discharge_end_time_slot_3/config",
+   "homeassistant/select/GivEnergy/EMS2522000_EMS_Discharge_start_time_slot_1/config",
+   "homeassistant/select/GivEnergy/EMS2522000_EMS_Discharge_start_time_slot_2/config",
+   "homeassistant/select/GivEnergy/EMS2522000_EMS_Discharge_start_time_slot_3/config",
+   "homeassistant/select/GivEnergy/EMS2522000_Export_end_time_slot_1/config",
+   "homeassistant/select/GivEnergy/EMS2522000_Export_end_time_slot_2/config",
+   "homeassistant/select/GivEnergy/EMS2522000_Export_end_time_slot_3/config",
+   "homeassistant/select/GivEnergy/EMS2522000_Export_start_time_slot_1/config",
+   "homeassistant/select/GivEnergy/EMS2522000_Export_start_time_slot_2/config",
+   "homeassistant/select/GivEnergy/EMS2522000_Export_start_time_slot_3/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Battery_Power/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_CE2231G001_Power/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_CE2231G001_SOC/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_CE2231G001_Serial_Number/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_CE2231G001_Temperature/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_CE2231G001_status/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_CE2231G002_Power/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_CE2231G002_SOC/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_CE2231G002_Serial_Number/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_CE2231G002_Temperature/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_CE2231G002_status/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Calculated_Load_Power/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Data_Age/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Export_Limit/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Generation_Load_Power/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_GivTCP_Version/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Grid_Power/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Inverter_Count/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Invertor_Firmware/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Invertor_Serial_Number/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Invertor_Time/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Invertor_Type/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Last_Updated_Time/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Measured_Load_Power/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Meter_1_Power/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Meter_1_Status/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Meter_2_Power/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Meter_2_Status/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Meter_3_Power/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Meter_3_Status/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Meter_4_Power/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Meter_4_Status/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Meter_5_Power/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Meter_5_Status/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Meter_6_Power/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Meter_6_Status/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Meter_7_Power/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Meter_7_Status/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Meter_8_Power/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Meter_8_Status/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Meter_Count/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Other_Battery_Power/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Plant_Status/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Remaining_Battery_Wh/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Safe_Write_Count/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Serial_Number/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Time_Since_Last_Update/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Timeout_Error/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Write_Count/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_status/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_status/config",
+   "homeassistant/switch/GivEnergy/EMS2522000_Plant_Control/config",
+   "homeassistant/time/GivEnergy/EMS2522000_EMS_Charge_end_time_slot_1/config",
+   "homeassistant/time/GivEnergy/EMS2522000_EMS_Charge_end_time_slot_2/config",
+   "homeassistant/time/GivEnergy/EMS2522000_EMS_Charge_end_time_slot_3/config",
+   "homeassistant/time/GivEnergy/EMS2522000_EMS_Charge_start_time_slot_1/config",
+   "homeassistant/time/GivEnergy/EMS2522000_EMS_Charge_start_time_slot_2/config",
+   "homeassistant/time/GivEnergy/EMS2522000_EMS_Charge_start_time_slot_3/config",
+   "homeassistant/time/GivEnergy/EMS2522000_EMS_Discharge_end_time_slot_1/config",
+   "homeassistant/time/GivEnergy/EMS2522000_EMS_Discharge_end_time_slot_2/config",
+   "homeassistant/time/GivEnergy/EMS2522000_EMS_Discharge_end_time_slot_3/config",
+   "homeassistant/time/GivEnergy/EMS2522000_EMS_Discharge_start_time_slot_1/config",
+   "homeassistant/time/GivEnergy/EMS2522000_EMS_Discharge_start_time_slot_2/config",
+   "homeassistant/time/GivEnergy/EMS2522000_EMS_Discharge_start_time_slot_3/config",
+   "homeassistant/time/GivEnergy/EMS2522000_Export_end_time_slot_1/config",
+   "homeassistant/time/GivEnergy/EMS2522000_Export_end_time_slot_2/config",
+   "homeassistant/time/GivEnergy/EMS2522000_Export_end_time_slot_3/config",
+   "homeassistant/time/GivEnergy/EMS2522000_Export_start_time_slot_1/config",
+   "homeassistant/time/GivEnergy/EMS2522000_Export_start_time_slot_2/config",
+   "homeassistant/time/GivEnergy/EMS2522000_Export_start_time_slot_3/config"
+  ],
+  "mqtt topics": [
+   "GivEnergy/EMS2522000/Control/Car_Charge_Boost",
+   "GivEnergy/EMS2522000/Control/Car_Charge_Mode",
+   "GivEnergy/EMS2522000/Control/EMS_Charge_Target_SOC_1",
+   "GivEnergy/EMS2522000/Control/EMS_Charge_Target_SOC_2",
+   "GivEnergy/EMS2522000/Control/EMS_Charge_Target_SOC_3",
+   "GivEnergy/EMS2522000/Control/EMS_Discharge_Target_SOC_1",
+   "GivEnergy/EMS2522000/Control/EMS_Discharge_Target_SOC_2",
+   "GivEnergy/EMS2522000/Control/EMS_Discharge_Target_SOC_3",
+   "GivEnergy/EMS2522000/Control/Export_Power_Limit",
+   "GivEnergy/EMS2522000/Control/Export_Target_SOC_1",
+   "GivEnergy/EMS2522000/Control/Export_Target_SOC_2",
+   "GivEnergy/EMS2522000/Control/Export_Target_SOC_3",
+   "GivEnergy/EMS2522000/Control/Plant_Charge_Compensation",
+   "GivEnergy/EMS2522000/Control/Plant_Control",
+   "GivEnergy/EMS2522000/Control/Plant_Discharge_Compensation",
+   "GivEnergy/EMS2522000/EMS2522000/Car_Charge_Count",
+   "GivEnergy/EMS2522000/EMS2522000/Export_Limit",
+   "GivEnergy/EMS2522000/EMS2522000/Inverter_Count",
+   "GivEnergy/EMS2522000/EMS2522000/Invertor_Firmware",
+   "GivEnergy/EMS2522000/EMS2522000/Invertor_Serial_Number",
+   "GivEnergy/EMS2522000/EMS2522000/Invertor_Time",
+   "GivEnergy/EMS2522000/EMS2522000/Invertor_Type",
+   "GivEnergy/EMS2522000/EMS2522000/Meter_Count",
+   "GivEnergy/EMS2522000/EMS2522000/Plant_Status",
+   "GivEnergy/EMS2522000/EMS2522000/Remaining_Battery_Wh",
+   "GivEnergy/EMS2522000/EMS2522000/Serial_Number",
+   "GivEnergy/EMS2522000/EMS2522000/status",
+   "GivEnergy/EMS2522000/Inverters/CE2231G001/Power",
+   "GivEnergy/EMS2522000/Inverters/CE2231G001/SOC",
+   "GivEnergy/EMS2522000/Inverters/CE2231G001/Serial_Number",
+   "GivEnergy/EMS2522000/Inverters/CE2231G001/Temperature",
+   "GivEnergy/EMS2522000/Inverters/CE2231G001/status",
+   "GivEnergy/EMS2522000/Inverters/CE2231G002/Power",
+   "GivEnergy/EMS2522000/Inverters/CE2231G002/SOC",
+   "GivEnergy/EMS2522000/Inverters/CE2231G002/Serial_Number",
+   "GivEnergy/EMS2522000/Inverters/CE2231G002/Temperature",
+   "GivEnergy/EMS2522000/Inverters/CE2231G002/status",
+   "GivEnergy/EMS2522000/Power/Battery_Power",
+   "GivEnergy/EMS2522000/Power/Calculated_Load_Power",
+   "GivEnergy/EMS2522000/Power/Generation_Load_Power",
+   "GivEnergy/EMS2522000/Power/Grid_Power",
+   "GivEnergy/EMS2522000/Power/Measured_Load_Power",
+   "GivEnergy/EMS2522000/Power/Meters/Meter_1_Power",
+   "GivEnergy/EMS2522000/Power/Meters/Meter_1_Status",
+   "GivEnergy/EMS2522000/Power/Meters/Meter_2_Power",
+   "GivEnergy/EMS2522000/Power/Meters/Meter_2_Status",
+   "GivEnergy/EMS2522000/Power/Meters/Meter_3_Power",
+   "GivEnergy/EMS2522000/Power/Meters/Meter_3_Status",
+   "GivEnergy/EMS2522000/Power/Meters/Meter_4_Power",
+   "GivEnergy/EMS2522000/Power/Meters/Meter_4_Status",
+   "GivEnergy/EMS2522000/Power/Meters/Meter_5_Power",
+   "GivEnergy/EMS2522000/Power/Meters/Meter_5_Status",
+   "GivEnergy/EMS2522000/Power/Meters/Meter_6_Power",
+   "GivEnergy/EMS2522000/Power/Meters/Meter_6_Status",
+   "GivEnergy/EMS2522000/Power/Meters/Meter_7_Power",
+   "GivEnergy/EMS2522000/Power/Meters/Meter_7_Status",
+   "GivEnergy/EMS2522000/Power/Meters/Meter_8_Power",
+   "GivEnergy/EMS2522000/Power/Meters/Meter_8_Status",
+   "GivEnergy/EMS2522000/Power/Other_Battery_Power",
+   "GivEnergy/EMS2522000/Stats/Data_Age",
+   "GivEnergy/EMS2522000/Stats/GivTCP_Version",
+   "GivEnergy/EMS2522000/Stats/Last_Updated_Time",
+   "GivEnergy/EMS2522000/Stats/Safe_Write_Count",
+   "GivEnergy/EMS2522000/Stats/Time_Since_Last_Update",
+   "GivEnergy/EMS2522000/Stats/Write_Count",
+   "GivEnergy/EMS2522000/Stats/status",
+   "GivEnergy/EMS2522000/Timeslots/EMS_Charge_end_time_slot_1",
+   "GivEnergy/EMS2522000/Timeslots/EMS_Charge_end_time_slot_2",
+   "GivEnergy/EMS2522000/Timeslots/EMS_Charge_end_time_slot_3",
+   "GivEnergy/EMS2522000/Timeslots/EMS_Charge_start_time_slot_1",
+   "GivEnergy/EMS2522000/Timeslots/EMS_Charge_start_time_slot_2",
+   "GivEnergy/EMS2522000/Timeslots/EMS_Charge_start_time_slot_3",
+   "GivEnergy/EMS2522000/Timeslots/EMS_Discharge_end_time_slot_1",
+   "GivEnergy/EMS2522000/Timeslots/EMS_Discharge_end_time_slot_2",
+   "GivEnergy/EMS2522000/Timeslots/EMS_Discharge_end_time_slot_3",
+   "GivEnergy/EMS2522000/Timeslots/EMS_Discharge_start_time_slot_1",
+   "GivEnergy/EMS2522000/Timeslots/EMS_Discharge_start_time_slot_2",
+   "GivEnergy/EMS2522000/Timeslots/EMS_Discharge_start_time_slot_3",
+   "GivEnergy/EMS2522000/Timeslots/Export_end_time_slot_1",
+   "GivEnergy/EMS2522000/Timeslots/Export_end_time_slot_2",
+   "GivEnergy/EMS2522000/Timeslots/Export_end_time_slot_3",
+   "GivEnergy/EMS2522000/Timeslots/Export_start_time_slot_1",
+   "GivEnergy/EMS2522000/Timeslots/Export_start_time_slot_2",
+   "GivEnergy/EMS2522000/Timeslots/Export_start_time_slot_3",
+   "GivEnergy/EMS2522000/raw/invertor",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/e_export_active",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/e_export_reactive",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/e_import_active",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/e_import_reactive",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/frequency",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/i_ln",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/i_phase_1",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/i_phase_2",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/i_phase_3",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/i_total",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/p_active_phase_1",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/p_active_phase_2",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/p_active_phase_3",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/p_active_total",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/p_apparent_phase_1",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/p_apparent_phase_2",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/p_apparent_phase_3",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/p_apparent_total",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/p_reactive_phase_1",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/p_reactive_phase_2",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/p_reactive_phase_3",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/p_reactive_total",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/pf_phase_1",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/pf_phase_2",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/pf_phase_3",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/pf_total",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/v_phase_1",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/v_phase_2",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/v_phase_3",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/e_export_active",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/e_export_reactive",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/e_import_active",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/e_import_reactive",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/frequency",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/i_ln",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/i_phase_1",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/i_phase_2",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/i_phase_3",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/i_total",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/p_active_phase_1",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/p_active_phase_2",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/p_active_phase_3",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/p_active_total",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/p_apparent_phase_1",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/p_apparent_phase_2",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/p_apparent_phase_3",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/p_apparent_total",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/p_reactive_phase_1",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/p_reactive_phase_2",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/p_reactive_phase_3",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/p_reactive_total",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/pf_phase_1",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/pf_phase_2",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/pf_phase_3",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/pf_total",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/v_phase_1",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/v_phase_2",
+   "GivEnergy/EMS2522000/raw/meters/Meter_ID_3/v_phase_3"
+  ]
+ },
+ "rest": {
+  "/enableChargeSchedule({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting charge schedule disable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting charge schedule disable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/enableChargeSchedule({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting charge schedule enable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting charge schedule enable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/enableChargeTarget({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'disable_charge_target' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'disable_charge_target' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/enableChargeTarget({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/enableDischarge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: enableDischarge - ignoring"
+     ]
+    ],
+    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/enableDischarge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: enableDischarge - ignoring"
+     ]
+    ],
+    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/enableDischargeSchedule({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/enableDischargeSchedule({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/forceCharge(Cancel)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Force Charge is not currently running"
+     ]
+    ],
+    "result": "{'result':'Error: Force Charge is not currently running'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/forceCharge({'duration': '30'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/forceExport(Cancel)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Force Export is not currently running"
+     ]
+    ],
+    "result": "{'result':'Error: Force Export is not currently running'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/forceExport({'duration': '30'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/reboot({})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Reboot inverter failed: AttributeError: 'Ems' object has no attribute 'set_inverter_reboot' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Reboot inverter failed: AttributeError: 'Ems' object has no attribute 'set_inverter_reboot' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setACCharge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting AC Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setACCharge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting AC Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryCalibration({'state': 'Charge Only'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryCalibration({'state': 'Off'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryCalibration({'state': 'Start'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryCutoff({'dischargeToPercent': '10'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Cutoff failed: AttributeError: 'Ems' object has no attribute 'set_battery_power_reserve' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Cutoff failed: AttributeError: 'Ems' object has no attribute 'set_battery_power_reserve' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryMode({'mode': 'Eco (Paused)'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryMode({'mode': 'Eco'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryMode({'mode': 'Timed Demand'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_to_match_demand' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_to_match_demand' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryMode({'mode': 'Timed Export'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_max_power' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_max_power' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryPauseMode({'state': 'Disabled'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryPauseMode({'state': 'PauseBoth'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryPauseMode({'state': 'PauseCharge'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryPauseMode({'state': 'PauseDischarge'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for EMS inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryReserve({'reservePercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Reserve failed: AttributeError: 'Ems' object has no attribute 'set_battery_soc_reserve' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Reserve failed: AttributeError: 'Ems' object has no attribute 'set_battery_soc_reserve' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setCarChargeBoost({'boost': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setChargeRate({'chargeRate': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Write request error: TypeError: float() argument must be a string or a real number, not 'NoneType' deleting all pending requests, please try again"
+     ]
+    ],
+    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setChargeRateAC({'chargeRate': '75'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting battery charge rate 75 failed"
+     ]
+    ],
+    "result": {
+     "result": "Setting battery charge rate 75 failed"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setChargeSlot({'start': '01:30', 'finish': '04:30', 'slot': '1', 'chargeToPercent': '90'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 1 to: 01:30 - 04:30 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      2053,
+      130
+     ],
+     [
+      17,
+      2054,
+      430
+     ],
+     [
+      17,
+      2055,
+      90
+     ]
+    ]
+   }
+  ],
+  "/setChargeSlot1({'start': '01:30', 'finish': '04:30', 'chargeToPercent': '90'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 1 to: 01:30 - 04:30 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      2053,
+      130
+     ],
+     [
+      17,
+      2054,
+      430
+     ],
+     [
+      17,
+      2055,
+      90
+     ]
+    ]
+   }
+  ],
+  "/setChargeSlot2({'start': '01:30', 'finish': '04:30', 'chargeToPercent': '90'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 2 to: 01:30 - 04:30 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      2056,
+      130
+     ],
+     [
+      17,
+      2057,
+      430
+     ],
+     [
+      17,
+      2058,
+      90
+     ]
+    ]
+   }
+  ],
+  "/setChargeSlot3({'start': '01:30', 'finish': '04:30', 'chargeToPercent': '90'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 3 to: 01:30 - 04:30 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      2059,
+      130
+     ],
+     [
+      17,
+      2060,
+      430
+     ],
+     [
+      17,
+      2061,
+      90
+     ]
+    ]
+   }
+  ],
+  "/setChargeTarget({'chargeToPercent': '85'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setDateTime({'dateTime': '01/01/2026 12:00:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setDischargeRate({'dischargeRate': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Write request error: TypeError: int() argument must be a string, a bytes-like object or a real number, not 'NoneType' deleting all pending requests, please try again"
+     ]
+    ],
+    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setDischargeRateAC({'dischargeRate': '75'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting battery discharge rate 75 failed"
+     ]
+    ],
+    "result": {
+     "result": "Setting battery discharge rate 75 failed"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setDischargeSlot({'start': '16:00', 'finish': '19:00', 'slot': '1', 'dischargeToPercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot 1 to: 16:00 - 19:00 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      2044,
+      1600
+     ],
+     [
+      17,
+      2045,
+      1900
+     ],
+     [
+      17,
+      2046,
+      20
+     ]
+    ]
+   }
+  ],
+  "/setDischargeSlot1({'start': '16:00', 'finish': '19:00', 'dischargeToPercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot 1 to: 16:00 - 19:00 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      2044,
+      1600
+     ],
+     [
+      17,
+      2045,
+      1900
+     ],
+     [
+      17,
+      2046,
+      20
+     ]
+    ]
+   }
+  ],
+  "/setDischargeSlot2({'start': '16:00', 'finish': '19:00', 'dischargeToPercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot 2 to: 16:00 - 19:00 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      2047,
+      1600
+     ],
+     [
+      17,
+      2048,
+      1900
+     ],
+     [
+      17,
+      2049,
+      20
+     ]
+    ]
+   }
+  ],
+  "/setDischargeSlot3({'start': '16:00', 'finish': '19:00', 'dischargeToPercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot 3 to: 16:00 - 19:00 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      2050,
+      1600
+     ],
+     [
+      17,
+      2051,
+      1900
+     ],
+     [
+      17,
+      2052,
+      20
+     ]
+    ]
+   }
+  ],
+  "/setDischargeTarget({'dischargeToPercent': '30', 'slot': '1'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Target 1 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      2046,
+      30
+     ]
+    ]
+   }
+  ],
+  "/setEcoMode({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Write request error: UnboundLocalError: cannot access local variable 'result' where it is not associated with a value deleting all pending requests, please try again"
+     ]
+    ],
+    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setEcoMode({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Write request error: UnboundLocalError: cannot access local variable 'result' where it is not associated with a value deleting all pending requests, please try again"
+     ]
+    ],
+    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setEmsPlant({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Disabling EMS Plant Operation was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      2040,
+      0
+     ]
+    ]
+   }
+  ],
+  "/setEmsPlant({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Enabling EMS Plant Operation was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      2040,
+      1
+     ]
+    ]
+   }
+  ],
+  "/setExportLimit({'state': '3600'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export Limit to 3600w was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      2071,
+      3600
+     ]
+    ]
+   }
+  ],
+  "/setExportSlot1({'start': '16:00', 'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export Slot 1 to: 16:00 - 19:00 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      2062,
+      1600
+     ],
+     [
+      17,
+      2063,
+      1900
+     ]
+    ]
+   }
+  ],
+  "/setExportSlot2({'start': '16:00', 'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export Slot 2 to: 16:00 - 19:00 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      2065,
+      1600
+     ],
+     [
+      17,
+      2066,
+      1900
+     ]
+    ]
+   }
+  ],
+  "/setExportSlot3({'start': '16:00', 'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export Slot 3 to: 16:00 - 19:00 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      2068,
+      1600
+     ],
+     [
+      17,
+      2069,
+      1900
+     ]
+    ]
+   }
+  ],
+  "/setExportTarget({'exportToPercent': '30', 'slot': '1'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export Target 1 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      2064,
+      30
+     ]
+    ]
+   }
+  ],
+  "/setForceCharge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setForceCharge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setForceDischarge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Discharge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setForceDischarge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Discharge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setPauseSlot({'start': '16:00', 'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter (registers: 319, 320)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/switchRate({'rate': 'day'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "External rate setting not allowed. Enable Dynamic Tariff in settings"
+     ]
+    ],
+    "result": {
+     "result": "External rate setting not allowed. Enable Dynamic Tariff in settings"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/syncDateTime({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Syncing inverter DateTime failed: AttributeError: 'Ems' object has no attribute 'set_system_date_time' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Syncing inverter DateTime failed: AttributeError: 'Ems' object has no attribute 'set_system_date_time' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/tempPauseCharge(Cancel)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Temp Pause Charge is not currently running"
+     ]
+    ],
+    "result": "{'result':'Error: Temp Pause Charge is not currently running'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/tempPauseCharge({'duration': '30'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/tempPauseDischarge(Cancel)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Temp Pause Discharge is not currently running"
+     ]
+    ],
+    "result": "{'result':'Error: Temp Pause Discharge is not currently running'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/tempPauseDischarge({'duration': '30'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ]
+ }
+}

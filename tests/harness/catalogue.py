@@ -57,6 +57,8 @@ _direct("forceExport", 30)
 _direct("tempPauseCharge", 30)
 _direct("tempPauseDischarge", 30)
 _direct("rebootinverter", {})
+_direct("enableDischarge", {"state": "enable"}, {"state": "disable"})
+_direct("setPVInputMode", {"state": "1x2"})
 _direct("switchRate", "day")
 # The revert jobs these queue are run later by the RQ worker via queueWrite: run them with what was queued
 DIRECT["forceCharge(30) then FCResume"] = [("forceCharge", 30), ("FCResume", "@job")]
@@ -68,6 +70,7 @@ DIRECT["tempPauseDischarge(30) then tmpPDResume"] = [("tempPauseDischarge", 30),
 DIRECT_SKIP = {
     "rebootAddon": "restarts the add-on through the Supervisor",
     "sbcla": "helper for the rate commands", "sbdla": "helper for the rate commands",
+    "cancelJob": "takes a job id, covered by the Cancel cases via REST and MQTT",
 }
 
 # --- REST: POST route -> JSON payload ---------------------------------------------------------------------

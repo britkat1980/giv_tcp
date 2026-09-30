@@ -91,8 +91,7 @@ def requestcommand(command,payload):
             with open(GivLUT.writerequests,'rb') as inp:
                 requests=pickle.load(inp)
         requests.append([command,payload,True])
-        with open(GivLUT.writerequests,'wb') as outp:
-            pickle.dump(requests, outp, pickle.HIGHEST_PROTOCOL)
+        GivLUT.save_writerequests(requests)
     except:
         e=errDetail()
         logger.error ("Error in requesting control command: "+str(e))
@@ -548,7 +547,7 @@ def tmpPauseDischrg():
     payload = request.get_json(silent=True, force=True)
     if payload['duration'] == "Cancel" or payload['duration'] == "0":
         if exists(".tpdRunning_"+str(GiV_Settings.givtcp_instance)):
-            jobid= str(open(".tpdRunning','r").readline().strip('\n'))
+            jobid= str(open(".tpdRunning_"+str(GiV_Settings.givtcp_instance),'r').readline().strip('\n'))
             logger.debug("Retrieved jobID to cancel Temp Pause Discharge: "+ str(jobid))
             requestcommand("cancelJob",jobid)
             return response("cancelJob")
@@ -569,7 +568,7 @@ def tmpPauseChrg():
     payload = request.get_json(silent=True, force=True)
     if payload['duration'] == "Cancel" or payload['duration'] == "0":
         if exists(".tpcRunning_"+str(GiV_Settings.givtcp_instance)):
-            jobid= str(open(".tpcRunning','r").readline().strip('\n'))
+            jobid= str(open(".tpcRunning_"+str(GiV_Settings.givtcp_instance),'r').readline().strip('\n'))
             logger.info("Retrieved jobID to cancel Temp Pause Charge: "+ str(jobid))
             requestcommand("cancelJob",jobid)
             return response("cancelJob")
