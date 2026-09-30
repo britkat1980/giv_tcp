@@ -9,8 +9,7 @@ import zoneinfo
 import sys
 import requests
 import asyncio
-from GivTCP.findInvertor import findInvertor
-from GivTCP.findEVC import findEVC
+from GivTCP.netscan import scan, as_list, INVERTER_PORT, EVC_PORT
 #from GivTCP.givenergy_modbus_async.client.client import Client
 from givenergy_modbus.client.client import Client
 from pymodbus.client import ModbusTcpClient
@@ -275,27 +274,20 @@ def findinv(networks):
         list={}
         logger.info("Scanning network for GivEnergy Devices...")
         try:
+            invips=[]
+            evcips=[]
             for subnet in networks:
                 if networks[subnet]:
-                    count=0
-                    # Get EVC Details
-                    logger.info("Scanning network: "+str(networks[subnet]))
-                    while len(evclist)<=0:
-                        if count<2:  
-                            evclist=findEVC(networks[subnet])
-                            if len(evclist)>0: break
-                            count=count+1
-                        else:
+                    # Scan for inverters and EVCs in one pass, retry once if no inverter is found
+                    for attempt in range(2):
+                        logger.info("Scanning network: "+str(networks[subnet]))
+                        found=scan(networks[subnet], ports=(INVERTER_PORT, EVC_PORT))
+                        evcips+=[ip for ip in found[EVC_PORT] if ip not in evcips]
+                        if found[INVERTER_PORT]:
+                            invips+=[ip for ip in found[INVERTER_PORT] if ip not in invips]
                             break
-                    # Get Inverter Details
-                    count=0
-                    while len(list)<=0:
-                        if count<2:
-                            list=findInvertor(networks[subnet])
-                            if len(list)>0: break
-                            count=count+1
-                        else:
-                            break
+            list=as_list(invips)
+            evclist=as_list(evcips)
             if evclist:
                 poplist=[]
                 for evc in evclist:
@@ -309,7 +301,7 @@ def findinv(networks):
                 for pop in poplist:
                     evclist.pop(pop)    #remove the unknown modbus device(s)
             if list:
-                logger.debug(str(len(list))+" Inverters found on "+str(networks[subnet])+" - "+str(list))
+                logger.debug(str(len(list))+" Inverters found - "+str(list))
                 invList.update(list)
                 for inv in invList:
                     deets={}

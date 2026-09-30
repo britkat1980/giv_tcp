@@ -223,10 +223,10 @@ async def watch_plant(
                         continue
                 # Write command and initiation to use the same client connection
                 if exists(GivLUT.writerequests):
+                    # v2's Gateway model only covers the IR 1600+ block and has no command methods -
+                    # Gateway writes are plain single-phase HR writes, so use the inverter view (as reads do)
                     if client.plant.capabilities.is_ems:
                         device=client.plant.ems
-                    elif client.plant.capabilities.is_gateway:
-                        device=client.plant.gateway
                     else:
                         device=client.plant.inverter
                     try:
@@ -798,8 +798,12 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
         charge_rate = int(min((GEInv.battery_charge_limit/100)*inverterModel.batterycapacity*1000, inverterModel.batmaxrate))
         controlmode['Battery_Charge_Rate'] = charge_rate
     else:
-        controlmode['Battery_Discharge_Rate']=int(inverterModel.batmaxrate*(GEInv.battery_discharge_limit_ac/100))
-        controlmode['Battery_Charge_Rate']=int(inverterModel.batmaxrate*(GEInv.battery_charge_limit_ac/100))
+        # HR313/314 can be unread (None), e.g. on Gateway - fall back to the previous values
+        for key, limit in (('Battery_Discharge_Rate', GEInv.battery_discharge_limit_ac), ('Battery_Charge_Rate', GEInv.battery_charge_limit_ac)):
+            if limit is not None:
+                controlmode[key]=int(inverterModel.batmaxrate*(limit/100))
+            elif multi_output_old and key in multi_output_old.get('Control',{}):
+                controlmode[key]=multi_output_old['Control'][key]
         
     
     controlmode['Enable_Charge_Schedule'] = charge_schedule
@@ -1652,9 +1656,7 @@ def processGatewayInfo(plant: Plant):
         #Only implement these, if Parallel mode is in use
         if GEInv.parallel_aio_online_num>1:
             controlmode=getControls(plant,regCacheStack,inverterModel,multi_output_old)
-            #Use same approach as 3PH to generate the (dis)charge Rate controls
-            controlmode['Battery_Discharge_Rate']=int(inverterModel.batmaxrate*(GEHR.battery_discharge_limit_ac/100))
-            controlmode['Battery_Charge_Rate']=int(inverterModel.batmaxrate*(GEHR.battery_charge_limit_ac/100))
+            #(Dis)charge Rate controls are generated in getControls, same approach as 3PH
             logger.debug("Getting TimeSlot data")
             res = {}
             res=getTimeslots(plant, multi_output_old)
