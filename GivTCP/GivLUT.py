@@ -269,6 +269,8 @@ class GivLUT:
 
 
     # File paths for use
+    config_dir=os.environ.get("GIVTCP_CONFIG_DIR","/config/GivTCP")     # overridable so tests can run outside the container
+    allsettings=config_dir+"/allsettings.json"
     lockfile=".lockfile"
     cachelockfile=".regcache_lockfile_"+str(GiV_Settings.givtcp_instance)
     writerequests="writerequests.pkl"

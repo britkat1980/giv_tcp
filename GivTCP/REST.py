@@ -78,7 +78,7 @@ def _restLogException(sender, exception, **extra):
 from flask import got_request_exception
 got_request_exception.connect(_restLogException, giv_api)
 
-with open("/config/GivTCP/allsettings.json", "r") as inp:
+with open(GivLUT.allsettings, "r") as inp:
     setts=json.load(inp)
 if setts["evc_enable"]==True:
     import evc
@@ -96,6 +96,9 @@ def requestcommand(command,payload):
     except:
         e=errDetail()
         logger.error ("Error in requesting control command: "+str(e))
+
+# How long a control request waits for the read loop to run it before giving up
+RESPONSE_TIMEOUT=15
 
 def response(id: str):
     responses=[]
@@ -116,7 +119,7 @@ def response(id: str):
                             outp.write(json.dumps(responses))
                         return response['result']            
         waittime=datetime.datetime.now()-starttime
-        if waittime.total_seconds()>15:
+        if waittime.total_seconds()>RESPONSE_TIMEOUT:
             return "{'result':'Error: REST response timeout. Unknown success'}"
 
 
@@ -137,8 +140,8 @@ def savesetts():
     Payload: json object conforming to the settings_template
     """
     
-    if exists("/config/GivTCP/allsettings.json"):
-        SFILE="/config/GivTCP/allsettings.json"
+    if exists(GivLUT.allsettings):
+        SFILE=GivLUT.allsettings
     else:
         SFILE="/app/allsettings.json"
     setts = request.get_json()
@@ -150,8 +153,8 @@ def savesetts():
 def returnsetts():
     """Return settings from json file
     """
-    if exists("/config/GivTCP/allsettings.json"):
-        SFILE="/config/GivTCP/allsettings.json"
+    if exists(GivLUT.allsettings):
+        SFILE=GivLUT.allsettings
     else:
         SFILE="/app/allsettings.json"
     with open(SFILE, 'r') as f1:

@@ -12,7 +12,7 @@ import sys
 
 logger = GivLUT.logger
 
-with open("/config/GivTCP/allsettings.json", "r") as inp:
+with open(GivLUT.allsettings, "r") as inp:
     setts=json.load(inp)
 if setts["evc_enable"]==True:
     import evc

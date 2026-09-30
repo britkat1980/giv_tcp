@@ -83,7 +83,7 @@ def rebootaddon():
         logger.info(result)
 
 def capsFile():
-    return "/config/GivTCP/"+GiV_Settings.serial_number+"_caps.pkl"
+    return GivLUT.config_dir+"/"+GiV_Settings.serial_number+"_caps.pkl"
 
 # Models with no battery pause mode/slot (givenergy-modbus doesn't read HR 318-320 on them)
 PAUSE_UNSUPPORTED=[Model.HYBRID_GEN1, Model.AC]
@@ -138,6 +138,78 @@ async def readPlant(client, fullRefresh):
     if failures:
         logger.debug("%d register reads failed, using partial data: %s", len(failures), ", ".join(f"{f.request_type}(0x{f.device_address:02x},{f.base_register})" for f in failures))
     return failures
+
+# Pause between queued write commands, so the dongle isn't flooded
+WRITE_COMMAND_GAP=0.3
+
+async def processWriteRequests(client):
+    """Run any write commands queued in GivLUT.writerequests (by REST, MQTT or the RQ worker) against the plant.
+    Returns True if more commands arrived while these were running, so the caller should call again straight away"""
+    if not exists(GivLUT.writerequests):
+        return False
+    # v2's Gateway model only covers the IR 1600+ block and has no command methods -
+    # Gateway writes are plain single-phase HR writes, so use the inverter view (as reads do)
+    if client.plant.capabilities.is_ems:
+        device=client.plant.ems
+    else:
+        device=client.plant.inverter
+    try:
+        logger.debug("Write Request recieved")
+        with open(GivLUT.writerequests, 'rb') as inp:
+            writecommands= pickle.load(inp)
+        for command in writecommands:
+            # call wr command and pass parameters
+            logger.debug("Command: "+str(command[0])+" was recieved: "+str(command[1]))
+            if hasattr(write, command[0]):
+                func = getattr(write, command[0])
+                if inspect.iscoroutinefunction(func):
+                    result = await func(device,command[1],True)
+                else:
+                    result = func(device,command[1],True)
+                #send result to touchfile for REST response
+                if command[2]==True:
+                    response={}
+                    responses=[]
+                    response['id']=command[0]
+                    response['result']=result
+                    if exists(GivLUT.restresponse):
+                        with GivLUT.restlock:
+                            with open(GivLUT.restresponse,'r') as inp:
+                                responses=json.load(inp)
+                        responses.append(response)
+                        logger.debug("responses is: "+str(responses))
+                    else:
+                        responses.append(response)
+                        logger.debug("responses is: "+str(responses))
+                    with GivLUT.restlock:
+                        with open(GivLUT.restresponse,'w') as outp:
+                            outp.write(json.dumps(responses))
+                await asyncio.sleep(WRITE_COMMAND_GAP)        #Pause between commands
+            else:
+                logger.error("Unknown write command: "+str(command[0])+" - ignoring")
+
+    ## Check write file for anything more since opening and loop again
+        with open(GivLUT.writerequests, 'rb') as inp:
+            newwritecommands= pickle.load(inp)
+        logger.debug("Write Commands lengths: "+str(len(writecommands))+" -> "+str(len(newwritecommands)))
+        if len(newwritecommands)==len(writecommands):     #Only remove if no more commands recieved
+            logger.debug("No new writes, removing writerequest file")
+            os.remove(GivLUT.writerequests)
+        else:
+        #    #Loop straight back to proces smore write commands
+            logger.debug("Looping back to mop up incoming write commands")
+            ## remove old command before looping back
+            for i in newwritecommands[:]:
+                if i in writecommands:
+                    newwritecommands.remove(i)
+            with open(GivLUT.writerequests,'wb') as outp:
+                pickle.dump(newwritecommands, outp, pickle.HIGHEST_PROTOCOL)
+            return True
+    except Exception as e:
+        logger.error("Write request error: "+str(e.__class__.__name__)+": "+str(e)+" deleting all pending requests, please try again")
+        if exists(GivLUT.writerequests):
+            os.remove(GivLUT.writerequests)
+    return False
 
 async def watch_plant(
         handler: Optional[Callable] = None,
@@ -222,69 +294,8 @@ async def watch_plant(
                         await asyncio.sleep(min(5*connectErrors,60))    #Back off rather than hammering the dongle
                         continue
                 # Write command and initiation to use the same client connection
-                if exists(GivLUT.writerequests):
-                    # v2's Gateway model only covers the IR 1600+ block and has no command methods -
-                    # Gateway writes are plain single-phase HR writes, so use the inverter view (as reads do)
-                    if client.plant.capabilities.is_ems:
-                        device=client.plant.ems
-                    else:
-                        device=client.plant.inverter
-                    try:
-                        logger.debug("Write Request recieved")
-                        with open(GivLUT.writerequests, 'rb') as inp:
-                            writecommands= pickle.load(inp)
-                        for command in writecommands:
-                            # call wr command and pass parameters
-                            logger.debug("Command: "+str(command[0])+" was recieved: "+str(command[1]))
-                            if hasattr(write, command[0]):
-                                func = getattr(write, command[0])
-                                if inspect.iscoroutinefunction(func):
-                                    result = await func(device,command[1],True)
-                                else:
-                                    result = func(device,command[1],True)
-                                #send result to touchfile for REST response
-                                if command[2]==True:
-                                    response={}
-                                    responses=[]
-                                    response['id']=command[0]
-                                    response['result']=result
-                                    if exists(GivLUT.restresponse):
-                                        with GivLUT.restlock:
-                                            with open(GivLUT.restresponse,'r') as inp:
-                                                responses=json.load(inp)
-                                        responses.append(response)
-                                        logger.debug("responses is: "+str(responses))
-                                    else:
-                                        responses.append(response)
-                                        logger.debug("responses is: "+str(responses))
-                                    with GivLUT.restlock:
-                                        with open(GivLUT.restresponse,'w') as outp:
-                                            outp.write(json.dumps(responses))
-                                await asyncio.sleep(0.3)        #Pause between commands for 300ms
-                            else:
-                                logger.error("Unknown write command: "+str(command[0])+" - ignoring")
-
-                    ## Check write file for anything more since opening and loop again
-                        with open(GivLUT.writerequests, 'rb') as inp:
-                            newwritecommands= pickle.load(inp)
-                        logger.debug("Write Commands lengths: "+str(len(writecommands))+" -> "+str(len(newwritecommands)))
-                        if len(newwritecommands)==len(writecommands):     #Only remove if no more commands recieved
-                            logger.debug("No new writes, removing writerequest file")
-                            os.remove(GivLUT.writerequests)
-                        else:
-                        #    #Loop straight back to proces smore write commands
-                            logger.debug("Looping back to mop up incoming write commands")
-                            ## remove old command before looping back
-                            for i in newwritecommands[:]:
-                                if i in writecommands:
-                                    newwritecommands.remove(i)
-                            with open(GivLUT.writerequests,'wb') as outp:
-                                pickle.dump(newwritecommands, outp, pickle.HIGHEST_PROTOCOL)
-                            continue
-                    except Exception as e:
-                        logger.error("Write request error: "+str(e.__class__.__name__)+": "+str(e)+" deleting all pending requests, please try again")
-                        if exists(GivLUT.writerequests):
-                            os.remove(GivLUT.writerequests)
+                if await processWriteRequests(client):
+                    continue    #Loop straight back to process more write commands
 
                 now = datetime.datetime.now(tz=GivLUT.timezone)
                 if datetime.datetime.now() < nextpoll:
@@ -522,6 +533,7 @@ def getBatteries(plant: Plant, multi_output_old):
                     battery['Battery_USB_present'] = b.usb_device_inserted
                     battery['Battery_Temperature'] = b.t_bms_mosfet
                     battery['Battery_Voltage'] = b.v_cells_sum
+                    battery['Battery_BMS_Current'] = b.i_battery
                     for i in range(16):
                         battery['Battery_Cell_'+str(i+1)+'_Voltage'] = b.__getattribute__('v_cell_'+str(i+1).zfill(2))
                     battery['Battery_Cell_1_Temperature'] = b.t_cells_01_04
@@ -2408,8 +2420,8 @@ def publishOutput(array, SN):
                 from HA_Discovery import HAMQTT
                 HAMQTT.publish_discovery2(tempoutput, SN, unsupportedEntities())
             open(GivLUT.firstrun, 'w').close()
-            if exists('/config/GivTCP/.v3upgrade_'+str(GiV_Settings.givtcp_instance)):
-                os.remove('/config/GivTCP/.v3upgrade_'+str(GiV_Settings.givtcp_instance))
+            if exists(GivLUT.config_dir+'/.v3upgrade_'+str(GiV_Settings.givtcp_instance)):
+                os.remove(GivLUT.config_dir+'/.v3upgrade_'+str(GiV_Settings.givtcp_instance))
         else:
             logger.debug("firstrun exists, so this should already have been run")
         logger.debug("Publish all to MQTT")

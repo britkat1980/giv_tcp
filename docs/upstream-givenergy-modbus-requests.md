@@ -144,3 +144,17 @@ The v2 `Ems` model reads `car_charge_boost` at **HR 2073**, but there's no comma
 
 - A helper such as `Ems.set_car_charge_boost(watts)`, bounded 0–22000.
 - Add HR 2073 to the EMS write-safe set.
+
+---
+
+## 11. Gateway write commands
+
+**Problem**
+
+`GatewayV1`/`GatewayV2` model only the IR 1600+ block and have no command methods, so calling a setter on `plant.gateway` raises `AttributeError` (for example `'GatewayV1' object has no attribute 'set_enable_discharge'`). GivTCP now sends Gateway writes through `plant.inverter`, which `select_inverter()` returns as a `SinglePhaseInverter` for `Model.GATEWAY`. Those writes are allowed only because `write_safe_registers(Model.GATEWAY)` falls through to `WRITE_SAFE_SINGLE_PHASE`: no Gateway-specific set exists. That matches what the old async fork did, where Gateway writes were plain single-phase HR writes, but it relies on a fallback rather than a supported path.
+
+**Request**
+
+- Confirm whether the single-phase write set is correct for the Gateway (mode, discharge enable, charge/discharge slots, targets, reserve), or define a Gateway write-safe set.
+- Either compose the command mixin onto `GatewayV1`/`GatewayV2`, or document `plant.inverter` as the write path for Gateways.
+- Rate control is covered in item 3, and identity in item 5.
