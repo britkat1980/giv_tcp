@@ -628,7 +628,7 @@ def frceExprt():
 def setBattMode():
     """Sets the inverter operation mode 
 
-    Payload: {'mode':'Eco' or 'Eco (Paused)' or 'Timed Demand' or 'Timed Export'}
+    Payload: {'mode':'Eco' or 'Eco (Paused)' or 'Timed Demand' or 'Timed Export' or 'Export (Paused)'}
     """
     payload = request.get_json(silent=True, force=True)
     requestcommand("setBatteryMode",payload)

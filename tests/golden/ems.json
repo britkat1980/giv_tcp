@@ -19,11 +19,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting charge schedule disable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+      "Setting charge schedule disable failed: not available for Ems inverters (givenergy-modbus has no set_enable_charge for this model)"
      ]
     ],
     "result": {
-     "result": "Setting charge schedule disable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+     "result": "Setting charge schedule disable failed: not available for Ems inverters (givenergy-modbus has no set_enable_charge for this model)"
     },
     "writes": []
    }
@@ -35,11 +35,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting charge schedule enable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+      "Setting charge schedule enable failed: not available for Ems inverters (givenergy-modbus has no set_enable_charge for this model)"
      ]
     ],
     "result": {
-     "result": "Setting charge schedule enable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+     "result": "Setting charge schedule enable failed: not available for Ems inverters (givenergy-modbus has no set_enable_charge for this model)"
     },
     "writes": []
    }
@@ -51,11 +51,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'disable_charge_target' (main.py:N, via write.py:N)"
+      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no disable_charge_target for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'disable_charge_target' (main.py:N, via write.py:N)"
+     "result": "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no disable_charge_target for this model)"
     },
     "writes": []
    }
@@ -67,11 +67,43 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+     "result": "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
+    },
+    "writes": []
+   }
+  ],
+  "enableDischarge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge disable failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge disable failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
+    },
+    "writes": []
+   }
+  ],
+  "enableDischarge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge enable failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge enable failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
     },
     "writes": []
    }
@@ -83,11 +115,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+      "Setting Discharge Schedule failed: not available for Ems inverters (givenergy-modbus has no set_enable_discharge for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+     "result": "Setting Discharge Schedule failed: not available for Ems inverters (givenergy-modbus has no set_enable_discharge for this model)"
     },
     "writes": []
    }
@@ -99,11 +131,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+      "Setting Discharge Schedule failed: not available for Ems inverters (givenergy-modbus has no set_enable_discharge for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+     "result": "Setting Discharge Schedule failed: not available for Ems inverters (givenergy-modbus has no set_enable_discharge for this model)"
     },
     "writes": []
    }
@@ -115,11 +147,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Real Time Control failed: AttributeError: 'Ems' object has no attribute 'set_enable_rtc' (main.py:N, via write.py:N)"
+      "Setting Real Time Control failed: not available for Ems inverters (givenergy-modbus has no set_enable_rtc for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Real Time Control failed: AttributeError: 'Ems' object has no attribute 'set_enable_rtc' (main.py:N, via write.py:N)"
+     "result": "Setting Real Time Control failed: not available for Ems inverters (givenergy-modbus has no set_enable_rtc for this model)"
     },
     "writes": []
    }
@@ -131,11 +163,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Real Time Control failed: AttributeError: 'Ems' object has no attribute 'set_enable_rtc' (main.py:N, via write.py:N)"
+      "Setting Real Time Control failed: not available for Ems inverters (givenergy-modbus has no set_enable_rtc for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Real Time Control failed: AttributeError: 'Ems' object has no attribute 'set_enable_rtc' (main.py:N, via write.py:N)"
+     "result": "Setting Real Time Control failed: not available for Ems inverters (givenergy-modbus has no set_enable_rtc for this model)"
     },
     "writes": []
    }
@@ -147,11 +179,11 @@
      [
       "write_logger",
       "ERROR",
-      "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+      "Force charge failed: NotImplementedError: Force Charge is not available for EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+     "result": "Force charge failed: NotImplementedError: Force Charge is not available for EMS (write.py:N)"
     },
     "writes": []
    }
@@ -163,11 +195,11 @@
      [
       "write_logger",
       "ERROR",
-      "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+      "Force charge failed: NotImplementedError: Force Charge is not available for EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+     "result": "Force charge failed: NotImplementedError: Force Charge is not available for EMS (write.py:N)"
     },
     "writes": []
    },
@@ -182,11 +214,11 @@
      [
       "write_logger",
       "ERROR",
-      "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+      "Force Export failed: NotImplementedError: Force Export is not available for EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+     "result": "Force Export failed: NotImplementedError: Force Export is not available for EMS (write.py:N)"
     },
     "writes": []
    }
@@ -198,11 +230,11 @@
      [
       "write_logger",
       "ERROR",
-      "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+      "Force Export failed: NotImplementedError: Force Export is not available for EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+     "result": "Force Export failed: NotImplementedError: Force Export is not available for EMS (write.py:N)"
     },
     "writes": []
    },
@@ -217,11 +249,11 @@
      [
       "write_logger",
       "ERROR",
-      "Reboot inverter failed: AttributeError: 'Ems' object has no attribute 'set_inverter_reboot' (main.py:N, via write.py:N)"
+      "Reboot inverter failed: not available for Ems inverters (givenergy-modbus has no set_inverter_reboot for this model)"
      ]
     ],
     "result": {
-     "result": "Reboot inverter failed: AttributeError: 'Ems' object has no attribute 'set_inverter_reboot' (main.py:N, via write.py:N)"
+     "result": "Reboot inverter failed: not available for Ems inverters (givenergy-modbus has no set_inverter_reboot for this model)"
     },
     "writes": []
    }
@@ -233,11 +265,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge disable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting AC Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     "result": "Setting AC Charge disable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -249,11 +281,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge enable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting AC Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     "result": "Setting AC Charge enable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -265,11 +297,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Active Power Rate failed: AttributeError: 'Ems' object has no attribute 'set_active_power_rate' (main.py:N, via write.py:N)"
+      "Setting Active Power Rate failed: not available for Ems inverters (givenergy-modbus has no set_active_power_rate for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Active Power Rate failed: AttributeError: 'Ems' object has no attribute 'set_active_power_rate' (main.py:N, via write.py:N)"
+     "result": "Setting Active Power Rate failed: not available for Ems inverters (givenergy-modbus has no set_active_power_rate for this model)"
     },
     "writes": []
    }
@@ -281,11 +313,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+      "Setting Battery Calibration failed: not available for Ems inverters (givenergy-modbus has no set_calibrate_battery_soc for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Calibration failed: not available for Ems inverters (givenergy-modbus has no set_calibrate_battery_soc for this model)"
     },
     "writes": []
    }
@@ -297,11 +329,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+      "Setting Battery Calibration failed: not available for Ems inverters (givenergy-modbus has no set_calibrate_battery_soc for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Calibration failed: not available for Ems inverters (givenergy-modbus has no set_calibrate_battery_soc for this model)"
     },
     "writes": []
    }
@@ -313,11 +345,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+      "Setting Battery Calibration failed: not available for Ems inverters (givenergy-modbus has no set_calibrate_battery_soc for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Calibration failed: not available for Ems inverters (givenergy-modbus has no set_calibrate_battery_soc for this model)"
     },
     "writes": []
    }
@@ -329,11 +361,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Cutoff failed: AttributeError: 'Ems' object has no attribute 'set_battery_power_reserve' (main.py:N, via write.py:N)"
+      "Setting Battery Cutoff failed: not available for Ems inverters (givenergy-modbus has no set_battery_power_reserve for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Cutoff failed: AttributeError: 'Ems' object has no attribute 'set_battery_power_reserve' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Cutoff failed: not available for Ems inverters (givenergy-modbus has no set_battery_power_reserve for this model)"
     },
     "writes": []
    }
@@ -345,11 +377,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+      "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
     },
     "writes": []
    }
@@ -361,11 +393,27 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+      "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_mode_dynamic for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_mode_dynamic for this model)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryMode({'mode': 'Export (Paused)'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_max_power for this model)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_max_power for this model)"
     },
     "writes": []
    }
@@ -377,11 +425,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_to_match_demand' (main.py:N, via write.py:N)"
+      "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_to_match_demand for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_to_match_demand' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_to_match_demand for this model)"
     },
     "writes": []
    }
@@ -393,11 +441,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_max_power' (main.py:N, via write.py:N)"
+      "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_max_power for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_max_power' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_max_power for this model)"
     },
     "writes": []
    }
@@ -493,11 +541,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Reserve failed: AttributeError: 'Ems' object has no attribute 'set_battery_soc_reserve' (main.py:N, via write.py:N)"
+      "Setting Battery Reserve failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Reserve failed: AttributeError: 'Ems' object has no attribute 'set_battery_soc_reserve' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Reserve failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
     },
     "writes": []
    }
@@ -509,11 +557,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Reserve failed: AttributeError: 'Ems' object has no attribute 'set_battery_soc_reserve' (main.py:N, via write.py:N)"
+      "Setting Battery Reserve failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Reserve failed: AttributeError: 'Ems' object has no attribute 'set_battery_soc_reserve' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Reserve failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
     },
     "writes": []
    }
@@ -537,16 +585,32 @@
   "setChargeRate({'chargeRate': '2500'})": [
    {
     "jobs": [],
-    "logs": [],
-    "raised": "TypeError: float() argument must be a string or a real number, not 'NoneType' (write.py:N)",
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+    },
     "writes": []
    }
   ],
   "setChargeRate({'chargeRate': '99999'})": [
    {
     "jobs": [],
-    "logs": [],
-    "raised": "TypeError: float() argument must be a string or a real number, not 'NoneType' (write.py:N)",
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+    },
     "writes": []
    }
   ],
@@ -557,11 +621,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery charge rate 75 failed"
+      "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Ems inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting battery charge rate 75 failed"
+     "result": "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Ems inverters (write.py:N)"
     },
     "writes": []
    }
@@ -700,11 +764,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+     "result": "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
     },
     "writes": []
    }
@@ -780,11 +844,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+      "Setting inverter DateTime failed: not available for Ems inverters (givenergy-modbus has no set_system_date_time for this model)"
      ]
     ],
     "result": {
-     "result": "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+     "result": "Setting inverter DateTime failed: not available for Ems inverters (givenergy-modbus has no set_system_date_time for this model)"
     },
     "writes": []
    }
@@ -792,8 +856,16 @@
   "setDischargeRate({'dischargeRate': '2500'})": [
    {
     "jobs": [],
-    "logs": [],
-    "raised": "TypeError: int() argument must be a string, a bytes-like object or a real number, not 'NoneType' (write.py:N)",
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+    },
     "writes": []
    }
   ],
@@ -804,11 +876,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery discharge rate 75 failed"
+      "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Ems inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting battery discharge rate 75 failed"
+     "result": "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Ems inverters (write.py:N)"
     },
     "writes": []
    }
@@ -975,16 +1047,32 @@
   "setEcoMode({'state': 'disable'})": [
    {
     "jobs": [],
-    "logs": [],
-    "raised": "UnboundLocalError: cannot access local variable 'result' where it is not associated with a value (write.py:N)",
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Eco Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_max_power for this model)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Eco Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_max_power for this model)"
+    },
     "writes": []
    }
   ],
   "setEcoMode({'state': 'enable'})": [
    {
     "jobs": [],
-    "logs": [],
-    "raised": "UnboundLocalError: cannot access local variable 'result' where it is not associated with a value (write.py:N)",
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Eco Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_to_match_demand for this model)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Eco Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_to_match_demand for this model)"
+    },
     "writes": []
    }
   ],
@@ -1144,11 +1232,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge disable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Charge disable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -1160,11 +1248,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge enable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Charge enable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -1176,11 +1264,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge disable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Discharge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Discharge disable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -1192,11 +1280,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge enable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Discharge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Discharge enable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -1222,6 +1310,22 @@
     "jobs": [],
     "logs": [],
     "result": {},
+    "writes": []
+   }
+  ],
+  "setPVInputMode({'state': '1x2'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting PV Input Mode failed: NotImplementedError: Setting the PV Input Mode is not yet supported by givenergy-modbus (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting PV Input Mode failed: NotImplementedError: Setting the PV Input Mode is not yet supported by givenergy-modbus (write.py:N)"
+    },
     "writes": []
    }
   ],
@@ -1311,11 +1415,11 @@
      [
       "write_logger",
       "ERROR",
-      "Syncing inverter DateTime failed: AttributeError: 'Ems' object has no attribute 'set_system_date_time' (main.py:N, via write.py:N)"
+      "Syncing inverter DateTime failed: not available for Ems inverters (givenergy-modbus has no set_system_date_time for this model)"
      ]
     ],
     "result": {
-     "result": "Syncing inverter DateTime failed: AttributeError: 'Ems' object has no attribute 'set_system_date_time' (main.py:N, via write.py:N)"
+     "result": "Syncing inverter DateTime failed: not available for Ems inverters (givenergy-modbus has no set_system_date_time for this model)"
     },
     "writes": []
    }
@@ -1327,11 +1431,16 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+      "Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+     "result": "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
     },
     "writes": []
    }
@@ -1343,11 +1452,16 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+      "Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+     "result": "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
     },
     "writes": []
    },
@@ -1362,11 +1476,16 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+      "Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+     "result": "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
     },
     "writes": []
    }
@@ -1378,11 +1497,16 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+      "Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+     "result": "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
     },
     "writes": []
    },
@@ -1399,7 +1523,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting charge schedule disable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+      "Setting charge schedule disable failed: not available for Ems inverters (givenergy-modbus has no set_enable_charge for this model)"
      ]
     ],
     "queued": [
@@ -1420,7 +1544,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting charge schedule enable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+      "Setting charge schedule enable failed: not available for Ems inverters (givenergy-modbus has no set_enable_charge for this model)"
      ]
     ],
     "queued": [
@@ -1441,7 +1565,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'disable_charge_target' (main.py:N, via write.py:N)"
+      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no disable_charge_target for this model)"
      ]
     ],
     "queued": [
@@ -1462,7 +1586,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
      ]
     ],
     "queued": [
@@ -1481,9 +1605,9 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Unknown write command: enableDischarge - ignoring"
+      "Setting Discharge disable failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
      ]
     ],
     "queued": [
@@ -1502,9 +1626,9 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Unknown write command: enableDischarge - ignoring"
+      "Setting Discharge enable failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
      ]
     ],
     "queued": [
@@ -1525,7 +1649,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+      "Setting Discharge Schedule failed: not available for Ems inverters (givenergy-modbus has no set_enable_discharge for this model)"
      ]
     ],
     "queued": [
@@ -1546,7 +1670,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+      "Setting Discharge Schedule failed: not available for Ems inverters (givenergy-modbus has no set_enable_discharge for this model)"
      ]
     ],
     "queued": [
@@ -1567,7 +1691,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Real Time Control failed: AttributeError: 'Ems' object has no attribute 'set_enable_rtc' (main.py:N, via write.py:N)"
+      "Setting Real Time Control failed: not available for Ems inverters (givenergy-modbus has no set_enable_rtc for this model)"
      ]
     ],
     "queued": [
@@ -1588,7 +1712,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Real Time Control failed: AttributeError: 'Ems' object has no attribute 'set_enable_rtc' (main.py:N, via write.py:N)"
+      "Setting Real Time Control failed: not available for Ems inverters (givenergy-modbus has no set_enable_rtc for this model)"
      ]
     ],
     "queued": [
@@ -1609,7 +1733,7 @@
      [
       "write_logger",
       "ERROR",
-      "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+      "Force charge failed: NotImplementedError: Force Charge is not available for EMS (write.py:N)"
      ]
     ],
     "queued": [
@@ -1628,7 +1752,7 @@
      [
       "write_logger",
       "ERROR",
-      "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+      "Force charge failed: NotImplementedError: Force Charge is not available for EMS (write.py:N)"
      ]
     ],
     "queued": [
@@ -1659,7 +1783,7 @@
      [
       "write_logger",
       "ERROR",
-      "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+      "Force Export failed: NotImplementedError: Force Export is not available for EMS (write.py:N)"
      ]
     ],
     "queued": [
@@ -1678,7 +1802,7 @@
      [
       "write_logger",
       "ERROR",
-      "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+      "Force Export failed: NotImplementedError: Force Export is not available for EMS (write.py:N)"
      ]
     ],
     "queued": [
@@ -1709,7 +1833,7 @@
      [
       "write_logger",
       "ERROR",
-      "Reboot inverter failed: AttributeError: 'Ems' object has no attribute 'set_inverter_reboot' (main.py:N, via write.py:N)"
+      "Reboot inverter failed: not available for Ems inverters (givenergy-modbus has no set_inverter_reboot for this model)"
      ]
     ],
     "queued": [
@@ -1728,7 +1852,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge disable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -1749,7 +1873,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge enable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -1770,7 +1894,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Active Power Rate failed: AttributeError: 'Ems' object has no attribute 'set_active_power_rate' (main.py:N, via write.py:N)"
+      "Setting Active Power Rate failed: not available for Ems inverters (givenergy-modbus has no set_active_power_rate for this model)"
      ]
     ],
     "queued": [
@@ -1791,7 +1915,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+      "Setting Battery Calibration failed: not available for Ems inverters (givenergy-modbus has no set_calibrate_battery_soc for this model)"
      ]
     ],
     "queued": [
@@ -1812,7 +1936,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+      "Setting Battery Calibration failed: not available for Ems inverters (givenergy-modbus has no set_calibrate_battery_soc for this model)"
      ]
     ],
     "queued": [
@@ -1833,7 +1957,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+      "Setting Battery Calibration failed: not available for Ems inverters (givenergy-modbus has no set_calibrate_battery_soc for this model)"
      ]
     ],
     "queued": [
@@ -1854,7 +1978,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Cutoff failed: AttributeError: 'Ems' object has no attribute 'set_battery_power_reserve' (main.py:N, via write.py:N)"
+      "Setting Battery Cutoff failed: not available for Ems inverters (givenergy-modbus has no set_battery_power_reserve for this model)"
      ]
     ],
     "queued": [
@@ -1875,7 +1999,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+      "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
      ]
     ],
     "queued": [
@@ -1896,7 +2020,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+      "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_mode_dynamic for this model)"
      ]
     ],
     "queued": [
@@ -1910,6 +2034,27 @@
     "writes": []
    }
   ],
+  "setBatteryMode(Export (Paused))": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_max_power for this model)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryMode",
+      {
+       "mode": "Export (Paused)"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
   "setBatteryMode(Timed Demand)": [
    {
     "jobs": [],
@@ -1917,7 +2062,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_to_match_demand' (main.py:N, via write.py:N)"
+      "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_to_match_demand for this model)"
      ]
     ],
     "queued": [
@@ -1938,7 +2083,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_max_power' (main.py:N, via write.py:N)"
+      "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_max_power for this model)"
      ]
     ],
     "queued": [
@@ -2063,7 +2208,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Reserve failed: AttributeError: 'Ems' object has no attribute 'set_battery_soc_reserve' (main.py:N, via write.py:N)"
+      "Setting Battery Reserve failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
      ]
     ],
     "queued": [
@@ -2323,9 +2468,9 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Write request error: TypeError: float() argument must be a string or a real number, not 'NoneType' deleting all pending requests, please try again"
+      "Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
      ]
     ],
     "queued": [
@@ -2346,7 +2491,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery charge rate 75 failed"
+      "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Ems inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -2587,7 +2732,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
      ]
     ],
     "queued": [
@@ -2828,7 +2973,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+      "Setting inverter DateTime failed: not available for Ems inverters (givenergy-modbus has no set_system_date_time for this model)"
      ]
     ],
     "queued": [
@@ -3067,9 +3212,9 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Write request error: TypeError: int() argument must be a string, a bytes-like object or a real number, not 'NoneType' deleting all pending requests, please try again"
+      "Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
      ]
     ],
     "queued": [
@@ -3090,7 +3235,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery discharge rate 75 failed"
+      "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Ems inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -3894,9 +4039,9 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Write request error: UnboundLocalError: cannot access local variable 'result' where it is not associated with a value deleting all pending requests, please try again"
+      "Setting Eco Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_max_power for this model)"
      ]
     ],
     "queued": [
@@ -3915,9 +4060,9 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Write request error: UnboundLocalError: cannot access local variable 'result' where it is not associated with a value deleting all pending requests, please try again"
+      "Setting Eco Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_to_match_demand for this model)"
      ]
     ],
     "queued": [
@@ -4199,7 +4344,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge disable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -4220,7 +4365,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge enable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -4241,7 +4386,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge disable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -4262,7 +4407,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge enable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -4326,9 +4471,9 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Unknown write command: setPVInputMode - ignoring"
+      "Setting PV Input Mode failed: NotImplementedError: Setting the PV Input Mode is not yet supported by givenergy-modbus (write.py:N)"
      ]
     ],
     "queued": [
@@ -4347,9 +4492,9 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Unknown write command: setPVInputMode - ignoring"
+      "Setting PV Input Mode failed: NotImplementedError: Setting the PV Input Mode is not yet supported by givenergy-modbus (write.py:N)"
      ]
     ],
     "queued": [
@@ -4441,7 +4586,7 @@
      [
       "write_logger",
       "ERROR",
-      "Syncing inverter DateTime failed: AttributeError: 'Ems' object has no attribute 'set_system_date_time' (main.py:N, via write.py:N)"
+      "Syncing inverter DateTime failed: not available for Ems inverters (givenergy-modbus has no set_system_date_time for this model)"
      ]
     ],
     "queued": [
@@ -4462,7 +4607,12 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+      "Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
      ]
     ],
     "queued": [
@@ -4481,7 +4631,12 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+      "Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
      ]
     ],
     "queued": [
@@ -4512,7 +4667,12 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+      "Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
      ]
     ],
     "queued": [
@@ -4531,7 +4691,12 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+      "Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
      ]
     ],
     "queued": [
@@ -4548,7 +4713,7 @@
      [
       "read_logger",
       "ERROR",
-      "Temp Pause Charge is not currently running"
+      "Temp Pause Discharge is not currently running"
      ]
     ],
     "queued": [],
@@ -5171,11 +5336,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting charge schedule disable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+      "Setting charge schedule disable failed: not available for Ems inverters (givenergy-modbus has no set_enable_charge for this model)"
      ]
     ],
     "result": {
-     "result": "Setting charge schedule disable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+     "result": "Setting charge schedule disable failed: not available for Ems inverters (givenergy-modbus has no set_enable_charge for this model)"
     },
     "status": 200,
     "writes": []
@@ -5188,11 +5353,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting charge schedule enable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+      "Setting charge schedule enable failed: not available for Ems inverters (givenergy-modbus has no set_enable_charge for this model)"
      ]
     ],
     "result": {
-     "result": "Setting charge schedule enable failed: AttributeError: 'Ems' object has no attribute 'set_enable_charge' (main.py:N, via write.py:N)"
+     "result": "Setting charge schedule enable failed: not available for Ems inverters (givenergy-modbus has no set_enable_charge for this model)"
     },
     "status": 200,
     "writes": []
@@ -5205,11 +5370,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'disable_charge_target' (main.py:N, via write.py:N)"
+      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no disable_charge_target for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'disable_charge_target' (main.py:N, via write.py:N)"
+     "result": "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no disable_charge_target for this model)"
     },
     "status": 200,
     "writes": []
@@ -5222,11 +5387,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+     "result": "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
     },
     "status": 200,
     "writes": []
@@ -5237,12 +5402,14 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Unknown write command: enableDischarge - ignoring"
+      "Setting Discharge disable failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
      ]
     ],
-    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "result": {
+     "result": "Setting Discharge disable failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
+    },
     "status": 200,
     "writes": []
    }
@@ -5252,12 +5419,14 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Unknown write command: enableDischarge - ignoring"
+      "Setting Discharge enable failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
      ]
     ],
-    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "result": {
+     "result": "Setting Discharge enable failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
+    },
     "status": 200,
     "writes": []
    }
@@ -5269,11 +5438,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+      "Setting Discharge Schedule failed: not available for Ems inverters (givenergy-modbus has no set_enable_discharge for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+     "result": "Setting Discharge Schedule failed: not available for Ems inverters (givenergy-modbus has no set_enable_discharge for this model)"
     },
     "status": 200,
     "writes": []
@@ -5286,11 +5455,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+      "Setting Discharge Schedule failed: not available for Ems inverters (givenergy-modbus has no set_enable_discharge for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Discharge Schedule failed: AttributeError: 'Ems' object has no attribute 'set_enable_discharge' (main.py:N, via write.py:N)"
+     "result": "Setting Discharge Schedule failed: not available for Ems inverters (givenergy-modbus has no set_enable_discharge for this model)"
     },
     "status": 200,
     "writes": []
@@ -5303,11 +5472,11 @@
      [
       "write_logger",
       "ERROR",
-      "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+      "Force charge failed: NotImplementedError: Force Charge is not available for EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+     "result": "Force charge failed: NotImplementedError: Force Charge is not available for EMS (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -5333,11 +5502,11 @@
      [
       "write_logger",
       "ERROR",
-      "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+      "Force charge failed: NotImplementedError: Force Charge is not available for EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Force charge failed: KeyError: 'Charge_start_time_slot_1' (write.py:N)"
+     "result": "Force charge failed: NotImplementedError: Force Charge is not available for EMS (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -5350,11 +5519,11 @@
      [
       "write_logger",
       "ERROR",
-      "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+      "Force Export failed: NotImplementedError: Force Export is not available for EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+     "result": "Force Export failed: NotImplementedError: Force Export is not available for EMS (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -5380,11 +5549,11 @@
      [
       "write_logger",
       "ERROR",
-      "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+      "Force Export failed: NotImplementedError: Force Export is not available for EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Force Export failed: KeyError: 'Discharge_start_time_slot_1' (write.py:N)"
+     "result": "Force Export failed: NotImplementedError: Force Export is not available for EMS (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -5397,11 +5566,11 @@
      [
       "write_logger",
       "ERROR",
-      "Reboot inverter failed: AttributeError: 'Ems' object has no attribute 'set_inverter_reboot' (main.py:N, via write.py:N)"
+      "Reboot inverter failed: not available for Ems inverters (givenergy-modbus has no set_inverter_reboot for this model)"
      ]
     ],
     "result": {
-     "result": "Reboot inverter failed: AttributeError: 'Ems' object has no attribute 'set_inverter_reboot' (main.py:N, via write.py:N)"
+     "result": "Reboot inverter failed: not available for Ems inverters (givenergy-modbus has no set_inverter_reboot for this model)"
     },
     "status": 200,
     "writes": []
@@ -5414,11 +5583,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge disable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting AC Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     "result": "Setting AC Charge disable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -5431,11 +5600,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge enable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting AC Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     "result": "Setting AC Charge enable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -5448,11 +5617,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+      "Setting Battery Calibration failed: not available for Ems inverters (givenergy-modbus has no set_calibrate_battery_soc for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Calibration failed: not available for Ems inverters (givenergy-modbus has no set_calibrate_battery_soc for this model)"
     },
     "status": 200,
     "writes": []
@@ -5465,11 +5634,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+      "Setting Battery Calibration failed: not available for Ems inverters (givenergy-modbus has no set_calibrate_battery_soc for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Calibration failed: not available for Ems inverters (givenergy-modbus has no set_calibrate_battery_soc for this model)"
     },
     "status": 200,
     "writes": []
@@ -5482,11 +5651,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+      "Setting Battery Calibration failed: not available for Ems inverters (givenergy-modbus has no set_calibrate_battery_soc for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Calibration failed: AttributeError: 'Ems' object has no attribute 'set_calibrate_battery_soc' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Calibration failed: not available for Ems inverters (givenergy-modbus has no set_calibrate_battery_soc for this model)"
     },
     "status": 200,
     "writes": []
@@ -5499,11 +5668,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Cutoff failed: AttributeError: 'Ems' object has no attribute 'set_battery_power_reserve' (main.py:N, via write.py:N)"
+      "Setting Battery Cutoff failed: not available for Ems inverters (givenergy-modbus has no set_battery_power_reserve for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Cutoff failed: AttributeError: 'Ems' object has no attribute 'set_battery_power_reserve' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Cutoff failed: not available for Ems inverters (givenergy-modbus has no set_battery_power_reserve for this model)"
     },
     "status": 200,
     "writes": []
@@ -5516,11 +5685,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+      "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
     },
     "status": 200,
     "writes": []
@@ -5533,11 +5702,28 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+      "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_mode_dynamic for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_mode_dynamic' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_mode_dynamic for this model)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryMode({'mode': 'Export (Paused)'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_max_power for this model)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_max_power for this model)"
     },
     "status": 200,
     "writes": []
@@ -5550,11 +5736,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_to_match_demand' (main.py:N, via write.py:N)"
+      "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_to_match_demand for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_to_match_demand' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_to_match_demand for this model)"
     },
     "status": 200,
     "writes": []
@@ -5567,11 +5753,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_max_power' (main.py:N, via write.py:N)"
+      "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_max_power for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Mode failed: AttributeError: 'Ems' object has no attribute 'set_discharge_mode_max_power' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_max_power for this model)"
     },
     "status": 200,
     "writes": []
@@ -5672,11 +5858,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Battery Reserve failed: AttributeError: 'Ems' object has no attribute 'set_battery_soc_reserve' (main.py:N, via write.py:N)"
+      "Setting Battery Reserve failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Reserve failed: AttributeError: 'Ems' object has no attribute 'set_battery_soc_reserve' (main.py:N, via write.py:N)"
+     "result": "Setting Battery Reserve failed: not available for Ems inverters (givenergy-modbus has no set_battery_soc_reserve for this model)"
     },
     "status": 200,
     "writes": []
@@ -5704,12 +5890,14 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Write request error: TypeError: float() argument must be a string or a real number, not 'NoneType' deleting all pending requests, please try again"
+      "Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
      ]
     ],
-    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "result": {
+     "result": "Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+    },
     "status": 200,
     "writes": []
    }
@@ -5721,11 +5909,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery charge rate 75 failed"
+      "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Ems inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting battery charge rate 75 failed"
+     "result": "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Ems inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -5846,11 +6034,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Charge Target failed: AttributeError: 'Ems' object has no attribute 'set_charge_target_enabled' (main.py:N, via write.py:N)"
+     "result": "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
     },
     "status": 200,
     "writes": []
@@ -5863,11 +6051,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+      "Setting inverter DateTime failed: not available for Ems inverters (givenergy-modbus has no set_system_date_time for this model)"
      ]
     ],
     "result": {
-     "result": "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+     "result": "Setting inverter DateTime failed: not available for Ems inverters (givenergy-modbus has no set_system_date_time for this model)"
     },
     "status": 200,
     "writes": []
@@ -5878,12 +6066,14 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Write request error: TypeError: int() argument must be a string, a bytes-like object or a real number, not 'NoneType' deleting all pending requests, please try again"
+      "Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
      ]
     ],
-    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "result": {
+     "result": "Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+    },
     "status": 200,
     "writes": []
    }
@@ -5895,11 +6085,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery discharge rate 75 failed"
+      "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Ems inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting battery discharge rate 75 failed"
+     "result": "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Ems inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -6035,12 +6225,14 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Write request error: UnboundLocalError: cannot access local variable 'result' where it is not associated with a value deleting all pending requests, please try again"
+      "Setting Eco Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_max_power for this model)"
      ]
     ],
-    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "result": {
+     "result": "Setting Eco Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_max_power for this model)"
+    },
     "status": 200,
     "writes": []
    }
@@ -6050,12 +6242,14 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Write request error: UnboundLocalError: cannot access local variable 'result' where it is not associated with a value deleting all pending requests, please try again"
+      "Setting Eco Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_to_match_demand for this model)"
      ]
     ],
-    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "result": {
+     "result": "Setting Eco Mode failed: not available for Ems inverters (givenergy-modbus has no set_discharge_mode_to_match_demand for this model)"
+    },
     "status": 200,
     "writes": []
    }
@@ -6201,11 +6395,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge disable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Charge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Charge disable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -6218,11 +6412,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge enable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Charge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Charge enable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -6235,11 +6429,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge disable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Discharge disable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Discharge disable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -6252,11 +6446,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge enable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Discharge enable failed: AttributeError: 'Ems' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Discharge enable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -6308,11 +6502,11 @@
      [
       "write_logger",
       "ERROR",
-      "Syncing inverter DateTime failed: AttributeError: 'Ems' object has no attribute 'set_system_date_time' (main.py:N, via write.py:N)"
+      "Syncing inverter DateTime failed: not available for Ems inverters (givenergy-modbus has no set_system_date_time for this model)"
      ]
     ],
     "result": {
-     "result": "Syncing inverter DateTime failed: AttributeError: 'Ems' object has no attribute 'set_system_date_time' (main.py:N, via write.py:N)"
+     "result": "Syncing inverter DateTime failed: not available for Ems inverters (givenergy-modbus has no set_system_date_time for this model)"
     },
     "status": 200,
     "writes": []
@@ -6325,11 +6519,16 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+      "Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+     "result": "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -6355,11 +6554,16 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+      "Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+     "result": "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -6372,11 +6576,16 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+      "Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+     "result": "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -6402,11 +6611,16 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+      "Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+     "result": "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: the maximum battery rate isn't known for this inverter, so the rate can't be set (write.py:N) (write.py:N)"
     },
     "status": 200,
     "writes": []

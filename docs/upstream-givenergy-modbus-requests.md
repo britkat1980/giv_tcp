@@ -106,6 +106,8 @@ Related GivTCP report: britkat1980/giv_tcp#538. The EMS "generation today" shoul
 
 `HYBRID_HV_GEN3` and `ALL_IN_ONE_HYBRID` report `is_three_phase = True` because they use the HR/IR 1000-range layout, and `select_inverter()` returns `ThreePhaseInverter` for them. Consumers naturally read `is_three_phase` as "electrically three-phase". GivTCP used it to choose three-phase UI and processing for single-phase HV Gen 3 units.
 
+**Update (2.13.0):** `HYBRID_HV_GEN3` is no longer in `is_three_phase` (hass#295), which resolves this for HV Gen 3. `ALL_IN_ONE_HYBRID` is still the one model where the flag means the register layout rather than the phase count.
+
 **Request:** consider a separate capability for the register layout (for example `uses_extended_register_map`), keeping `is_three_phase` for electrical phase count. At minimum, document the current meaning in the property docstring.
 
 ---

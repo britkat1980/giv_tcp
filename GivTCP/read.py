@@ -87,6 +87,9 @@ def capsFile():
 
 # Models with no battery pause mode/slot (givenergy-modbus doesn't read HR 318-320 on them)
 PAUSE_UNSUPPORTED=[Model.HYBRID_GEN1, Model.AC]
+# Models whose PV string voltage/current registers aren't real string readings (they echo the AC side), which
+# givenergy-modbus 2.13+ reports as None
+PV_STRING_VI_UNSUPPORTED=[Model.AC, Model.ALL_IN_ONE]
 
 def unsupportedEntities():
     # Entities this inverter model can't have. Older GivTCP versions created some of these in HA,
@@ -96,9 +99,12 @@ def unsupportedEntities():
             device_type=pickle.load(inp).device_type
     except Exception:
         return []
+    unsupported=[]
     if device_type in PAUSE_UNSUPPORTED:
-        return ['Battery_pause_mode','Battery_pause_start_time_slot','Battery_pause_end_time_slot']
-    return []
+        unsupported+=['Battery_pause_mode','Battery_pause_start_time_slot','Battery_pause_end_time_slot']
+    if device_type in PV_STRING_VI_UNSUPPORTED:
+        unsupported+=['PV_Voltage_String_1','PV_Voltage_String_2','PV_Current_String_1','PV_Current_String_2']
+    return unsupported
 
 async def detectPlant(client, force=False):
     # Detect only when there is no capabilities file for this inverter (startup normally creates one).
@@ -967,7 +973,7 @@ def processPVInfo(plant: Plant):
             return multi_output_old
 
         # If System Time is wrong (default date) use last good time or local time if all else fails
-        if GEInv.system_time.year == 2000:
+        if GEInv.system_time is None or GEInv.system_time.year == 2000:     # unreadable or default date
             #Use old Sys_Time
             logger.debug("Inverter Time is default... fixing it")
             inverter['Invertor_Time'] = finditem(multi_output_old,"Invertor_Time")
@@ -1130,7 +1136,7 @@ def processInverterInfo(plant: Plant):
             multi_output_old = {}
 
         # If System Time is wrong (default date) use last good time or local time if all else fails
-        if GEInv.system_time.year == 2000:
+        if GEInv.system_time is None or GEInv.system_time.year == 2000:     # unreadable or default date
             #Use old Sys_Time
             logger.warning("Inverter Time is default... fixing it")
             inverter['Invertor_Time'] = finditem(multi_output_old,"Invertor_Time")
@@ -1886,7 +1892,7 @@ def processThreePhaseInfo(plant: Plant):
             return multi_output_old
 
         # If System Time is wrong (default date) use last good time or local time if all else fails
-        if GEInv.system_time.year == 2000:
+        if GEInv.system_time is None or GEInv.system_time.year == 2000:     # unreadable or default date
             #Use old Sys_Time
             logger.debug("Inverter Time is default... fixing it")
             inverter['Invertor_Time'] = finditem(multi_output_old,"Invertor_Time")

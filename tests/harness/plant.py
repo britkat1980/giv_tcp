@@ -58,6 +58,7 @@ class PlantSession:
         self.activate()
         self.cycles = [self.read_cycle(), self.read_cycle(refresh=True)]
         self.state = env.snapshot_state()
+        self.registers = {addr: dict(cache) for addr, cache in self.plant.register_caches.items()}
 
     @property
     def plant(self):
@@ -74,8 +75,24 @@ class PlantSession:
         givlut_module._client = self.client
         if state is not None:
             env.restore_state(state)
+            self._restore_registers()
         recorder.clear()
         self.mock.writes.clear()
+
+    def _restore_registers(self):
+        # The client updates its register copy from each acknowledged write, so put back the post-read values
+        # or one test's writes would change what the next test's command reads (eg. the current charge target)
+        caches = self.plant.register_caches
+        for addr in list(caches):
+            if addr not in self.registers:
+                del caches[addr]
+        for addr, values in self.registers.items():
+            if addr in caches:
+                caches[addr].clear()
+                caches[addr].update(values)
+            else:
+                from givenergy_modbus.model.register_cache import RegisterCache
+                caches[addr] = RegisterCache(values)
 
     def read_cycle(self, refresh=False):
         """One poll of the read loop: refresh the registers, then GivTCP's processing and publishing (runAll2)"""
@@ -109,12 +126,30 @@ class PlantSession:
             recorder.clear()
             self.mock.writes.clear()
             if entry == "direct":
-                outcomes.append(self._call_write(target, payload))
+                outcome = self._call_write(target, payload)
             elif entry == "rest":
-                outcomes.append(self._call_rest(api, target, payload))
+                outcome = self._call_rest(api, target, payload)
             else:
-                outcomes.append(self._call_mqtt(target, payload))
+                outcome = self._call_mqtt(target, payload)
+            # Writes still in flight when the command returned belong to this step, not the next test
+            pending = self._drain()
+            outcome["writes"] = [list(w) for w in self.mock.writes]
+            if pending:
+                outcome["still_sending_after_return"] = pending
+            outcomes.append(outcome)
         return outcomes
+
+    def _drain(self, timeout=5.0):
+        """Wait for the client to finish sending; returns the number of frames still unsent or unanswered"""
+        async def wait():
+            deadline = time.monotonic() + timeout
+            while True:
+                pending = self.client.tx_queue.qsize() + sum(
+                    1 for f in list(self.client.expected_responses.values()) if not f.done())
+                if pending == 0 or time.monotonic() > deadline:
+                    return pending
+                await asyncio.sleep(0.05)
+        return self.loop.run(wait())
 
     def _outcome(self, **extra):
         return extra | dict(writes=[list(w) for w in self.mock.writes],

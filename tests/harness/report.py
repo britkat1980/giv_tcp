@@ -44,6 +44,8 @@ def _problems_in(step):
     found = []
     if step.get("raised"):
         found.append("Unhandled exception (the read loop drops every queued request): " + step["raised"])
+    if step.get("still_sending_after_return"):
+        found.append("Command returned with %d write(s) still being sent" % step["still_sending_after_return"])
     if step.get("status") not in (None, 200):
         found.append("HTTP %s" % step["status"])
     result = step.get("result")
@@ -77,7 +79,8 @@ def problems(golden_files):
 
 # Failures that are a known limit of the model or of givenergy-modbus, rather than a GivTCP bug
 UNSUPPORTED = ("not yet supported", "slot index", "only available on", "not supported by", "is not permitted for",
-               "External rate setting not allowed", "isn't known for this inverter")
+               "External rate setting not allowed", "isn't known for this inverter", "not available for",
+               "is not currently running")
 
 def _control(where):
     # "mqtt setChargeTarget3(85)" -> "mqtt setChargeTarget3"
@@ -88,7 +91,7 @@ def format_problems(grouped):
     for message, models in grouped.items():
         (unsupported if any(u in message for u in UNSUPPORTED) else errors).append((message, models))
     lines = []
-    for title, items in (("ERRORS TO FIX", errors), ("NOT SUPPORTED ON THESE MODELS (library or model limits)", unsupported)):
+    for title, items in (("ERRORS TO FIX", errors), ("NOT SUPPORTED OR NOT APPLICABLE (library or model limits, nothing to cancel)", unsupported)):
         lines += [title + " (%d)" % len(items), ""]
         for message, models in sorted(items, key=lambda kv: (-len(kv[1]), kv[0])):
             lines.append("* " + message)

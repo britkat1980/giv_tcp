@@ -95,6 +95,38 @@
     ]
    }
   ],
+  "enableDischarge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge disable was a success"
+    },
+    "writes": [
+     [
+      17,
+      110,
+      100
+     ]
+    ]
+   }
+  ],
+  "enableDischarge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge enable was a success"
+    },
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ]
+    ]
+   }
+  ],
   "enableDischargeSchedule({'state': 'disable'})": [
    {
     "jobs": [],
@@ -415,12 +447,12 @@
      ],
      [
       17,
-      94,
+      56,
       0
      ],
      [
       17,
-      95,
+      57,
       0
      ],
      [
@@ -459,11 +491,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge disable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     "result": "Setting AC Charge disable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -475,11 +507,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge enable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     "result": "Setting AC Charge enable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -567,15 +599,9 @@
   "setBatteryMode({'mode': 'Eco (Paused)'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
+     "result": "Setting Eco (Paused) mode was a success"
     },
     "writes": [
      [
@@ -587,6 +613,11 @@
       17,
       59,
       0
+     ],
+     [
+      17,
+      110,
+      100
      ]
     ]
    }
@@ -617,6 +648,27 @@
     ]
    }
   ],
+  "setBatteryMode({'mode': 'Export (Paused)'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export (Paused) mode was a success"
+    },
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
   "setBatteryMode({'mode': 'Timed Demand'})": [
    {
     "jobs": [],
@@ -625,11 +677,6 @@
      "result": "Setting Timed Demand mode was a success"
     },
     "writes": [
-     [
-      17,
-      110,
-      100
-     ],
      [
       17,
       27,
@@ -831,17 +878,17 @@
   "setChargeRateAC({'chargeRate': '75'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting battery charge rate 75 failed"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting battery charge rate 75 failed"
+     "result": "Setting battery charge rate AC to 75% was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      313,
+      75
+     ]
+    ]
    }
   ],
   "setChargeSlot({'start': '01:30', 'finish': '04:30', 'slot': '1', 'chargeToPercent': '90'})": [
@@ -1064,17 +1111,42 @@
   "setDateTime({'dateTime': '01/01/2026 12:00:00'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+     "result": "Setting inverter time was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      35,
+      26
+     ],
+     [
+      17,
+      36,
+      1
+     ],
+     [
+      17,
+      37,
+      1
+     ],
+     [
+      17,
+      38,
+      12
+     ],
+     [
+      17,
+      39,
+      0
+     ],
+     [
+      17,
+      40,
+      0
+     ]
+    ]
    }
   ],
   "setDischargeRate({'dischargeRate': '2500'})": [
@@ -1096,17 +1168,17 @@
   "setDischargeRateAC({'dischargeRate': '75'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting battery discharge rate 75 failed"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting battery discharge rate 75 failed"
+     "result": "Setting battery discharge rate AC to 75% was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      314,
+      75
+     ]
+    ]
    }
   ],
   "setDischargeSlot({'start': '16:00', 'finish': '19:00', 'slot': '1', 'dischargeToPercent': '20'})": [
@@ -1307,11 +1379,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for All_in_one inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "result": {
-     "result": "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     "result": "Setting EMS Plant Operation failed: not available for All_in_one inverters (givenergy-modbus has no set_ems_plant for this model)"
     },
     "writes": []
    }
@@ -1323,11 +1395,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for All_in_one inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "result": {
-     "result": "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     "result": "Setting EMS Plant Operation failed: not available for All_in_one inverters (givenergy-modbus has no set_ems_plant for this model)"
     },
     "writes": []
    }
@@ -1355,11 +1427,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 1 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot for this model)"
     },
     "writes": []
    }
@@ -1371,11 +1443,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot_end for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 1 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot_end for this model)"
     },
     "writes": []
    }
@@ -1387,11 +1459,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+      "Setting Export Slot 2 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot_end for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 2 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot_end for this model)"
     },
     "writes": []
    }
@@ -1403,11 +1475,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot_start for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 1 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot_start for this model)"
     },
     "writes": []
    }
@@ -1419,11 +1491,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+      "Setting Export Slot 2 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot_start for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 2 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot_start for this model)"
     },
     "writes": []
    }
@@ -1451,11 +1523,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge disable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Charge disable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -1467,11 +1539,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge enable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Charge enable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -1483,11 +1555,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge disable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Discharge disable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -1499,11 +1571,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge enable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Discharge enable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -1529,6 +1601,22 @@
     "jobs": [],
     "logs": [],
     "result": {},
+    "writes": []
+   }
+  ],
+  "setPVInputMode({'state': '1x2'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting PV Input Mode failed: NotImplementedError: Setting the PV Input Mode is not yet supported by givenergy-modbus (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting PV Input Mode failed: NotImplementedError: Setting the PV Input Mode is not yet supported by givenergy-modbus (write.py:N)"
+    },
     "writes": []
    }
   ],
@@ -1868,13 +1956,7 @@
   "enableDischarge(disable)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Unknown write command: enableDischarge - ignoring"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "enableDischarge",
@@ -1883,19 +1965,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      110,
+      100
+     ]
+    ]
    }
   ],
   "enableDischarge(enable)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Unknown write command: enableDischarge - ignoring"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "enableDischarge",
@@ -1904,7 +1986,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ]
+    ]
    }
   ],
   "enableDischargeSchedule(disable)": [
@@ -2080,13 +2168,7 @@
    },
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Write request error: TypeError: cancelJob() takes from 1 to 2 positional arguments but 3 were given deleting all pending requests, please try again"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "cancelJob",
@@ -2215,13 +2297,7 @@
    },
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Write request error: TypeError: cancelJob() takes from 1 to 2 positional arguments but 3 were given deleting all pending requests, please try again"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "cancelJob",
@@ -2257,7 +2333,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge disable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -2278,7 +2354,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge enable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -2400,13 +2476,7 @@
   "setBatteryMode(Eco (Paused))": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryMode",
@@ -2425,6 +2495,11 @@
       17,
       59,
       0
+     ],
+     [
+      17,
+      110,
+      100
      ]
     ]
    }
@@ -2460,6 +2535,32 @@
     ]
    }
   ],
+  "setBatteryMode(Export (Paused))": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryMode",
+      {
+       "mode": "Export (Paused)"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
   "setBatteryMode(Timed Demand)": [
    {
     "jobs": [],
@@ -2473,11 +2574,6 @@
      ]
     ],
     "writes": [
-     [
-      17,
-      110,
-      100
-     ],
      [
       17,
       27,
@@ -2907,13 +3003,7 @@
   "setChargeRateAC(75)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting battery charge rate 75 failed"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeRateAC",
@@ -2922,7 +3012,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      313,
+      75
+     ]
+    ]
    }
   ],
   "setChargeStart1(02:00:00)": [
@@ -3399,13 +3495,7 @@
   "setDateTime(01/01/2026 12:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDateTime",
@@ -3414,7 +3504,38 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      35,
+      26
+     ],
+     [
+      17,
+      36,
+      1
+     ],
+     [
+      17,
+      37,
+      1
+     ],
+     [
+      17,
+      38,
+      12
+     ],
+     [
+      17,
+      39,
+      0
+     ],
+     [
+      17,
+      40,
+      0
+     ]
+    ]
    }
   ],
   "setDischargeEnd1(19:00:00)": [
@@ -3661,13 +3782,7 @@
   "setDischargeRateAC(75)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting battery discharge rate 75 failed"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeRateAC",
@@ -3676,7 +3791,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      314,
+      75
+     ]
+    ]
    }
   ],
   "setDischargeStart1(16:00:00)": [
@@ -4513,7 +4634,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for All_in_one inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "queued": [
@@ -4534,7 +4655,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for All_in_one inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "queued": [
@@ -4555,7 +4676,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot_end for this model)"
      ]
     ],
     "queued": [
@@ -4577,7 +4698,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+      "Setting Export Slot 2 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot_end for this model)"
      ]
     ],
     "queued": [
@@ -4599,7 +4720,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 3 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+      "Setting Export Slot 3 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot_end for this model)"
      ]
     ],
     "queued": [
@@ -4642,7 +4763,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot_start for this model)"
      ]
     ],
     "queued": [
@@ -4664,7 +4785,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+      "Setting Export Slot 2 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot_start for this model)"
      ]
     ],
     "queued": [
@@ -4686,7 +4807,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 3 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+      "Setting Export Slot 3 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot_start for this model)"
      ]
     ],
     "queued": [
@@ -4774,7 +4895,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge disable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -4795,7 +4916,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge enable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -4816,7 +4937,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge disable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -4837,7 +4958,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge enable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -4901,9 +5022,9 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Unknown write command: setPVInputMode - ignoring"
+      "Setting PV Input Mode failed: NotImplementedError: Setting the PV Input Mode is not yet supported by givenergy-modbus (write.py:N)"
      ]
     ],
     "queued": [
@@ -4922,9 +5043,9 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Unknown write command: setPVInputMode - ignoring"
+      "Setting PV Input Mode failed: NotImplementedError: Setting the PV Input Mode is not yet supported by givenergy-modbus (write.py:N)"
      ]
     ],
     "queued": [
@@ -5105,7 +5226,12 @@
    {
     "jobs": [],
     "logs": [],
-    "queued": [],
+    "queued": [
+     [
+      "cancelJob",
+      "jobN"
+     ]
+    ],
     "writes": []
    }
   ],
@@ -5159,7 +5285,12 @@
    {
     "jobs": [],
     "logs": [],
-    "queued": [],
+    "queued": [
+     [
+      "cancelJob",
+      "jobN"
+     ]
+    ],
     "writes": []
    }
   ]
@@ -5328,11 +5459,13 @@
      },
      "Stack_Charge_Energy_Today_kWh": 4.8,
      "Stack_Charge_Energy_Total_kWh": 2529.9,
+     "Stack_Charge_MOS_State": "Closed",
      "Stack_Current": 0.9,
      "Stack_Cycles": 52.2,
      "Stack_Design_Capacity": 13.63,
      "Stack_Discharge_Energy_Today_kWh": 1.9,
      "Stack_Discharge_Energy_Total_kWh": 1569.3,
+     "Stack_Discharge_MOS_State": "Closed",
      "Stack_Firmware": "BAAA0010",
      "Stack_Load_Voltage": 314.6,
      "Stack_Power": 0.003,
@@ -5480,13 +5613,13 @@
      "Inverter_Output_Frequency": 49.93,
      "Invertor_Power": -16,
      "Load_Power": 864,
-     "PV_Current_String_1": 3.0,
-     "PV_Current_String_2": 0.0,
+     "PV_Current_String_1": null,
+     "PV_Current_String_2": null,
      "PV_Power": 862,
      "PV_Power_String_1": 862,
      "PV_Power_String_2": 0,
-     "PV_Voltage_String_1": 245.7,
-     "PV_Voltage_String_2": 0.0,
+     "PV_Voltage_String_1": null,
+     "PV_Voltage_String_2": null,
      "SOC": 34,
      "SOC_kWh": 5.43,
      "Self_Consumption_Power": 861
@@ -5791,7 +5924,7 @@
       "total_temperature_sensor_count": 48
      }
     },
-    "invertor": "device_type_code='8001' model=<Model.ALL_IN_ONE: '8'> module='00030c3c' num_mppt=0 num_phases=0 enable_ammeter=True serial_number='CH2414G000' first_battery_bms_firmware_version=10 dsp_firmware_version=612 enable_charge_target=False arm_firmware_version=612 firmware_version='D0.612-A0.612' usb_device_inserted=<UsbDevice.DISK: 2> select_arm_chip=False variable_address=49152 variable_value=384 grid_port_max_power_output=6000 battery_power_mode=<BatteryPowerMode.SELF_CONSUMPTION: 1> enable_60hz_freq_mode=False battery_calibration_stage=<BatteryCalibrationStage.OFF: 0> modbus_address=17 charge_slot_2=TimeSlot(start=datetime.time(0, 1), end=datetime.time(0, 0)) user_code=7 modbus_version='1.40' system_time=datetime.datetime(2026, 5, 29, 8, 57, 35) enable_drm_rj45_port=False enable_reversed_ct_clamp=True charge_soc=0 discharge_soc=0 discharge_slot_2=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) bms_firmware_version=12218 meter_type=<MeterType.EM115: 1> enable_reversed_115_meter=False enable_reversed_418_meter=False active_power_rate=100 reactive_power_rate=0 power_factor=-1.0 enable_inverter_auto_restart=False enable_inverter=True battery_type=<BatteryType.LITHIUM: 1> battery_capacity_ah=52 discharge_slot_1=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) enable_auto_judge_battery_type=True enable_discharge=False v_pv_start=150.0 start_countdown_timer=30 restart_delay_time=30 v_ac_low_limit_trip=184.0 v_ac_high_limit_trip=262.2 f_ac_low_limit_trip=47.5 f_ac_high_limit_trip=52.0 t_ac_low_voltage_trip=1.25 t_ac_high_voltage_trip=0.5 t_ac_low_freq_trip=10.0 t_ac_high_freq_trip=0.25 v_ac_low_limit_reconnect=180.0 v_ac_high_limit_reconnect=273.0 f_ac_low_limit_reconnect=47.0 f_ac_high_limit_reconnect=52.0 t_ac_low_voltage_reconnect=1.22 t_ac_high_voltage_reconnect=0.25 t_ac_low_freq_reconnect=0.25 t_ac_high_freq_reconnect=0.25 v_ac_low_limit_grid=188.0 v_ac_high_limit_grid=258.0 f_ac_low_limit_grid=47.6 f_ac_high_limit_grid=51.9 v_ac_10min_protect=262.2 iso_protection_1=21315 iso_protection_2=12590 gfci_protection_value_1=12288 gfci_protection_time_1=0 gfci_protection_value_2=0 gfci_protection_time_2=0 dci_protection_value_1=0 dci_protection_time_1=0 dci_protection_value_2=0 dci_protection_time_2=0 charge_slot_1=TimeSlot(start=datetime.time(0, 0), end=datetime.time(5, 30)) enable_charge=False battery_low_voltage_protection_limit=200.0 battery_high_voltage_protection_limit=350.0 string_1_voltage_adjustment=0 string_2_voltage_adjustment=0 grid_import_limit=0 grid_import_limit_enabled=False enable_lora=False enable_battery_self_heating=False battery_voltage_adjust=0.0 string_1_power_adjustment=0 string_2_power_adjustment=0 battery_low_force_charge_time=6 enable_bms_read=True battery_soc_reserve=4 battery_charge_limit=50 battery_discharge_limit=50 enable_buzzer=False battery_discharge_min_power_reserve=4 charge_target_soc=100 charge_soc_stop_2=0 discharge_soc_stop_2=0 charge_soc_stop_1=0 discharge_soc_stop_1=None enable_local_command_test=None power_factor_function_model=None frequency_load_limit_rate=None enable_low_voltage_fault_ride_through=None enable_frequency_derating=None enable_above_6kw_system=None start_system_auto_test=None enable_spi=None power_factor_cmd_memory_state=None power_factor_point_1_load_percent=None power_factor_point_1_power_factor=None power_factor_point_2_load_percent=None power_factor_point_2_power_factor=None power_factor_point_3_load_percent=None power_factor_point_3_power_factor=None power_factor_point_4_load_percent=None power_factor_point_4_power_factor=None cei021_v1s_q=None cei021_v2s_q=None cei021_v1l_q=None cei021_v2l_q=None cei021_lock_in_active_power=None cei021_lock_out_active_power=None cei021_lock_in_grid_voltage=None cei021_lock_out_grid_voltage=None lvfrt_reactive_rate=None lvfrt_low_fault_value_1=None lvfrt_low_fault_time_1=None lvfrt_low_fault_value_2=None lvfrt_low_fault_time_2=None lvfrt_low_fault_value_3=None lvfrt_low_fault_time_3=None lvfrt_low_fault_value_4=None lvfrt_low_fault_time_4=None lvfrt_high_fault_value_1=None lvfrt_high_fault_time_1=None inverter_reboot=None enable_rtc=None threephase_balance_mode=None threephase_abc=None threephase_balance_1=None threephase_balance_2=None threephase_balance_3=None enable_battery_on_pv_or_grid=None debug_inverter=None enable_ups_mode=None enable_g100_limit_switch=None enable_battery_cable_impedance_alarm=None enable_inverter_parallel_mode=None cmd_bms_flash_update=None inverter_errors=None inverter_fault_messages=None charge_target_soc_1=100 charge_slot_2_x=TimeSlot(start=datetime.time(0, 0), end=datetime.time(22, 40)) charge_target_soc_2=100 charge_slot_3=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_3=100 charge_slot_4=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_4=100 charge_slot_5=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_5=100 charge_slot_6=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_6=100 charge_slot_7=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_7=100 charge_slot_8=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_8=100 charge_slot_9=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_9=100 charge_slot_10=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_10=100 discharge_target_soc_1=4 discharge_target_soc_2=4 discharge_slot_3=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_3=4 discharge_slot_4=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_4=4 discharge_slot_5=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_5=4 discharge_slot_6=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_6=4 discharge_slot_7=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_7=4 discharge_slot_8=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_8=4 discharge_slot_9=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_9=4 discharge_slot_10=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_10=4 smart_load_slot_1=None smart_load_slot_2=None smart_load_slot_3=None smart_load_slot_4=None smart_load_slot_5=None smart_load_slot_6=None smart_load_slot_7=None smart_load_slot_8=None smart_load_slot_9=None smart_load_slot_10=None enable_plant_mode=None plant_role=None plant_meters=None overfrequency_load_drop_recovery_delay=None mppt_operating_mode=None connection_loading_slope=None eps_nominal_voltage=None battery_nominal_power=None battery_nominal_current=None battery_max_charge_pct=None export_priority=None underfrequency_add_load_delay=None battery_charge_limit_ac=None battery_discharge_limit_ac=None en50549_zero_current_lower_voltage_limit=None en50549_zero_current_upper_voltage_limit=None enable_eps=None battery_pause_mode=None battery_pause_slot_1=None overfrequency_derating_start_point=None enable_tariff_pricing_battery_logic=None import_price_battery_discharge_threshold=None import_price_battery_charge_threshold=None export_price_battery_discharge_threshold=None underfrequency_derating_start_point=None underfrequency_loading_slope=None overfrequency_derating_stop_point=None enable_bms_ocv_calibration=None gateway_power_off_setting=None force_off_grid=None enable_micro_grid=None enable_ev_charger=None ev_charger_import_limit=None ev_charger_reconnection_wait_time=None ev_charger_soc_limit=None enable_fan=None fan_speed=None enable_gateway=None bms_communication_mode=None n_pe_relay_toggle=None afci_setting=None enable_generator=None generator_start_soc=None generator_stop_soc=None generator_charge_power=None disable_leds=None lcd_screen_idle_timeout=None lead_acid_battery_calibration_upper_limit=None lead_acid_battery_calibration_lower_limit=None inverter_operating_mode=None hv_cabinet_count=None hv_racks_per_cabinet=None hv_batteries_per_rack=None hv_cells_per_battery=None hv_total_cells=None hv_temp_sensors_per_battery=None hv_total_temp_sensors=None hv_max_pcs_power=None hv_max_charge_voltage=None hv_min_discharge_voltage=None hv_max_charge_current=None hv_parallel_count=None peak_shaving_export_limit_enabled=None peak_shaving_export_limit=None peak_shaving_enabled=None peak_shaving_threshold=None peak_shaving_import_limit_enabled=None peak_shaving_import_limit=None peak_shaving_power=None valley_filling_power=None pv_power_setting=None e_battery_discharge_total_alt2=None e_battery_charge_total_alt2=None e_battery_discharge_today_alt3=None e_battery_charge_today_alt3=None e_inverter_export_total=None status=<Status.NORMAL: 1> v_pv1=245.7 v_pv2=0.0 v_p_bus=428.0 v_n_bus=0.0 v_ac1=245.7 e_battery_throughput=16599.9 i_pv1=3.0 i_pv2=0.0 i_ac1=0.7 e_pv_total=5276.1 f_ac1=49.93 charge_status=5 charge_status_label=<ChargeStatus.DISCHARGING: 5> v_highbrigh_bus=313.1 pf_inverter_output_now=-0.9 e_pv1_day=1.4 p_pv1=862 e_pv2_day=0.0 p_pv2=0 e_grid_out_total=479.0 e_solar_diverter=0.0 p_grid_out_ph1=-16 e_grid_out_day=0.1 e_grid_in_day=8.9 e_inverter_in_total=9050.4 e_discharge_year=51.2 p_grid_out=-3 p_backup=830 e_grid_in_total=16181.0 e_ac_charge_today=4.8 e_battery_charge_today_alt1=4.8 e_battery_discharge_today_alt1=1.9 countdown=0 inverter_fault_code='0000' inverter_warning_code='0000' t_inverter_heatsink=32.1 p_load_demand=864 p_grid_apparent=18 e_pv_generation_today=None e_pv_generation_total=None work_time_total_hours=15337 system_mode=1 v_battery=313.14 i_battery=0.18 p_battery=54 v_ac1_output=245.7 f_ac1_output=49.93 t_charger=32.1 t_battery=19.3 charger_warning_code=0 charger_warning_messages=[] i_grid_port=3.6 battery_soc=34 e_battery_discharge_total_alt1=0.0 e_battery_charge_total_alt1=0.0 e_battery_discharge_today_alt2=0.0 e_battery_charge_today_alt2=0.0 p_combined_generation=None e_inverter_out_today=1.8 e_inverter_out_total=7575.7 e_battery_charge_today=4.8 e_battery_discharge_today=1.9 e_battery_charge_total=None e_battery_discharge_total=None grid_import_power=3 grid_export_power=0 battery_charge_power=0 battery_discharge_power=54 battery_capacity_kwh=15.964 battery_max_power=6000 inverter_max_power=6000 is_ac_coupled=False e_consumption_today=None e_self_consumption_today=None e_self_consumption_total=None e_pv_direct_today=None"
+    "invertor": "device_type_code='8001' model=<Model.ALL_IN_ONE: '8'> module='00030c3c' num_mppt=0 num_phases=0 enable_ammeter=True serial_number='CH2414G000' first_battery_bms_firmware_version=10 dsp_firmware_version=612 enable_charge_target=False arm_firmware_version=612 firmware_version='D0.612-A0.612' usb_device_inserted=<UsbDevice.DISK: 2> select_arm_chip=False variable_address=49152 variable_value=384 grid_port_max_power_output=6000 battery_power_mode=<BatteryPowerMode.SELF_CONSUMPTION: 1> enable_60hz_freq_mode=False battery_calibration_stage=<BatteryCalibrationStage.OFF: 0> modbus_address=17 charge_slot_2=TimeSlot(start=datetime.time(0, 1), end=datetime.time(0, 0)) user_code=7 modbus_version='1.40' system_time=datetime.datetime(2026, 5, 29, 8, 57, 35) enable_drm_rj45_port=False enable_reversed_ct_clamp=True charge_soc=0 discharge_soc=0 discharge_slot_2=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) bms_firmware_version=12218 meter_type=<MeterType.EM115: 1> enable_reversed_115_meter=False enable_reversed_418_meter=False active_power_rate=100 reactive_power_rate=0 power_factor=-1.0 enable_inverter_auto_restart=False enable_inverter=True battery_type=<BatteryType.LITHIUM: 1> battery_capacity_ah=52 discharge_slot_1=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) enable_auto_judge_battery_type=True enable_discharge=False v_pv_start=150.0 start_countdown_timer=30 restart_delay_time=30 v_ac_low_limit_trip=184.0 v_ac_high_limit_trip=262.2 f_ac_low_limit_trip=47.5 f_ac_high_limit_trip=52.0 t_ac_low_voltage_trip=1.25 t_ac_high_voltage_trip=0.5 t_ac_low_freq_trip=10.0 t_ac_high_freq_trip=0.25 v_ac_low_limit_reconnect=180.0 v_ac_high_limit_reconnect=273.0 f_ac_low_limit_reconnect=47.0 f_ac_high_limit_reconnect=52.0 t_ac_low_voltage_reconnect=1.22 t_ac_high_voltage_reconnect=0.25 t_ac_low_freq_reconnect=0.25 t_ac_high_freq_reconnect=0.25 v_ac_low_limit_grid=188.0 v_ac_high_limit_grid=258.0 f_ac_low_limit_grid=47.6 f_ac_high_limit_grid=51.9 v_ac_10min_protect=262.2 iso_protection_1=21315 iso_protection_2=12590 gfci_protection_value_1=12288 gfci_protection_time_1=0 gfci_protection_value_2=0 gfci_protection_time_2=0 dci_protection_value_1=0 dci_protection_time_1=0 dci_protection_value_2=0 dci_protection_time_2=0 charge_slot_1=TimeSlot(start=datetime.time(0, 0), end=datetime.time(5, 30)) enable_charge=False battery_low_voltage_protection_limit=200.0 battery_high_voltage_protection_limit=350.0 string_1_voltage_adjustment=0 string_2_voltage_adjustment=0 grid_import_limit=0 grid_import_limit_enabled=False enable_lora=False enable_battery_self_heating=False battery_voltage_adjust=0.0 string_1_power_adjustment=0 string_2_power_adjustment=0 battery_low_force_charge_time=6 enable_bms_read=True battery_soc_reserve=4 battery_charge_limit=50 battery_discharge_limit=50 enable_buzzer=False battery_discharge_min_power_reserve=4 charge_target_soc=100 charge_soc_stop_2=0 discharge_soc_stop_2=0 charge_soc_stop_1=0 discharge_soc_stop_1=None enable_local_command_test=None power_factor_function_model=None frequency_load_limit_rate=None enable_low_voltage_fault_ride_through=None enable_frequency_derating=None enable_above_6kw_system=None start_system_auto_test=None enable_spi=None power_factor_cmd_memory_state=None power_factor_point_1_load_percent=None power_factor_point_1_power_factor=None power_factor_point_2_load_percent=None power_factor_point_2_power_factor=None power_factor_point_3_load_percent=None power_factor_point_3_power_factor=None power_factor_point_4_load_percent=None power_factor_point_4_power_factor=None cei021_v1s_q=None cei021_v2s_q=None cei021_v1l_q=None cei021_v2l_q=None cei021_lock_in_active_power=None cei021_lock_out_active_power=None cei021_lock_in_grid_voltage=None cei021_lock_out_grid_voltage=None lvfrt_reactive_rate=None lvfrt_low_fault_value_1=None lvfrt_low_fault_time_1=None lvfrt_low_fault_value_2=None lvfrt_low_fault_time_2=None lvfrt_low_fault_value_3=None lvfrt_low_fault_time_3=None lvfrt_low_fault_value_4=None lvfrt_low_fault_time_4=None lvfrt_high_fault_value_1=None lvfrt_high_fault_time_1=None inverter_reboot=None enable_rtc=None threephase_balance_mode=None threephase_abc=None threephase_balance_1=None threephase_balance_2=None threephase_balance_3=None enable_battery_on_pv_or_grid=None debug_inverter=None enable_ups_mode=None enable_g100_limit_switch=None enable_battery_cable_impedance_alarm=None enable_inverter_parallel_mode=None cmd_bms_flash_update=None inverter_errors=None inverter_fault_messages=None charge_target_soc_1=100 charge_slot_2_x=TimeSlot(start=datetime.time(0, 0), end=datetime.time(22, 40)) charge_target_soc_2=100 charge_slot_3=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_3=100 charge_slot_4=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_4=100 charge_slot_5=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_5=100 charge_slot_6=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_6=100 charge_slot_7=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_7=100 charge_slot_8=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_8=100 charge_slot_9=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_9=100 charge_slot_10=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_10=100 discharge_target_soc_1=4 discharge_target_soc_2=4 discharge_slot_3=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_3=4 discharge_slot_4=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_4=4 discharge_slot_5=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_5=4 discharge_slot_6=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_6=4 discharge_slot_7=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_7=4 discharge_slot_8=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_8=4 discharge_slot_9=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_9=4 discharge_slot_10=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_10=4 smart_load_slot_1=None smart_load_slot_2=None smart_load_slot_3=None smart_load_slot_4=None smart_load_slot_5=None smart_load_slot_6=None smart_load_slot_7=None smart_load_slot_8=None smart_load_slot_9=None smart_load_slot_10=None enable_plant_mode=None plant_role=None plant_meters=None overfrequency_load_drop_recovery_delay=None mppt_operating_mode=None connection_loading_slope=None eps_nominal_voltage=None battery_nominal_power=None battery_nominal_current=None battery_max_charge_pct=None export_priority=None underfrequency_add_load_delay=None battery_charge_limit_ac=None battery_discharge_limit_ac=None en50549_zero_current_lower_voltage_limit=None en50549_zero_current_upper_voltage_limit=None enable_eps=None battery_pause_mode=None battery_pause_slot_1=None overfrequency_derating_start_point=None enable_tariff_pricing_battery_logic=None import_price_battery_discharge_threshold=None import_price_battery_charge_threshold=None export_price_battery_discharge_threshold=None underfrequency_derating_start_point=None underfrequency_loading_slope=None overfrequency_derating_stop_point=None enable_bms_ocv_calibration=None gateway_power_off_setting=None force_off_grid=None enable_micro_grid=None enable_ev_charger=None ev_charger_import_limit=None ev_charger_reconnection_wait_time=None ev_charger_soc_limit=None enable_fan=None fan_speed=None enable_gateway=None bms_communication_mode=None n_pe_relay_toggle=None afci_setting=None enable_generator=None generator_start_soc=None generator_stop_soc=None generator_charge_power=None disable_leds=None lcd_screen_idle_timeout=None lead_acid_battery_calibration_upper_limit=None lead_acid_battery_calibration_lower_limit=None inverter_operating_mode=None hv_cabinet_count=None hv_racks_per_cabinet=None hv_batteries_per_rack=None hv_cells_per_battery=None hv_total_cells=None hv_temp_sensors_per_battery=None hv_total_temp_sensors=None hv_max_pcs_power=None hv_max_charge_voltage=None hv_min_discharge_voltage=None hv_max_charge_current=None hv_parallel_count=None peak_shaving_export_limit_enabled=None peak_shaving_export_limit=None peak_shaving_enabled=None peak_shaving_threshold=None peak_shaving_import_limit_enabled=None peak_shaving_import_limit=None peak_shaving_power=None valley_filling_power=None pv_power_setting=None e_battery_discharge_total_alt2=None e_battery_charge_total_alt2=None e_battery_discharge_today_alt3=None e_battery_charge_today_alt3=None e_inverter_export_total=None status=<Status.NORMAL: 1> v_pv1=None v_pv2=None v_p_bus=428.0 v_n_bus=0.0 v_ac1=245.7 e_battery_throughput=16599.9 i_pv1=None i_pv2=None i_ac1=0.7 e_pv_total=5276.1 f_ac1=49.93 charge_status=5 charge_status_label=<ChargeStatus.DISCHARGING: 5> v_highbrigh_bus=313.1 pf_inverter_output_now=-0.9 e_pv1_day=1.4 p_pv1=862 e_pv2_day=0.0 p_pv2=0 e_grid_out_total=479.0 e_solar_diverter=0.0 p_grid_out_ph1=-16 e_grid_out_day=0.1 e_grid_in_day=8.9 e_inverter_in_total=9050.4 e_discharge_year=51.2 p_grid_out=-3 p_backup=830 e_grid_in_total=16181.0 e_ac_charge_today=4.8 e_battery_charge_today_alt1=4.8 e_battery_discharge_today_alt1=1.9 countdown=0 inverter_fault_code='0000' inverter_warning_code='0000' t_inverter_heatsink=32.1 p_load_demand=864 p_grid_apparent=18 e_pv_generation_today=None e_pv_generation_total=None work_time_total_hours=15337 system_mode=1 v_battery=313.14 i_battery=0.18 p_battery=54 v_ac1_output=245.7 f_ac1_output=49.93 t_charger=32.1 t_battery=19.3 charger_warning_code=0 charger_warning_messages=[] i_grid_port=3.6 battery_soc=34 e_battery_discharge_total_alt1=0.0 e_battery_charge_total_alt1=0.0 e_battery_discharge_today_alt2=0.0 e_battery_charge_today_alt2=0.0 p_combined_generation=None e_inverter_out_today=1.8 e_inverter_out_total=7575.7 e_battery_charge_today=4.8 e_battery_discharge_today=1.9 e_battery_charge_total=None e_battery_discharge_total=None grid_import_power=3 grid_export_power=0 battery_charge_power=0 battery_discharge_power=54 battery_capacity_kwh=15.964 battery_max_power=6000 inverter_max_power=6000 is_ac_coupled=False e_consumption_today=None e_self_consumption_today=None e_self_consumption_total=None e_pv_direct_today=None"
    }
   },
   "cycle 2 logs": [],
@@ -5957,11 +6090,13 @@
      },
      "Stack_Charge_Energy_Today_kWh": 4.8,
      "Stack_Charge_Energy_Total_kWh": 2529.9,
+     "Stack_Charge_MOS_State": "Closed",
      "Stack_Current": 0.9,
      "Stack_Cycles": 52.2,
      "Stack_Design_Capacity": 13.63,
      "Stack_Discharge_Energy_Today_kWh": 1.9,
      "Stack_Discharge_Energy_Total_kWh": 1569.3,
+     "Stack_Discharge_MOS_State": "Closed",
      "Stack_Firmware": "BAAA0010",
      "Stack_Load_Voltage": 314.6,
      "Stack_Power": 0.003,
@@ -6108,13 +6243,13 @@
      "Inverter_Output_Frequency": 49.93,
      "Invertor_Power": -16,
      "Load_Power": 864,
-     "PV_Current_String_1": 3.0,
-     "PV_Current_String_2": 0.0,
+     "PV_Current_String_1": null,
+     "PV_Current_String_2": null,
      "PV_Power": 862,
      "PV_Power_String_1": 862,
      "PV_Power_String_2": 0,
-     "PV_Voltage_String_1": 245.7,
-     "PV_Voltage_String_2": 0.0,
+     "PV_Voltage_String_1": null,
+     "PV_Voltage_String_2": null,
      "SOC": 34,
      "SOC_kWh": 5.43,
      "Self_Consumption_Power": 861
@@ -6419,10 +6554,15 @@
       "total_temperature_sensor_count": 48
      }
     },
-    "invertor": "device_type_code='8001' model=<Model.ALL_IN_ONE: '8'> module='00030c3c' num_mppt=0 num_phases=0 enable_ammeter=True serial_number='CH2414G000' first_battery_bms_firmware_version=10 dsp_firmware_version=612 enable_charge_target=False arm_firmware_version=612 firmware_version='D0.612-A0.612' usb_device_inserted=<UsbDevice.DISK: 2> select_arm_chip=False variable_address=49152 variable_value=384 grid_port_max_power_output=6000 battery_power_mode=<BatteryPowerMode.SELF_CONSUMPTION: 1> enable_60hz_freq_mode=False battery_calibration_stage=<BatteryCalibrationStage.OFF: 0> modbus_address=17 charge_slot_2=TimeSlot(start=datetime.time(0, 1), end=datetime.time(0, 0)) user_code=7 modbus_version='1.40' system_time=datetime.datetime(2026, 5, 29, 8, 57, 35) enable_drm_rj45_port=False enable_reversed_ct_clamp=True charge_soc=0 discharge_soc=0 discharge_slot_2=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) bms_firmware_version=12218 meter_type=<MeterType.EM115: 1> enable_reversed_115_meter=False enable_reversed_418_meter=False active_power_rate=100 reactive_power_rate=0 power_factor=-1.0 enable_inverter_auto_restart=False enable_inverter=True battery_type=<BatteryType.LITHIUM: 1> battery_capacity_ah=52 discharge_slot_1=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) enable_auto_judge_battery_type=True enable_discharge=False v_pv_start=150.0 start_countdown_timer=30 restart_delay_time=30 v_ac_low_limit_trip=184.0 v_ac_high_limit_trip=262.2 f_ac_low_limit_trip=47.5 f_ac_high_limit_trip=52.0 t_ac_low_voltage_trip=1.25 t_ac_high_voltage_trip=0.5 t_ac_low_freq_trip=10.0 t_ac_high_freq_trip=0.25 v_ac_low_limit_reconnect=180.0 v_ac_high_limit_reconnect=273.0 f_ac_low_limit_reconnect=47.0 f_ac_high_limit_reconnect=52.0 t_ac_low_voltage_reconnect=1.22 t_ac_high_voltage_reconnect=0.25 t_ac_low_freq_reconnect=0.25 t_ac_high_freq_reconnect=0.25 v_ac_low_limit_grid=188.0 v_ac_high_limit_grid=258.0 f_ac_low_limit_grid=47.6 f_ac_high_limit_grid=51.9 v_ac_10min_protect=262.2 iso_protection_1=21315 iso_protection_2=12590 gfci_protection_value_1=12288 gfci_protection_time_1=0 gfci_protection_value_2=0 gfci_protection_time_2=0 dci_protection_value_1=0 dci_protection_time_1=0 dci_protection_value_2=0 dci_protection_time_2=0 charge_slot_1=TimeSlot(start=datetime.time(0, 0), end=datetime.time(5, 30)) enable_charge=False battery_low_voltage_protection_limit=200.0 battery_high_voltage_protection_limit=350.0 string_1_voltage_adjustment=0 string_2_voltage_adjustment=0 grid_import_limit=0 grid_import_limit_enabled=False enable_lora=False enable_battery_self_heating=False battery_voltage_adjust=0.0 string_1_power_adjustment=0 string_2_power_adjustment=0 battery_low_force_charge_time=6 enable_bms_read=True battery_soc_reserve=4 battery_charge_limit=50 battery_discharge_limit=50 enable_buzzer=False battery_discharge_min_power_reserve=4 charge_target_soc=100 charge_soc_stop_2=0 discharge_soc_stop_2=0 charge_soc_stop_1=0 discharge_soc_stop_1=None enable_local_command_test=None power_factor_function_model=None frequency_load_limit_rate=None enable_low_voltage_fault_ride_through=None enable_frequency_derating=None enable_above_6kw_system=None start_system_auto_test=None enable_spi=None power_factor_cmd_memory_state=None power_factor_point_1_load_percent=None power_factor_point_1_power_factor=None power_factor_point_2_load_percent=None power_factor_point_2_power_factor=None power_factor_point_3_load_percent=None power_factor_point_3_power_factor=None power_factor_point_4_load_percent=None power_factor_point_4_power_factor=None cei021_v1s_q=None cei021_v2s_q=None cei021_v1l_q=None cei021_v2l_q=None cei021_lock_in_active_power=None cei021_lock_out_active_power=None cei021_lock_in_grid_voltage=None cei021_lock_out_grid_voltage=None lvfrt_reactive_rate=None lvfrt_low_fault_value_1=None lvfrt_low_fault_time_1=None lvfrt_low_fault_value_2=None lvfrt_low_fault_time_2=None lvfrt_low_fault_value_3=None lvfrt_low_fault_time_3=None lvfrt_low_fault_value_4=None lvfrt_low_fault_time_4=None lvfrt_high_fault_value_1=None lvfrt_high_fault_time_1=None inverter_reboot=None enable_rtc=None threephase_balance_mode=None threephase_abc=None threephase_balance_1=None threephase_balance_2=None threephase_balance_3=None enable_battery_on_pv_or_grid=None debug_inverter=None enable_ups_mode=None enable_g100_limit_switch=None enable_battery_cable_impedance_alarm=None enable_inverter_parallel_mode=None cmd_bms_flash_update=None inverter_errors=None inverter_fault_messages=None charge_target_soc_1=100 charge_slot_2_x=TimeSlot(start=datetime.time(0, 0), end=datetime.time(22, 40)) charge_target_soc_2=100 charge_slot_3=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_3=100 charge_slot_4=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_4=100 charge_slot_5=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_5=100 charge_slot_6=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_6=100 charge_slot_7=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_7=100 charge_slot_8=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_8=100 charge_slot_9=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_9=100 charge_slot_10=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_10=100 discharge_target_soc_1=4 discharge_target_soc_2=4 discharge_slot_3=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_3=4 discharge_slot_4=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_4=4 discharge_slot_5=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_5=4 discharge_slot_6=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_6=4 discharge_slot_7=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_7=4 discharge_slot_8=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_8=4 discharge_slot_9=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_9=4 discharge_slot_10=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_10=4 smart_load_slot_1=None smart_load_slot_2=None smart_load_slot_3=None smart_load_slot_4=None smart_load_slot_5=None smart_load_slot_6=None smart_load_slot_7=None smart_load_slot_8=None smart_load_slot_9=None smart_load_slot_10=None enable_plant_mode=None plant_role=None plant_meters=None overfrequency_load_drop_recovery_delay=None mppt_operating_mode=None connection_loading_slope=None eps_nominal_voltage=None battery_nominal_power=None battery_nominal_current=None battery_max_charge_pct=None export_priority=None underfrequency_add_load_delay=None battery_charge_limit_ac=None battery_discharge_limit_ac=None en50549_zero_current_lower_voltage_limit=None en50549_zero_current_upper_voltage_limit=None enable_eps=None battery_pause_mode=None battery_pause_slot_1=None overfrequency_derating_start_point=None enable_tariff_pricing_battery_logic=None import_price_battery_discharge_threshold=None import_price_battery_charge_threshold=None export_price_battery_discharge_threshold=None underfrequency_derating_start_point=None underfrequency_loading_slope=None overfrequency_derating_stop_point=None enable_bms_ocv_calibration=None gateway_power_off_setting=None force_off_grid=None enable_micro_grid=None enable_ev_charger=None ev_charger_import_limit=None ev_charger_reconnection_wait_time=None ev_charger_soc_limit=None enable_fan=None fan_speed=None enable_gateway=None bms_communication_mode=None n_pe_relay_toggle=None afci_setting=None enable_generator=None generator_start_soc=None generator_stop_soc=None generator_charge_power=None disable_leds=None lcd_screen_idle_timeout=None lead_acid_battery_calibration_upper_limit=None lead_acid_battery_calibration_lower_limit=None inverter_operating_mode=None hv_cabinet_count=None hv_racks_per_cabinet=None hv_batteries_per_rack=None hv_cells_per_battery=None hv_total_cells=None hv_temp_sensors_per_battery=None hv_total_temp_sensors=None hv_max_pcs_power=None hv_max_charge_voltage=None hv_min_discharge_voltage=None hv_max_charge_current=None hv_parallel_count=None peak_shaving_export_limit_enabled=None peak_shaving_export_limit=None peak_shaving_enabled=None peak_shaving_threshold=None peak_shaving_import_limit_enabled=None peak_shaving_import_limit=None peak_shaving_power=None valley_filling_power=None pv_power_setting=None e_battery_discharge_total_alt2=None e_battery_charge_total_alt2=None e_battery_discharge_today_alt3=None e_battery_charge_today_alt3=None e_inverter_export_total=None status=<Status.NORMAL: 1> v_pv1=245.7 v_pv2=0.0 v_p_bus=428.0 v_n_bus=0.0 v_ac1=245.7 e_battery_throughput=16599.9 i_pv1=3.0 i_pv2=0.0 i_ac1=0.7 e_pv_total=5276.1 f_ac1=49.93 charge_status=5 charge_status_label=<ChargeStatus.DISCHARGING: 5> v_highbrigh_bus=313.1 pf_inverter_output_now=-0.9 e_pv1_day=1.4 p_pv1=862 e_pv2_day=0.0 p_pv2=0 e_grid_out_total=479.0 e_solar_diverter=0.0 p_grid_out_ph1=-16 e_grid_out_day=0.1 e_grid_in_day=8.9 e_inverter_in_total=9050.4 e_discharge_year=51.2 p_grid_out=-3 p_backup=830 e_grid_in_total=16181.0 e_ac_charge_today=4.8 e_battery_charge_today_alt1=4.8 e_battery_discharge_today_alt1=1.9 countdown=0 inverter_fault_code='0000' inverter_warning_code='0000' t_inverter_heatsink=32.1 p_load_demand=864 p_grid_apparent=18 e_pv_generation_today=None e_pv_generation_total=None work_time_total_hours=15337 system_mode=1 v_battery=313.14 i_battery=0.18 p_battery=54 v_ac1_output=245.7 f_ac1_output=49.93 t_charger=32.1 t_battery=19.3 charger_warning_code=0 charger_warning_messages=[] i_grid_port=3.6 battery_soc=34 e_battery_discharge_total_alt1=0.0 e_battery_charge_total_alt1=0.0 e_battery_discharge_today_alt2=0.0 e_battery_charge_today_alt2=0.0 p_combined_generation=None e_inverter_out_today=1.8 e_inverter_out_total=7575.7 e_battery_charge_today=4.8 e_battery_discharge_today=1.9 e_battery_charge_total=None e_battery_discharge_total=None grid_import_power=3 grid_export_power=0 battery_charge_power=0 battery_discharge_power=54 battery_capacity_kwh=15.964 battery_max_power=6000 inverter_max_power=6000 is_ac_coupled=False e_consumption_today=None e_self_consumption_today=None e_self_consumption_total=None e_pv_direct_today=None"
+    "invertor": "device_type_code='8001' model=<Model.ALL_IN_ONE: '8'> module='00030c3c' num_mppt=0 num_phases=0 enable_ammeter=True serial_number='CH2414G000' first_battery_bms_firmware_version=10 dsp_firmware_version=612 enable_charge_target=False arm_firmware_version=612 firmware_version='D0.612-A0.612' usb_device_inserted=<UsbDevice.DISK: 2> select_arm_chip=False variable_address=49152 variable_value=384 grid_port_max_power_output=6000 battery_power_mode=<BatteryPowerMode.SELF_CONSUMPTION: 1> enable_60hz_freq_mode=False battery_calibration_stage=<BatteryCalibrationStage.OFF: 0> modbus_address=17 charge_slot_2=TimeSlot(start=datetime.time(0, 1), end=datetime.time(0, 0)) user_code=7 modbus_version='1.40' system_time=datetime.datetime(2026, 5, 29, 8, 57, 35) enable_drm_rj45_port=False enable_reversed_ct_clamp=True charge_soc=0 discharge_soc=0 discharge_slot_2=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) bms_firmware_version=12218 meter_type=<MeterType.EM115: 1> enable_reversed_115_meter=False enable_reversed_418_meter=False active_power_rate=100 reactive_power_rate=0 power_factor=-1.0 enable_inverter_auto_restart=False enable_inverter=True battery_type=<BatteryType.LITHIUM: 1> battery_capacity_ah=52 discharge_slot_1=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) enable_auto_judge_battery_type=True enable_discharge=False v_pv_start=150.0 start_countdown_timer=30 restart_delay_time=30 v_ac_low_limit_trip=184.0 v_ac_high_limit_trip=262.2 f_ac_low_limit_trip=47.5 f_ac_high_limit_trip=52.0 t_ac_low_voltage_trip=1.25 t_ac_high_voltage_trip=0.5 t_ac_low_freq_trip=10.0 t_ac_high_freq_trip=0.25 v_ac_low_limit_reconnect=180.0 v_ac_high_limit_reconnect=273.0 f_ac_low_limit_reconnect=47.0 f_ac_high_limit_reconnect=52.0 t_ac_low_voltage_reconnect=1.22 t_ac_high_voltage_reconnect=0.25 t_ac_low_freq_reconnect=0.25 t_ac_high_freq_reconnect=0.25 v_ac_low_limit_grid=188.0 v_ac_high_limit_grid=258.0 f_ac_low_limit_grid=47.6 f_ac_high_limit_grid=51.9 v_ac_10min_protect=262.2 iso_protection_1=21315 iso_protection_2=12590 gfci_protection_value_1=12288 gfci_protection_time_1=0 gfci_protection_value_2=0 gfci_protection_time_2=0 dci_protection_value_1=0 dci_protection_time_1=0 dci_protection_value_2=0 dci_protection_time_2=0 charge_slot_1=TimeSlot(start=datetime.time(0, 0), end=datetime.time(5, 30)) enable_charge=False battery_low_voltage_protection_limit=200.0 battery_high_voltage_protection_limit=350.0 string_1_voltage_adjustment=0 string_2_voltage_adjustment=0 grid_import_limit=0 grid_import_limit_enabled=False enable_lora=False enable_battery_self_heating=False battery_voltage_adjust=0.0 string_1_power_adjustment=0 string_2_power_adjustment=0 battery_low_force_charge_time=6 enable_bms_read=True battery_soc_reserve=4 battery_charge_limit=50 battery_discharge_limit=50 enable_buzzer=False battery_discharge_min_power_reserve=4 charge_target_soc=100 charge_soc_stop_2=0 discharge_soc_stop_2=0 charge_soc_stop_1=0 discharge_soc_stop_1=None enable_local_command_test=None power_factor_function_model=None frequency_load_limit_rate=None enable_low_voltage_fault_ride_through=None enable_frequency_derating=None enable_above_6kw_system=None start_system_auto_test=None enable_spi=None power_factor_cmd_memory_state=None power_factor_point_1_load_percent=None power_factor_point_1_power_factor=None power_factor_point_2_load_percent=None power_factor_point_2_power_factor=None power_factor_point_3_load_percent=None power_factor_point_3_power_factor=None power_factor_point_4_load_percent=None power_factor_point_4_power_factor=None cei021_v1s_q=None cei021_v2s_q=None cei021_v1l_q=None cei021_v2l_q=None cei021_lock_in_active_power=None cei021_lock_out_active_power=None cei021_lock_in_grid_voltage=None cei021_lock_out_grid_voltage=None lvfrt_reactive_rate=None lvfrt_low_fault_value_1=None lvfrt_low_fault_time_1=None lvfrt_low_fault_value_2=None lvfrt_low_fault_time_2=None lvfrt_low_fault_value_3=None lvfrt_low_fault_time_3=None lvfrt_low_fault_value_4=None lvfrt_low_fault_time_4=None lvfrt_high_fault_value_1=None lvfrt_high_fault_time_1=None inverter_reboot=None enable_rtc=None threephase_balance_mode=None threephase_abc=None threephase_balance_1=None threephase_balance_2=None threephase_balance_3=None enable_battery_on_pv_or_grid=None debug_inverter=None enable_ups_mode=None enable_g100_limit_switch=None enable_battery_cable_impedance_alarm=None enable_inverter_parallel_mode=None cmd_bms_flash_update=None inverter_errors=None inverter_fault_messages=None charge_target_soc_1=100 charge_slot_2_x=TimeSlot(start=datetime.time(0, 0), end=datetime.time(22, 40)) charge_target_soc_2=100 charge_slot_3=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_3=100 charge_slot_4=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_4=100 charge_slot_5=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_5=100 charge_slot_6=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_6=100 charge_slot_7=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_7=100 charge_slot_8=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_8=100 charge_slot_9=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_9=100 charge_slot_10=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) charge_target_soc_10=100 discharge_target_soc_1=4 discharge_target_soc_2=4 discharge_slot_3=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_3=4 discharge_slot_4=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_4=4 discharge_slot_5=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_5=4 discharge_slot_6=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_6=4 discharge_slot_7=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_7=4 discharge_slot_8=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_8=4 discharge_slot_9=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_9=4 discharge_slot_10=TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0)) discharge_target_soc_10=4 smart_load_slot_1=None smart_load_slot_2=None smart_load_slot_3=None smart_load_slot_4=None smart_load_slot_5=None smart_load_slot_6=None smart_load_slot_7=None smart_load_slot_8=None smart_load_slot_9=None smart_load_slot_10=None enable_plant_mode=None plant_role=None plant_meters=None overfrequency_load_drop_recovery_delay=None mppt_operating_mode=None connection_loading_slope=None eps_nominal_voltage=None battery_nominal_power=None battery_nominal_current=None battery_max_charge_pct=None export_priority=None underfrequency_add_load_delay=None battery_charge_limit_ac=None battery_discharge_limit_ac=None en50549_zero_current_lower_voltage_limit=None en50549_zero_current_upper_voltage_limit=None enable_eps=None battery_pause_mode=None battery_pause_slot_1=None overfrequency_derating_start_point=None enable_tariff_pricing_battery_logic=None import_price_battery_discharge_threshold=None import_price_battery_charge_threshold=None export_price_battery_discharge_threshold=None underfrequency_derating_start_point=None underfrequency_loading_slope=None overfrequency_derating_stop_point=None enable_bms_ocv_calibration=None gateway_power_off_setting=None force_off_grid=None enable_micro_grid=None enable_ev_charger=None ev_charger_import_limit=None ev_charger_reconnection_wait_time=None ev_charger_soc_limit=None enable_fan=None fan_speed=None enable_gateway=None bms_communication_mode=None n_pe_relay_toggle=None afci_setting=None enable_generator=None generator_start_soc=None generator_stop_soc=None generator_charge_power=None disable_leds=None lcd_screen_idle_timeout=None lead_acid_battery_calibration_upper_limit=None lead_acid_battery_calibration_lower_limit=None inverter_operating_mode=None hv_cabinet_count=None hv_racks_per_cabinet=None hv_batteries_per_rack=None hv_cells_per_battery=None hv_total_cells=None hv_temp_sensors_per_battery=None hv_total_temp_sensors=None hv_max_pcs_power=None hv_max_charge_voltage=None hv_min_discharge_voltage=None hv_max_charge_current=None hv_parallel_count=None peak_shaving_export_limit_enabled=None peak_shaving_export_limit=None peak_shaving_enabled=None peak_shaving_threshold=None peak_shaving_import_limit_enabled=None peak_shaving_import_limit=None peak_shaving_power=None valley_filling_power=None pv_power_setting=None e_battery_discharge_total_alt2=None e_battery_charge_total_alt2=None e_battery_discharge_today_alt3=None e_battery_charge_today_alt3=None e_inverter_export_total=None status=<Status.NORMAL: 1> v_pv1=None v_pv2=None v_p_bus=428.0 v_n_bus=0.0 v_ac1=245.7 e_battery_throughput=16599.9 i_pv1=None i_pv2=None i_ac1=0.7 e_pv_total=5276.1 f_ac1=49.93 charge_status=5 charge_status_label=<ChargeStatus.DISCHARGING: 5> v_highbrigh_bus=313.1 pf_inverter_output_now=-0.9 e_pv1_day=1.4 p_pv1=862 e_pv2_day=0.0 p_pv2=0 e_grid_out_total=479.0 e_solar_diverter=0.0 p_grid_out_ph1=-16 e_grid_out_day=0.1 e_grid_in_day=8.9 e_inverter_in_total=9050.4 e_discharge_year=51.2 p_grid_out=-3 p_backup=830 e_grid_in_total=16181.0 e_ac_charge_today=4.8 e_battery_charge_today_alt1=4.8 e_battery_discharge_today_alt1=1.9 countdown=0 inverter_fault_code='0000' inverter_warning_code='0000' t_inverter_heatsink=32.1 p_load_demand=864 p_grid_apparent=18 e_pv_generation_today=None e_pv_generation_total=None work_time_total_hours=15337 system_mode=1 v_battery=313.14 i_battery=0.18 p_battery=54 v_ac1_output=245.7 f_ac1_output=49.93 t_charger=32.1 t_battery=19.3 charger_warning_code=0 charger_warning_messages=[] i_grid_port=3.6 battery_soc=34 e_battery_discharge_total_alt1=0.0 e_battery_charge_total_alt1=0.0 e_battery_discharge_today_alt2=0.0 e_battery_charge_today_alt2=0.0 p_combined_generation=None e_inverter_out_today=1.8 e_inverter_out_total=7575.7 e_battery_charge_today=4.8 e_battery_discharge_today=1.9 e_battery_charge_total=None e_battery_discharge_total=None grid_import_power=3 grid_export_power=0 battery_charge_power=0 battery_discharge_power=54 battery_capacity_kwh=15.964 battery_max_power=6000 inverter_max_power=6000 is_ac_coupled=False e_consumption_today=None e_self_consumption_today=None e_self_consumption_total=None e_pv_direct_today=None"
    }
   },
-  "discovery removed": [],
+  "discovery removed": [
+   "PV_Current_String_1",
+   "PV_Current_String_2",
+   "PV_Voltage_String_1",
+   "PV_Voltage_String_2"
+  ],
   "discovery topics": [
    "homeassistant/button/GivEnergy/CH2414G000_Reboot_Addon/config",
    "homeassistant/button/GivEnergy/CH2414G000_Reboot_Invertor/config",
@@ -6517,11 +6657,13 @@
    "homeassistant/sensor/GivEnergy/CH2414G000_Battery_Stack_1_BMS_Temperature/config",
    "homeassistant/sensor/GivEnergy/CH2414G000_Battery_Stack_1_Stack_Charge_Energy_Today_kWh/config",
    "homeassistant/sensor/GivEnergy/CH2414G000_Battery_Stack_1_Stack_Charge_Energy_Total_kWh/config",
+   "homeassistant/sensor/GivEnergy/CH2414G000_Battery_Stack_1_Stack_Charge_MOS_State/config",
    "homeassistant/sensor/GivEnergy/CH2414G000_Battery_Stack_1_Stack_Current/config",
    "homeassistant/sensor/GivEnergy/CH2414G000_Battery_Stack_1_Stack_Cycles/config",
    "homeassistant/sensor/GivEnergy/CH2414G000_Battery_Stack_1_Stack_Design_Capacity/config",
    "homeassistant/sensor/GivEnergy/CH2414G000_Battery_Stack_1_Stack_Discharge_Energy_Today_kWh/config",
    "homeassistant/sensor/GivEnergy/CH2414G000_Battery_Stack_1_Stack_Discharge_Energy_Total_kWh/config",
+   "homeassistant/sensor/GivEnergy/CH2414G000_Battery_Stack_1_Stack_Discharge_MOS_State/config",
    "homeassistant/sensor/GivEnergy/CH2414G000_Battery_Stack_1_Stack_Firmware/config",
    "homeassistant/sensor/GivEnergy/CH2414G000_Battery_Stack_1_Stack_Load_Voltage/config",
    "homeassistant/sensor/GivEnergy/CH2414G000_Battery_Stack_1_Stack_Power/config",
@@ -6959,11 +7101,13 @@
    "GivEnergy/CH2414G000/Battery_Details/Battery_Stack_1/HX0000G053/Battery_Serial_Number",
    "GivEnergy/CH2414G000/Battery_Details/Battery_Stack_1/Stack_Charge_Energy_Today_kWh",
    "GivEnergy/CH2414G000/Battery_Details/Battery_Stack_1/Stack_Charge_Energy_Total_kWh",
+   "GivEnergy/CH2414G000/Battery_Details/Battery_Stack_1/Stack_Charge_MOS_State",
    "GivEnergy/CH2414G000/Battery_Details/Battery_Stack_1/Stack_Current",
    "GivEnergy/CH2414G000/Battery_Details/Battery_Stack_1/Stack_Cycles",
    "GivEnergy/CH2414G000/Battery_Details/Battery_Stack_1/Stack_Design_Capacity",
    "GivEnergy/CH2414G000/Battery_Details/Battery_Stack_1/Stack_Discharge_Energy_Today_kWh",
    "GivEnergy/CH2414G000/Battery_Details/Battery_Stack_1/Stack_Discharge_Energy_Total_kWh",
+   "GivEnergy/CH2414G000/Battery_Details/Battery_Stack_1/Stack_Discharge_MOS_State",
    "GivEnergy/CH2414G000/Battery_Details/Battery_Stack_1/Stack_Firmware",
    "GivEnergy/CH2414G000/Battery_Details/Battery_Stack_1/Stack_Load_Voltage",
    "GivEnergy/CH2414G000/Battery_Details/Battery_Stack_1/Stack_Power",
@@ -7091,13 +7235,9 @@
    "GivEnergy/CH2414G000/Power/Power/Inverter_Output_Frequency",
    "GivEnergy/CH2414G000/Power/Power/Invertor_Power",
    "GivEnergy/CH2414G000/Power/Power/Load_Power",
-   "GivEnergy/CH2414G000/Power/Power/PV_Current_String_1",
-   "GivEnergy/CH2414G000/Power/Power/PV_Current_String_2",
    "GivEnergy/CH2414G000/Power/Power/PV_Power",
    "GivEnergy/CH2414G000/Power/Power/PV_Power_String_1",
    "GivEnergy/CH2414G000/Power/Power/PV_Power_String_2",
-   "GivEnergy/CH2414G000/Power/Power/PV_Voltage_String_1",
-   "GivEnergy/CH2414G000/Power/Power/PV_Voltage_String_2",
    "GivEnergy/CH2414G000/Power/Power/SOC",
    "GivEnergy/CH2414G000/Power/Power/SOC_kWh",
    "GivEnergy/CH2414G000/Power/Power/Self_Consumption_Power",
@@ -7472,31 +7612,35 @@
   "/enableDischarge({'state': 'disable'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Unknown write command: enableDischarge - ignoring"
-     ]
-    ],
-    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge disable was a success"
+    },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      110,
+      100
+     ]
+    ]
    }
   ],
   "/enableDischarge({'state': 'enable'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Unknown write command: enableDischarge - ignoring"
-     ]
-    ],
-    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge enable was a success"
+    },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ]
+    ]
    }
   ],
   "/enableDischargeSchedule({'state': 'disable'})": [
@@ -7576,14 +7720,10 @@
    },
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Write request error: TypeError: cancelJob() takes from 1 to 2 positional arguments but 3 were given deleting all pending requests, please try again"
-     ]
-    ],
-    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "logs": [],
+    "result": {
+     "result": "Cancelling scheduled task as requested"
+    },
     "status": 200,
     "writes": []
    }
@@ -7688,14 +7828,10 @@
    },
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Write request error: TypeError: cancelJob() takes from 1 to 2 positional arguments but 3 were given deleting all pending requests, please try again"
-     ]
-    ],
-    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "logs": [],
+    "result": {
+     "result": "Cancelling scheduled task as requested"
+    },
     "status": 200,
     "writes": []
    }
@@ -7781,11 +7917,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge disable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     "result": "Setting AC Charge disable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -7798,11 +7934,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge enable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     "result": "Setting AC Charge enable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -7879,15 +8015,9 @@
   "/setBatteryMode({'mode': 'Eco (Paused)'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
+     "result": "Setting Eco (Paused) mode was a success"
     },
     "status": 200,
     "writes": [
@@ -7900,6 +8030,11 @@
       17,
       59,
       0
+     ],
+     [
+      17,
+      110,
+      100
      ]
     ]
    }
@@ -7931,6 +8066,28 @@
     ]
    }
   ],
+  "/setBatteryMode({'mode': 'Export (Paused)'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export (Paused) mode was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
   "/setBatteryMode({'mode': 'Timed Demand'})": [
    {
     "jobs": [],
@@ -7940,11 +8097,6 @@
     },
     "status": 200,
     "writes": [
-     [
-      17,
-      110,
-      100
-     ],
      [
       17,
       27,
@@ -8122,18 +8274,18 @@
   "/setChargeRateAC({'chargeRate': '75'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting battery charge rate 75 failed"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting battery charge rate 75 failed"
+     "result": "Setting battery charge rate AC to 75% was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      313,
+      75
+     ]
+    ]
    }
   ],
   "/setChargeSlot({'start': '01:30', 'finish': '04:30', 'slot': '1', 'chargeToPercent': '90'})": [
@@ -8274,18 +8426,43 @@
   "/setDateTime({'dateTime': '01/01/2026 12:00:00'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+     "result": "Setting inverter time was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      35,
+      26
+     ],
+     [
+      17,
+      36,
+      1
+     ],
+     [
+      17,
+      37,
+      1
+     ],
+     [
+      17,
+      38,
+      12
+     ],
+     [
+      17,
+      39,
+      0
+     ],
+     [
+      17,
+      40,
+      0
+     ]
+    ]
    }
   ],
   "/setDischargeRate({'dischargeRate': '2500'})": [
@@ -8308,18 +8485,18 @@
   "/setDischargeRateAC({'dischargeRate': '75'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting battery discharge rate 75 failed"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting battery discharge rate 75 failed"
+     "result": "Setting battery discharge rate AC to 75% was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      314,
+      75
+     ]
+    ]
    }
   ],
   "/setDischargeSlot({'start': '16:00', 'finish': '19:00', 'slot': '1', 'dischargeToPercent': '20'})": [
@@ -8488,11 +8665,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for All_in_one inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "result": {
-     "result": "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     "result": "Setting EMS Plant Operation failed: not available for All_in_one inverters (givenergy-modbus has no set_ems_plant for this model)"
     },
     "status": 200,
     "writes": []
@@ -8505,11 +8682,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for All_in_one inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "result": {
-     "result": "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     "result": "Setting EMS Plant Operation failed: not available for All_in_one inverters (givenergy-modbus has no set_ems_plant for this model)"
     },
     "status": 200,
     "writes": []
@@ -8539,11 +8716,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 1 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot for this model)"
     },
     "status": 200,
     "writes": []
@@ -8556,11 +8733,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+      "Setting Export Slot 2 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 2 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot for this model)"
     },
     "status": 200,
     "writes": []
@@ -8573,11 +8750,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 3 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+      "Setting Export Slot 3 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 3 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 3 failed: not available for All_in_one inverters (givenergy-modbus has no set_export_slot for this model)"
     },
     "status": 200,
     "writes": []
@@ -8607,11 +8784,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge disable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Charge disable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -8624,11 +8801,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge enable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Charge enable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -8641,11 +8818,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge disable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Discharge disable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -8658,11 +8835,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge enable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Discharge enable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -8772,25 +8949,11 @@
    },
    {
     "jobs": [],
-    "logs": [
-     [
-      "rest_logger",
-      "ERROR",
-      "127.0.0.1 POST /tempPauseCharge raised FileNotFoundError: [Errno 2] No such file or directory: \".tpcRunning','r\" (REST.py:N)"
-     ],
-     [
-      "REST",
-      "ERROR",
-      "Exception on /tempPauseCharge [POST]"
-     ],
-     [
-      "rest_logger",
-      "WARNING",
-      "127.0.0.1 POST /tempPauseCharge -> 500 (Nms) | request: {\"duration\": \"Cancel\"} | response: <!doctype html> <html lang=en> <title>500 Internal Server Error</title> <h1>Internal Server Error</h1> <p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>"
-     ]
-    ],
-    "result": "<!doctype html>\n<html lang=en>\n<title>500 Internal Server Error</title>\n<h1>Internal Server Error</h1>\n<p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>\n",
-    "status": 500,
+    "logs": [],
+    "result": {
+     "result": "Cancelling scheduled task as requested"
+    },
+    "status": 200,
     "writes": []
    }
   ],
@@ -8839,25 +9002,11 @@
    },
    {
     "jobs": [],
-    "logs": [
-     [
-      "rest_logger",
-      "ERROR",
-      "127.0.0.1 POST /tempPauseDischarge raised FileNotFoundError: [Errno 2] No such file or directory: \".tpdRunning','r\" (REST.py:N)"
-     ],
-     [
-      "REST",
-      "ERROR",
-      "Exception on /tempPauseDischarge [POST]"
-     ],
-     [
-      "rest_logger",
-      "WARNING",
-      "127.0.0.1 POST /tempPauseDischarge -> 500 (Nms) | request: {\"duration\": \"Cancel\"} | response: <!doctype html> <html lang=en> <title>500 Internal Server Error</title> <h1>Internal Server Error</h1> <p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>"
-     ]
-    ],
-    "result": "<!doctype html>\n<html lang=en>\n<title>500 Internal Server Error</title>\n<h1>Internal Server Error</h1>\n<p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>\n",
-    "status": 500,
+    "logs": [],
+    "result": {
+     "result": "Cancelling scheduled task as requested"
+    },
+    "status": 200,
     "writes": []
    }
   ],

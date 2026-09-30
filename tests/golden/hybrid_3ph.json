@@ -91,6 +91,38 @@
     ]
    }
   ],
+  "enableDischarge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge disable was a success"
+    },
+    "writes": [
+     [
+      17,
+      1109,
+      100
+     ]
+    ]
+   }
+  ],
+  "enableDischarge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge enable was a success"
+    },
+    "writes": [
+     [
+      17,
+      1109,
+      5
+     ]
+    ]
+   }
+  ],
   "enableDischargeSchedule({'state': 'disable'})": [
    {
     "jobs": [],
@@ -255,63 +287,226 @@
       "write_logger",
       "WARNING",
       "Setting the AC charge rate is not yet supported by givenergy-modbus for Hybrid_3ph inverters - leaving the current charge rate unchanged"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Force Charge revert failed: CancelledError (tasks.py:N, via write.py:N)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Force Charge revert failed: CancelledError (tasks.py:N, via write.py:N)"
      ]
     ],
     "result": {
-     "result": "Force Charge revert failed: CancelledError (tasks.py:N, via write.py:N)"
+     "result": "Force Charge Reverted successfully"
     },
     "writes": [
      [
       17,
       1113,
       100
+     ],
+     [
+      17,
+      1114,
+      100
+     ],
+     [
+      17,
+      1111,
+      100
+     ],
+     [
+      17,
+      1123,
+      1
+     ],
+     [
+      17,
+      1112,
+      0
      ]
     ]
    }
   ],
   "forceExport(30)": [
    {
-    "jobs": [],
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
     "logs": [
      [
       "write_logger",
-      "ERROR",
-      "Force Export failed: KeyError: 'Battery_Power_Reserve' (write.py:N)"
+      "WARNING",
+      "Setting the AC discharge rate is not yet supported by givenergy-modbus for Hybrid_3ph inverters - leaving the current discharge rate unchanged"
      ]
     ],
     "result": {
-     "result": "Force Export failed: KeyError: 'Battery_Power_Reserve' (write.py:N)"
+     "result": "Export successfully forced for 30 minutes"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      1109,
+      4
+     ],
+     [
+      17,
+      1122,
+      1
+     ],
+     [
+      17,
+      1123,
+      0
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      1118,
+      1200
+     ],
+     [
+      17,
+      1119,
+      1230
+     ],
+     [
+      17,
+      1120,
+      0
+     ],
+     [
+      17,
+      1121,
+      0
+     ]
+    ]
    }
   ],
   "forceExport(30) then FEResume": [
    {
-    "jobs": [],
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
     "logs": [
      [
       "write_logger",
-      "ERROR",
-      "Force Export failed: KeyError: 'Battery_Power_Reserve' (write.py:N)"
+      "WARNING",
+      "Setting the AC discharge rate is not yet supported by givenergy-modbus for Hybrid_3ph inverters - leaving the current discharge rate unchanged"
      ]
     ],
     "result": {
-     "result": "Force Export failed: KeyError: 'Battery_Power_Reserve' (write.py:N)"
+     "result": "Export successfully forced for 30 minutes"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      1109,
+      4
+     ],
+     [
+      17,
+      1122,
+      1
+     ],
+     [
+      17,
+      1123,
+      0
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      1118,
+      1200
+     ],
+     [
+      17,
+      1119,
+      1230
+     ],
+     [
+      17,
+      1120,
+      0
+     ],
+     [
+      17,
+      1121,
+      0
+     ]
+    ]
    },
    {
-    "skipped": "the previous step scheduled no job"
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Force Export Reverted successfully"
+    },
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      1109,
+      5
+     ],
+     [
+      17,
+      1118,
+      100
+     ],
+     [
+      17,
+      1119,
+      100
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      112,
+      1
+     ],
+     [
+      17,
+      1122,
+      1
+     ],
+     [
+      17,
+      1123,
+      1
+     ]
+    ]
    }
   ],
   "rebootinverter({})": [
@@ -445,15 +640,9 @@
   "setBatteryMode({'mode': 'Eco (Paused)'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
+     "result": "Setting Eco (Paused) mode was a success"
     },
     "writes": [
      [
@@ -465,6 +654,11 @@
       17,
       59,
       0
+     ],
+     [
+      17,
+      1109,
+      100
      ]
     ]
    }
@@ -495,6 +689,27 @@
     ]
    }
   ],
+  "setBatteryMode({'mode': 'Export (Paused)'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export (Paused) mode was a success"
+    },
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
   "setBatteryMode({'mode': 'Timed Demand'})": [
    {
     "jobs": [],
@@ -503,11 +718,6 @@
      "result": "Setting Timed Demand mode was a success"
     },
     "writes": [
-     [
-      17,
-      1109,
-      100
-     ],
      [
       17,
       27,
@@ -713,11 +923,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery charge rate 75 failed"
+      "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Hybrid_3ph inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting battery charge rate 75 failed"
+     "result": "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Hybrid_3ph inverters (write.py:N)"
     },
     "writes": []
    }
@@ -942,17 +1152,42 @@
   "setDateTime({'dateTime': '01/01/2026 12:00:00'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+     "result": "Setting inverter time was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      35,
+      26
+     ],
+     [
+      17,
+      36,
+      1
+     ],
+     [
+      17,
+      37,
+      1
+     ],
+     [
+      17,
+      38,
+      12
+     ],
+     [
+      17,
+      39,
+      0
+     ],
+     [
+      17,
+      40,
+      0
+     ]
+    ]
    }
   ],
   "setDischargeRate({'dischargeRate': '2500'})": [
@@ -978,11 +1213,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery discharge rate 75 failed"
+      "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Hybrid_3ph inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting battery discharge rate 75 failed"
+     "result": "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Hybrid_3ph inverters (write.py:N)"
     },
     "writes": []
    }
@@ -1185,11 +1420,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "result": {
-     "result": "Setting EMS Plant Operation failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     "result": "Setting EMS Plant Operation failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_ems_plant for this model)"
     },
     "writes": []
    }
@@ -1201,11 +1436,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "result": {
-     "result": "Setting EMS Plant Operation failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     "result": "Setting EMS Plant Operation failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_ems_plant for this model)"
     },
     "writes": []
    }
@@ -1233,11 +1468,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 1 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 1 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot for this model)"
     },
     "writes": []
    }
@@ -1249,11 +1484,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot_end for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 1 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 1 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot_end for this model)"
     },
     "writes": []
    }
@@ -1265,11 +1500,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 2 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+      "Setting Export Slot 2 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot_end for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 2 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 2 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot_end for this model)"
     },
     "writes": []
    }
@@ -1281,11 +1516,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot_start for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 1 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 1 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot_start for this model)"
     },
     "writes": []
    }
@@ -1297,11 +1532,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 2 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+      "Setting Export Slot 2 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot_start for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 2 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 2 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot_start for this model)"
     },
     "writes": []
    }
@@ -1407,6 +1642,22 @@
     "jobs": [],
     "logs": [],
     "result": {},
+    "writes": []
+   }
+  ],
+  "setPVInputMode({'state': '1x2'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting PV Input Mode failed: NotImplementedError: Setting the PV Input Mode is not yet supported by givenergy-modbus (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting PV Input Mode failed: NotImplementedError: Setting the PV Input Mode is not yet supported by givenergy-modbus (write.py:N)"
+    },
     "writes": []
    }
   ],
@@ -1724,13 +1975,7 @@
   "enableDischarge(disable)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Unknown write command: enableDischarge - ignoring"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "enableDischarge",
@@ -1739,19 +1984,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      1109,
+      100
+     ]
+    ]
    }
   ],
   "enableDischarge(enable)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Unknown write command: enableDischarge - ignoring"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "enableDischarge",
@@ -1760,7 +2005,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      1109,
+      5
+     ]
+    ]
    }
   ],
   "enableDischargeSchedule(disable)": [
@@ -1948,13 +2199,7 @@
    },
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Write request error: TypeError: cancelJob() takes from 1 to 2 positional arguments but 3 were given deleting all pending requests, please try again"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "cancelJob",
@@ -1966,12 +2211,17 @@
   ],
   "forceExport(30)": [
    {
-    "jobs": [],
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
     "logs": [
      [
       "write_logger",
-      "ERROR",
-      "Force Export failed: KeyError: 'Battery_Power_Reserve' (write.py:N)"
+      "WARNING",
+      "Setting the AC discharge rate is not yet supported by givenergy-modbus for Hybrid_3ph inverters - leaving the current discharge rate unchanged"
      ]
     ],
     "queued": [
@@ -1980,17 +2230,68 @@
       30.0
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      1109,
+      4
+     ],
+     [
+      17,
+      1122,
+      1
+     ],
+     [
+      17,
+      1123,
+      0
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      1118,
+      1200
+     ],
+     [
+      17,
+      1119,
+      1230
+     ],
+     [
+      17,
+      1120,
+      0
+     ],
+     [
+      17,
+      1121,
+      0
+     ]
+    ]
    }
   ],
   "forceExport(Cancel)": [
    {
-    "jobs": [],
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
     "logs": [
      [
       "write_logger",
-      "ERROR",
-      "Force Export failed: KeyError: 'Battery_Power_Reserve' (write.py:N)"
+      "WARNING",
+      "Setting the AC discharge rate is not yet supported by givenergy-modbus for Hybrid_3ph inverters - leaving the current discharge rate unchanged"
      ]
     ],
     "queued": [
@@ -1999,18 +2300,63 @@
       30.0
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      1109,
+      4
+     ],
+     [
+      17,
+      1122,
+      1
+     ],
+     [
+      17,
+      1123,
+      0
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      1118,
+      1200
+     ],
+     [
+      17,
+      1119,
+      1230
+     ],
+     [
+      17,
+      1120,
+      0
+     ],
+     [
+      17,
+      1121,
+      0
+     ]
+    ]
    },
    {
     "jobs": [],
-    "logs": [
+    "logs": [],
+    "queued": [
      [
-      "read_logger",
-      "ERROR",
-      "Force Export is not currently running"
+      "cancelJob",
+      "jobN"
      ]
     ],
-    "queued": [],
     "writes": []
    }
   ],
@@ -2183,13 +2529,7 @@
   "setBatteryMode(Eco (Paused))": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryMode",
@@ -2208,6 +2548,11 @@
       17,
       59,
       0
+     ],
+     [
+      17,
+      1109,
+      100
      ]
     ]
    }
@@ -2243,6 +2588,32 @@
     ]
    }
   ],
+  "setBatteryMode(Export (Paused))": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryMode",
+      {
+       "mode": "Export (Paused)"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
   "setBatteryMode(Timed Demand)": [
    {
     "jobs": [],
@@ -2256,11 +2627,6 @@
      ]
     ],
     "writes": [
-     [
-      17,
-      1109,
-      100
-     ],
      [
       17,
       27,
@@ -2694,7 +3060,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery charge rate 75 failed"
+      "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Hybrid_3ph inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -3182,13 +3548,7 @@
   "setDateTime(01/01/2026 12:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDateTime",
@@ -3197,7 +3557,38 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      35,
+      26
+     ],
+     [
+      17,
+      36,
+      1
+     ],
+     [
+      17,
+      37,
+      1
+     ],
+     [
+      17,
+      38,
+      12
+     ],
+     [
+      17,
+      39,
+      0
+     ],
+     [
+      17,
+      40,
+      0
+     ]
+    ]
    }
   ],
   "setDischargeEnd1(19:00:00)": [
@@ -3448,7 +3839,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery discharge rate 75 failed"
+      "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Hybrid_3ph inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -4296,7 +4687,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "queued": [
@@ -4317,7 +4708,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "queued": [
@@ -4338,7 +4729,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot_end for this model)"
      ]
     ],
     "queued": [
@@ -4360,7 +4751,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 2 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+      "Setting Export Slot 2 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot_end for this model)"
      ]
     ],
     "queued": [
@@ -4382,7 +4773,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 3 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+      "Setting Export Slot 3 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot_end for this model)"
      ]
     ],
     "queued": [
@@ -4425,7 +4816,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot_start for this model)"
      ]
     ],
     "queued": [
@@ -4447,7 +4838,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 2 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+      "Setting Export Slot 2 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot_start for this model)"
      ]
     ],
     "queued": [
@@ -4469,7 +4860,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 3 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+      "Setting Export Slot 3 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot_start for this model)"
      ]
     ],
     "queued": [
@@ -4684,9 +5075,9 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Unknown write command: setPVInputMode - ignoring"
+      "Setting PV Input Mode failed: NotImplementedError: Setting the PV Input Mode is not yet supported by givenergy-modbus (write.py:N)"
      ]
     ],
     "queued": [
@@ -4705,9 +5096,9 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Unknown write command: setPVInputMode - ignoring"
+      "Setting PV Input Mode failed: NotImplementedError: Setting the PV Input Mode is not yet supported by givenergy-modbus (write.py:N)"
      ]
     ],
     "queued": [
@@ -4951,7 +5342,7 @@
      [
       "read_logger",
       "ERROR",
-      "Temp Pause Charge is not currently running"
+      "Temp Pause Discharge is not currently running"
      ]
     ],
     "queued": [],
@@ -5201,11 +5592,13 @@
      },
      "Stack_Charge_Energy_Today_kWh": 9.5,
      "Stack_Charge_Energy_Total_kWh": 12595.8,
+     "Stack_Charge_MOS_State": "Closed",
      "Stack_Current": -3.7,
      "Stack_Cycles": 48.3,
      "Stack_Design_Capacity": 21.57,
      "Stack_Discharge_Energy_Today_kWh": 7.9,
      "Stack_Discharge_Energy_Total_kWh": 11975.6,
+     "Stack_Discharge_MOS_State": "Closed",
      "Stack_Firmware": "BABA0009",
      "Stack_Load_Voltage": 473.8,
      "Stack_Power": 65.52,
@@ -5225,6 +5618,26 @@
     "Battery_Discharge_Rate": 120,
     "Battery_Discharge_Rate_AC": 1,
     "Battery_Power_Cutoff": 5,
+    "Charge_Target_SOC_1": null,
+    "Charge_Target_SOC_10": null,
+    "Charge_Target_SOC_2": null,
+    "Charge_Target_SOC_3": null,
+    "Charge_Target_SOC_4": null,
+    "Charge_Target_SOC_5": null,
+    "Charge_Target_SOC_6": null,
+    "Charge_Target_SOC_7": null,
+    "Charge_Target_SOC_8": null,
+    "Charge_Target_SOC_9": null,
+    "Discharge_Target_SOC_1": null,
+    "Discharge_Target_SOC_10": null,
+    "Discharge_Target_SOC_2": null,
+    "Discharge_Target_SOC_3": null,
+    "Discharge_Target_SOC_4": null,
+    "Discharge_Target_SOC_5": null,
+    "Discharge_Target_SOC_6": null,
+    "Discharge_Target_SOC_7": null,
+    "Discharge_Target_SOC_8": null,
+    "Discharge_Target_SOC_9": null,
     "Enable_Charge_Schedule": "disable",
     "Enable_Charge_Target": "disable",
     "Enable_Discharge_Schedule": "enable",
@@ -5406,13 +5819,45 @@
    },
    "Timeslots": {
     "Charge_end_time_slot_1": "01:00:00",
+    "Charge_end_time_slot_10": "00:00:00",
     "Charge_end_time_slot_2": "00:00:00",
+    "Charge_end_time_slot_3": "00:00:00",
+    "Charge_end_time_slot_4": "00:00:00",
+    "Charge_end_time_slot_5": "00:00:00",
+    "Charge_end_time_slot_6": "00:00:00",
+    "Charge_end_time_slot_7": "00:00:00",
+    "Charge_end_time_slot_8": "00:00:00",
+    "Charge_end_time_slot_9": "00:00:00",
     "Charge_start_time_slot_1": "01:00:00",
+    "Charge_start_time_slot_10": "00:00:00",
     "Charge_start_time_slot_2": "00:00:00",
+    "Charge_start_time_slot_3": "00:00:00",
+    "Charge_start_time_slot_4": "00:00:00",
+    "Charge_start_time_slot_5": "00:00:00",
+    "Charge_start_time_slot_6": "00:00:00",
+    "Charge_start_time_slot_7": "00:00:00",
+    "Charge_start_time_slot_8": "00:00:00",
+    "Charge_start_time_slot_9": "00:00:00",
     "Discharge_end_time_slot_1": "01:00:00",
+    "Discharge_end_time_slot_10": "00:00:00",
     "Discharge_end_time_slot_2": "00:00:00",
+    "Discharge_end_time_slot_3": "00:00:00",
+    "Discharge_end_time_slot_4": "00:00:00",
+    "Discharge_end_time_slot_5": "00:00:00",
+    "Discharge_end_time_slot_6": "00:00:00",
+    "Discharge_end_time_slot_7": "00:00:00",
+    "Discharge_end_time_slot_8": "00:00:00",
+    "Discharge_end_time_slot_9": "00:00:00",
     "Discharge_start_time_slot_1": "01:00:00",
-    "Discharge_start_time_slot_2": "00:00:00"
+    "Discharge_start_time_slot_10": "00:00:00",
+    "Discharge_start_time_slot_2": "00:00:00",
+    "Discharge_start_time_slot_3": "00:00:00",
+    "Discharge_start_time_slot_4": "00:00:00",
+    "Discharge_start_time_slot_5": "00:00:00",
+    "Discharge_start_time_slot_6": "00:00:00",
+    "Discharge_start_time_slot_7": "00:00:00",
+    "Discharge_start_time_slot_8": "00:00:00",
+    "Discharge_start_time_slot_9": "00:00:00"
    },
    "raw": {
     "HV_Battery_Stacks": {
@@ -6074,11 +6519,13 @@
      },
      "Stack_Charge_Energy_Today_kWh": 9.5,
      "Stack_Charge_Energy_Total_kWh": 12595.8,
+     "Stack_Charge_MOS_State": "Closed",
      "Stack_Current": -3.7,
      "Stack_Cycles": 48.3,
      "Stack_Design_Capacity": 21.57,
      "Stack_Discharge_Energy_Today_kWh": 7.9,
      "Stack_Discharge_Energy_Total_kWh": 11975.6,
+     "Stack_Discharge_MOS_State": "Closed",
      "Stack_Firmware": "BABA0009",
      "Stack_Load_Voltage": 473.8,
      "Stack_Power": 65.52,
@@ -6098,6 +6545,26 @@
     "Battery_Discharge_Rate": 120,
     "Battery_Discharge_Rate_AC": 1,
     "Battery_Power_Cutoff": 5,
+    "Charge_Target_SOC_1": null,
+    "Charge_Target_SOC_10": null,
+    "Charge_Target_SOC_2": null,
+    "Charge_Target_SOC_3": null,
+    "Charge_Target_SOC_4": null,
+    "Charge_Target_SOC_5": null,
+    "Charge_Target_SOC_6": null,
+    "Charge_Target_SOC_7": null,
+    "Charge_Target_SOC_8": null,
+    "Charge_Target_SOC_9": null,
+    "Discharge_Target_SOC_1": null,
+    "Discharge_Target_SOC_10": null,
+    "Discharge_Target_SOC_2": null,
+    "Discharge_Target_SOC_3": null,
+    "Discharge_Target_SOC_4": null,
+    "Discharge_Target_SOC_5": null,
+    "Discharge_Target_SOC_6": null,
+    "Discharge_Target_SOC_7": null,
+    "Discharge_Target_SOC_8": null,
+    "Discharge_Target_SOC_9": null,
     "Enable_Charge_Schedule": "disable",
     "Enable_Charge_Target": "disable",
     "Enable_Discharge_Schedule": "enable",
@@ -6279,13 +6746,45 @@
    },
    "Timeslots": {
     "Charge_end_time_slot_1": "01:00:00",
+    "Charge_end_time_slot_10": "00:00:00",
     "Charge_end_time_slot_2": "00:00:00",
+    "Charge_end_time_slot_3": "00:00:00",
+    "Charge_end_time_slot_4": "00:00:00",
+    "Charge_end_time_slot_5": "00:00:00",
+    "Charge_end_time_slot_6": "00:00:00",
+    "Charge_end_time_slot_7": "00:00:00",
+    "Charge_end_time_slot_8": "00:00:00",
+    "Charge_end_time_slot_9": "00:00:00",
     "Charge_start_time_slot_1": "01:00:00",
+    "Charge_start_time_slot_10": "00:00:00",
     "Charge_start_time_slot_2": "00:00:00",
+    "Charge_start_time_slot_3": "00:00:00",
+    "Charge_start_time_slot_4": "00:00:00",
+    "Charge_start_time_slot_5": "00:00:00",
+    "Charge_start_time_slot_6": "00:00:00",
+    "Charge_start_time_slot_7": "00:00:00",
+    "Charge_start_time_slot_8": "00:00:00",
+    "Charge_start_time_slot_9": "00:00:00",
     "Discharge_end_time_slot_1": "01:00:00",
+    "Discharge_end_time_slot_10": "00:00:00",
     "Discharge_end_time_slot_2": "00:00:00",
+    "Discharge_end_time_slot_3": "00:00:00",
+    "Discharge_end_time_slot_4": "00:00:00",
+    "Discharge_end_time_slot_5": "00:00:00",
+    "Discharge_end_time_slot_6": "00:00:00",
+    "Discharge_end_time_slot_7": "00:00:00",
+    "Discharge_end_time_slot_8": "00:00:00",
+    "Discharge_end_time_slot_9": "00:00:00",
     "Discharge_start_time_slot_1": "01:00:00",
-    "Discharge_start_time_slot_2": "00:00:00"
+    "Discharge_start_time_slot_10": "00:00:00",
+    "Discharge_start_time_slot_2": "00:00:00",
+    "Discharge_start_time_slot_3": "00:00:00",
+    "Discharge_start_time_slot_4": "00:00:00",
+    "Discharge_start_time_slot_5": "00:00:00",
+    "Discharge_start_time_slot_6": "00:00:00",
+    "Discharge_start_time_slot_7": "00:00:00",
+    "Discharge_start_time_slot_8": "00:00:00",
+    "Discharge_start_time_slot_9": "00:00:00"
    },
    "raw": {
     "HV_Battery_Stacks": {
@@ -6717,6 +7216,26 @@
    "homeassistant/number/GivEnergy/TC2337G000_Battery_Discharge_Rate/config",
    "homeassistant/number/GivEnergy/TC2337G000_Battery_Discharge_Rate_AC/config",
    "homeassistant/number/GivEnergy/TC2337G000_Battery_Power_Cutoff/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Charge_Target_SOC_1/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Charge_Target_SOC_10/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Charge_Target_SOC_2/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Charge_Target_SOC_3/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Charge_Target_SOC_4/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Charge_Target_SOC_5/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Charge_Target_SOC_6/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Charge_Target_SOC_7/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Charge_Target_SOC_8/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Charge_Target_SOC_9/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Discharge_Target_SOC_1/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Discharge_Target_SOC_10/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Discharge_Target_SOC_2/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Discharge_Target_SOC_3/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Discharge_Target_SOC_4/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Discharge_Target_SOC_5/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Discharge_Target_SOC_6/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Discharge_Target_SOC_7/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Discharge_Target_SOC_8/config",
+   "homeassistant/number/GivEnergy/TC2337G000_Discharge_Target_SOC_9/config",
    "homeassistant/number/GivEnergy/TC2337G000_Force_Charge_Num/config",
    "homeassistant/number/GivEnergy/TC2337G000_Force_Export_Num/config",
    "homeassistant/number/GivEnergy/TC2337G000_Target_SOC/config",
@@ -6724,14 +7243,46 @@
    "homeassistant/number/GivEnergy/TC2337G000_Temp_Pause_Discharge_Num/config",
    "homeassistant/select/GivEnergy/TC2337G000_Battery_Calibration/config",
    "homeassistant/select/GivEnergy/TC2337G000_Charge_end_time_slot_1/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Charge_end_time_slot_10/config",
    "homeassistant/select/GivEnergy/TC2337G000_Charge_end_time_slot_2/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Charge_end_time_slot_3/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Charge_end_time_slot_4/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Charge_end_time_slot_5/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Charge_end_time_slot_6/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Charge_end_time_slot_7/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Charge_end_time_slot_8/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Charge_end_time_slot_9/config",
    "homeassistant/select/GivEnergy/TC2337G000_Charge_start_time_slot_1/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Charge_start_time_slot_10/config",
    "homeassistant/select/GivEnergy/TC2337G000_Charge_start_time_slot_2/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Charge_start_time_slot_3/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Charge_start_time_slot_4/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Charge_start_time_slot_5/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Charge_start_time_slot_6/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Charge_start_time_slot_7/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Charge_start_time_slot_8/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Charge_start_time_slot_9/config",
    "homeassistant/select/GivEnergy/TC2337G000_Current_Rate_Type/config",
    "homeassistant/select/GivEnergy/TC2337G000_Discharge_end_time_slot_1/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Discharge_end_time_slot_10/config",
    "homeassistant/select/GivEnergy/TC2337G000_Discharge_end_time_slot_2/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Discharge_end_time_slot_3/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Discharge_end_time_slot_4/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Discharge_end_time_slot_5/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Discharge_end_time_slot_6/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Discharge_end_time_slot_7/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Discharge_end_time_slot_8/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Discharge_end_time_slot_9/config",
    "homeassistant/select/GivEnergy/TC2337G000_Discharge_start_time_slot_1/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Discharge_start_time_slot_10/config",
    "homeassistant/select/GivEnergy/TC2337G000_Discharge_start_time_slot_2/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Discharge_start_time_slot_3/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Discharge_start_time_slot_4/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Discharge_start_time_slot_5/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Discharge_start_time_slot_6/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Discharge_start_time_slot_7/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Discharge_start_time_slot_8/config",
+   "homeassistant/select/GivEnergy/TC2337G000_Discharge_start_time_slot_9/config",
    "homeassistant/select/GivEnergy/TC2337G000_Force_Charge/config",
    "homeassistant/select/GivEnergy/TC2337G000_Force_Export/config",
    "homeassistant/select/GivEnergy/TC2337G000_Mode/config",
@@ -6754,11 +7305,13 @@
    "homeassistant/sensor/GivEnergy/TC2337G000_Battery_Stack_1_BMS_Temperature/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Battery_Stack_1_Stack_Charge_Energy_Today_kWh/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Battery_Stack_1_Stack_Charge_Energy_Total_kWh/config",
+   "homeassistant/sensor/GivEnergy/TC2337G000_Battery_Stack_1_Stack_Charge_MOS_State/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Battery_Stack_1_Stack_Current/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Battery_Stack_1_Stack_Cycles/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Battery_Stack_1_Stack_Design_Capacity/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Battery_Stack_1_Stack_Discharge_Energy_Today_kWh/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Battery_Stack_1_Stack_Discharge_Energy_Total_kWh/config",
+   "homeassistant/sensor/GivEnergy/TC2337G000_Battery_Stack_1_Stack_Discharge_MOS_State/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Battery_Stack_1_Stack_Firmware/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Battery_Stack_1_Stack_Load_Voltage/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Battery_Stack_1_Stack_Power/config",
@@ -7120,13 +7673,45 @@
    "homeassistant/switch/GivEnergy/TC2337G000_Force_Discharge_Enable/config",
    "homeassistant/switch/GivEnergy/TC2337G000_Real_Time_Control/config",
    "homeassistant/time/GivEnergy/TC2337G000_Charge_end_time_slot_1/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Charge_end_time_slot_10/config",
    "homeassistant/time/GivEnergy/TC2337G000_Charge_end_time_slot_2/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Charge_end_time_slot_3/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Charge_end_time_slot_4/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Charge_end_time_slot_5/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Charge_end_time_slot_6/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Charge_end_time_slot_7/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Charge_end_time_slot_8/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Charge_end_time_slot_9/config",
    "homeassistant/time/GivEnergy/TC2337G000_Charge_start_time_slot_1/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Charge_start_time_slot_10/config",
    "homeassistant/time/GivEnergy/TC2337G000_Charge_start_time_slot_2/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Charge_start_time_slot_3/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Charge_start_time_slot_4/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Charge_start_time_slot_5/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Charge_start_time_slot_6/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Charge_start_time_slot_7/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Charge_start_time_slot_8/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Charge_start_time_slot_9/config",
    "homeassistant/time/GivEnergy/TC2337G000_Discharge_end_time_slot_1/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Discharge_end_time_slot_10/config",
    "homeassistant/time/GivEnergy/TC2337G000_Discharge_end_time_slot_2/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Discharge_end_time_slot_3/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Discharge_end_time_slot_4/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Discharge_end_time_slot_5/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Discharge_end_time_slot_6/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Discharge_end_time_slot_7/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Discharge_end_time_slot_8/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Discharge_end_time_slot_9/config",
    "homeassistant/time/GivEnergy/TC2337G000_Discharge_start_time_slot_1/config",
-   "homeassistant/time/GivEnergy/TC2337G000_Discharge_start_time_slot_2/config"
+   "homeassistant/time/GivEnergy/TC2337G000_Discharge_start_time_slot_10/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Discharge_start_time_slot_2/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Discharge_start_time_slot_3/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Discharge_start_time_slot_4/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Discharge_start_time_slot_5/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Discharge_start_time_slot_6/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Discharge_start_time_slot_7/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Discharge_start_time_slot_8/config",
+   "homeassistant/time/GivEnergy/TC2337G000_Discharge_start_time_slot_9/config"
   ],
   "mqtt topics": [
    "GivEnergy/TC2337G000/Battery_Details/Battery_Stack_1/BMS_Temperature",
@@ -7354,11 +7939,13 @@
    "GivEnergy/TC2337G000/Battery_Details/Battery_Stack_1/HY2336G055/Battery_Serial_Number",
    "GivEnergy/TC2337G000/Battery_Details/Battery_Stack_1/Stack_Charge_Energy_Today_kWh",
    "GivEnergy/TC2337G000/Battery_Details/Battery_Stack_1/Stack_Charge_Energy_Total_kWh",
+   "GivEnergy/TC2337G000/Battery_Details/Battery_Stack_1/Stack_Charge_MOS_State",
    "GivEnergy/TC2337G000/Battery_Details/Battery_Stack_1/Stack_Current",
    "GivEnergy/TC2337G000/Battery_Details/Battery_Stack_1/Stack_Cycles",
    "GivEnergy/TC2337G000/Battery_Details/Battery_Stack_1/Stack_Design_Capacity",
    "GivEnergy/TC2337G000/Battery_Details/Battery_Stack_1/Stack_Discharge_Energy_Today_kWh",
    "GivEnergy/TC2337G000/Battery_Details/Battery_Stack_1/Stack_Discharge_Energy_Total_kWh",
+   "GivEnergy/TC2337G000/Battery_Details/Battery_Stack_1/Stack_Discharge_MOS_State",
    "GivEnergy/TC2337G000/Battery_Details/Battery_Stack_1/Stack_Firmware",
    "GivEnergy/TC2337G000/Battery_Details/Battery_Stack_1/Stack_Load_Voltage",
    "GivEnergy/TC2337G000/Battery_Details/Battery_Stack_1/Stack_Power",
@@ -7530,13 +8117,45 @@
    "GivEnergy/TC2337G000/TC2337G000/System_Mode",
    "GivEnergy/TC2337G000/TC2337G000/status",
    "GivEnergy/TC2337G000/Timeslots/Charge_end_time_slot_1",
+   "GivEnergy/TC2337G000/Timeslots/Charge_end_time_slot_10",
    "GivEnergy/TC2337G000/Timeslots/Charge_end_time_slot_2",
+   "GivEnergy/TC2337G000/Timeslots/Charge_end_time_slot_3",
+   "GivEnergy/TC2337G000/Timeslots/Charge_end_time_slot_4",
+   "GivEnergy/TC2337G000/Timeslots/Charge_end_time_slot_5",
+   "GivEnergy/TC2337G000/Timeslots/Charge_end_time_slot_6",
+   "GivEnergy/TC2337G000/Timeslots/Charge_end_time_slot_7",
+   "GivEnergy/TC2337G000/Timeslots/Charge_end_time_slot_8",
+   "GivEnergy/TC2337G000/Timeslots/Charge_end_time_slot_9",
    "GivEnergy/TC2337G000/Timeslots/Charge_start_time_slot_1",
+   "GivEnergy/TC2337G000/Timeslots/Charge_start_time_slot_10",
    "GivEnergy/TC2337G000/Timeslots/Charge_start_time_slot_2",
+   "GivEnergy/TC2337G000/Timeslots/Charge_start_time_slot_3",
+   "GivEnergy/TC2337G000/Timeslots/Charge_start_time_slot_4",
+   "GivEnergy/TC2337G000/Timeslots/Charge_start_time_slot_5",
+   "GivEnergy/TC2337G000/Timeslots/Charge_start_time_slot_6",
+   "GivEnergy/TC2337G000/Timeslots/Charge_start_time_slot_7",
+   "GivEnergy/TC2337G000/Timeslots/Charge_start_time_slot_8",
+   "GivEnergy/TC2337G000/Timeslots/Charge_start_time_slot_9",
    "GivEnergy/TC2337G000/Timeslots/Discharge_end_time_slot_1",
+   "GivEnergy/TC2337G000/Timeslots/Discharge_end_time_slot_10",
    "GivEnergy/TC2337G000/Timeslots/Discharge_end_time_slot_2",
+   "GivEnergy/TC2337G000/Timeslots/Discharge_end_time_slot_3",
+   "GivEnergy/TC2337G000/Timeslots/Discharge_end_time_slot_4",
+   "GivEnergy/TC2337G000/Timeslots/Discharge_end_time_slot_5",
+   "GivEnergy/TC2337G000/Timeslots/Discharge_end_time_slot_6",
+   "GivEnergy/TC2337G000/Timeslots/Discharge_end_time_slot_7",
+   "GivEnergy/TC2337G000/Timeslots/Discharge_end_time_slot_8",
+   "GivEnergy/TC2337G000/Timeslots/Discharge_end_time_slot_9",
    "GivEnergy/TC2337G000/Timeslots/Discharge_start_time_slot_1",
+   "GivEnergy/TC2337G000/Timeslots/Discharge_start_time_slot_10",
    "GivEnergy/TC2337G000/Timeslots/Discharge_start_time_slot_2",
+   "GivEnergy/TC2337G000/Timeslots/Discharge_start_time_slot_3",
+   "GivEnergy/TC2337G000/Timeslots/Discharge_start_time_slot_4",
+   "GivEnergy/TC2337G000/Timeslots/Discharge_start_time_slot_5",
+   "GivEnergy/TC2337G000/Timeslots/Discharge_start_time_slot_6",
+   "GivEnergy/TC2337G000/Timeslots/Discharge_start_time_slot_7",
+   "GivEnergy/TC2337G000/Timeslots/Discharge_start_time_slot_8",
+   "GivEnergy/TC2337G000/Timeslots/Discharge_start_time_slot_9",
    "GivEnergy/TC2337G000/raw/HV_Battery_Stacks/Stack_0/HY2336G050/bmu_index",
    "GivEnergy/TC2337G000/raw/HV_Battery_Stacks/Stack_0/HY2336G050/serial_number",
    "GivEnergy/TC2337G000/raw/HV_Battery_Stacks/Stack_0/HY2336G050/t_cell_01",
@@ -8017,31 +8636,35 @@
   "/enableDischarge({'state': 'disable'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Unknown write command: enableDischarge - ignoring"
-     ]
-    ],
-    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge disable was a success"
+    },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      1109,
+      100
+     ]
+    ]
    }
   ],
   "/enableDischarge({'state': 'enable'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Unknown write command: enableDischarge - ignoring"
-     ]
-    ],
-    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge enable was a success"
+    },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      1109,
+      5
+     ]
+    ]
    }
   ],
   "/enableDischargeSchedule({'state': 'disable'})": [
@@ -8127,14 +8750,10 @@
    },
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Write request error: TypeError: cancelJob() takes from 1 to 2 positional arguments but 3 were given deleting all pending requests, please try again"
-     ]
-    ],
-    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "logs": [],
+    "result": {
+     "result": "Cancelling scheduled task as requested"
+    },
     "status": 200,
     "writes": []
    }
@@ -8189,49 +8808,147 @@
   ],
   "/forceExport(Cancel)": [
    {
-    "jobs": [],
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
     "logs": [
      [
       "write_logger",
-      "ERROR",
-      "Force Export failed: KeyError: 'Battery_Power_Reserve' (write.py:N)"
+      "WARNING",
+      "Setting the AC discharge rate is not yet supported by givenergy-modbus for Hybrid_3ph inverters - leaving the current discharge rate unchanged"
      ]
     ],
     "result": {
-     "result": "Force Export failed: KeyError: 'Battery_Power_Reserve' (write.py:N)"
+     "result": "Export successfully forced for 30 minutes"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      1109,
+      4
+     ],
+     [
+      17,
+      1122,
+      1
+     ],
+     [
+      17,
+      1123,
+      0
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      1118,
+      1200
+     ],
+     [
+      17,
+      1119,
+      1230
+     ],
+     [
+      17,
+      1120,
+      0
+     ],
+     [
+      17,
+      1121,
+      0
+     ]
+    ]
    },
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Force Export is not currently running"
-     ]
-    ],
-    "result": "{'result':'Error: Force Export is not currently running'}",
+    "logs": [],
+    "result": {
+     "result": "Cancelling scheduled task as requested"
+    },
     "status": 200,
     "writes": []
    }
   ],
   "/forceExport({'duration': '30'})": [
    {
-    "jobs": [],
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
     "logs": [
      [
       "write_logger",
-      "ERROR",
-      "Force Export failed: KeyError: 'Battery_Power_Reserve' (write.py:N)"
+      "WARNING",
+      "Setting the AC discharge rate is not yet supported by givenergy-modbus for Hybrid_3ph inverters - leaving the current discharge rate unchanged"
      ]
     ],
     "result": {
-     "result": "Force Export failed: KeyError: 'Battery_Power_Reserve' (write.py:N)"
+     "result": "Export successfully forced for 30 minutes"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      1109,
+      4
+     ],
+     [
+      17,
+      1122,
+      1
+     ],
+     [
+      17,
+      1123,
+      0
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      1118,
+      1200
+     ],
+     [
+      17,
+      1119,
+      1230
+     ],
+     [
+      17,
+      1120,
+      0
+     ],
+     [
+      17,
+      1121,
+      0
+     ]
+    ]
    }
   ],
   "/reboot({})": [
@@ -8356,15 +9073,9 @@
   "/setBatteryMode({'mode': 'Eco (Paused)'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
+     "result": "Setting Eco (Paused) mode was a success"
     },
     "status": 200,
     "writes": [
@@ -8377,6 +9088,11 @@
       17,
       59,
       0
+     ],
+     [
+      17,
+      1109,
+      100
      ]
     ]
    }
@@ -8408,6 +9124,28 @@
     ]
    }
   ],
+  "/setBatteryMode({'mode': 'Export (Paused)'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export (Paused) mode was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
   "/setBatteryMode({'mode': 'Timed Demand'})": [
    {
     "jobs": [],
@@ -8417,11 +9155,6 @@
     },
     "status": 200,
     "writes": [
-     [
-      17,
-      1109,
-      100
-     ],
      [
       17,
       27,
@@ -8603,11 +9336,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery charge rate 75 failed"
+      "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Hybrid_3ph inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting battery charge rate 75 failed"
+     "result": "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Hybrid_3ph inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -8751,18 +9484,43 @@
   "/setDateTime({'dateTime': '01/01/2026 12:00:00'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+     "result": "Setting inverter time was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      35,
+      26
+     ],
+     [
+      17,
+      36,
+      1
+     ],
+     [
+      17,
+      37,
+      1
+     ],
+     [
+      17,
+      38,
+      12
+     ],
+     [
+      17,
+      39,
+      0
+     ],
+     [
+      17,
+      40,
+      0
+     ]
+    ]
    }
   ],
   "/setDischargeRate({'dischargeRate': '2500'})": [
@@ -8789,11 +9547,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery discharge rate 75 failed"
+      "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Hybrid_3ph inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting battery discharge rate 75 failed"
+     "result": "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Hybrid_3ph inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -8965,11 +9723,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "result": {
-     "result": "Setting EMS Plant Operation failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     "result": "Setting EMS Plant Operation failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_ems_plant for this model)"
     },
     "status": 200,
     "writes": []
@@ -8982,11 +9740,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "result": {
-     "result": "Setting EMS Plant Operation failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     "result": "Setting EMS Plant Operation failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_ems_plant for this model)"
     },
     "status": 200,
     "writes": []
@@ -9016,11 +9774,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 1 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 1 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot for this model)"
     },
     "status": 200,
     "writes": []
@@ -9033,11 +9791,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 2 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+      "Setting Export Slot 2 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 2 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 2 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot for this model)"
     },
     "status": 200,
     "writes": []
@@ -9050,11 +9808,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 3 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+      "Setting Export Slot 3 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 3 failed: AttributeError: 'ThreePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 3 failed: not available for Hybrid_3ph inverters (givenergy-modbus has no set_export_slot for this model)"
     },
     "status": 200,
     "writes": []

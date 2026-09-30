@@ -24,6 +24,12 @@ def pytest_addoption(parser):
     parser.addoption("--problems", action="store_true",
                      help="List every error GivTCP gives on each model, from the golden results")
 
+def pytest_collection_modifyitems(session, config, items):
+    # GIVTCP_TEST_REVERSE=1 runs the tests in reverse order, to check each result doesn't depend on earlier tests
+    import os
+    if os.environ.get("GIVTCP_TEST_REVERSE"):
+        items.reverse()
+
 def pytest_configure(config):
     golden.UPDATE = config.getoption("--update-golden")
 

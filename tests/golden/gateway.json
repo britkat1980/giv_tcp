@@ -93,6 +93,38 @@
     ]
    }
   ],
+  "enableDischarge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge disable was a success"
+    },
+    "writes": [
+     [
+      17,
+      110,
+      100
+     ]
+    ]
+   }
+  ],
+  "enableDischarge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge enable was a success"
+    },
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ]
+    ]
+   }
+  ],
   "enableDischargeSchedule({'state': 'disable'})": [
    {
     "jobs": [],
@@ -240,22 +272,32 @@
    },
    {
     "jobs": [],
-    "logs": [
+    "logs": [],
+    "result": {
+     "result": "Force Charge Reverted successfully"
+    },
+    "writes": [
      [
-      "write_logger",
-      "ERROR",
-      "Force Charge revert failed: UnboundLocalError: cannot access local variable 'reqs' where it is not associated with a value (write.py:N)"
+      17,
+      96,
+      0
      ],
      [
-      "write_logger",
-      "ERROR",
-      "Force Charge revert failed: UnboundLocalError: cannot access local variable 'reqs' where it is not associated with a value (write.py:N)"
+      17,
+      94,
+      0
+     ],
+     [
+      17,
+      95,
+      500
+     ],
+     [
+      17,
+      116,
+      100
      ]
-    ],
-    "result": {
-     "result": "Force Charge revert failed: UnboundLocalError: cannot access local variable 'reqs' where it is not associated with a value (write.py:N)"
-    },
-    "writes": []
+    ]
    }
   ],
   "forceExport(30)": [
@@ -398,12 +440,12 @@
      ],
      [
       17,
-      94,
+      56,
       2235
      ],
      [
       17,
-      95,
+      57,
       1
      ],
      [
@@ -437,11 +479,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge disable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     "result": "Setting AC Charge disable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -453,11 +495,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge enable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     "result": "Setting AC Charge enable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -545,15 +587,9 @@
   "setBatteryMode({'mode': 'Eco (Paused)'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
+     "result": "Setting Eco (Paused) mode was a success"
     },
     "writes": [
      [
@@ -565,6 +601,11 @@
       17,
       59,
       0
+     ],
+     [
+      17,
+      110,
+      100
      ]
     ]
    }
@@ -595,6 +636,27 @@
     ]
    }
   ],
+  "setBatteryMode({'mode': 'Export (Paused)'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export (Paused) mode was a success"
+    },
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
   "setBatteryMode({'mode': 'Timed Demand'})": [
    {
     "jobs": [],
@@ -603,11 +665,6 @@
      "result": "Setting Timed Demand mode was a success"
     },
     "writes": [
-     [
-      17,
-      110,
-      100
-     ],
      [
       17,
       27,
@@ -813,11 +870,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery charge rate 75 failed"
+      "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting battery charge rate 75 failed"
+     "result": "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
     },
     "writes": []
    }
@@ -1042,17 +1099,42 @@
   "setDateTime({'dateTime': '01/01/2026 12:00:00'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+     "result": "Setting inverter time was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      35,
+      26
+     ],
+     [
+      17,
+      36,
+      1
+     ],
+     [
+      17,
+      37,
+      1
+     ],
+     [
+      17,
+      38,
+      12
+     ],
+     [
+      17,
+      39,
+      0
+     ],
+     [
+      17,
+      40,
+      0
+     ]
+    ]
    }
   ],
   "setDischargeRate({'dischargeRate': '2500'})": [
@@ -1078,11 +1160,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery discharge rate 75 failed"
+      "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting battery discharge rate 75 failed"
+     "result": "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
     },
     "writes": []
    }
@@ -1285,11 +1367,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for Gateway inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "result": {
-     "result": "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     "result": "Setting EMS Plant Operation failed: not available for Gateway inverters (givenergy-modbus has no set_ems_plant for this model)"
     },
     "writes": []
    }
@@ -1301,11 +1383,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for Gateway inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "result": {
-     "result": "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     "result": "Setting EMS Plant Operation failed: not available for Gateway inverters (givenergy-modbus has no set_ems_plant for this model)"
     },
     "writes": []
    }
@@ -1333,11 +1415,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 1 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot for this model)"
     },
     "writes": []
    }
@@ -1349,11 +1431,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot_end for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 1 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot_end for this model)"
     },
     "writes": []
    }
@@ -1365,11 +1447,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+      "Setting Export Slot 2 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot_end for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 2 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot_end for this model)"
     },
     "writes": []
    }
@@ -1381,11 +1463,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot_start for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 1 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot_start for this model)"
     },
     "writes": []
    }
@@ -1397,11 +1479,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+      "Setting Export Slot 2 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot_start for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 2 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot_start for this model)"
     },
     "writes": []
    }
@@ -1429,11 +1511,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge disable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Charge disable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -1445,11 +1527,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge enable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Charge enable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -1461,11 +1543,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge disable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Discharge disable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -1477,11 +1559,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge enable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Discharge enable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
     },
     "writes": []
    }
@@ -1507,6 +1589,22 @@
     "jobs": [],
     "logs": [],
     "result": {},
+    "writes": []
+   }
+  ],
+  "setPVInputMode({'state': '1x2'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting PV Input Mode failed: NotImplementedError: Setting the PV Input Mode is not yet supported by givenergy-modbus (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting PV Input Mode failed: NotImplementedError: Setting the PV Input Mode is not yet supported by givenergy-modbus (write.py:N)"
+    },
     "writes": []
    }
   ],
@@ -1637,11 +1735,16 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+      "Setting Charge Rate failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+     "result": "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
     },
     "writes": []
    }
@@ -1653,11 +1756,16 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+      "Setting Charge Rate failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+     "result": "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
     },
     "writes": []
    },
@@ -1672,11 +1780,16 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+      "Setting Discharge Rate failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+     "result": "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
     },
     "writes": []
    }
@@ -1688,11 +1801,16 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+      "Setting Discharge Rate failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+     "result": "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
     },
     "writes": []
    },
@@ -1804,13 +1922,7 @@
   "enableDischarge(disable)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Unknown write command: enableDischarge - ignoring"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "enableDischarge",
@@ -1819,19 +1931,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      110,
+      100
+     ]
+    ]
    }
   ],
   "enableDischarge(enable)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Unknown write command: enableDischarge - ignoring"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "enableDischarge",
@@ -1840,7 +1952,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ]
+    ]
    }
   ],
   "enableDischargeSchedule(disable)": [
@@ -2016,13 +2134,7 @@
    },
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Write request error: TypeError: cancelJob() takes from 1 to 2 positional arguments but 3 were given deleting all pending requests, please try again"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "cancelJob",
@@ -2151,13 +2263,7 @@
    },
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Write request error: TypeError: cancelJob() takes from 1 to 2 positional arguments but 3 were given deleting all pending requests, please try again"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "cancelJob",
@@ -2193,7 +2299,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge disable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -2214,7 +2320,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge enable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -2336,13 +2442,7 @@
   "setBatteryMode(Eco (Paused))": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryMode",
@@ -2361,6 +2461,11 @@
       17,
       59,
       0
+     ],
+     [
+      17,
+      110,
+      100
      ]
     ]
    }
@@ -2396,6 +2501,32 @@
     ]
    }
   ],
+  "setBatteryMode(Export (Paused))": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryMode",
+      {
+       "mode": "Export (Paused)"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
   "setBatteryMode(Timed Demand)": [
    {
     "jobs": [],
@@ -2409,11 +2540,6 @@
      ]
     ],
     "writes": [
-     [
-      17,
-      110,
-      100
-     ],
      [
       17,
       27,
@@ -2847,7 +2973,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery charge rate 75 failed"
+      "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -3335,13 +3461,7 @@
   "setDateTime(01/01/2026 12:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDateTime",
@@ -3350,7 +3470,38 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      35,
+      26
+     ],
+     [
+      17,
+      36,
+      1
+     ],
+     [
+      17,
+      37,
+      1
+     ],
+     [
+      17,
+      38,
+      12
+     ],
+     [
+      17,
+      39,
+      0
+     ],
+     [
+      17,
+      40,
+      0
+     ]
+    ]
    }
   ],
   "setDischargeEnd1(19:00:00)": [
@@ -3601,7 +3752,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery discharge rate 75 failed"
+      "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -4449,7 +4600,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for Gateway inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "queued": [
@@ -4470,7 +4621,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for Gateway inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "queued": [
@@ -4491,7 +4642,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot_end for this model)"
      ]
     ],
     "queued": [
@@ -4513,7 +4664,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+      "Setting Export Slot 2 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot_end for this model)"
      ]
     ],
     "queued": [
@@ -4535,7 +4686,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 3 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+      "Setting Export Slot 3 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot_end for this model)"
      ]
     ],
     "queued": [
@@ -4578,7 +4729,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot_start for this model)"
      ]
     ],
     "queued": [
@@ -4600,7 +4751,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+      "Setting Export Slot 2 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot_start for this model)"
      ]
     ],
     "queued": [
@@ -4622,7 +4773,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 3 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+      "Setting Export Slot 3 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot_start for this model)"
      ]
     ],
     "queued": [
@@ -4710,7 +4861,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge disable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -4731,7 +4882,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge enable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -4752,7 +4903,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge disable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -4773,7 +4924,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge enable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "queued": [
@@ -4837,9 +4988,9 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Unknown write command: setPVInputMode - ignoring"
+      "Setting PV Input Mode failed: NotImplementedError: Setting the PV Input Mode is not yet supported by givenergy-modbus (write.py:N)"
      ]
     ],
     "queued": [
@@ -4858,9 +5009,9 @@
     "jobs": [],
     "logs": [
      [
-      "read_logger",
+      "write_logger",
       "ERROR",
-      "Unknown write command: setPVInputMode - ignoring"
+      "Setting PV Input Mode failed: NotImplementedError: Setting the PV Input Mode is not yet supported by givenergy-modbus (write.py:N)"
      ]
     ],
     "queued": [
@@ -4998,7 +5149,12 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+      "Setting Charge Rate failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
      ]
     ],
     "queued": [
@@ -5017,7 +5173,12 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+      "Setting Charge Rate failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
      ]
     ],
     "queued": [
@@ -5048,7 +5209,12 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+      "Setting Discharge Rate failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
      ]
     ],
     "queued": [
@@ -5067,7 +5233,12 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+      "Setting Discharge Rate failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
      ]
     ],
     "queued": [
@@ -5084,7 +5255,7 @@
      [
       "read_logger",
       "ERROR",
-      "Temp Pause Charge is not currently running"
+      "Temp Pause Discharge is not currently running"
      ]
     ],
     "queued": [],
@@ -5100,6 +5271,26 @@
     "Battery_Calibration": "Off",
     "Battery_Power_Cutoff": 4,
     "Battery_Power_Reserve": 4,
+    "Charge_Target_SOC_1": null,
+    "Charge_Target_SOC_10": null,
+    "Charge_Target_SOC_2": null,
+    "Charge_Target_SOC_3": null,
+    "Charge_Target_SOC_4": null,
+    "Charge_Target_SOC_5": null,
+    "Charge_Target_SOC_6": null,
+    "Charge_Target_SOC_7": null,
+    "Charge_Target_SOC_8": null,
+    "Charge_Target_SOC_9": null,
+    "Discharge_Target_SOC_1": null,
+    "Discharge_Target_SOC_10": null,
+    "Discharge_Target_SOC_2": null,
+    "Discharge_Target_SOC_3": null,
+    "Discharge_Target_SOC_4": null,
+    "Discharge_Target_SOC_5": null,
+    "Discharge_Target_SOC_6": null,
+    "Discharge_Target_SOC_7": null,
+    "Discharge_Target_SOC_8": null,
+    "Discharge_Target_SOC_9": null,
     "Eco_Mode": "enable",
     "Enable_Charge_Schedule": "disable",
     "Enable_Charge_Target": "disable",
@@ -5253,13 +5444,45 @@
    },
    "Timeslots": {
     "Charge_end_time_slot_1": "05:00:00",
+    "Charge_end_time_slot_10": "00:00:00",
     "Charge_end_time_slot_2": "00:00:00",
+    "Charge_end_time_slot_3": "00:00:00",
+    "Charge_end_time_slot_4": "00:00:00",
+    "Charge_end_time_slot_5": "00:00:00",
+    "Charge_end_time_slot_6": "00:00:00",
+    "Charge_end_time_slot_7": "00:00:00",
+    "Charge_end_time_slot_8": "00:00:00",
+    "Charge_end_time_slot_9": "00:00:00",
     "Charge_start_time_slot_1": "00:00:00",
+    "Charge_start_time_slot_10": "00:00:00",
     "Charge_start_time_slot_2": "00:00:00",
+    "Charge_start_time_slot_3": "00:00:00",
+    "Charge_start_time_slot_4": "00:00:00",
+    "Charge_start_time_slot_5": "00:00:00",
+    "Charge_start_time_slot_6": "00:00:00",
+    "Charge_start_time_slot_7": "00:00:00",
+    "Charge_start_time_slot_8": "00:00:00",
+    "Charge_start_time_slot_9": "00:00:00",
     "Discharge_end_time_slot_1": "00:01:00",
+    "Discharge_end_time_slot_10": "00:00:00",
     "Discharge_end_time_slot_2": "00:00:00",
+    "Discharge_end_time_slot_3": "00:00:00",
+    "Discharge_end_time_slot_4": "00:00:00",
+    "Discharge_end_time_slot_5": "00:00:00",
+    "Discharge_end_time_slot_6": "00:00:00",
+    "Discharge_end_time_slot_7": "00:00:00",
+    "Discharge_end_time_slot_8": "00:00:00",
+    "Discharge_end_time_slot_9": "00:00:00",
     "Discharge_start_time_slot_1": "22:35:00",
-    "Discharge_start_time_slot_2": "00:00:00"
+    "Discharge_start_time_slot_10": "00:00:00",
+    "Discharge_start_time_slot_2": "00:00:00",
+    "Discharge_start_time_slot_3": "00:00:00",
+    "Discharge_start_time_slot_4": "00:00:00",
+    "Discharge_start_time_slot_5": "00:00:00",
+    "Discharge_start_time_slot_6": "00:00:00",
+    "Discharge_start_time_slot_7": "00:00:00",
+    "Discharge_start_time_slot_8": "00:00:00",
+    "Discharge_start_time_slot_9": "00:00:00"
    },
    "raw": {
     "batteries": {},
@@ -5337,6 +5560,26 @@
     "Battery_Calibration": "Off",
     "Battery_Power_Cutoff": 4,
     "Battery_Power_Reserve": 4,
+    "Charge_Target_SOC_1": null,
+    "Charge_Target_SOC_10": null,
+    "Charge_Target_SOC_2": null,
+    "Charge_Target_SOC_3": null,
+    "Charge_Target_SOC_4": null,
+    "Charge_Target_SOC_5": null,
+    "Charge_Target_SOC_6": null,
+    "Charge_Target_SOC_7": null,
+    "Charge_Target_SOC_8": null,
+    "Charge_Target_SOC_9": null,
+    "Discharge_Target_SOC_1": null,
+    "Discharge_Target_SOC_10": null,
+    "Discharge_Target_SOC_2": null,
+    "Discharge_Target_SOC_3": null,
+    "Discharge_Target_SOC_4": null,
+    "Discharge_Target_SOC_5": null,
+    "Discharge_Target_SOC_6": null,
+    "Discharge_Target_SOC_7": null,
+    "Discharge_Target_SOC_8": null,
+    "Discharge_Target_SOC_9": null,
     "Eco_Mode": "enable",
     "Enable_Charge_Schedule": "disable",
     "Enable_Charge_Target": "disable",
@@ -5490,13 +5733,45 @@
    },
    "Timeslots": {
     "Charge_end_time_slot_1": "05:00:00",
+    "Charge_end_time_slot_10": "00:00:00",
     "Charge_end_time_slot_2": "00:00:00",
+    "Charge_end_time_slot_3": "00:00:00",
+    "Charge_end_time_slot_4": "00:00:00",
+    "Charge_end_time_slot_5": "00:00:00",
+    "Charge_end_time_slot_6": "00:00:00",
+    "Charge_end_time_slot_7": "00:00:00",
+    "Charge_end_time_slot_8": "00:00:00",
+    "Charge_end_time_slot_9": "00:00:00",
     "Charge_start_time_slot_1": "00:00:00",
+    "Charge_start_time_slot_10": "00:00:00",
     "Charge_start_time_slot_2": "00:00:00",
+    "Charge_start_time_slot_3": "00:00:00",
+    "Charge_start_time_slot_4": "00:00:00",
+    "Charge_start_time_slot_5": "00:00:00",
+    "Charge_start_time_slot_6": "00:00:00",
+    "Charge_start_time_slot_7": "00:00:00",
+    "Charge_start_time_slot_8": "00:00:00",
+    "Charge_start_time_slot_9": "00:00:00",
     "Discharge_end_time_slot_1": "00:01:00",
+    "Discharge_end_time_slot_10": "00:00:00",
     "Discharge_end_time_slot_2": "00:00:00",
+    "Discharge_end_time_slot_3": "00:00:00",
+    "Discharge_end_time_slot_4": "00:00:00",
+    "Discharge_end_time_slot_5": "00:00:00",
+    "Discharge_end_time_slot_6": "00:00:00",
+    "Discharge_end_time_slot_7": "00:00:00",
+    "Discharge_end_time_slot_8": "00:00:00",
+    "Discharge_end_time_slot_9": "00:00:00",
     "Discharge_start_time_slot_1": "22:35:00",
-    "Discharge_start_time_slot_2": "00:00:00"
+    "Discharge_start_time_slot_10": "00:00:00",
+    "Discharge_start_time_slot_2": "00:00:00",
+    "Discharge_start_time_slot_3": "00:00:00",
+    "Discharge_start_time_slot_4": "00:00:00",
+    "Discharge_start_time_slot_5": "00:00:00",
+    "Discharge_start_time_slot_6": "00:00:00",
+    "Discharge_start_time_slot_7": "00:00:00",
+    "Discharge_start_time_slot_8": "00:00:00",
+    "Discharge_start_time_slot_9": "00:00:00"
    },
    "raw": {
     "batteries": {},
@@ -5575,6 +5850,26 @@
    "homeassistant/number/GivEnergy/GW2412G000_Active_Power_Rate/config",
    "homeassistant/number/GivEnergy/GW2412G000_Battery_Power_Cutoff/config",
    "homeassistant/number/GivEnergy/GW2412G000_Battery_Power_Reserve/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Charge_Target_SOC_1/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Charge_Target_SOC_10/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Charge_Target_SOC_2/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Charge_Target_SOC_3/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Charge_Target_SOC_4/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Charge_Target_SOC_5/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Charge_Target_SOC_6/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Charge_Target_SOC_7/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Charge_Target_SOC_8/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Charge_Target_SOC_9/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Discharge_Target_SOC_1/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Discharge_Target_SOC_10/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Discharge_Target_SOC_2/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Discharge_Target_SOC_3/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Discharge_Target_SOC_4/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Discharge_Target_SOC_5/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Discharge_Target_SOC_6/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Discharge_Target_SOC_7/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Discharge_Target_SOC_8/config",
+   "homeassistant/number/GivEnergy/GW2412G000_Discharge_Target_SOC_9/config",
    "homeassistant/number/GivEnergy/GW2412G000_Force_Charge_Num/config",
    "homeassistant/number/GivEnergy/GW2412G000_Force_Export_Num/config",
    "homeassistant/number/GivEnergy/GW2412G000_Target_SOC/config",
@@ -5582,13 +5877,45 @@
    "homeassistant/number/GivEnergy/GW2412G000_Temp_Pause_Discharge_Num/config",
    "homeassistant/select/GivEnergy/GW2412G000_Battery_Calibration/config",
    "homeassistant/select/GivEnergy/GW2412G000_Charge_end_time_slot_1/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Charge_end_time_slot_10/config",
    "homeassistant/select/GivEnergy/GW2412G000_Charge_end_time_slot_2/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Charge_end_time_slot_3/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Charge_end_time_slot_4/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Charge_end_time_slot_5/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Charge_end_time_slot_6/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Charge_end_time_slot_7/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Charge_end_time_slot_8/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Charge_end_time_slot_9/config",
    "homeassistant/select/GivEnergy/GW2412G000_Charge_start_time_slot_1/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Charge_start_time_slot_10/config",
    "homeassistant/select/GivEnergy/GW2412G000_Charge_start_time_slot_2/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Charge_start_time_slot_3/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Charge_start_time_slot_4/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Charge_start_time_slot_5/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Charge_start_time_slot_6/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Charge_start_time_slot_7/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Charge_start_time_slot_8/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Charge_start_time_slot_9/config",
    "homeassistant/select/GivEnergy/GW2412G000_Discharge_end_time_slot_1/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Discharge_end_time_slot_10/config",
    "homeassistant/select/GivEnergy/GW2412G000_Discharge_end_time_slot_2/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Discharge_end_time_slot_3/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Discharge_end_time_slot_4/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Discharge_end_time_slot_5/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Discharge_end_time_slot_6/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Discharge_end_time_slot_7/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Discharge_end_time_slot_8/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Discharge_end_time_slot_9/config",
    "homeassistant/select/GivEnergy/GW2412G000_Discharge_start_time_slot_1/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Discharge_start_time_slot_10/config",
    "homeassistant/select/GivEnergy/GW2412G000_Discharge_start_time_slot_2/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Discharge_start_time_slot_3/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Discharge_start_time_slot_4/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Discharge_start_time_slot_5/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Discharge_start_time_slot_6/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Discharge_start_time_slot_7/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Discharge_start_time_slot_8/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Discharge_start_time_slot_9/config",
    "homeassistant/select/GivEnergy/GW2412G000_Force_Charge/config",
    "homeassistant/select/GivEnergy/GW2412G000_Force_Export/config",
    "homeassistant/select/GivEnergy/GW2412G000_Mode/config",
@@ -5705,13 +6032,45 @@
    "homeassistant/switch/GivEnergy/GW2412G000_Enable_Discharge_Schedule/config",
    "homeassistant/switch/GivEnergy/GW2412G000_Real_Time_Control/config",
    "homeassistant/time/GivEnergy/GW2412G000_Charge_end_time_slot_1/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Charge_end_time_slot_10/config",
    "homeassistant/time/GivEnergy/GW2412G000_Charge_end_time_slot_2/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Charge_end_time_slot_3/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Charge_end_time_slot_4/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Charge_end_time_slot_5/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Charge_end_time_slot_6/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Charge_end_time_slot_7/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Charge_end_time_slot_8/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Charge_end_time_slot_9/config",
    "homeassistant/time/GivEnergy/GW2412G000_Charge_start_time_slot_1/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Charge_start_time_slot_10/config",
    "homeassistant/time/GivEnergy/GW2412G000_Charge_start_time_slot_2/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Charge_start_time_slot_3/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Charge_start_time_slot_4/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Charge_start_time_slot_5/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Charge_start_time_slot_6/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Charge_start_time_slot_7/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Charge_start_time_slot_8/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Charge_start_time_slot_9/config",
    "homeassistant/time/GivEnergy/GW2412G000_Discharge_end_time_slot_1/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Discharge_end_time_slot_10/config",
    "homeassistant/time/GivEnergy/GW2412G000_Discharge_end_time_slot_2/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Discharge_end_time_slot_3/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Discharge_end_time_slot_4/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Discharge_end_time_slot_5/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Discharge_end_time_slot_6/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Discharge_end_time_slot_7/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Discharge_end_time_slot_8/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Discharge_end_time_slot_9/config",
    "homeassistant/time/GivEnergy/GW2412G000_Discharge_start_time_slot_1/config",
-   "homeassistant/time/GivEnergy/GW2412G000_Discharge_start_time_slot_2/config"
+   "homeassistant/time/GivEnergy/GW2412G000_Discharge_start_time_slot_10/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Discharge_start_time_slot_2/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Discharge_start_time_slot_3/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Discharge_start_time_slot_4/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Discharge_start_time_slot_5/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Discharge_start_time_slot_6/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Discharge_start_time_slot_7/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Discharge_start_time_slot_8/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Discharge_start_time_slot_9/config"
   ],
   "mqtt topics": [
    "GivEnergy/GW2412G000/Control/Active_Power_Rate",
@@ -5841,13 +6200,45 @@
    "GivEnergy/GW2412G000/Stats/Write_Count",
    "GivEnergy/GW2412G000/Stats/status",
    "GivEnergy/GW2412G000/Timeslots/Charge_end_time_slot_1",
+   "GivEnergy/GW2412G000/Timeslots/Charge_end_time_slot_10",
    "GivEnergy/GW2412G000/Timeslots/Charge_end_time_slot_2",
+   "GivEnergy/GW2412G000/Timeslots/Charge_end_time_slot_3",
+   "GivEnergy/GW2412G000/Timeslots/Charge_end_time_slot_4",
+   "GivEnergy/GW2412G000/Timeslots/Charge_end_time_slot_5",
+   "GivEnergy/GW2412G000/Timeslots/Charge_end_time_slot_6",
+   "GivEnergy/GW2412G000/Timeslots/Charge_end_time_slot_7",
+   "GivEnergy/GW2412G000/Timeslots/Charge_end_time_slot_8",
+   "GivEnergy/GW2412G000/Timeslots/Charge_end_time_slot_9",
    "GivEnergy/GW2412G000/Timeslots/Charge_start_time_slot_1",
+   "GivEnergy/GW2412G000/Timeslots/Charge_start_time_slot_10",
    "GivEnergy/GW2412G000/Timeslots/Charge_start_time_slot_2",
+   "GivEnergy/GW2412G000/Timeslots/Charge_start_time_slot_3",
+   "GivEnergy/GW2412G000/Timeslots/Charge_start_time_slot_4",
+   "GivEnergy/GW2412G000/Timeslots/Charge_start_time_slot_5",
+   "GivEnergy/GW2412G000/Timeslots/Charge_start_time_slot_6",
+   "GivEnergy/GW2412G000/Timeslots/Charge_start_time_slot_7",
+   "GivEnergy/GW2412G000/Timeslots/Charge_start_time_slot_8",
+   "GivEnergy/GW2412G000/Timeslots/Charge_start_time_slot_9",
    "GivEnergy/GW2412G000/Timeslots/Discharge_end_time_slot_1",
+   "GivEnergy/GW2412G000/Timeslots/Discharge_end_time_slot_10",
    "GivEnergy/GW2412G000/Timeslots/Discharge_end_time_slot_2",
+   "GivEnergy/GW2412G000/Timeslots/Discharge_end_time_slot_3",
+   "GivEnergy/GW2412G000/Timeslots/Discharge_end_time_slot_4",
+   "GivEnergy/GW2412G000/Timeslots/Discharge_end_time_slot_5",
+   "GivEnergy/GW2412G000/Timeslots/Discharge_end_time_slot_6",
+   "GivEnergy/GW2412G000/Timeslots/Discharge_end_time_slot_7",
+   "GivEnergy/GW2412G000/Timeslots/Discharge_end_time_slot_8",
+   "GivEnergy/GW2412G000/Timeslots/Discharge_end_time_slot_9",
    "GivEnergy/GW2412G000/Timeslots/Discharge_start_time_slot_1",
+   "GivEnergy/GW2412G000/Timeslots/Discharge_start_time_slot_10",
    "GivEnergy/GW2412G000/Timeslots/Discharge_start_time_slot_2",
+   "GivEnergy/GW2412G000/Timeslots/Discharge_start_time_slot_3",
+   "GivEnergy/GW2412G000/Timeslots/Discharge_start_time_slot_4",
+   "GivEnergy/GW2412G000/Timeslots/Discharge_start_time_slot_5",
+   "GivEnergy/GW2412G000/Timeslots/Discharge_start_time_slot_6",
+   "GivEnergy/GW2412G000/Timeslots/Discharge_start_time_slot_7",
+   "GivEnergy/GW2412G000/Timeslots/Discharge_start_time_slot_8",
+   "GivEnergy/GW2412G000/Timeslots/Discharge_start_time_slot_9",
    "GivEnergy/GW2412G000/raw/invertor",
    "GivEnergy/GW2412G000/raw/meters/Meter_ID_1/e_export_active",
    "GivEnergy/GW2412G000/raw/meters/Meter_ID_1/e_export_reactive",
@@ -5996,31 +6387,35 @@
   "/enableDischarge({'state': 'disable'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Unknown write command: enableDischarge - ignoring"
-     ]
-    ],
-    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge disable was a success"
+    },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      110,
+      100
+     ]
+    ]
    }
   ],
   "/enableDischarge({'state': 'enable'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Unknown write command: enableDischarge - ignoring"
-     ]
-    ],
-    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge enable was a success"
+    },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ]
+    ]
    }
   ],
   "/enableDischargeSchedule({'state': 'disable'})": [
@@ -6100,14 +6495,10 @@
    },
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Write request error: TypeError: cancelJob() takes from 1 to 2 positional arguments but 3 were given deleting all pending requests, please try again"
-     ]
-    ],
-    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "logs": [],
+    "result": {
+     "result": "Cancelling scheduled task as requested"
+    },
     "status": 200,
     "writes": []
    }
@@ -6212,14 +6603,10 @@
    },
    {
     "jobs": [],
-    "logs": [
-     [
-      "read_logger",
-      "ERROR",
-      "Write request error: TypeError: cancelJob() takes from 1 to 2 positional arguments but 3 were given deleting all pending requests, please try again"
-     ]
-    ],
-    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "logs": [],
+    "result": {
+     "result": "Cancelling scheduled task as requested"
+    },
     "status": 200,
     "writes": []
    }
@@ -6305,11 +6692,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge disable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     "result": "Setting AC Charge disable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -6322,11 +6709,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+      "Setting AC Charge enable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     "result": "Setting AC Charge enable failed: NotImplementedError: AC Charge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -6403,15 +6790,9 @@
   "/setBatteryMode({'mode': 'Eco (Paused)'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
+     "result": "Setting Eco (Paused) mode was a success"
     },
     "status": 200,
     "writes": [
@@ -6424,6 +6805,11 @@
       17,
       59,
       0
+     ],
+     [
+      17,
+      110,
+      100
      ]
     ]
    }
@@ -6455,6 +6841,28 @@
     ]
    }
   ],
+  "/setBatteryMode({'mode': 'Export (Paused)'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Export (Paused) mode was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
   "/setBatteryMode({'mode': 'Timed Demand'})": [
    {
     "jobs": [],
@@ -6464,11 +6872,6 @@
     },
     "status": 200,
     "writes": [
-     [
-      17,
-      110,
-      100
-     ],
      [
       17,
       27,
@@ -6650,11 +7053,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery charge rate 75 failed"
+      "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting battery charge rate 75 failed"
+     "result": "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -6788,18 +7191,43 @@
   "/setDateTime({'dateTime': '01/01/2026 12:00:00'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+     "result": "Setting inverter time was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      35,
+      26
+     ],
+     [
+      17,
+      36,
+      1
+     ],
+     [
+      17,
+      37,
+      1
+     ],
+     [
+      17,
+      38,
+      12
+     ],
+     [
+      17,
+      39,
+      0
+     ],
+     [
+      17,
+      40,
+      0
+     ]
+    ]
    }
   ],
   "/setDischargeRate({'dischargeRate': '2500'})": [
@@ -6826,11 +7254,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting battery discharge rate 75 failed"
+      "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting battery discharge rate 75 failed"
+     "result": "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -6998,11 +7426,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for Gateway inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "result": {
-     "result": "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     "result": "Setting EMS Plant Operation failed: not available for Gateway inverters (givenergy-modbus has no set_ems_plant for this model)"
     },
     "status": 200,
     "writes": []
@@ -7015,11 +7443,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+      "Setting EMS Plant Operation failed: not available for Gateway inverters (givenergy-modbus has no set_ems_plant for this model)"
      ]
     ],
     "result": {
-     "result": "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     "result": "Setting EMS Plant Operation failed: not available for Gateway inverters (givenergy-modbus has no set_ems_plant for this model)"
     },
     "status": 200,
     "writes": []
@@ -7049,11 +7477,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+      "Setting Export Slot 1 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 1 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot for this model)"
     },
     "status": 200,
     "writes": []
@@ -7066,11 +7494,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+      "Setting Export Slot 2 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 2 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot for this model)"
     },
     "status": 200,
     "writes": []
@@ -7083,11 +7511,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Slot 3 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+      "Setting Export Slot 3 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot for this model)"
      ]
     ],
     "result": {
-     "result": "Setting Export Slot 3 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     "result": "Setting Export Slot 3 failed: not available for Gateway inverters (givenergy-modbus has no set_export_slot for this model)"
     },
     "status": 200,
     "writes": []
@@ -7117,11 +7545,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge disable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Charge disable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -7134,11 +7562,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+      "Setting Force Charge enable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Charge enable failed: NotImplementedError: Force Charge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -7151,11 +7579,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge disable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Discharge disable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -7168,11 +7596,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+      "Setting Force Discharge enable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     "result": "Setting Force Discharge enable failed: NotImplementedError: Force Discharge is only available on three-phase inverters (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -7266,11 +7694,16 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+      "Setting Charge Rate failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+     "result": "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -7296,11 +7729,16 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+      "Setting Charge Rate failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Pausing Charge failed: KeyError: 'Battery_Charge_Rate' (write.py:N)"
+     "result": "Pausing Charge failed: Exception: Setting Charge Rate failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -7313,11 +7751,16 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+      "Setting Discharge Rate failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+     "result": "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -7343,11 +7786,16 @@
      [
       "write_logger",
       "ERROR",
-      "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+      "Setting Discharge Rate failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Pausing Discharge failed: KeyError: 'Battery_Discharge_Rate' (write.py:N)"
+     "result": "Pausing Discharge failed: Exception: Setting Discharge Rate failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Gateway inverters (write.py:N) (write.py:N)"
     },
     "status": 200,
     "writes": []
