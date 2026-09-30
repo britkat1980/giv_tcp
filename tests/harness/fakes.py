@@ -89,6 +89,7 @@ def normalise(text):
     """Remove what changes between runs or code edits from messages: source line numbers, job ids and timings"""
     text = re.sub(r"(\.py):\d+", r"\1:N", str(text))
     text = re.sub(r"\(\d+ms\)", "(Nms)", text)
+    text = re.sub(r" - \d+\)$", " - N)", text)     # processData's "(Exception: message - <line number>)"
     return re.sub(r"job\d+", "jobN", text)
 
 def install():
