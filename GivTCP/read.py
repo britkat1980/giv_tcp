@@ -534,6 +534,10 @@ def getBatteries(plant: Plant, multi_output_old):
                     battery['Battery_Temperature'] = b.t_bms_mosfet
                     battery['Battery_Voltage'] = b.v_cells_sum
                     battery['Battery_BMS_Current'] = b.i_battery
+                    # IR(91) high byte = Status 3 (protocol v4.4.1 s4.4.1.1): bit1=charge MOS, bit2=discharge MOS, 1=closed
+                    if b.status_3 is not None:
+                        battery['Battery_Charge_MOS_State'] = "Closed" if b.status_3 & 0x02 else "Open"
+                        battery['Battery_Discharge_MOS_State'] = "Closed" if b.status_3 & 0x04 else "Open"
                     for i in range(16):
                         battery['Battery_Cell_'+str(i+1)+'_Voltage'] = b.__getattribute__('v_cell_'+str(i+1).zfill(2))
                     battery['Battery_Cell_1_Temperature'] = b.t_cells_01_04
