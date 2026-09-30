@@ -20,6 +20,8 @@ class Entity_Type():
         "Timeout_Error":GEType("sensor","string","","","",False,False,False),
         "GivTCP_Version":GEType("sensor","string","","","",False,False,False),
         "Stack_Firmware":GEType("sensor","string","","","",False,False,False),
+        "Stack_Charge_MOS_State":GEType("sensor","string","","","",False,False,False),
+        "Stack_Discharge_MOS_State":GEType("sensor","string","","","",False,False,False),
         "Export_Energy_Total_kWh":GEType("sensor","energy","",0,'maxTotalEnergy',False,True,True),
         "Battery_Throughput_Total_kWh":GEType("sensor","energy","",0,'maxTotalEnergy',False,True,True),
         "AC_Charge_Energy_Total_kWh":GEType("sensor","energy","",0,'maxTotalEnergy',False,True,True),

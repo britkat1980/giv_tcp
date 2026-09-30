@@ -6,7 +6,7 @@ from givenergy_modbus.model.ems import EmsInverterStatus, MAX_MANAGED_INVERTERS
 from givenergy_modbus.model.meter import MeterStatus
 from givenergy_modbus.model.battery import State
 from givenergy_modbus.model.plant import Plant, PlantCapabilities
-from givenergy_modbus.model.register import HR
+from givenergy_modbus.model.register import HR, IR
 from givenergy_modbus.exceptions import CommunicationError, RefreshPartiallySucceeded
 from givenergy_modbus.model import TimeSlot
 import sys
@@ -569,6 +569,11 @@ def getBatteries(plant: Plant, multi_output_old):
                 bcudata['Stack_SOC_High']=bcu.battery_soc_max
                 bcudata['Stack_SOC_Low']=bcu.battery_soc_min
                 bcudata['Stack_Firmware']=bcu.pack_software_version
+                # IR(101) Packn_DisChgState (protocol v4.4.1 s4.4.2.3), not modelled by givenergy-modbus: bit0=charge, bit1=discharge, 1=closed
+                dischgState=plant.register_caches.get(hvstack.device_address,{}).get(IR(101))
+                if dischgState is not None:
+                    bcudata['Stack_Charge_MOS_State']="Closed" if dischgState & 0x01 else "Open"
+                    bcudata['Stack_Discharge_MOS_State']="Closed" if dischgState & 0x02 else "Open"
                 # v2 reports capacity in Ah per module: kWh = Ah x 76.8V module voltage, and usable kWh is 10% less
                 if bcu.battery_nominal_capacity_ah is not None:
                     bcudata['Stack_Design_Capacity']=round(bcu.battery_nominal_capacity_ah*76.8/1000*modules*0.9,2)
