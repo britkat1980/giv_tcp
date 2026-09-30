@@ -49,8 +49,24 @@ def check(model, section, case, actual):
         return
     recorded = data.get(section, {})
     if case not in recorded:
-        pytest.fail("No golden result for %s / %s / %s - run pytest --update-golden to record it" % (model, section, case))
-    assert actual == recorded[case], "%s / %s / %s differs from tests/golden/%s.json" % (model, section, case, model)
+        pytest.fail("No golden result for %s / %s / %s - run pytest --update-golden to record it" % (model, section, case),
+                    pytrace=False)
+    if actual != recorded[case]:
+        from harness.report import diff
+        changes = list(diff(recorded[case], actual))
+        CHANGES.append((model, section, case, changes))
+        shown = changes[:MAX_SHOWN] + (["... and %d more" % (len(changes) - MAX_SHOWN)] if len(changes) > MAX_SHOWN else [])
+        pytest.fail("%s / %s / %s differs from tests/golden/%s.json:" % (model, section, case, model)
+                    + "".join("\n  " + line for line in shown), pytrace=False)
+
+MAX_SHOWN = 15
+CHANGES = []    # (model, section, case, [changed values]) for the end-of-run summary
+
+def all_files():
+    """Every model's golden results"""
+    for path in sorted(GOLDEN_DIR.glob("*.json")):
+        _load(path.stem)
+    return dict(_files)
 
 def save():
     GOLDEN_DIR.mkdir(exist_ok=True)

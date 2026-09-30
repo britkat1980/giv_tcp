@@ -248,6 +248,14 @@ class GivLUT:
             logger.error("Failed to get Cache: "+str(e))
             return None
         
+    def save_writerequests(requests):
+        """Replace the write request queue in one step, so the read loop never reads a partly written file"""
+        import threading
+        tmp=GivLUT.writerequests+"."+str(os.getpid())+"."+str(threading.get_ident())+".tmp"     # unique per writer (REST workers, MQTT, RQ)
+        with open(tmp,'wb') as outp:
+            pickle.dump(requests, outp, pickle.HIGHEST_PROTOCOL)
+        os.replace(tmp,GivLUT.writerequests)
+
     def put_regcache(regCacheStack):
 
         count=0

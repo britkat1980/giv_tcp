@@ -1,0 +1,6458 @@
+{
+ "detect": {
+  "capabilities": {
+   "batteries": 2,
+   "device_type": "AC",
+   "failed_reads": [
+    "ReadHoldingRegistersRequest(0x11,120)",
+    "ReadHoldingRegistersRequest(0x11,300)",
+    "ReadHoldingRegistersRequest(0x11,60)",
+    "ReadInputRegistersRequest(0x11,120)",
+    "ReadInputRegistersRequest(0x11,180)"
+   ],
+   "inverter_address": 17,
+   "is_ems": false,
+   "is_gateway": false,
+   "is_hv": false,
+   "is_three_phase": false
+  }
+ },
+ "direct": {
+  "enableChargeSchedule({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Schedule to disable was a success"
+    },
+    "writes": [
+     [
+      17,
+      96,
+      0
+     ]
+    ]
+   }
+  ],
+  "enableChargeSchedule({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Schedule to enable was a success"
+    },
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ]
+    ]
+   }
+  ],
+  "enableChargeTarget({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Disabling Charge Target was a success"
+    },
+    "writes": [
+     [
+      17,
+      20,
+      0
+     ],
+     [
+      17,
+      116,
+      100
+     ]
+    ]
+   }
+  ],
+  "enableChargeTarget({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Enabling Charge Target was a success"
+    },
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      20,
+      0
+     ],
+     [
+      17,
+      116,
+      100
+     ]
+    ]
+   }
+  ],
+  "enableDischargeSchedule({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Schedule to disable was a success"
+    },
+    "writes": [
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "enableDischargeSchedule({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Schedule to enable was a success"
+    },
+    "writes": [
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "enableRTC({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Disabling Real Time Control was a success"
+    },
+    "writes": [
+     [
+      17,
+      166,
+      0
+     ]
+    ]
+   }
+  ],
+  "enableRTC({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Enabling Real Time Control was a success"
+    },
+    "writes": [
+     [
+      17,
+      166,
+      1
+     ]
+    ]
+   }
+  ],
+  "forceCharge(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force charge failed: TypeError: 'NoneType' object is not subscriptable (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Force charge failed: TypeError: 'NoneType' object is not subscriptable (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "forceCharge(30) then FCResume": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force charge failed: TypeError: 'NoneType' object is not subscriptable (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Force charge failed: TypeError: 'NoneType' object is not subscriptable (write.py:N)"
+    },
+    "writes": []
+   },
+   {
+    "skipped": "the previous step scheduled no job"
+   }
+  ],
+  "forceExport(30)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Export successfully forced for 30 minutes"
+    },
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      112,
+      50
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      56,
+      1200
+     ],
+     [
+      17,
+      57,
+      1230
+     ],
+     [
+      17,
+      44,
+      0
+     ],
+     [
+      17,
+      45,
+      0
+     ]
+    ]
+   }
+  ],
+  "forceExport(30) then FEResume": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Export successfully forced for 30 minutes"
+    },
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      112,
+      50
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      56,
+      1200
+     ],
+     [
+      17,
+      57,
+      1230
+     ],
+     [
+      17,
+      44,
+      0
+     ],
+     [
+      17,
+      45,
+      0
+     ]
+    ]
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force Export Revert failed: KeyError: 'mode' (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Force Export Revert failed: KeyError: 'mode' (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "rebootinverter({})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Rebooting Inverter was a success"
+    },
+    "writes": [
+     [
+      17,
+      163,
+      100
+     ]
+    ]
+   }
+  ],
+  "setACCharge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setACCharge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setActivePowerRate({'activePowerRate': '80'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting active power rate 80 was a success"
+    },
+    "writes": [
+     [
+      17,
+      50,
+      80
+     ]
+    ]
+   }
+  ],
+  "setBatteryCalibration({'state': 'Charge Only'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Battery Calibration Charge Only was a success"
+    },
+    "writes": [
+     [
+      17,
+      29,
+      3
+     ]
+    ]
+   }
+  ],
+  "setBatteryCalibration({'state': 'Off'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Battery Calibration Off was a success"
+    },
+    "writes": [
+     [
+      17,
+      29,
+      0
+     ]
+    ]
+   }
+  ],
+  "setBatteryCalibration({'state': 'Start'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Battery Calibration Start was a success"
+    },
+    "writes": [
+     [
+      17,
+      29,
+      1
+     ]
+    ]
+   }
+  ],
+  "setBatteryCutoff({'dischargeToPercent': '10'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery power reserve to 10 was a success"
+    },
+    "writes": [
+     [
+      17,
+      114,
+      10
+     ]
+    ]
+   }
+  ],
+  "setBatteryMode({'mode': 'Eco (Paused)'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
+    },
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "setBatteryMode({'mode': 'Eco'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Eco mode was a success"
+    },
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "setBatteryMode({'mode': 'Timed Demand'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Timed Demand mode was a success"
+    },
+    "writes": [
+     [
+      17,
+      110,
+      100
+     ],
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "setBatteryMode({'mode': 'Timed Export'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Timed Export mode was a success"
+    },
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "setBatteryPauseMode({'state': 'Disabled'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode({'state': 'PauseBoth'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode({'state': 'PauseCharge'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode({'state': 'PauseDischarge'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setBatteryReserve({'reservePercent': '2'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery reserve 4 was a success"
+    },
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ]
+    ]
+   }
+  ],
+  "setBatteryReserve({'reservePercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery reserve 20 was a success"
+    },
+    "writes": [
+     [
+      17,
+      110,
+      20
+     ]
+    ]
+   }
+  ],
+  "setCarChargeBoost({'boost': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setChargeRate({'chargeRate': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Rate failed: No charge rate limit available"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Rate failed: No charge rate limit available"
+    },
+    "writes": []
+   }
+  ],
+  "setChargeRate({'chargeRate': '99999'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Rate failed: No charge rate limit available"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Rate failed: No charge rate limit available"
+    },
+    "writes": []
+   }
+  ],
+  "setChargeRateAC({'chargeRate': '75'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery charge rate AC to 75% was a success"
+    },
+    "writes": [
+     [
+      17,
+      313,
+      75
+     ]
+    ]
+   }
+  ],
+  "setChargeSlot({'start': '01:30', 'finish': '04:30', 'slot': '1', 'chargeToPercent': '90'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 1 to: 01:30 - 04:30 was a success"
+    },
+    "writes": [
+     [
+      17,
+      94,
+      130
+     ],
+     [
+      17,
+      95,
+      430
+     ],
+     [
+      17,
+      116,
+      90
+     ]
+    ]
+   }
+  ],
+  "setChargeSlot({'start': '01:30', 'finish': '04:30', 'slot': '2'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 2 to: 01:30 - 04:30 was a success"
+    },
+    "writes": [
+     [
+      17,
+      31,
+      130
+     ],
+     [
+      17,
+      32,
+      430
+     ]
+    ]
+   }
+  ],
+  "setChargeSlotEnd({'finish': '05:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot End 1 to: 05:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      95,
+      500
+     ]
+    ]
+   }
+  ],
+  "setChargeSlotEnd({'finish': '05:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot End 2 to: 05:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      32,
+      500
+     ]
+    ]
+   }
+  ],
+  "setChargeSlotStart({'start': '02:00', 'slot': 1, 'EMS': True})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 1 Start to: 02:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      94,
+      200
+     ]
+    ]
+   }
+  ],
+  "setChargeSlotStart({'start': '02:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 1 Start to: 02:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      94,
+      200
+     ]
+    ]
+   }
+  ],
+  "setChargeSlotStart({'start': '02:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 2 Start to: 02:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      31,
+      200
+     ]
+    ]
+   }
+  ],
+  "setChargeTarget({'chargeToPercent': '85'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Target 85 was a success"
+    },
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      20,
+      1
+     ],
+     [
+      17,
+      116,
+      85
+     ]
+    ]
+   }
+  ],
+  "setChargeTarget2({'chargeToPercent': '85', 'slot': 1, 'EMS': True})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setChargeTarget2({'chargeToPercent': '85', 'slot': 10})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 10 failed: NotImplementedError: Charge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Target 10 failed: NotImplementedError: Charge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setChargeTarget2({'chargeToPercent': '85', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setChargeTarget2({'chargeToPercent': '85', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 2 failed: NotImplementedError: Charge target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Target 2 failed: NotImplementedError: Charge target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setDateTime({'dateTime': '01/01/2026 12:00:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setDischargeRate({'dischargeRate': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Rate failed: No discharge rate limit available"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge Rate failed: No discharge rate limit available"
+    },
+    "writes": []
+   }
+  ],
+  "setDischargeRateAC({'dischargeRate': '75'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery discharge rate AC to 75% was a success"
+    },
+    "writes": [
+     [
+      17,
+      314,
+      75
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlot({'start': '16:00', 'finish': '19:00', 'slot': '1', 'dischargeToPercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot 1 to: 16:00 - 19:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      110,
+      20
+     ],
+     [
+      17,
+      56,
+      1600
+     ],
+     [
+      17,
+      57,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlot({'start': '16:00', 'finish': '19:00', 'slot': '2'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot 2 to: 16:00 - 19:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      44,
+      1600
+     ],
+     [
+      17,
+      45,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlotEnd({'finish': '05:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot End 1 to: 05:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      57,
+      500
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlotEnd({'finish': '05:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot End 2 to: 05:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      45,
+      500
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlotStart({'start': '02:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot start 1 Start to: 02:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      56,
+      200
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlotStart({'start': '02:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot start 2 Start to: 02:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      44,
+      200
+     ]
+    ]
+   }
+  ],
+  "setDischargeSlotStart({'start': '16:00', 'slot': 1, 'EMS': True})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot start 1 Start to: 16:00 was a success"
+    },
+    "writes": [
+     [
+      17,
+      56,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setDischargeTarget({'dischargeToPercent': '30', 'slot': '1'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setDischargeTarget({'dischargeToPercent': '30', 'slot': '10'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 10 failed: NotImplementedError: Discharge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge Target 10 failed: NotImplementedError: Discharge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setEcoMode({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Eco Mode disable was a success"
+    },
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ]
+    ]
+   }
+  ],
+  "setEcoMode({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Eco Mode enable was a success"
+    },
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ]
+    ]
+   }
+  ],
+  "setEmsPlant({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setEmsPlant({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setExportLimit({'state': '3600'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Limit failed: NotImplementedError: Setting the Export Limit is not yet supported by givenergy-modbus for Ac inverters (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Limit failed: NotImplementedError: Setting the Export Limit is not yet supported by givenergy-modbus for Ac inverters (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setExportSlot({'start': '16:00', 'finish': '19:00', 'slot': '1'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setExportSlotEnd({'finish': '05:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setExportSlotEnd({'finish': '05:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setExportSlotStart({'start': '02:00', 'slot': 1})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setExportSlotStart({'start': '02:00', 'slot': 2})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setExportTarget({'exportToPercent': '30', 'slot': '1'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Target 1 failed: NotImplementedError: Export target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Target 1 failed: NotImplementedError: Export target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setForceCharge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setForceCharge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setForceDischarge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setForceDischarge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setLocalControlMode({'state': 'Battery'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {},
+    "writes": []
+   }
+  ],
+  "setLocalControlMode({'state': 'Grid'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {},
+    "writes": []
+   }
+  ],
+  "setLocalControlMode({'state': 'Load'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {},
+    "writes": []
+   }
+  ],
+  "setPauseEnd({'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(320) is not permitted for AC inverter (registers: 320)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for AC inverter'} (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for AC inverter'} (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setPauseSlot({'start': '16:00', 'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(319) is not permitted for AC inverter (registers: 319, 320)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for AC inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for AC inverter (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "setPauseStart({'start': '16:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(319) is not permitted for AC inverter (registers: 319)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for AC inverter'} (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for AC inverter'} (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "switchRate(day)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "External rate setting not allowed. Enable Dynamic Tariff in settings"
+     ]
+    ],
+    "result": {
+     "result": "External rate setting not allowed. Enable Dynamic Tariff in settings"
+    },
+    "writes": []
+   }
+  ],
+  "syncDateTime({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting inverter time was a success"
+    },
+    "writes": [
+     [
+      17,
+      35,
+      26
+     ],
+     [
+      17,
+      36,
+      6
+     ],
+     [
+      17,
+      37,
+      15
+     ],
+     [
+      17,
+      38,
+      12
+     ],
+     [
+      17,
+      39,
+      0
+     ],
+     [
+      17,
+      40,
+      0
+     ]
+    ]
+   }
+  ],
+  "tempPauseCharge(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Rate failed: No charge rate limit available"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: No charge rate limit available (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Pausing Charge failed: Exception: Setting Charge Rate failed: No charge rate limit available (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "tempPauseCharge(30) then tmpPCResume": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Rate failed: No charge rate limit available"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: No charge rate limit available (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Pausing Charge failed: Exception: Setting Charge Rate failed: No charge rate limit available (write.py:N)"
+    },
+    "writes": []
+   },
+   {
+    "skipped": "the previous step scheduled no job"
+   }
+  ],
+  "tempPauseDischarge(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Rate failed: No discharge rate limit available"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: No discharge rate limit available (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Pausing Discharge failed: Exception: Setting Discharge Rate failed: No discharge rate limit available (write.py:N)"
+    },
+    "writes": []
+   }
+  ],
+  "tempPauseDischarge(30) then tmpPDResume": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Rate failed: No discharge rate limit available"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: No discharge rate limit available (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Pausing Discharge failed: Exception: Setting Discharge Rate failed: No discharge rate limit available (write.py:N)"
+    },
+    "writes": []
+   },
+   {
+    "skipped": "the previous step scheduled no job"
+   }
+  ]
+ },
+ "mqtt": {
+  "enableChargeSchedule(disable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "enableChargeSchedule",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      96,
+      0
+     ]
+    ]
+   }
+  ],
+  "enableChargeSchedule(enable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "enableChargeSchedule",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ]
+    ]
+   }
+  ],
+  "enableChargeTarget(disable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "enableChargeTarget",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      20,
+      0
+     ],
+     [
+      17,
+      116,
+      100
+     ]
+    ]
+   }
+  ],
+  "enableChargeTarget(enable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "enableChargeTarget",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      20,
+      1
+     ],
+     [
+      17,
+      116,
+      90
+     ]
+    ]
+   }
+  ],
+  "enableDischarge(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: enableDischarge - ignoring"
+     ]
+    ],
+    "queued": [
+     [
+      "enableDischarge",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "enableDischarge(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: enableDischarge - ignoring"
+     ]
+    ],
+    "queued": [
+     [
+      "enableDischarge",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "enableDischargeSchedule(disable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "enableDischargeSchedule",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "enableDischargeSchedule(enable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "enableDischargeSchedule",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "enableRTC(disable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "enableRTC",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      166,
+      0
+     ]
+    ]
+   }
+  ],
+  "enableRTC(enable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "enableRTC",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      166,
+      1
+     ]
+    ]
+   }
+  ],
+  "forceCharge(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force charge failed: TypeError: 'NoneType' object is not subscriptable (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "forceCharge",
+      30.0
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "forceCharge(Cancel)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force charge failed: TypeError: 'NoneType' object is not subscriptable (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "forceCharge",
+      30.0
+     ]
+    ],
+    "writes": []
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Force Charge is not currently running"
+     ]
+    ],
+    "queued": [],
+    "writes": []
+   }
+  ],
+  "forceExport(30)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "queued": [
+     [
+      "forceExport",
+      30.0
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      112,
+      50
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      56,
+      1200
+     ],
+     [
+      17,
+      57,
+      1230
+     ],
+     [
+      17,
+      44,
+      0
+     ],
+     [
+      17,
+      45,
+      0
+     ]
+    ]
+   }
+  ],
+  "forceExport(Cancel)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "queued": [
+     [
+      "forceExport",
+      30.0
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      112,
+      50
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      56,
+      1200
+     ],
+     [
+      17,
+      57,
+      1230
+     ],
+     [
+      17,
+      44,
+      0
+     ],
+     [
+      17,
+      45,
+      0
+     ]
+    ]
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Write request error: TypeError: cancelJob() takes from 1 to 2 positional arguments but 3 were given deleting all pending requests, please try again"
+     ]
+    ],
+    "queued": [
+     [
+      "cancelJob",
+      "jobN"
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "rebootInverter()": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "rebootinverter",
+      {}
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      163,
+      100
+     ]
+    ]
+   }
+  ],
+  "setACCharge(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setACCharge",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setACCharge(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setACCharge",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setActivePowerRate(80)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setActivePowerRate",
+      {
+       "activePowerRate": "80"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      50,
+      80
+     ]
+    ]
+   }
+  ],
+  "setBatteryCalibration(Charge Only)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryCalibration",
+      {
+       "state": "Charge Only"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      29,
+      3
+     ]
+    ]
+   }
+  ],
+  "setBatteryCalibration(Off)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryCalibration",
+      {
+       "state": "Off"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      29,
+      0
+     ]
+    ]
+   }
+  ],
+  "setBatteryCalibration(Start)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryCalibration",
+      {
+       "state": "Start"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      29,
+      1
+     ]
+    ]
+   }
+  ],
+  "setBatteryCutoff(10)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryCutoff",
+      {
+       "dischargeToPercent": "10"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      114,
+      10
+     ]
+    ]
+   }
+  ],
+  "setBatteryMode(Eco (Paused))": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryMode",
+      {
+       "mode": "Eco (Paused)"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "setBatteryMode(Eco)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryMode",
+      {
+       "mode": "Eco"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "setBatteryMode(Timed Demand)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryMode",
+      {
+       "mode": "Timed Demand"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      110,
+      100
+     ],
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "setBatteryMode(Timed Export)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryMode",
+      {
+       "mode": "Timed Export"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "setBatteryPauseMode(Disabled)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryPauseMode",
+      {
+       "state": "Disabled"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode(PauseBoth)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryPauseMode",
+      {
+       "state": "PauseBoth"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode(PauseCharge)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryPauseMode",
+      {
+       "state": "PauseCharge"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryPauseMode(PauseDischarge)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setBatteryPauseMode",
+      {
+       "state": "PauseDischarge"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setBatteryReserve(20)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setBatteryReserve",
+      {
+       "reservePercent": "20"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      110,
+      20
+     ]
+    ]
+   }
+  ],
+  "setCarChargeBoost(2500)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setCarChargeBoost",
+      {
+       "boost": "2500"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd1(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      95,
+      500
+     ]
+    ]
+   }
+  ],
+  "setChargeEnd10(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 10 failed: ValueError: Charge slot index (10) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 10
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd2(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      32,
+      500
+     ]
+    ]
+   }
+  ],
+  "setChargeEnd3(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd4(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 4 failed: ValueError: Charge slot index (4) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 4
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd5(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 5 failed: ValueError: Charge slot index (5) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 5
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd6(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 6 failed: ValueError: Charge slot index (6) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 6
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd7(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 7 failed: ValueError: Charge slot index (7) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 7
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd8(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 8 failed: ValueError: Charge slot index (8) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 8
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeEnd9(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 9 failed: ValueError: Charge slot index (9) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "finish": "05:00",
+       "slot": 9
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeRate(2500)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Rate failed: No charge rate limit available"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeRate",
+      {
+       "chargeRate": "2500"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeRateAC(75)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeRateAC",
+      {
+       "chargeRate": "75"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      313,
+      75
+     ]
+    ]
+   }
+  ],
+  "setChargeStart1(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 1,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      94,
+      200
+     ]
+    ]
+   }
+  ],
+  "setChargeStart10(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 10 failed: ValueError: Charge slot index (10) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 10,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart2(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 2,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      31,
+      200
+     ]
+    ]
+   }
+  ],
+  "setChargeStart3(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 3,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart4(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 4 failed: ValueError: Charge slot index (4) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 4,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart5(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 5 failed: ValueError: Charge slot index (5) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 5,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart6(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 6 failed: ValueError: Charge slot index (6) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 6,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart7(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 7 failed: ValueError: Charge slot index (7) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 7,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart8(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 8 failed: ValueError: Charge slot index (8) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 8,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeStart9(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 9 failed: ValueError: Charge slot index (9) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "slot": 9,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget(85)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeTarget",
+      {
+       "chargeToPercent": "85"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      20,
+      1
+     ],
+     [
+      17,
+      116,
+      85
+     ]
+    ]
+   }
+  ],
+  "setChargeTarget1(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget10(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 10 failed: NotImplementedError: Charge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 10
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget2(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 2 failed: NotImplementedError: Charge target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget3(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 3 failed: NotImplementedError: Charge target SOC for slot 3 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget4(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 4 failed: NotImplementedError: Charge target SOC for slot 4 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 4
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget5(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 5 failed: NotImplementedError: Charge target SOC for slot 5 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 5
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget6(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 6 failed: NotImplementedError: Charge target SOC for slot 6 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 6
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget7(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 7 failed: NotImplementedError: Charge target SOC for slot 7 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 7
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget8(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 8 failed: NotImplementedError: Charge target SOC for slot 8 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 8
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setChargeTarget9(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 9 failed: NotImplementedError: Charge target SOC for slot 9 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "chargeToPercent": "85",
+       "slot": 9
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDateTime(01/01/2026 12:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDateTime",
+      {
+       "dateTime": "01/01/2026 12:00:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd1(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      57,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setDischargeEnd10(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 10 failed: ValueError: Discharge slot index (10) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 10
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd2(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      45,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setDischargeEnd3(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd4(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 4 failed: ValueError: Discharge slot index (4) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 4
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd5(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 5 failed: ValueError: Discharge slot index (5) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 5
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd6(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 6 failed: ValueError: Discharge slot index (6) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 6
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd7(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 7 failed: ValueError: Discharge slot index (7) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 7
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd8(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 8 failed: ValueError: Discharge slot index (8) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 8
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeEnd9(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 9 failed: ValueError: Discharge slot index (9) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 9
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeRate(2500)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Rate failed: No discharge rate limit available"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeRate",
+      {
+       "dischargeRate": "2500"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeRateAC(75)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeRateAC",
+      {
+       "dischargeRate": "75"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      314,
+      75
+     ]
+    ]
+   }
+  ],
+  "setDischargeStart1(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 1,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      56,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setDischargeStart10(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 10 failed: ValueError: Discharge slot index (10) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 10,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart2(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 2,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      44,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setDischargeStart3(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 3,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart4(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 4 failed: ValueError: Discharge slot index (4) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 4,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart5(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 5 failed: ValueError: Discharge slot index (5) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 5,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart6(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 6 failed: ValueError: Discharge slot index (6) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 6,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart7(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 7 failed: ValueError: Discharge slot index (7) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 7,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart8(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 8 failed: ValueError: Discharge slot index (8) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 8,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeStart9(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 9 failed: ValueError: Discharge slot index (9) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "slot": 9,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget1(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget10(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 10 failed: NotImplementedError: Discharge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 10
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget2(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 2 failed: NotImplementedError: Discharge target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget3(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 3 failed: NotImplementedError: Discharge target SOC for slot 3 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget4(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 4 failed: NotImplementedError: Discharge target SOC for slot 4 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 4
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget5(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 5 failed: NotImplementedError: Discharge target SOC for slot 5 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 5
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget6(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 6 failed: NotImplementedError: Discharge target SOC for slot 6 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 6
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget7(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 7 failed: NotImplementedError: Discharge target SOC for slot 7 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 7
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget8(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 8 failed: NotImplementedError: Discharge target SOC for slot 8 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 8
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setDischargeTarget9(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 9 failed: NotImplementedError: Discharge target SOC for slot 9 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeTarget",
+      {
+       "dischargeToPercent": "30",
+       "slot": 9
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEMSChargeEnd1(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "05:00",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      95,
+      500
+     ]
+    ]
+   }
+  ],
+  "setEMSChargeEnd2(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "05:00",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      32,
+      500
+     ]
+    ]
+   }
+  ],
+  "setEMSChargeEnd3(05:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "05:00",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEMSChargeStart1(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 1,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      94,
+      200
+     ]
+    ]
+   }
+  ],
+  "setEMSChargeStart2(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 2,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      31,
+      200
+     ]
+    ]
+   }
+  ],
+  "setEMSChargeStart3(02:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 3,
+       "start": "02:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEMSChargeTarget1(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "EMS": true,
+       "chargeToPercent": "85",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEMSChargeTarget2(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 2 failed: NotImplementedError: Charge target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "EMS": true,
+       "chargeToPercent": "85",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEMSChargeTarget3(85)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Target 3 failed: NotImplementedError: Charge target SOC for slot 3 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setChargeTarget2",
+      {
+       "EMS": true,
+       "chargeToPercent": "85",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEMSDischargeEnd1(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "19:00",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      57,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setEMSDischargeEnd2(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "19:00",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      45,
+      1900
+     ]
+    ]
+   }
+  ],
+  "setEMSDischargeEnd3(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot End 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotEnd",
+      {
+       "EMS": true,
+       "finish": "19:00",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEMSDischargeStart1(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 1,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      56,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setEMSDischargeStart2(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 2,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      44,
+      1600
+     ]
+    ]
+   }
+  ],
+  "setEMSDischargeStart3(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot start 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setDischargeSlotStart",
+      {
+       "EMS": true,
+       "slot": 3,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEcoMode(disable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setEcoMode",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ]
+    ]
+   }
+  ],
+  "setEcoMode(enable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setEcoMode",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ]
+    ]
+   }
+  ],
+  "setEmsPlant(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setEmsPlant",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setEmsPlant(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setEmsPlant",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportEnd1(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportEnd2(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportEnd3(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 3 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_end' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportSlotEnd",
+      {
+       "finish": "19:00",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportLimit(3600)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Limit failed: NotImplementedError: Setting the Export Limit is not yet supported by givenergy-modbus for Ac inverters (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportLimit",
+      {
+       "state": "3600"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportStart1(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportSlotStart",
+      {
+       "slot": 1,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportStart2(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportSlotStart",
+      {
+       "slot": 2,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportStart3(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 3 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot_start' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportSlotStart",
+      {
+       "slot": 3,
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportTarget1(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Target 1 failed: NotImplementedError: Export target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportTarget",
+      {
+       "exportToPercent": "30",
+       "slot": 1
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportTarget2(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Target 2 failed: NotImplementedError: Export target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportTarget",
+      {
+       "exportToPercent": "30",
+       "slot": 2
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setExportTarget3(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Target 3 failed: NotImplementedError: Export target SOC for slot 3 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setExportTarget",
+      {
+       "exportToPercent": "30",
+       "slot": 3
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setForceCharge(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setForceCharge",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setForceCharge(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setForceCharge",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setForceDischarge(disable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setForceDischarge",
+      {
+       "state": "disable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setForceDischarge(enable)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setForceDischarge",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setLocalControlMode(Battery)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setLocalControlMode",
+      {
+       "state": "Battery"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setLocalControlMode(Grid)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setLocalControlMode",
+      {
+       "state": "Grid"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setLocalControlMode(Load)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "setLocalControlMode",
+      {
+       "state": "Load"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setPVInputMode(1x2)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: setPVInputMode - ignoring"
+     ]
+    ],
+    "queued": [
+     [
+      "setPVInputMode",
+      {
+       "state": "1x2"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setPVInputMode(Independent)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: setPVInputMode - ignoring"
+     ]
+    ],
+    "queued": [
+     [
+      "setPVInputMode",
+      {
+       "state": "Independent"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setPauseEnd(19:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(320) is not permitted for AC inverter (registers: 320)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for AC inverter'} (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setPauseEnd",
+      {
+       "finish": "19:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "setPauseStart(16:00:00)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(319) is not permitted for AC inverter (registers: 319)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for AC inverter'} (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "setPauseStart",
+      {
+       "start": "16:00"
+      }
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "switchRate(day)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "External rate setting not allowed. Enable Dynamic Tariff in settings"
+     ]
+    ],
+    "queued": [
+     [
+      "switchRate",
+      "day"
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "syncDateTime(enable)": [
+   {
+    "jobs": [],
+    "logs": [],
+    "queued": [
+     [
+      "syncDateTime",
+      {
+       "state": "enable"
+      }
+     ]
+    ],
+    "writes": [
+     [
+      17,
+      35,
+      26
+     ],
+     [
+      17,
+      36,
+      6
+     ],
+     [
+      17,
+      37,
+      15
+     ],
+     [
+      17,
+      38,
+      12
+     ],
+     [
+      17,
+      39,
+      0
+     ],
+     [
+      17,
+      40,
+      0
+     ]
+    ]
+   }
+  ],
+  "tempPauseCharge(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Rate failed: No charge rate limit available"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: No charge rate limit available (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "tempPauseCharge",
+      30.0
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "tempPauseCharge(Cancel)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Rate failed: No charge rate limit available"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: No charge rate limit available (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "tempPauseCharge",
+      30.0
+     ]
+    ],
+    "writes": []
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Temp Pause Charge is not currently running"
+     ]
+    ],
+    "queued": [],
+    "writes": []
+   }
+  ],
+  "tempPauseDischarge(30)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Rate failed: No discharge rate limit available"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: No discharge rate limit available (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "tempPauseDischarge",
+      30.0
+     ]
+    ],
+    "writes": []
+   }
+  ],
+  "tempPauseDischarge(Cancel)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Rate failed: No discharge rate limit available"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: No discharge rate limit available (write.py:N)"
+     ]
+    ],
+    "queued": [
+     [
+      "tempPauseDischarge",
+      30.0
+     ]
+    ],
+    "writes": []
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Temp Pause Charge is not currently running"
+     ]
+    ],
+    "queued": [],
+    "writes": []
+   }
+  ]
+ },
+ "read": {
+  "cycle 1 logs": [
+   [
+    "read_logger",
+    "ERROR",
+    "Error processing Inverter data: TypeError: '<' not supported between instances of 'NoneType' and 'int' (read.py:N)"
+   ],
+   [
+    "read_logger",
+    "ERROR",
+    "inverter Update failed so using last known good data from cache: (Exception: Process Data Failure - 2095)"
+   ],
+   [
+    "read_logger",
+    "ERROR",
+    "Inverter data could not be processed, republishing last good data from cache"
+   ]
+  ],
+  "cycle 1 output": {
+   "result": "Please get data from Inverter first, either by calling runAll or waiting until the self-run has completed"
+  },
+  "cycle 2 logs": [
+   [
+    "givenergy_modbus.client.client",
+    "ERROR",
+    "Received error response, retrying: 2:4/ReadInputRegistersResponse(ERROR device_address=0x11 base_register=180)"
+   ],
+   [
+    "givenergy_modbus.client.client",
+    "ERROR",
+    "Received error response, retrying: 2:4/ReadInputRegistersResponse(ERROR device_address=0x11 base_register=180)"
+   ],
+   [
+    "read_logger",
+    "ERROR",
+    "Error processing Inverter data: TypeError: '<' not supported between instances of 'NoneType' and 'int' (read.py:N)"
+   ],
+   [
+    "read_logger",
+    "ERROR",
+    "inverter Update failed so using last known good data from cache: (Exception: Process Data Failure - 2095)"
+   ],
+   [
+    "read_logger",
+    "ERROR",
+    "Inverter data could not be processed, republishing last good data from cache"
+   ]
+  ],
+  "cycle 2 output": {
+   "result": "Please get data from Inverter first, either by calling runAll or waiting until the self-run has completed"
+  },
+  "discovery removed": [],
+  "discovery topics": [],
+  "mqtt topics": []
+ },
+ "rest": {
+  "/enableChargeSchedule({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Schedule to disable was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      96,
+      0
+     ]
+    ]
+   }
+  ],
+  "/enableChargeSchedule({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Schedule to enable was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ]
+    ]
+   }
+  ],
+  "/enableChargeTarget({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Disabling Charge Target was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      20,
+      0
+     ],
+     [
+      17,
+      116,
+      100
+     ]
+    ]
+   }
+  ],
+  "/enableChargeTarget({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Enabling Charge Target was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      20,
+      1
+     ],
+     [
+      17,
+      116,
+      90
+     ]
+    ]
+   }
+  ],
+  "/enableDischarge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: enableDischarge - ignoring"
+     ]
+    ],
+    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/enableDischarge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Unknown write command: enableDischarge - ignoring"
+     ]
+    ],
+    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/enableDischargeSchedule({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Schedule to disable was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "/enableDischargeSchedule({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Schedule to enable was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "/forceCharge(Cancel)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force charge failed: TypeError: 'NoneType' object is not subscriptable (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Force charge failed: TypeError: 'NoneType' object is not subscriptable (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Force Charge is not currently running"
+     ]
+    ],
+    "result": "{'result':'Error: Force Charge is not currently running'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/forceCharge({'duration': '30'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Force charge failed: TypeError: 'NoneType' object is not subscriptable (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Force charge failed: TypeError: 'NoneType' object is not subscriptable (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/forceExport(Cancel)": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Export successfully forced for 30 minutes"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      112,
+      50
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      56,
+      1200
+     ],
+     [
+      17,
+      57,
+      1230
+     ],
+     [
+      17,
+      44,
+      0
+     ],
+     [
+      17,
+      45,
+      0
+     ]
+    ]
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Write request error: TypeError: cancelJob() takes from 1 to 2 positional arguments but 3 were given deleting all pending requests, please try again"
+     ]
+    ],
+    "result": "{'result':'Error: REST response timeout. Unknown success'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/forceExport({'duration': '30'})": [
+   {
+    "jobs": [
+     [
+      1800.0,
+      "queueWrite"
+     ]
+    ],
+    "logs": [],
+    "result": {
+     "result": "Export successfully forced for 30 minutes"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      112,
+      50
+     ],
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ],
+     [
+      17,
+      56,
+      1200
+     ],
+     [
+      17,
+      57,
+      1230
+     ],
+     [
+      17,
+      44,
+      0
+     ],
+     [
+      17,
+      45,
+      0
+     ]
+    ]
+   }
+  ],
+  "/reboot({})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Rebooting Inverter was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      163,
+      100
+     ]
+    ]
+   }
+  ],
+  "/setACCharge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting AC Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setACCharge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting AC Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ac_charge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryCalibration({'state': 'Charge Only'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Battery Calibration Charge Only was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      29,
+      3
+     ]
+    ]
+   }
+  ],
+  "/setBatteryCalibration({'state': 'Off'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Battery Calibration Off was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      29,
+      0
+     ]
+    ]
+   }
+  ],
+  "/setBatteryCalibration({'state': 'Start'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Battery Calibration Start was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      29,
+      1
+     ]
+    ]
+   }
+  ],
+  "/setBatteryCutoff({'dischargeToPercent': '10'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery power reserve to 10 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      114,
+      10
+     ]
+    ]
+   }
+  ],
+  "/setBatteryMode({'mode': 'Eco (Paused)'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Mode failed: CancelledError (tasks.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "/setBatteryMode({'mode': 'Eco'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Eco mode was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      110,
+      4
+     ],
+     [
+      17,
+      59,
+      0
+     ]
+    ]
+   }
+  ],
+  "/setBatteryMode({'mode': 'Timed Demand'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Timed Demand mode was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      110,
+      100
+     ],
+     [
+      17,
+      27,
+      1
+     ],
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "/setBatteryMode({'mode': 'Timed Export'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Timed Export mode was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ],
+     [
+      17,
+      59,
+      1
+     ]
+    ]
+   }
+  ],
+  "/setBatteryPauseMode({'state': 'Disabled'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryPauseMode({'state': 'PauseBoth'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryPauseMode({'state': 'PauseCharge'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryPauseMode({'state': 'PauseDischarge'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setBatteryReserve({'reservePercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery reserve 20 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      110,
+      20
+     ]
+    ]
+   }
+  ],
+  "/setCarChargeBoost({'boost': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setChargeRate({'chargeRate': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Rate failed: No charge rate limit available"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Rate failed: No charge rate limit available"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setChargeRateAC({'chargeRate': '75'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery charge rate AC to 75% was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      313,
+      75
+     ]
+    ]
+   }
+  ],
+  "/setChargeSlot({'start': '01:30', 'finish': '04:30', 'slot': '1', 'chargeToPercent': '90'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 1 to: 01:30 - 04:30 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      94,
+      130
+     ],
+     [
+      17,
+      95,
+      430
+     ],
+     [
+      17,
+      116,
+      90
+     ]
+    ]
+   }
+  ],
+  "/setChargeSlot1({'start': '01:30', 'finish': '04:30', 'chargeToPercent': '90'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 1 to: 01:30 - 04:30 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      94,
+      130
+     ],
+     [
+      17,
+      95,
+      430
+     ],
+     [
+      17,
+      116,
+      90
+     ]
+    ]
+   }
+  ],
+  "/setChargeSlot2({'start': '01:30', 'finish': '04:30', 'chargeToPercent': '90'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Slot 2 to: 01:30 - 04:30 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      31,
+      130
+     ],
+     [
+      17,
+      32,
+      430
+     ],
+     [
+      17,
+      116,
+      90
+     ]
+    ]
+   }
+  ],
+  "/setChargeSlot3({'start': '01:30', 'finish': '04:30', 'chargeToPercent': '90'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setChargeTarget({'chargeToPercent': '85'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Charge Target 85 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      96,
+      1
+     ],
+     [
+      17,
+      20,
+      1
+     ],
+     [
+      17,
+      116,
+      85
+     ]
+    ]
+   }
+  ],
+  "/setDateTime({'dateTime': '01/01/2026 12:00:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting inverter DateTime failed: TypeError: can only concatenate str (not \"FrozenDateTime\") to str (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setDischargeRate({'dischargeRate': '2500'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Rate failed: No discharge rate limit available"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge Rate failed: No discharge rate limit available"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setDischargeRateAC({'dischargeRate': '75'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting battery discharge rate AC to 75% was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      314,
+      75
+     ]
+    ]
+   }
+  ],
+  "/setDischargeSlot({'start': '16:00', 'finish': '19:00', 'slot': '1', 'dischargeToPercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot 1 to: 16:00 - 19:00 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      110,
+      20
+     ],
+     [
+      17,
+      56,
+      1600
+     ],
+     [
+      17,
+      57,
+      1900
+     ]
+    ]
+   }
+  ],
+  "/setDischargeSlot1({'start': '16:00', 'finish': '19:00', 'dischargeToPercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot 1 to: 16:00 - 19:00 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      110,
+      20
+     ],
+     [
+      17,
+      56,
+      1600
+     ],
+     [
+      17,
+      57,
+      1900
+     ]
+    ]
+   }
+  ],
+  "/setDischargeSlot2({'start': '16:00', 'finish': '19:00', 'dischargeToPercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Discharge Slot 2 to: 16:00 - 19:00 was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      110,
+      20
+     ],
+     [
+      17,
+      44,
+      1600
+     ],
+     [
+      17,
+      45,
+      1900
+     ]
+    ]
+   }
+  ],
+  "/setDischargeSlot3({'start': '16:00', 'finish': '19:00', 'dischargeToPercent': '20'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Slot 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge Slot 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      110,
+      20
+     ]
+    ]
+   }
+  ],
+  "/setDischargeTarget({'dischargeToPercent': '30', 'slot': '1'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setEcoMode({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Eco Mode disable was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      27,
+      0
+     ]
+    ]
+   }
+  ],
+  "/setEcoMode({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting Eco Mode enable was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      27,
+      1
+     ]
+    ]
+   }
+  ],
+  "/setEmsPlant({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setEmsPlant({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting EMS Plant Operation failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_ems_plant' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setExportLimit({'state': '3600'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Limit failed: NotImplementedError: Setting the Export Limit is not yet supported by givenergy-modbus for Ac inverters (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Limit failed: NotImplementedError: Setting the Export Limit is not yet supported by givenergy-modbus for Ac inverters (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setExportSlot1({'start': '16:00', 'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Slot 1 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setExportSlot2({'start': '16:00', 'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Slot 2 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setExportSlot3({'start': '16:00', 'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Slot 3 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Slot 3 failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_export_slot' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setExportTarget({'exportToPercent': '30', 'slot': '1'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Export Target 1 failed: NotImplementedError: Export target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Export Target 1 failed: NotImplementedError: Export target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setForceCharge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Charge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setForceCharge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Charge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_charge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setForceDischarge({'state': 'disable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Discharge disable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setForceDischarge({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Force Discharge enable failed: AttributeError: 'SinglePhaseInverter' object has no attribute 'set_force_discharge' (main.py:N, via write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/setPauseSlot({'start': '16:00', 'finish': '19:00'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(319) is not permitted for AC inverter (registers: 319, 320)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for AC inverter (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for AC inverter (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/switchRate({'rate': 'day'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "External rate setting not allowed. Enable Dynamic Tariff in settings"
+     ]
+    ],
+    "result": {
+     "result": "External rate setting not allowed. Enable Dynamic Tariff in settings"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/syncDateTime({'state': 'enable'})": [
+   {
+    "jobs": [],
+    "logs": [],
+    "result": {
+     "result": "Setting inverter time was a success"
+    },
+    "status": 200,
+    "writes": [
+     [
+      17,
+      35,
+      26
+     ],
+     [
+      17,
+      36,
+      6
+     ],
+     [
+      17,
+      37,
+      15
+     ],
+     [
+      17,
+      38,
+      12
+     ],
+     [
+      17,
+      39,
+      0
+     ],
+     [
+      17,
+      40,
+      0
+     ]
+    ]
+   }
+  ],
+  "/tempPauseCharge(Cancel)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Rate failed: No charge rate limit available"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: No charge rate limit available (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Pausing Charge failed: Exception: Setting Charge Rate failed: No charge rate limit available (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Temp Pause Charge is not currently running"
+     ]
+    ],
+    "result": "{'result':'Error: Temp Pause Charge is not currently running'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/tempPauseCharge({'duration': '30'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Charge Rate failed: No charge rate limit available"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Charge failed: Exception: Setting Charge Rate failed: No charge rate limit available (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Pausing Charge failed: Exception: Setting Charge Rate failed: No charge rate limit available (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/tempPauseDischarge(Cancel)": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Rate failed: No discharge rate limit available"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: No discharge rate limit available (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Pausing Discharge failed: Exception: Setting Discharge Rate failed: No discharge rate limit available (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   },
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "read_logger",
+      "ERROR",
+      "Temp Pause Discharge is not currently running"
+     ]
+    ],
+    "result": "{'result':'Error: Temp Pause Discharge is not currently running'}",
+    "status": 200,
+    "writes": []
+   }
+  ],
+  "/tempPauseDischarge({'duration': '30'})": [
+   {
+    "jobs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Setting Discharge Rate failed: No discharge rate limit available"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Pausing Discharge failed: Exception: Setting Discharge Rate failed: No discharge rate limit available (write.py:N)"
+     ]
+    ],
+    "result": {
+     "result": "Pausing Discharge failed: Exception: Setting Discharge Rate failed: No discharge rate limit available (write.py:N)"
+    },
+    "status": 200,
+    "writes": []
+   }
+  ]
+ }
+}

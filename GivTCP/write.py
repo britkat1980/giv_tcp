@@ -146,9 +146,9 @@ async def sendAsyncCommand(reqs,readloop):
     return output
 
 def acLimit(kind,val):
-    # The AC charge/discharge limit (HR313/314). givenergy-modbus only allows it on single-phase AC-coupled
-    # inverters; Gateway, three-phase and HV Gen3 have no rate write it permits yet, so fail clearly
-    if GiV_Settings.inverter_type.lower()=="ac":
+    # The AC charge/discharge limit (HR313/314). givenergy-modbus only allows it on models with the AC config
+    # block (AC and All-in-One); Gateway, three-phase and HV Gen3 have no rate write it permits yet, so fail clearly
+    if GiV_Settings.inverter_type.lower() in ("ac","all_in_one"):
         return getattr(gecommands,"set_battery_"+kind+"_limit_ac")(val)
     raise NotImplementedError("Setting the AC "+kind+" rate is not yet supported by givenergy-modbus for "+str(GiV_Settings.inverter_type)+" inverters")
 
@@ -171,6 +171,18 @@ def revert3phFlags(device,revert,keys):
         if key in revert:
             reqs.extend(setters[key](revert[key] in (True,1,"1","enable","Enable")))
     return reqs
+
+def batteryCapacityWh(multi_output):
+    # The rate controls are worked out from the battery capacity, which EMS and some models don't report
+    capacity=finditem(multi_output,'Battery_Capacity_kWh')
+    if not capacity:
+        raise NotImplementedError("the battery capacity isn't known for this inverter, so the rate can't be set")
+    return float(capacity)*1000
+
+def threePhaseOnly(name):
+    # Force Charge/Discharge and AC Charge enables (HR1111-1113) only exist on three-phase inverters
+    if "3ph" not in GiV_Settings.inverter_type.lower():
+        raise NotImplementedError(name+" is only available on three-phase inverters")
 
 def isEMS(device):
     # givenergy-modbus v2's Ems model has its own EMS-named slot/target writers (set_ems_*), not the inverter ones
@@ -200,7 +212,7 @@ async def sbcla(device,target,readloop=False):
         temp['result']="Setting battery charge rate AC to "+str(target)+"% was a success"
         logger.debug(temp['result'])
     except:
-        temp['result']="Setting battery charge rate "+str(target)+" failed"
+        temp['result']="Setting battery charge rate "+str(target)+" failed: "+errDetail()
         logger.error(temp['result'])
     return temp
 
@@ -216,7 +228,7 @@ async def sbdla(device,target,readloop=False):
         temp['result']="Setting battery discharge rate AC to "+str(target)+"% was a success"
         logger.debug(temp['result'])
     except:
-        temp['result']="Setting battery discharge rate "+str(target)+" failed"
+        temp['result']="Setting battery discharge rate "+str(target)+" failed: "+errDetail()
         logger.error(temp['result'])
     return temp
 
@@ -228,6 +240,7 @@ async def setForceCharge(device,payload,readloop=False):
             enabled=True
         else:
             enabled=False
+        threePhaseOnly("Force Charge")
         reqs=device.set_force_charge(enabled)
         temp['result']= await sendAsyncCommand(reqs,readloop)
         logger.info(temp['result'])
@@ -245,6 +258,7 @@ async def setForceDischarge(device,payload,readloop=False):
             enabled=True
         else:
             enabled=False
+        threePhaseOnly("Force Discharge")
         reqs=device.set_force_discharge(enabled)
         temp['result']= await sendAsyncCommand(reqs,readloop)
         logger.info(temp['result'])
@@ -262,6 +276,7 @@ async def setACCharge(device,payload,readloop=False):
             enabled=True
         else:
             enabled=False
+        threePhaseOnly("AC Charge")
         reqs=device.set_ac_charge(enabled)
         temp['result']= await sendAsyncCommand(reqs,readloop)
         logger.info(temp['result'])
@@ -609,11 +624,11 @@ async def setChargeRate(device,payload,readloop=False):
     
     # Get inverter max bat power
     if exists(GivLUT.regcache):      # if there is a cache then grab it
-        regCacheStack=GivLUT.get_regcache()
-        multi_output_old = regCacheStack[-1]
-        invmaxrate=finditem(multi_output_old,'Invertor_Max_Bat_Rate')
-        batcap=float(finditem(multi_output_old,'Battery_Capacity_kWh'))*1000
         try:
+            regCacheStack=GivLUT.get_regcache()
+            multi_output_old = regCacheStack[-1]
+            invmaxrate=finditem(multi_output_old,'Invertor_Max_Bat_Rate')
+            batcap=batteryCapacityWh(multi_output_old)
             if "3ph" in GiV_Settings.inverter_type.lower() or "gateway" in GiV_Settings.inverter_type.lower():
                 target= round((int(payload['chargeRate'])/invmaxrate)*100,0)
                 if target<1:
@@ -677,11 +692,11 @@ async def setDischargeRate(device,payload,readloop=False):
     if type(payload) is not dict: payload=json.loads(payload)
     # Get inverter max bat power
     if exists(GivLUT.regcache):      # if there is a cache then grab it
-        regCacheStack=GivLUT.get_regcache()
-        multi_output_old = regCacheStack[-1]
-        invmaxrate=int(finditem(multi_output_old,"Invertor_Max_Bat_Rate"))
-        batcap=float(finditem(multi_output_old,'Battery_Capacity_kWh'))*1000
         try:
+            regCacheStack=GivLUT.get_regcache()
+            multi_output_old = regCacheStack[-1]
+            invmaxrate=int(finditem(multi_output_old,"Invertor_Max_Bat_Rate"))
+            batcap=batteryCapacityWh(multi_output_old)
             if "3ph" in GiV_Settings.inverter_type.lower() or "gateway" in GiV_Settings.inverter_type.lower():
                 target= round((int(payload['dischargeRate'])/invmaxrate)*100,0)
                 if target<1:
@@ -1077,7 +1092,7 @@ async def FEResume(device,revert, readloop=False):
     except:
         e=errDetail()
         temp['result']="Force Export Revert failed: " + str(e)
-        os.remove(".FERunning"+str(GiV_Settings.givtcp_instance))
+        if exists(".FERunning"+str(GiV_Settings.givtcp_instance)): os.remove(".FERunning"+str(GiV_Settings.givtcp_instance))
         logger.error (temp['result'])
     return json.dumps(temp)
 
@@ -1088,11 +1103,14 @@ async def forceExport(device, exportTime,readloop=False):
         result={}
         revert={}
         hasBPM=False
-        if exists(GivLUT.regcache):      # if there is a cache then grab it
-            regCacheStack=GivLUT.get_regcache()
+        regCacheStack=GivLUT.get_regcache()
+        if not regCacheStack:
+            raise Exception("no inverter data yet, so the current settings can't be saved to revert to")
+        if regCacheStack:
             revert["start_time"]=regCacheStack[-1]["Timeslots"]["Discharge_start_time_slot_1"][:5]
             revert["end_time"]=regCacheStack[-1]["Timeslots"]["Discharge_end_time_slot_1"][:5]
-            revert["reservePercent"]=regCacheStack[-1]["Control"]["Battery_Power_Reserve"]
+            # 3PH doesn't publish the reserve (HR1109), so take it from the device model
+            revert["reservePercent"]=regCacheStack[-1]["Control"].get("Battery_Power_Reserve",device.battery_soc_reserve)
             revert["mode"]=regCacheStack[-1]["Control"]["Mode"]
             revert['discharge_schedule']=regCacheStack[-1]["Control"]["Enable_Discharge_Schedule"]
             if "Battery_Discharge_Rate" in regCacheStack[-1]["Control"]:
@@ -1148,6 +1166,7 @@ async def FCResume(device,revert,readloop=False):
 
     try:
         logger.info("Reverting Force Charge Settings:")
+        reqs=[]
         if "chargeRate" in revert:
             is3ph="3ph" in GiV_Settings.inverter_type.lower()
             target=100 if is3ph else 50     # full rate if there's no cache to work from
@@ -1161,11 +1180,11 @@ async def FCResume(device,revert,readloop=False):
                 else:
                     target=round(min((int(revert['chargeRate'])/(batcap/2))*50,50))
             if is3ph:
-                reqs=optionalAcLimit("charge",target)
+                reqs.extend(optionalAcLimit("charge",target))
             else:
-                reqs=device.set_battery_charge_limit(target)
+                reqs.extend(device.set_battery_charge_limit(target))
         elif "chargeRateAC" in revert:
-            reqs=optionalAcLimit("charge",revert["chargeRateAC"])
+            reqs.extend(optionalAcLimit("charge",revert["chargeRateAC"]))
         if revert["chargeScheduleEnable"]=="enable":
             enable=True
         else:
@@ -1192,7 +1211,7 @@ async def FCResume(device,revert,readloop=False):
         e=errDetail()
         logger.error("Force Charge revert failed: "+str(e))
         temp['result']="Force Charge revert failed: "+str(e)
-        os.remove(".FCRunning"+str(GiV_Settings.givtcp_instance))
+        if exists(".FCRunning"+str(GiV_Settings.givtcp_instance)): os.remove(".FCRunning"+str(GiV_Settings.givtcp_instance))
         logger.error(temp['result'])
     return json.dumps(temp)
 
@@ -1204,11 +1223,10 @@ def queueWrite(command, payload):
         with open(GivLUT.writerequests,'rb') as inp:
             requests=pickle.load(inp)
     requests.append([command,payload,False])
-    with open(GivLUT.writerequests,'wb') as outp:
-        pickle.dump(requests, outp, pickle.HIGHEST_PROTOCOL)
+    GivLUT.save_writerequests(requests)
     logger.info("Queued "+str(command)+" for the read loop")
 
-def cancelJob(jobid, readloop=False):
+def cancelJob(device, jobid, readloop=False):
     temp={}
     if jobid in GivQueue.q.scheduled_job_registry:
         GivQueue.q.scheduled_job_registry.requeue(jobid, at_front=True)
@@ -1253,7 +1271,9 @@ async def forceCharge(device, chargeTime, readloop=False):
         revert={}
         regCacheStack = GivLUT.get_regcache()
         hasBPM=False
-        if "regCacheStack" in locals():
+        if not regCacheStack:
+            raise Exception("no inverter data yet, so the current settings can't be saved to revert to")
+        if regCacheStack:
             revert["start_time"]=regCacheStack[-1]["Timeslots"]["Charge_start_time_slot_1"][:5]
             revert["end_time"]=regCacheStack[-1]["Timeslots"]["Charge_end_time_slot_1"][:5]
             if "Battery_Charge_Rate" in regCacheStack[-1]["Control"]:
@@ -1336,7 +1356,7 @@ async def tempPauseDischarge(device, pauseTime, readloop=False):
         #Update read data via pickle
         regCacheStack = GivLUT.get_regcache()
         if regCacheStack:
-            revertRate=regCacheStack[-1]["Control"]["Battery_Discharge_Rate"]
+            revertRate=regCacheStack[-1]["Control"].get("Battery_Discharge_Rate",2600)
         else:
             revertRate=2600
 
@@ -1394,7 +1414,7 @@ async def tempPauseCharge(device, pauseTime, readloop=False):
         logger.debug("Pausing Charge for "+str(pauseTime)+" minutes")
         regCacheStack = GivLUT.get_regcache()
         if regCacheStack:
-            revertRate=regCacheStack[-1]["Control"]["Battery_Charge_Rate"]
+            revertRate=regCacheStack[-1]["Control"].get("Battery_Charge_Rate",2600)
         else:
             revertRate=2600
         payload={}
@@ -1444,7 +1464,7 @@ async def setEcoMode(device, payload, readloop=False):
         logger.info(temp['result'])
     except:
         e=errDetail()
-        temp['result']="Error in setting Eco mode: "+result['error_type']
+        temp['result']="Setting Eco Mode failed: "+str(e)
         logger.error(temp['result'])
     return json.dumps(temp)
 
@@ -1512,8 +1532,11 @@ async def setBatteryMode(device, payload, readloop=False):
             updateControlCache("Battery_Power_Reserve",saved_battery_reserve)
             temp['result']="Setting Eco mode was a success"
         elif payload['mode']=="Eco (Paused)":
-            reqs=device.set_mode_dynamic()
-            reqs.extend(device.set_battery_soc_reserve(100))
+            # set_mode_dynamic() also sets the reserve (HR110): replace that write rather than adding a second one,
+            # as the second write to the same register in one batch cancels the first's response
+            reserve=device.set_battery_soc_reserve(100)
+            reserveRegs={getattr(r,'register',None) for r in reserve}
+            reqs=[r for r in device.set_mode_dynamic() if getattr(r,'register',None) not in reserveRegs]+reserve
             result= await sendAsyncCommand(reqs,readloop)
             if 'error' in result:
                 raise Exception(result['error'])
@@ -1587,7 +1610,7 @@ async def setDateTime(device, payload, readloop=False):
     #convert payload to dateTime components
     try:
         iDateTime=datetime.strptime(payload['dateTime'],"%d/%m/%Y %H:%M:%S")   #format '12/11/2021 09:15:32'
-        logger.debug("Setting inverter time to: "+iDateTime)
+        logger.debug("Setting inverter time to: "+str(iDateTime))
         #Set Date and Time on inverter
         #temp= await sdt(iDateTime,readloop)
         reqs=device.set_system_date_time(iDateTime)
@@ -1694,6 +1717,48 @@ def getSavedBatteryReservePercentage():
         with open(GivLUT.reservepkl, 'rb') as inp:
             saved_battery_reserve= pickle.load(inp)
     return saved_battery_reserve
+
+async def enableDischarge(device,payload,readloop=False):
+    """Enable or disable battery discharge, by setting the battery reserve to the saved reserve
+    percentage (enable) or 100% (disable)
+
+    Payload: {'state':'enable' or 'disable'}
+    """
+    temp={}
+    try:
+        if type(payload) is not dict: payload=json.loads(payload)
+        if payload['state']=="enable":
+            target=getSavedBatteryReservePercentage()
+        else:
+            target=100
+        logger.debug("Setting discharge "+str(payload['state'])+" (battery reserve "+str(target)+"%)")
+        reqs=device.set_battery_soc_reserve(target)
+        result= await sendAsyncCommand(reqs,readloop)
+        if 'error' in result:
+            raise Exception(result['error'])
+        updateControlCache("Battery_Power_Reserve",target)
+        temp['result']="Setting Discharge "+str(payload['state'])+" was a success"
+        logger.info(temp['result'])
+    except:
+        e=errDetail()
+        temp['result']="Setting Discharge "+str(payload.get('state') if isinstance(payload,dict) else payload)+" failed: "+str(e)
+        logger.error(temp['result'])
+    return json.dumps(temp)
+
+async def setPVInputMode(device,payload,readloop=False):
+    """Set the PV input mode (three-phase)
+
+    Payload: {'state':'Independent' or '1x2'}
+    """
+    temp={}
+    try:
+        # givenergy-modbus reads pv_input_mode (3PH HR1077) but has no writer for it yet
+        raise NotImplementedError("Setting the PV Input Mode is not yet supported by givenergy-modbus")
+    except:
+        e=errDetail()
+        temp['result']="Setting PV Input Mode failed: "+str(e)
+        logger.error(temp['result'])
+    return json.dumps(temp)
 
 ##### ARCHIVED FUNCTIONS FOR REVIEW OR REMOVAL ######
 '''

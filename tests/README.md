@@ -35,6 +35,21 @@ python -m pytest tests/test_read_cycle.py # read cycles only, about 2.5 minutes
 
 Each model takes about 15 seconds to start, because detect probes for devices that aren't there.
 
+## Reviewing results
+
+The tests pass when GivTCP behaves as recorded in `tests/golden/`, even where the recorded behaviour is an
+error. There are two reports:
+
+- **What changed.** Each failing test lists only the values that changed, one per line (`path: old -> new`).
+  At the end of the run, a summary lists every changed result, grouped by model.
+- **What GivTCP gets wrong.** `--problems` lists every error in the golden results, grouped by message, with
+  the models and controls it affects. It's split into errors to fix (crashes and wrong behaviour) and controls
+  that aren't supported on a model. The report reads the golden files, so a quick run is enough:
+
+  ```
+  python -m pytest tests/test_catalogue_coverage.py --problems
+  ```
+
 ## When a result changes
 
 A failure means GivTCP now behaves differently from the recorded result for that model. If the change is

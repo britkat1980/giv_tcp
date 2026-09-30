@@ -102,6 +102,9 @@ class PlantSession:
         outcomes = []
         for target, payload in steps:
             if payload == "@job":       # run the revert job the previous step scheduled, as the RQ worker would
+                if not recorder.jobs:
+                    outcomes.append(dict(skipped="the previous step scheduled no job"))
+                    continue
                 payload = recorder.jobs[-1][2][1]
             recorder.clear()
             self.mock.writes.clear()
@@ -125,11 +128,16 @@ class PlantSession:
         """Call a write.py function directly, as the read loop does"""
         import inspect
         import write
+        from giverrors import errDetail
         func = getattr(write, command)
-        if inspect.iscoroutinefunction(func):
-            result = self.loop.run(func(self.device_for_writes(), payload, True))
-        else:
-            result = func(self.device_for_writes(), payload, True)
+        try:
+            if inspect.iscoroutinefunction(func):
+                result = self.loop.run(func(self.device_for_writes(), payload, True))
+            else:
+                result = func(self.device_for_writes(), payload, True)
+        except Exception:
+            # Not caught by the write function itself: the read loop would log it and drop every queued request
+            return self._outcome(raised=errDetail())
         return self._outcome(result=_json(result))
 
     def _pump(self, until, timeout=10):

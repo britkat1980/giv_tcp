@@ -6,7 +6,7 @@ from givenergy_modbus.model.ems import EmsInverterStatus, MAX_MANAGED_INVERTERS
 from givenergy_modbus.model.meter import MeterStatus
 from givenergy_modbus.model.battery import State
 from givenergy_modbus.model.plant import Plant, PlantCapabilities
-from givenergy_modbus.model.register import HR
+from givenergy_modbus.model.register import HR, IR
 from givenergy_modbus.exceptions import CommunicationError, RefreshPartiallySucceeded
 from givenergy_modbus.model import TimeSlot
 import sys
@@ -202,8 +202,7 @@ async def processWriteRequests(client):
             for i in newwritecommands[:]:
                 if i in writecommands:
                     newwritecommands.remove(i)
-            with open(GivLUT.writerequests,'wb') as outp:
-                pickle.dump(newwritecommands, outp, pickle.HIGHEST_PROTOCOL)
+            GivLUT.save_writerequests(newwritecommands)
             return True
     except Exception as e:
         logger.error("Write request error: "+str(e.__class__.__name__)+": "+str(e)+" deleting all pending requests, please try again")
@@ -574,6 +573,11 @@ def getBatteries(plant: Plant, multi_output_old):
                 bcudata['Stack_SOC_High']=bcu.battery_soc_max
                 bcudata['Stack_SOC_Low']=bcu.battery_soc_min
                 bcudata['Stack_Firmware']=bcu.pack_software_version
+                # IR(101) Packn_DisChgState (protocol v4.4.1 s4.4.2.3), not modelled by givenergy-modbus: bit0=charge, bit1=discharge, 1=closed
+                dischgState=plant.register_caches.get(hvstack.device_address,{}).get(IR(101))
+                if dischgState is not None:
+                    bcudata['Stack_Charge_MOS_State']="Closed" if dischgState & 0x01 else "Open"
+                    bcudata['Stack_Discharge_MOS_State']="Closed" if dischgState & 0x02 else "Open"
                 # v2 reports capacity in Ah per module: kWh = Ah x 76.8V module voltage, and usable kWh is 10% less
                 if bcu.battery_nominal_capacity_ah is not None:
                     bcudata['Stack_Design_Capacity']=round(bcu.battery_nominal_capacity_ah*76.8/1000*modules*0.9,2)
@@ -640,49 +644,49 @@ def getTimeslots(plant: Plant, multi_output_old=None):
     elif not plant.gateway ==None:
         GEInv=plant.gateway
     logger.debug("Getting TimeSlot data")
-    timeslots['Discharge_start_time_slot_1'] = validateTimeslot(GEInv.discharge_slot_1.start,"Discharge_start_time_slot_1",multi_output_old)
-    timeslots['Discharge_start_time_slot_2'] = validateTimeslot(GEInv.discharge_slot_2.start,"Discharge_start_time_slot_2",multi_output_old)
-    timeslots['Discharge_end_time_slot_1'] = validateTimeslot(GEInv.discharge_slot_1.end,"Discharge_end_time_slot_1",multi_output_old)
-    timeslots['Discharge_end_time_slot_2'] = validateTimeslot(GEInv.discharge_slot_2.end,"Discharge_end_time_slot_2",multi_output_old)
-    timeslots['Charge_start_time_slot_1'] = validateTimeslot(GEInv.charge_slot_1.start,"Charge_start_time_slot_1",multi_output_old)
-    timeslots['Charge_end_time_slot_1'] = validateTimeslot(GEInv.charge_slot_1.end,"Charge_end_time_slot_1",multi_output_old)
+    timeslots['Discharge_start_time_slot_1'] = validateTimeslot(getattr(GEInv.discharge_slot_1,'start',None),"Discharge_start_time_slot_1",multi_output_old)
+    timeslots['Discharge_start_time_slot_2'] = validateTimeslot(getattr(GEInv.discharge_slot_2,'start',None),"Discharge_start_time_slot_2",multi_output_old)
+    timeslots['Discharge_end_time_slot_1'] = validateTimeslot(getattr(GEInv.discharge_slot_1,'end',None),"Discharge_end_time_slot_1",multi_output_old)
+    timeslots['Discharge_end_time_slot_2'] = validateTimeslot(getattr(GEInv.discharge_slot_2,'end',None),"Discharge_end_time_slot_2",multi_output_old)
+    timeslots['Charge_start_time_slot_1'] = validateTimeslot(getattr(GEInv.charge_slot_1,'start',None),"Charge_start_time_slot_1",multi_output_old)
+    timeslots['Charge_end_time_slot_1'] = validateTimeslot(getattr(GEInv.charge_slot_1,'end',None),"Charge_end_time_slot_1",multi_output_old)
 
     try:
         if GEInv.model in [Model.ALL_IN_ONE, Model.AC_3PH, Model.HYBRID_3PH, Model.GATEWAY, Model.HYBRID_GEN4, Model.HYBRID_HV_GEN3] or (GEInv.model == Model.HYBRID_GEN3 and int(GEInv.arm_firmware_version)>302):   #10 slots don't apply to AC/Hybrid except new fw on Gen 3
-            timeslots['Charge_start_time_slot_2'] = validateTimeslot(GEInv.charge_slot_2.start,"Charge_start_time_slot_2",multi_output_old)
-            timeslots['Charge_end_time_slot_2'] = validateTimeslot(GEInv.charge_slot_2.end,"Charge_end_time_slot_2",multi_output_old)
-            timeslots['Charge_start_time_slot_3'] = validateTimeslot(GEInv.charge_slot_3.start,"Charge_start_time_slot_3",multi_output_old)
-            timeslots['Charge_end_time_slot_3'] = validateTimeslot(GEInv.charge_slot_3.end,"Charge_end_time_slot_3",multi_output_old)
-            timeslots['Charge_start_time_slot_4'] = validateTimeslot(GEInv.charge_slot_4.start,"Charge_start_time_slot_4",multi_output_old)
-            timeslots['Charge_end_time_slot_4'] = validateTimeslot(GEInv.charge_slot_4.end,"Charge_end_time_slot_4",multi_output_old)
-            timeslots['Charge_start_time_slot_5'] = validateTimeslot(GEInv.charge_slot_5.start,"Charge_start_time_slot_5",multi_output_old)
-            timeslots['Charge_end_time_slot_5'] = validateTimeslot(GEInv.charge_slot_5.end,"Charge_end_time_slot_5",multi_output_old)
-            timeslots['Charge_start_time_slot_6'] = validateTimeslot(GEInv.charge_slot_6.start,"Charge_start_time_slot_6",multi_output_old)
-            timeslots['Charge_end_time_slot_6'] = validateTimeslot(GEInv.charge_slot_6.end,"Charge_end_time_slot_6",multi_output_old)
-            timeslots['Charge_start_time_slot_7'] = validateTimeslot(GEInv.charge_slot_7.start,"Charge_start_time_slot_7",multi_output_old)
-            timeslots['Charge_end_time_slot_7'] = validateTimeslot(GEInv.charge_slot_7.end,"Charge_end_time_slot_7",multi_output_old)
-            timeslots['Charge_start_time_slot_8'] = validateTimeslot(GEInv.charge_slot_8.start,"Charge_start_time_slot_8",multi_output_old)
-            timeslots['Charge_end_time_slot_8'] = validateTimeslot(GEInv.charge_slot_8.end,"Charge_end_time_slot_8",multi_output_old)
-            timeslots['Charge_start_time_slot_9'] = validateTimeslot(GEInv.charge_slot_9.start,"Charge_start_time_slot_9",multi_output_old)
-            timeslots['Charge_end_time_slot_9'] = validateTimeslot(GEInv.charge_slot_9.end,"Charge_end_time_slot_9",multi_output_old)
-            timeslots['Charge_start_time_slot_10'] = validateTimeslot(GEInv.charge_slot_10.start,"Charge_start_time_slot_10",multi_output_old)
-            timeslots['Charge_end_time_slot_10'] = validateTimeslot(GEInv.charge_slot_10.end,"Charge_end_time_slot_10",multi_output_old)
-            timeslots['Discharge_start_time_slot_3'] = validateTimeslot(GEInv.discharge_slot_3.start,"Discharge_start_time_slot_3",multi_output_old)
-            timeslots['Discharge_end_time_slot_3'] = validateTimeslot(GEInv.discharge_slot_3.end,"Discharge_end_time_slot_3",multi_output_old)
-            timeslots['Discharge_start_time_slot_4'] = validateTimeslot(GEInv.discharge_slot_4.start,"Discharge_start_time_slot_4",multi_output_old)
-            timeslots['Discharge_end_time_slot_4'] = validateTimeslot(GEInv.discharge_slot_4.end,"Discharge_end_time_slot_4",multi_output_old)
-            timeslots['Discharge_start_time_slot_5'] = validateTimeslot(GEInv.discharge_slot_5.start,"Discharge_start_time_slot_5",multi_output_old)
-            timeslots['Discharge_end_time_slot_5'] = validateTimeslot(GEInv.discharge_slot_5.end,"Discharge_end_time_slot_5",multi_output_old)
-            timeslots['Discharge_start_time_slot_6'] = validateTimeslot(GEInv.discharge_slot_6.start,"Discharge_start_time_slot_6",multi_output_old)
-            timeslots['Discharge_end_time_slot_6'] = validateTimeslot(GEInv.discharge_slot_6.end,"Discharge_end_time_slot_6",multi_output_old)
-            timeslots['Discharge_start_time_slot_7'] = validateTimeslot(GEInv.discharge_slot_7.start,"Discharge_start_time_slot_7",multi_output_old)
-            timeslots['Discharge_end_time_slot_7'] = validateTimeslot(GEInv.discharge_slot_7.end,"Discharge_end_time_slot_7",multi_output_old)
-            timeslots['Discharge_start_time_slot_8'] = validateTimeslot(GEInv.discharge_slot_8.start,"Discharge_start_time_slot_8",multi_output_old)
-            timeslots['Discharge_end_time_slot_8'] = validateTimeslot(GEInv.discharge_slot_8.end,"Discharge_end_time_slot_8",multi_output_old)
-            timeslots['Discharge_start_time_slot_9'] = validateTimeslot(GEInv.discharge_slot_9.start,"Discharge_start_time_slot_9",multi_output_old)
-            timeslots['Discharge_end_time_slot_9'] = validateTimeslot(GEInv.discharge_slot_9.end,"Discharge_end_time_slot_9",multi_output_old)
-            timeslots['Discharge_start_time_slot_10'] = validateTimeslot(GEInv.discharge_slot_10.start,"Discharge_start_time_slot_10",multi_output_old)
-            timeslots['Discharge_end_time_slot_10'] = validateTimeslot(GEInv.discharge_slot_10.end,"Discharge_end_time_slot_10",multi_output_old)
+            timeslots['Charge_start_time_slot_2'] = validateTimeslot(getattr(GEInv.charge_slot_2,'start',None),"Charge_start_time_slot_2",multi_output_old)
+            timeslots['Charge_end_time_slot_2'] = validateTimeslot(getattr(GEInv.charge_slot_2,'end',None),"Charge_end_time_slot_2",multi_output_old)
+            timeslots['Charge_start_time_slot_3'] = validateTimeslot(getattr(GEInv.charge_slot_3,'start',None),"Charge_start_time_slot_3",multi_output_old)
+            timeslots['Charge_end_time_slot_3'] = validateTimeslot(getattr(GEInv.charge_slot_3,'end',None),"Charge_end_time_slot_3",multi_output_old)
+            timeslots['Charge_start_time_slot_4'] = validateTimeslot(getattr(GEInv.charge_slot_4,'start',None),"Charge_start_time_slot_4",multi_output_old)
+            timeslots['Charge_end_time_slot_4'] = validateTimeslot(getattr(GEInv.charge_slot_4,'end',None),"Charge_end_time_slot_4",multi_output_old)
+            timeslots['Charge_start_time_slot_5'] = validateTimeslot(getattr(GEInv.charge_slot_5,'start',None),"Charge_start_time_slot_5",multi_output_old)
+            timeslots['Charge_end_time_slot_5'] = validateTimeslot(getattr(GEInv.charge_slot_5,'end',None),"Charge_end_time_slot_5",multi_output_old)
+            timeslots['Charge_start_time_slot_6'] = validateTimeslot(getattr(GEInv.charge_slot_6,'start',None),"Charge_start_time_slot_6",multi_output_old)
+            timeslots['Charge_end_time_slot_6'] = validateTimeslot(getattr(GEInv.charge_slot_6,'end',None),"Charge_end_time_slot_6",multi_output_old)
+            timeslots['Charge_start_time_slot_7'] = validateTimeslot(getattr(GEInv.charge_slot_7,'start',None),"Charge_start_time_slot_7",multi_output_old)
+            timeslots['Charge_end_time_slot_7'] = validateTimeslot(getattr(GEInv.charge_slot_7,'end',None),"Charge_end_time_slot_7",multi_output_old)
+            timeslots['Charge_start_time_slot_8'] = validateTimeslot(getattr(GEInv.charge_slot_8,'start',None),"Charge_start_time_slot_8",multi_output_old)
+            timeslots['Charge_end_time_slot_8'] = validateTimeslot(getattr(GEInv.charge_slot_8,'end',None),"Charge_end_time_slot_8",multi_output_old)
+            timeslots['Charge_start_time_slot_9'] = validateTimeslot(getattr(GEInv.charge_slot_9,'start',None),"Charge_start_time_slot_9",multi_output_old)
+            timeslots['Charge_end_time_slot_9'] = validateTimeslot(getattr(GEInv.charge_slot_9,'end',None),"Charge_end_time_slot_9",multi_output_old)
+            timeslots['Charge_start_time_slot_10'] = validateTimeslot(getattr(GEInv.charge_slot_10,'start',None),"Charge_start_time_slot_10",multi_output_old)
+            timeslots['Charge_end_time_slot_10'] = validateTimeslot(getattr(GEInv.charge_slot_10,'end',None),"Charge_end_time_slot_10",multi_output_old)
+            timeslots['Discharge_start_time_slot_3'] = validateTimeslot(getattr(GEInv.discharge_slot_3,'start',None),"Discharge_start_time_slot_3",multi_output_old)
+            timeslots['Discharge_end_time_slot_3'] = validateTimeslot(getattr(GEInv.discharge_slot_3,'end',None),"Discharge_end_time_slot_3",multi_output_old)
+            timeslots['Discharge_start_time_slot_4'] = validateTimeslot(getattr(GEInv.discharge_slot_4,'start',None),"Discharge_start_time_slot_4",multi_output_old)
+            timeslots['Discharge_end_time_slot_4'] = validateTimeslot(getattr(GEInv.discharge_slot_4,'end',None),"Discharge_end_time_slot_4",multi_output_old)
+            timeslots['Discharge_start_time_slot_5'] = validateTimeslot(getattr(GEInv.discharge_slot_5,'start',None),"Discharge_start_time_slot_5",multi_output_old)
+            timeslots['Discharge_end_time_slot_5'] = validateTimeslot(getattr(GEInv.discharge_slot_5,'end',None),"Discharge_end_time_slot_5",multi_output_old)
+            timeslots['Discharge_start_time_slot_6'] = validateTimeslot(getattr(GEInv.discharge_slot_6,'start',None),"Discharge_start_time_slot_6",multi_output_old)
+            timeslots['Discharge_end_time_slot_6'] = validateTimeslot(getattr(GEInv.discharge_slot_6,'end',None),"Discharge_end_time_slot_6",multi_output_old)
+            timeslots['Discharge_start_time_slot_7'] = validateTimeslot(getattr(GEInv.discharge_slot_7,'start',None),"Discharge_start_time_slot_7",multi_output_old)
+            timeslots['Discharge_end_time_slot_7'] = validateTimeslot(getattr(GEInv.discharge_slot_7,'end',None),"Discharge_end_time_slot_7",multi_output_old)
+            timeslots['Discharge_start_time_slot_8'] = validateTimeslot(getattr(GEInv.discharge_slot_8,'start',None),"Discharge_start_time_slot_8",multi_output_old)
+            timeslots['Discharge_end_time_slot_8'] = validateTimeslot(getattr(GEInv.discharge_slot_8,'end',None),"Discharge_end_time_slot_8",multi_output_old)
+            timeslots['Discharge_start_time_slot_9'] = validateTimeslot(getattr(GEInv.discharge_slot_9,'start',None),"Discharge_start_time_slot_9",multi_output_old)
+            timeslots['Discharge_end_time_slot_9'] = validateTimeslot(getattr(GEInv.discharge_slot_9,'end',None),"Discharge_end_time_slot_9",multi_output_old)
+            timeslots['Discharge_start_time_slot_10'] = validateTimeslot(getattr(GEInv.discharge_slot_10,'start',None),"Discharge_start_time_slot_10",multi_output_old)
+            timeslots['Discharge_end_time_slot_10'] = validateTimeslot(getattr(GEInv.discharge_slot_10,'end',None),"Discharge_end_time_slot_10",multi_output_old)
 
             controlmode['Charge_Target_SOC_1'] = GEInv.charge_target_soc_1
             controlmode['Charge_Target_SOC_2'] = GEInv.charge_target_soc_2
@@ -708,8 +712,8 @@ def getTimeslots(plant: Plant, multi_output_old=None):
         logger.debug("New Charge/Discharge timeslots don't exist for this model")
 
     if not plant.capabilities.device_type in PAUSE_UNSUPPORTED and GEInv.battery_pause_slot_1 is not None:   #Battery Pause slots not on Gen 1 Hybrid or AC only
-        timeslots['Battery_pause_start_time_slot'] = validateTimeslot(GEInv.battery_pause_slot_1.start,"Battery_pause_start_time_slot",multi_output_old)
-        timeslots['Battery_pause_end_time_slot'] = validateTimeslot(GEInv.battery_pause_slot_1.end,"Battery_pause_end_time_slot",multi_output_old)
+        timeslots['Battery_pause_start_time_slot'] = validateTimeslot(getattr(GEInv.battery_pause_slot_1,'start',None),"Battery_pause_start_time_slot",multi_output_old)
+        timeslots['Battery_pause_end_time_slot'] = validateTimeslot(getattr(GEInv.battery_pause_slot_1,'end',None),"Battery_pause_end_time_slot",multi_output_old)
     # Unused slots report a 0% target, which HA rejects (min 4%) on every poll - don't publish them
     controlmode={k:v for k,v in controlmode.items() if not ("Target_SOC_" in k and isinstance(v,(int,float)) and v<4)}
     return timeslots,controlmode
@@ -788,8 +792,8 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
         with open(GivLUT.reservepkl, 'rb') as inp:
             saved_battery_reserve = pickle.load(inp)
 
-    # Has the saved value changed from the current value? Only carry on if it is different
-    if saved_battery_reserve != battery_reserve:
+    # Has the saved value changed from the current value? Only carry on if it is different (and was read)
+    if battery_reserve is not None and saved_battery_reserve != battery_reserve:
         if battery_reserve < 100:
             try:
                 # Pickle the value to use later...
@@ -809,10 +813,12 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
 
     # NON 3PH controls go here
     if not plant.capabilities.device_type in (Model.AC_3PH, Model.HYBRID_3PH, Model.GATEWAY):        #Not on 3Ph OR GATEWAY
-        discharge_rate = int(min((GEInv.battery_discharge_limit/100)*inverterModel.batterycapacity*1000, inverterModel.batmaxrate))
-        controlmode['Battery_Discharge_Rate'] = discharge_rate
-        charge_rate = int(min((GEInv.battery_charge_limit/100)*inverterModel.batterycapacity*1000, inverterModel.batmaxrate))
-        controlmode['Battery_Charge_Rate'] = charge_rate
+        # HR111/112 can be unread (None) if the HR(60-119) block failed - fall back to the previous values
+        for key, limit in (('Battery_Discharge_Rate', GEInv.battery_discharge_limit), ('Battery_Charge_Rate', GEInv.battery_charge_limit)):
+            if limit is not None and inverterModel.batterycapacity:
+                controlmode[key]=int(min((limit/100)*inverterModel.batterycapacity*1000, inverterModel.batmaxrate))
+            elif multi_output_old and key in multi_output_old.get('Control',{}):
+                controlmode[key]=multi_output_old['Control'][key]
     else:
         # HR313/314 can be unread (None), e.g. on Gateway - fall back to the previous values
         for key, limit in (('Battery_Discharge_Rate', GEInv.battery_discharge_limit_ac), ('Battery_Charge_Rate', GEInv.battery_charge_limit_ac)):
@@ -1345,7 +1351,7 @@ def processInverterInfo(plant: Plant):
                 discharge_power = abs(Battery_power)
                 charge_power = 0
                 power_output['Charge_Time_Remaining'] = 0
-                if discharge_power!=0:
+                if discharge_power!=0 and controlmode.get('Battery_Power_Reserve') is not None:
                     # Time to get from current SOC to battery Reserve at the current rate
                     power_output['Discharge_Time_Remaining'] = max(int(inverterModel.batterycapacity*((power_output['SOC'] - controlmode['Battery_Power_Reserve'])/100) / (discharge_power/1000) * 60),0)
                     finaltime=datetime.datetime.now() + timedelta(minutes=power_output['Discharge_Time_Remaining'])
@@ -1356,7 +1362,7 @@ def processInverterInfo(plant: Plant):
                 discharge_power = 0
                 charge_power = abs(Battery_power)
                 power_output['Discharge_Time_Remaining'] = 0
-                if charge_power!=0:
+                if charge_power!=0 and controlmode.get('Target_SOC') is not None:
                     # Time to get from current SOC to target SOC at the current rate (Target SOC-Current SOC)xBattery Capacity
                     power_output['Charge_Time_Remaining'] = max(int(inverterModel.batterycapacity*((controlmode['Target_SOC'] - power_output['SOC'])/100) / (charge_power/1000) * 60),0)
                     finaltime=datetime.datetime.now() + timedelta(minutes=power_output['Charge_Time_Remaining'])
@@ -1708,7 +1714,7 @@ def processGatewayInfo(plant: Plant):
                     charge_power = 0
                     power_output['Charge_Time_Remaining'] = 0
                     #power_output['Charge_Completion_Time'] = finaltime.replace(tzinfo=GivLUT.timezone).isoformat()
-                    if discharge_power!=0:
+                    if discharge_power!=0 and controlmode.get('Battery_Power_Reserve') is not None:
                         # Time to get from current SOC to battery Reserve at the current rate
                         power_output['Discharge_Time_Remaining'] = max(int(inverterModel.batterycapacity*((power_output['SOC'] - controlmode['Battery_Power_Reserve'])/100) / (discharge_power/1000) * 60),0)
                         finaltime=datetime.datetime.now() + timedelta(minutes=power_output['Discharge_Time_Remaining'])
@@ -1721,7 +1727,7 @@ def processGatewayInfo(plant: Plant):
                     charge_power = abs(Battery_power)
                     power_output['Discharge_Time_Remaining'] = 0
                     #power_output['Discharge_Completion_Time'] = datetime.datetime.now().replace(tzinfo=GivLUT.timezone).isoformat()
-                    if charge_power!=0:
+                    if charge_power!=0 and controlmode.get('Target_SOC') is not None:
                         # Time to get from current SOC to target SOC at the current rate (Target SOC-Current SOC)xBattery Capacity
                         power_output['Charge_Time_Remaining'] = max(int(inverterModel.batterycapacity*((controlmode['Target_SOC'] - power_output['SOC'])/100) / (charge_power/1000) * 60),0)
                         finaltime=datetime.datetime.now() + timedelta(minutes=power_output['Charge_Time_Remaining'])

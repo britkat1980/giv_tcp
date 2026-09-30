@@ -714,9 +714,9 @@ class GivMQTT():
                     if exists(".tpdRunning_"+str(GiV_Settings.givtcp_instance)):
                         jobid= str(open(".tpdRunning_"+str(GiV_Settings.givtcp_instance),"r").readline().strip('\n'))
                         logger.debug("Retrieved jobID to cancel Temp Pause Discharge: "+ str(jobid))
-                        result=wr.cancelJob(jobid)
+                        requestcommand("cancelJob",jobid)
                     else:
-                        logger.error("Temp Pause Charge is not currently running")
+                        logger.error("Temp Pause Discharge is not currently running")
                 elif isfloat(message.payload.decode("utf-8")):
                     duration=float(message.payload.decode("utf-8"))
                 #wr.tempPauseDischarge(payload)
@@ -727,7 +727,7 @@ class GivMQTT():
                     if exists(".tpcRunning_"+str(GiV_Settings.givtcp_instance)):
                         jobid= str(open(".tpcRunning_"+str(GiV_Settings.givtcp_instance),"r").readline().strip('\n'))
                         logger.debug("Retrieved jobID to cancel Temp Pause Charge: "+ str(jobid))
-                        result=wr.cancelJob(jobid)
+                        requestcommand("cancelJob",jobid)
                     else:
                         logger.error("Temp Pause Charge is not currently running")
                 elif isfloat(message.payload.decode("utf-8")):
@@ -791,5 +791,4 @@ def requestcommand(command,payload):
         with open(GivLUT.writerequests,'rb') as inp:
             requests=pickle.load(inp)
     requests.append([command,payload,False])
-    with open(GivLUT.writerequests,'wb') as outp:
-        pickle.dump(requests, outp, pickle.HIGHEST_PROTOCOL)
+    GivLUT.save_writerequests(requests)
