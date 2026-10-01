@@ -22,7 +22,8 @@
     <!-- Logs come from /config/GivTCP/logs via nginx (see ingress.conf) and are read by logviewer.js -->
     <div class="doc logviewer">
         <div class="card">
-            <div class="lv-tabs" id="lv-tabs" role="tablist"></div>
+            <!-- One tick box per log; ticking several merges them by time -->
+            <div class="lv-picks" id="lv-picks" role="group" aria-label="Logs to show"></div>
             <div class="lv-toolbar">
                 <label>Day
                     <select id="lv-day"></select>

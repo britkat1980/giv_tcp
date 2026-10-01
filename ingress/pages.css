@@ -144,26 +144,33 @@ body {
 
 /* ---- Log viewer (logs.html) ---- */
 .logviewer .card { padding: 0; overflow: hidden; }
-.lv-tabs {
+/* Log picker: a tick box per log, with a dot in the colour that log's entries are labelled with when merged */
+.lv-picks {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 18px;
     border-bottom: 1px solid var(--divider);
-    padding: 0 8px;
-}
-.lv-tab {
-    background: none;
-    border: 0;
-    border-bottom: 3px solid transparent;
-    padding: 12px 14px 9px;
-    font: inherit;
+    padding: 12px 16px;
     font-size: .875rem;
-    font-weight: 500;
-    color: var(--card-sub);
+}
+.lv-pick {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--card-text);
     cursor: pointer;
     white-space: nowrap;
 }
-.lv-tab:hover { color: var(--card-text); background: var(--stripe); }
-.lv-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.lv-pick input { accent-color: var(--accent); margin: 0; cursor: pointer; }
+.lv-dot {
+    width: .7em;
+    height: .7em;
+    border-radius: 50%;
+    background: currentColor;       /* the lv-src-N class sets the colour */
+    flex: none;
+}
+.lv-picks .lv-btn { padding: 3px 10px; }
 .lv-toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -228,7 +235,7 @@ body {
     color: var(--card-sub);
     border-top: 1px solid var(--divider);
 }
-/* Source label on each entry in the "All logs" tab */
+/* Source label on each entry when several logs are shown */
 .lv-src {
     display: inline-block;
     width: 13ch;

@@ -1,20 +1,20 @@
 // Log viewer for logs.html. nginx serves a JSON listing of /config/GivTCP/logs at logs/ and the .log files
 // themselves (see ingress.conf). Files are read from the end with HTTP Range requests, so large logs load
 // quickly, and follow mode only fetches the bytes added since the last read.
-// Each tab shows one log type; the "All logs" tab merges every log for the chosen day by timestamp.
+// A tick box per log type: tick one to see it alone, or several (any combination) to merge them by timestamp.
 (function() {
     var CHUNK = 256 * 1024;         // bytes read from the end of a file (and per "Load earlier")
     var MAX_LINES = 20000;          // keep the page responsive on very large logs
     var FOLLOW_MS = 5000;
     var LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"];
-    var ALL = { base: "*all*", label: "All logs" };
     var TIMESTAMP = /^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3})/;     // every GivTCP log line starts with one
 
     var el = function(id) { return document.getElementById(id); };
-    // view: ALL or a group. day: null for the current files, or a rotated day. sources: the files being shown
-    var state = { groups: [], view: null, day: null, sources: [], timer: null };
+    // selected: the ticked logs (their base names). day: null for the current files, or a rotated day.
+    // sources: the files being shown
+    var state = { groups: [], selected: null, day: null, sources: [], timer: null };
 
-    // ---- Tabs: one per log type, rotated days of the same log grouped under it ----
+    // ---- Log types: one tick box each, rotated days of the same log grouped under it ----
     function describe(base) {
         var m;
         if (base === "startup.log") return { label: "Startup", tag: "Startup", order: "0" };
@@ -50,22 +50,46 @@
         return group.files.filter(function(f) { return f.day === day; })[0];
     }
 
-    function renderTabs() {
-        var tabs = el("lv-tabs");
-        tabs.innerHTML = "";
-        [ALL].concat(state.groups).forEach(function(g) {
-            var b = document.createElement("button");
-            b.className = "lv-tab" + (g === state.view ? " active" : "");
-            b.textContent = g.label;
-            b.onclick = function() { selectView(g); };
-            tabs.appendChild(b);
+    function shownGroups() {
+        return state.groups.filter(function(g) { return state.selected.indexOf(g.base) > -1; });
+    }
+
+    function renderPicker() {
+        var box = el("lv-picks");
+        box.innerHTML = "";
+        state.groups.forEach(function(g) {
+            var label = document.createElement("label");
+            label.className = "lv-pick";
+            var cb = document.createElement("input");
+            cb.type = "checkbox";
+            cb.value = g.base;
+            cb.checked = state.selected.indexOf(g.base) > -1;
+            cb.onchange = function() {
+                var bases = [].map.call(box.querySelectorAll("input:checked"), function(c) { return c.value; });
+                setSelection(bases);
+            };
+            var dot = document.createElement("span");
+            dot.className = "lv-dot lv-src-" + g.colour;     // the colour its entries are labelled with when merged
+            label.appendChild(cb);
+            label.appendChild(dot);
+            label.appendChild(document.createTextNode(g.label));
+            box.appendChild(label);
+        });
+        [["All", function() { return state.groups.map(function(g) { return g.base; }); }],
+         ["None", function() { return []; }]].forEach(function(b) {
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "lv-btn";
+            btn.textContent = b[0];
+            btn.onclick = function() { setSelection(b[1]()); renderPicker(); };
+            box.appendChild(btn);
         });
     }
 
-    // Days available in this view: one group's files, or every day any log has for "All logs"
+    // Days available for the ticked logs: every day any of them has
     function renderDays() {
-        var days = {};
-        (state.view === ALL ? state.groups : [state.view]).forEach(function(g) {
+        var days = { "": true };
+        shownGroups().forEach(function(g) {
             g.files.forEach(function(f) { days[f.day || ""] = true; });
         });
         var sel = el("lv-day");
@@ -79,25 +103,39 @@
         sel.value = state.day || "";
     }
 
-    function selectView(view) {
-        state.view = view;
-        try { localStorage.setItem("givtcp-log-tab", view.base); } catch (e) {}
-        // keep the chosen day if this view has it, otherwise go back to the current files
-        var groups = view === ALL ? state.groups : [view];
-        if (state.day && !groups.some(function(g) { return fileFor(g, state.day); })) state.day = null;
-        renderTabs();
+    function setSelection(bases) {
+        // keep the logs' own order, whatever order they were ticked in
+        state.selected = state.groups.map(function(g) { return g.base; }).filter(function(b) { return bases.indexOf(b) > -1; });
+        try { localStorage.setItem("givtcp-log-selection", JSON.stringify(state.selected)); } catch (e) {}
+        // keep the chosen day if one of the ticked logs has it, otherwise go back to the current files
+        if (state.day && !shownGroups().some(function(g) { return fileFor(g, state.day); })) state.day = null;
         renderDays();
         loadView();
     }
 
+    // The saved selection, or the tab saved by the earlier tabbed viewer, or every log
+    function savedSelection() {
+        var all = state.groups.map(function(g) { return g.base; });
+        try {
+            var saved = JSON.parse(localStorage.getItem("givtcp-log-selection"));
+            if (Array.isArray(saved)) return saved;
+            var tab = localStorage.getItem("givtcp-log-tab");
+            if (tab && all.indexOf(tab) > -1) return [tab];
+        } catch (e) {}
+        return all;
+    }
+
     function loadView() {
-        var groups = state.view === ALL ? state.groups : [state.view];
-        state.sources = groups.map(function(g) {
+        state.sources = shownGroups().map(function(g) {
             var f = fileFor(g, state.day);
             return f && { name: f.name, group: g, mtime: f.mtime, start: 0, size: 0, lines: [], partial: "" };
         }).filter(Boolean);
-        setStatus("Loading…");
         el("lv-log").innerHTML = "";
+        if (!state.sources.length) {
+            render(true);
+            return;
+        }
+        setStatus("Loading…");
         Promise.all(state.sources.map(loadSource)).then(function() {
             render(true);
         }).catch(function(e) {
@@ -224,7 +262,7 @@
         var box = el("lv-log");
         var minLevel = LEVELS.indexOf(el("lv-level").value);
         var text = el("lv-filter").value.toLowerCase();
-        var merged = state.view === ALL;
+        var merged = state.sources.length > 1;
         var list = merged ? mergedEntries() : (state.sources[0] ? entries(state.sources[0]) : []);
         var total = list.length;
         if (list.length > MAX_LINES) list = list.slice(-MAX_LINES);
@@ -272,10 +310,13 @@
             (merged ? " from " + state.sources.length + " logs" : "") + " · " + formatSize(bytes) +
             (truncated ? " (showing the last " + formatSize(read) + ")" : "") +
             (!merged && state.sources[0] && state.sources[0].mtime ? " · updated " + new Date(state.sources[0].mtime).toLocaleString() : ""));
+        if (!state.sources.length) setStatus(state.selected.length ? "No file for this day" : "No logs selected");
         if (!shown) {
             var p = document.createElement("div");
             p.className = "lv-empty";
-            p.textContent = total ? "No lines match the filter." : "No log entries.";
+            p.textContent = !state.selected.length ? "Tick one or more logs above to show them." :
+                !state.sources.length ? "None of the ticked logs has a file for this day." :
+                total ? "No lines match the filter." : "No log entries.";
             box.appendChild(p);
         }
     }
@@ -301,6 +342,11 @@
     try { el("lv-follow").checked = localStorage.getItem("givtcp-log-follow") !== "0"; } catch (e) {}
     setFollow(el("lv-follow").checked);
 
+    function renderPickerAndLoad(bases) {
+        setSelection(bases);
+        renderPicker();
+    }
+
     function init() {
         fetch("logs/", { cache: "no-store" }).then(function(r) {
             if (!r.ok) throw new Error(r.status + " " + r.statusText);
@@ -308,10 +354,7 @@
         }).then(function(listing) {
             state.groups = groupFiles(listing);
             if (!state.groups.length) { setStatus("No log files found in /config/GivTCP/logs."); return; }
-            var want = state.view ? state.view.base : null;
-            if (!want) { try { want = localStorage.getItem("givtcp-log-tab"); } catch (e) {} }
-            var view = want === ALL.base ? ALL : state.groups.filter(function(g) { return g.base === want; })[0];
-            selectView(view || ALL);
+            renderPickerAndLoad(state.selected || savedSelection());
         }).catch(function(e) {
             setStatus("Could not list the log files (" + e.message + ").");
         });
