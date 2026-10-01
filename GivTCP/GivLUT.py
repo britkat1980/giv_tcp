@@ -100,9 +100,10 @@ class GivClientAsync:
                     except Exception as exc:
                         last_exc = exc
                         logger.warning(
-                            "Modbus connect attempt %d/%d failed: %s",
+                            "Modbus connect attempt %d/%d failed: %s: %s",
                             attempt,
                             connect_retries,
+                            type(exc).__name__,     # eg. TimeoutError has no message of its own
                             exc,
                         )
                         # If this was the last attempt, raise after logging
@@ -123,6 +124,23 @@ class GivClientAsync:
         except Exception as err:
             logger.exception("Unexpected error in get_connection: %s", err)
             raise CommunicationError(str(err)) from err
+
+    async def new_client():
+        """Replace the shared Client with a new one, keeping its Plant (detected capabilities and register data).
+
+        After a dropped connection the same Client can keep failing to reconnect straight away, while a new
+        process connects first time, so the read loop calls this after repeated failures rather than leave it
+        to the watchdog to restart the whole loop."""
+        global _client
+        async with _connection_lock:
+            old = _client
+            logger.warning("Replacing the modbus client after repeated failures to reconnect to %s", str(GiV_Settings.invertorIP))
+            try:
+                await asyncio.wait_for(old.close(), timeout=5.0)
+            except Exception as exc:
+                logger.warning("Closing the old modbus client failed: %s: %s", type(exc).__name__, exc)
+            _client = Client(old.host, old.port, plant=old.plant)
+            return _client
 
 class GivQueue:
     from redis import Redis

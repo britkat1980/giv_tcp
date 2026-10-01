@@ -32,6 +32,15 @@ from modbus_patches import pause_supported
 import copy
 
 logging.getLogger("givenergy_modbus").setLevel(logging.ERROR) 
+
+class _ConnectionWarnings(logging.Filter):
+    # The modbus client's errors, plus its warnings about the connection itself (eg. "connection lost (reader at
+    # EOF)"), which explain a dropped connection. Its other warnings (retries and the like) stay hidden
+    def filter(self, record):
+        return record.levelno>=logging.ERROR or "connect" in record.getMessage().lower()
+_clientLogger=logging.getLogger("givenergy_modbus.client.client")
+_clientLogger.setLevel(logging.WARNING)
+_clientLogger.addFilter(_ConnectionWarnings())
 logging.getLogger("rq.worker").setLevel(logging.CRITICAL)
 
 sys.path.append(GiV_Settings.default_path)
@@ -264,8 +273,9 @@ async def watch_plant(
                     e=errDetail()
                     logger.error ("Error in calling handler: "+str(err))
 
-        except CommunicationError:
-            logger.error ("Unable to connect to inverter on: "+str(GiV_Settings.invertorIP))
+        except CommunicationError as e:
+            cause=e.__cause__ or e
+            logger.error ("Unable to connect to inverter on: "+str(GiV_Settings.invertorIP)+" ("+type(cause).__name__+": "+str(cause)+")")
             failcount=commsFailure()
             if failcount>=10:
                 logger.error("Lost communications with Inverter. Restarting container to detect IP change")
@@ -295,11 +305,15 @@ async def watch_plant(
                     #in case the client has died, reopen it
                     logger.info("Re-opening Modbus Connecion to: "+str(GiV_Settings.invertorIP))
                     try:
-                        await GivClientAsync.get_connection()
+                        if connectErrors>=2:
+                            # The same client can keep failing to reconnect while a new one connects first time
+                            await GivClientAsync.new_client()
+                        client=await GivClientAsync.get_connection()
                         connectErrors=0
-                    except CommunicationError:
+                    except CommunicationError as e:
                         connectErrors=connectErrors+1
-                        logger.error ("Unable to connect to inverter on: "+str(GiV_Settings.invertorIP))
+                        cause=e.__cause__ or e
+                        logger.error ("Unable to connect to inverter on: "+str(GiV_Settings.invertorIP)+" ("+type(cause).__name__+": "+str(cause)+")")
                         failcount=commsFailure()
                         if failcount>=10:
                             logger.error("Lost communications with Inverter. Restarting container to detect IP change")

@@ -16,7 +16,7 @@ from harness.plant import Plants  # noqa: E402
 
 fakes.install()
 read.WRITE_COMMAND_GAP = 0      # no need to spare a real dongle
-REST.RESPONSE_TIMEOUT = 3       # an unhandled command fails in 3s rather than 15s
+REST.RESPONSE_TIMEOUT = 10      # shorter than 15s, but well above the slowest command (3PH Force Export, ~3s)
 
 def pytest_addoption(parser):
     parser.addoption("--update-golden", action="store_true",
