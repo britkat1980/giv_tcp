@@ -2401,6 +2401,11 @@ def getCache():     # Get latest cache data and return it (for use in REST)
                 else:
                     temp[key]= str(reg)
             if 'raw' in multi_output:
+                # The EMS and Gateway models have no serial_number field, which consumers such as Predbat use
+                # to find this device's block in the output, so take it from that block
+                if not temp.get('serial_number'):
+                    temp['serial_number']=next((v['Invertor_Serial_Number'] for v in multi_output.values()
+                        if isinstance(v,dict) and 'Invertor_Serial_Number' in v), None)
                 multi_output['raw']['invertor']=temp
             return json.dumps(multi_output, indent=4, sort_keys=True, default=str)
         else:

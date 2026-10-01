@@ -1,4 +1,6 @@
 """Detect and read cycles on each device model, compared with tests/golden/<model>.json"""
+import json
+
 import pytest
 
 from harness import golden
@@ -36,6 +38,13 @@ def test_read_output(session, cycle):
 def test_read_logs(session, cycle):
     """Warnings and errors GivTCP logs while reading"""
     golden.check(session.key, "read", "cycle %d logs" % cycle, session.cycles[cycle - 1]["logs"])
+
+def test_rest_raw_serial(session, api):
+    """Predbat finds this device's block in the REST /readData output by raw.invertor.serial_number"""
+    session.activate(session.state)
+    data = json.loads(api.get("/readData").get_data(as_text=True))
+    serial = data["raw"]["invertor"].get("serial_number")
+    assert serial and serial in data
 
 def test_mqtt_publish(session):
     golden.check(session.key, "read", "mqtt topics", sorted({t for t, _ in session.cycles[1]["mqtt"]}))
