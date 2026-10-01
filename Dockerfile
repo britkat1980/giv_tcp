@@ -15,13 +15,10 @@ RUN npm install && \
 FROM python:3.14.5-alpine
 
 RUN apk add --no-cache \
-    git \
     mosquitto \
-    musl \
     nginx \
     redis \
-    tzdata \
-    xsel
+    tzdata
 
 RUN mkdir -p /run/nginx
 

@@ -19,7 +19,6 @@ import write
 import inspect
 import requests
 from GivLUT import GivLUT, maxvalues, InvType, GivClientAsync
-from outliers import outlierRemoval
 from entity_lut import Entity_Type
 from settings import GiV_Settings
 from os.path import exists

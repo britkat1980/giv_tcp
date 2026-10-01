@@ -97,7 +97,6 @@ def install():
     import GivLUT as givlut_module
     import HA_Discovery
     import mqtt
-    import outliers
     import read
     import write
 
@@ -117,7 +116,7 @@ def install():
     read.updateFirstRun = lambda SN: None     # it edits the settings.py next to read.py (the developer's own)
     givlut_module.GivQueue.q = FakeQueue()
 
-    read.datetime = outliers.datetime = _frozen_datetime_module()
+    read.datetime = _frozen_datetime_module()
     write.datetime = FrozenDateTime
 
     # write.py waits between some steps for a real inverter to settle; the mock doesn't need it
