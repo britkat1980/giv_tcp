@@ -27,6 +27,7 @@ Key changes since the last dev build published on the `dev3` branch (3.5.22).
 - **Settings Guide and Datapoints pages** in the web UI, generated from [docs/SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md) and the new [docs/DATAPOINTS.md](docs/DATAPOINTS.md), which describes every value GivTCP publishes.
 - **REST request log**: each REST request and its result are written to their own log file alongside the main log. Settings requests are never logged in full, as they can contain passwords, and full data dumps are logged by size only.
 - **Battery Pause Mode and the pause timeslot on Gen 1 (firmware 187 or later), Gen 2, Gen 3 and HV Gen 3 hybrids, the All-in-One and the Gateway, and Battery Pause Mode on the AC.** givenergy-modbus doesn't support them on these models yet, so GivTCP adds them itself until it does.
+- **Per-slot charge and discharge target SOC** on inverters with 10 time slots (newer Gen 3, Gen 4, All-in-One, HV Gen 3) and on three-phase inverters, where charge/discharge slots 3-10 are now also read, **charge and discharge rate on three-phase inverters**, and **Car Charge Boost on the EMS**. givenergy-modbus doesn't support these yet, so GivTCP adds them itself until it does.
 - **Data age stat** (`Data_Age`): shows how old the inverter data is, so values held from the last good read can be spotted.
 - **Battery charge and discharge MOS state** entities, showing whether each battery's charge and discharge switches are open or closed: for each HV battery stack and each LV battery (thanks @plandregan).
 - Better support for HV Gen 3, three-phase, All-in-One, EMS and Gateway systems, including battery counts and stack details for HV batteries.
@@ -45,7 +46,7 @@ Key changes since the last dev build published on the `dev3` branch (3.5.22).
 - **Enable Discharge** (REST and MQTT) did nothing. It now sets the battery reserve: back to the saved reserve to enable, or to 100% to disable.
 - **Set Date and Time** always failed.
 - **Set PV Input Mode** was silently ignored. It now reports that givenergy-modbus can't write it yet.
-- **Car Charge Boost over MQTT** used the wrong payload key. It now reports clearly that the library can't set it yet.
+- **Car Charge Boost over MQTT** used the wrong payload key.
 - **EMS discharge target SOC** can now be set over MQTT.
 - **Three-phase Force Charge, Force Discharge and AC Charge** can now be set over REST.
 - Several controls could fail with an error that dropped every other pending control and left a REST caller waiting for a timeout: Set Charge/Discharge Rate and Set Eco Mode on EMS, and Force Charge/Export before any inverter data had been read. They now fail with a clear message.

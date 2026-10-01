@@ -349,7 +349,7 @@ class Entity_Type():
         "Plant_Control":GEType("switch","","setEmsPlant","","",False,False,False),
         "Plant_Status":GEType("sensor","string","","","",False,False,False),
         "Car_Charge_Mode":GEType("select","","","","",False,False,False),
-        "Car_Charge_Boost":GEType("number","","setCarChargeBoost",0,65536,False,False,False),
+        "Car_Charge_Boost":GEType("number","","setCarChargeBoost",0,22000,False,False,False),
         "Car_Charge_Count":GEType("number","","",0,10,False,False,False),
         "Plant_Charge_Compensation":GEType("number","","",-5,5,False,False,False),
         "Plant_Discharge_Compensation":GEType("number","","",-5,5,False,False,False),
