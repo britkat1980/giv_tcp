@@ -33,6 +33,15 @@ from givenergy_modbus.model.inverter import SinglePhaseInverterRegisterGetter
 import copy
 
 logging.getLogger("givenergy_modbus").setLevel(logging.ERROR) 
+
+class _ConnectionWarnings(logging.Filter):
+    # The modbus client's errors, plus its warnings about the connection itself (eg. "connection lost (reader at
+    # EOF)"), which explain a dropped connection. Its other warnings (retries and the like) stay hidden
+    def filter(self, record):
+        return record.levelno>=logging.ERROR or "connect" in record.getMessage().lower()
+_clientLogger=logging.getLogger("givenergy_modbus.client.client")
+_clientLogger.setLevel(logging.WARNING)
+_clientLogger.addFilter(_ConnectionWarnings())
 logging.getLogger("rq.worker").setLevel(logging.CRITICAL)
 
 sys.path.append(GiV_Settings.default_path)
@@ -95,7 +104,7 @@ def pauseModeUnsupported(caps):
     return PAUSE_MODE_REGISTER not in pause_registers(caps.device_type, caps.arm_firmware_version)
 
 def pauseSlotsUnsupported(caps):
-    # Battery pause slot (HR 319-320): not on AC, which has pause mode but no slot
+    # Battery pause slot (HR 319-320): not on AC, whose firmware 2xx has pause mode but no slot
     if caps is None:
         return False
     return not PAUSE_SLOT_REGISTERS <= pause_registers(caps.device_type, caps.arm_firmware_version)
@@ -278,8 +287,9 @@ async def watch_plant(
                     e=errDetail()
                     logger.error ("Error in calling handler: "+str(err))
 
-        except CommunicationError:
-            logger.error ("Unable to connect to inverter on: "+str(GiV_Settings.invertorIP))
+        except CommunicationError as e:
+            cause=e.__cause__ or e
+            logger.error ("Unable to connect to inverter on: "+str(GiV_Settings.invertorIP)+" ("+type(cause).__name__+": "+str(cause)+")")
             failcount=commsFailure()
             if failcount>=10:
                 logger.error("Lost communications with Inverter. Restarting container to detect IP change")
@@ -309,11 +319,15 @@ async def watch_plant(
                     #in case the client has died, reopen it
                     logger.info("Re-opening Modbus Connecion to: "+str(GiV_Settings.invertorIP))
                     try:
-                        await GivClientAsync.get_connection()
+                        if connectErrors>=2:
+                            # The same client can keep failing to reconnect while a new one connects first time
+                            await GivClientAsync.new_client()
+                        client=await GivClientAsync.get_connection()
                         connectErrors=0
-                    except CommunicationError:
+                    except CommunicationError as e:
                         connectErrors=connectErrors+1
-                        logger.error ("Unable to connect to inverter on: "+str(GiV_Settings.invertorIP))
+                        cause=e.__cause__ or e
+                        logger.error ("Unable to connect to inverter on: "+str(GiV_Settings.invertorIP)+" ("+type(cause).__name__+": "+str(cause)+")")
                         failcount=commsFailure()
                         if failcount>=10:
                             logger.error("Lost communications with Inverter. Restarting container to detect IP change")
@@ -1697,11 +1711,13 @@ def processGatewayInfo(plant: Plant):
         power_output['PV_Power']=GEInv.p_pv
         power_output['Load_Power']=GEInv.p_load
         #power_output['Parallel_Load_Power']=GEInv.parallel_aio_load_power
-        power_output['Battery_Power']=-GEInv.p_aio_total      # For Gateway we proxy battery by invertor power minus PV
-        power_output['Liberty_Power']=-GEInv.p_liberty      #invert to get negative for export
+        # givenergy-modbus 2.x already reports the Gateway's AIO powers (p_aio_total, p_liberty, p_aio<n>_inverter)
+        # positive for discharge (givenergy-modbus#372), so they aren't inverted here as they were for the old library
+        power_output['Battery_Power']=GEInv.p_aio_total      # For Gateway we proxy battery by invertor power minus PV
+        power_output['Liberty_Power']=GEInv.p_liberty
         power_output['Grid_Relay_Voltage']=GEInv.v_grid_relay
         power_output['Inverter_Relay_Voltage']=GEInv.v_inverter_relay
-        power_output['Invertor_Power']=-GEInv.p_aio_total
+        power_output['Invertor_Power']=GEInv.p_aio_total
         
         controlmode={}    
         timeslots={}
@@ -1738,7 +1754,7 @@ def processGatewayInfo(plant: Plant):
                 power_output['SOC']=average
                 power_output['SOC_kWh'] = round((int(power_output['SOC'])*(inverterModel.batterycapacity))/100,2)
 
-                Battery_power=-GEInv.p_aio_total
+                Battery_power=GEInv.p_aio_total
                 if Battery_power >= 0:
                     discharge_power = abs(Battery_power)
                     charge_power = 0
@@ -1823,7 +1839,7 @@ def processGatewayInfo(plant: Plant):
             inv1['AC_Discharge_Energy_Today_kWh']=GEInv.e_aio1_discharge_today
             inv1['AC_Discharge_Energy_Total_kWh']=round(GEInv.e_aio1_discharge_total/1000,2)
             inv1['SOC']=GEInv.aio1_soc
-            inv1['Invertor_Power']=-GEInv.p_aio1_inverter           #invert to get negative for export
+            inv1['Invertor_Power']=GEInv.p_aio1_inverter
             inv1['AIO_1_Serial_Number']=GEInv.aio1_serial_number
             #inverters[GEInv.aio1_serial_number]=inv1
             inverters["AIO_1"]=inv1
@@ -1834,7 +1850,7 @@ def processGatewayInfo(plant: Plant):
             inv2['AC_Discharge_Energy_Today_kWh']=GEInv.e_aio2_discharge_today
             inv2['AC_Discharge_Energy_Total_kWh']=round(GEInv.e_aio2_discharge_total/1000,2)
             inv2['SOC']=GEInv.aio2_soc
-            inv2['Invertor_Power']=-GEInv.p_aio2_inverter           #invert to get negative for export
+            inv2['Invertor_Power']=GEInv.p_aio2_inverter
             inv2['AIO_2_Serial_Number']=GEInv.aio2_serial_number
             #inverters[GEInv.aio2_serial_number]=inv2
             inverters["AIO_2"]=inv2
@@ -1845,7 +1861,7 @@ def processGatewayInfo(plant: Plant):
             inv3['AC_Discharge_Energy_Today_kWh']=GEInv.e_aio3_discharge_today
             inv3['AC_Discharge_Energy_Total_kWh']=round(GEInv.e_aio3_discharge_total/1000,2)
             inv3['SOC']=GEInv.aio3_soc
-            inv3['Invertor_Power']=-GEInv.p_aio3_inverter           #invert to get negative for export
+            inv3['Invertor_Power']=GEInv.p_aio3_inverter
             inv3['AIO_3_Serial_Number']=GEInv.aio3_serial_number
             #inverters[GEInv.aio3_serial_number]=inv3
             inverters["AIO_3"]=inv3

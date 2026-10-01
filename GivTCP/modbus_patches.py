@@ -6,10 +6,11 @@ each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, it
 
 - Battery pause mode, HR 318, and pause slot, HR 319-320 [1]. The library allows these on no model.
   Pause mode and slot on the All-in-One, Gateway, Gen 2, Gen 3, HV Gen 3, and Gen 1 from ARM firmware
-  187 (britkat1980/giv_tcp#441); pause mode only on the AC, which has no pause slot. Three-phase and the
-  EMS have no pause functions. The library only reads HR 300-359 on models with the AC config block
-  (AC, All-in-One), because older hybrids time out on that block (#162), so this also reads just
-  HR 318-320 after each load_config() on the others, so the current pause mode and slot are known.
+  187 (britkat1980/giv_tcp#441); pause mode only on the AC from ARM firmware 200, as AC firmware 2xx has
+  no pause slot. Three-phase and the EMS have no pause functions. The library only reads HR 300-359 on
+  models with the AC config block (AC, All-in-One), because older hybrids time out on that block (#162),
+  so this also reads just HR 318-320 after each load_config() on the others, so the current pause mode
+  and slot are known.
 - Per-slot charge/discharge target SOC, HR 242-269 / 272-299 (every third register), on models with the
   10-slot layout and on three-phase [2]. The library reads these on 10-slot models but has no writer. On
   three-phase it doesn't read HR 240-299 at all (slots 3-10 and their targets), so this also reads that
@@ -39,6 +40,8 @@ PAUSE_SLOT_REGISTERS = frozenset({319, 320})     # pause slot start, pause slot 
 PAUSE_REGISTERS = frozenset({PAUSE_MODE_REGISTER}) | PAUSE_SLOT_REGISTERS
 # Lowest Gen 1 ARM firmware known to support pause mode (the firmware that added real-time control)
 GEN1_PAUSE_MIN_ARM_FW = 187
+# Lowest AC-coupled ARM firmware confirmed by users to support pause mode
+AC_PAUSE_MIN_ARM_FW = 200
 
 PAUSE_MODELS = frozenset({Model.ALL_IN_ONE, Model.GATEWAY, Model.HYBRID_GEN2, Model.HYBRID_GEN3,
                           Model.HYBRID_HV_GEN3})
@@ -55,7 +58,10 @@ CAR_CHARGE_BOOST_MAX = 22000
 def pause_registers(model, arm_fw):
     """The pause registers this model can write"""
     if model == Model.AC:
-        return frozenset({PAUSE_MODE_REGISTER})
+        # AC firmware 2xx has pause mode but no pause slot
+        if arm_fw is not None and int(arm_fw) >= AC_PAUSE_MIN_ARM_FW:
+            return frozenset({PAUSE_MODE_REGISTER})
+        return frozenset()
     if model in PAUSE_MODELS:
         return PAUSE_REGISTERS
     if model == Model.HYBRID_GEN1 and arm_fw is not None and int(arm_fw) >= GEN1_PAUSE_MIN_ARM_FW:
