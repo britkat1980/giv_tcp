@@ -52,8 +52,8 @@ Controllable datapoints also have a command topic, `GivEnergy/control/<serial>/<
 |---|---|---|---|
 | `PV_Power` | sensor | W | Total solar generation |
 | `PV_Power_String_1` / `_2` | sensor | W | Solar generation per PV string |
-| `PV_Voltage_String_1` / `_2` | sensor | V | Voltage per PV string |
-| `PV_Current_String_1` / `_2` | sensor | A | Current per PV string |
+| `PV_Voltage_String_1` / `_2` | sensor | V | Voltage per PV string. Not published on AC-coupled and All-in-One inverters, where these registers don't hold real string readings |
+| `PV_Current_String_1` / `_2` | sensor | A | Current per PV string. Not published on AC-coupled and All-in-One inverters |
 | `Grid_Power` | sensor | W | Grid power: positive = export, negative = import |
 | `Import_Power` | sensor | W | Power being imported from the grid (always ≥ 0) |
 | `Export_Power` | sensor | W | Power being exported to the grid (always ≥ 0) |
@@ -307,6 +307,8 @@ Each timeslot appears in Home Assistant twice: as a `select` (a drop-down of one
 | `Battery_Design_Capacity` | sensor | Ah | Capacity when new |
 | `Battery_Remaining_Capacity` | sensor | Ah | Charge currently stored |
 | `Battery_Voltage` | sensor | V | Module voltage |
+| `Battery_BMS_Current` | sensor | A | Module current reported by its BMS (low-voltage batteries) |
+| `Battery_Charge_MOS_State` / `Battery_Discharge_MOS_State` | sensor | | `Closed` when the module's charge / discharge switch is closed and current can flow, `Open` when the BMS has opened it to stop charging / discharging (low-voltage batteries, where the battery reports it) |
 | `Battery_Cells` | sensor | | Number of cells |
 | `Battery_Cycles` | sensor | | Charge cycles |
 | `Battery_Firmware_Version` | sensor | | BMS firmware |
@@ -330,6 +332,7 @@ High-voltage battery stacks (three-phase and All-in-One) also report stack-level
 | `Stack_Cycles` | sensor | | Stack charge cycles |
 | `Stack_Design_Capacity` | sensor | Ah | Stack capacity when new |
 | `Stack_Charge_Energy_…` / `Stack_Discharge_Energy_…` | sensor | kWh | Stack charge / discharge energy (`Today_kWh` and `Total_kWh`) |
+| `Stack_Charge_MOS_State` / `Stack_Discharge_MOS_State` | sensor | | `Closed` when the stack's charge / discharge switch is closed and current can flow, `Open` when the BCU has opened it to stop charging / discharging (where the stack reports it) |
 | `Stack_Firmware` | sensor | | BCU firmware |
 | `BMS_Temperature` | sensor | °C | BCU temperature |
 

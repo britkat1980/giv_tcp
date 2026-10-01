@@ -647,7 +647,7 @@ else:
 
 os.chdir("/app/GivTCP")
 logger.debug ("Starting Settings Gunicorn on port 6350")
-command=shlex.split("/usr/local/bin/gunicorn -w 1 -b :6350 settings_rest:giv_api")
+command=shlex.split("/usr/local/bin/gunicorn -w 1 -b :6350 --log-level warning settings_rest:giv_api")
 setting_rest=subprocess.Popen(command)
 
 
@@ -745,7 +745,7 @@ for inv in range(1,setts['number_of_inverters']+1):
         
         GUPORT=invPort(inv)
         logger.debug ("Starting Gunicorn on port "+str(GUPORT))
-        command=shlex.split("/usr/local/bin/gunicorn -w 3 -b :"+str(GUPORT)+" REST:giv_api")
+        command=shlex.split("/usr/local/bin/gunicorn -w 3 -b :"+str(GUPORT)+" --log-level warning REST:giv_api")
         gunicorn[inv]=subprocess.Popen(command)
 
 
@@ -834,7 +834,7 @@ while True:
                 os.chdir(PATH)
                 GUPORT=invPort(inv)
                 logger.info ("Starting Gunicorn on port "+str(GUPORT))
-                command=shlex.split("/usr/local/bin/gunicorn -w 3 -b :"+str(GUPORT)+" REST:giv_api")
+                command=shlex.split("/usr/local/bin/gunicorn -w 3 -b :"+str(GUPORT)+" --log-level warning REST:giv_api")
                 gunicorn[inv]=subprocess.Popen(command)
         
         if setts['MQTT_Address']=="127.0.0.1" and mqttBroker is not None:
