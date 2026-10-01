@@ -16,6 +16,10 @@ each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, it
   block after each load_config() there.
 - Three-phase charge/discharge rate, HR 1110 / 1108 [3]. The library reads these but only allows the
   single-phase AC rate registers (HR 313/314).
+- Gateway charge/discharge rate, HR 313 / 314 [3]. The Gateway controls the All-in-Ones behind it, and these
+  are its rate controls (givenergy-modbus#373), but the library only reads and allows them on models with the
+  AC config block. This also reads HR 313-314 after each load_config() on the Gateway, so the current rates
+  are known.
 - EMS car charge boost, HR 2073, 0-22000 W [10]. The library reads it but has no writer.
 
 Remove each one once the library supports it.
@@ -44,6 +48,7 @@ SLOT_TARGET_BASE = {"charge": 242, "discharge": 272}
 SLOT_TARGET_REGISTERS = frozenset(base + 3 * i for base in SLOT_TARGET_BASE.values() for i in range(10))
 
 THREE_PHASE_AC_LIMIT = {"charge": 1110, "discharge": 1108}
+GATEWAY_AC_LIMIT = frozenset({313, 314})     # AC charge limit, AC discharge limit
 EMS_CAR_CHARGE_BOOST = 2073
 CAR_CHARGE_BOOST_MAX = 22000
 
@@ -69,6 +74,8 @@ def _extra_write_registers(model, arm_fw):
         extra |= SLOT_TARGET_REGISTERS
     if manifest.has_capability("is_three_phase", model):
         extra |= set(THREE_PHASE_AC_LIMIT.values())
+    if manifest.has_capability("is_gateway", model):
+        extra |= GATEWAY_AC_LIMIT
     if manifest.has_capability("is_ems", model):
         extra.add(EMS_CAR_CHARGE_BOOST)
     return extra
@@ -120,6 +127,8 @@ EXTRA_READS = [
      "the current pause mode won't be shown (pause controls can still be set)"),
     ("three-phase slots", lambda caps: caps.is_three_phase and not manifest.has_extended_slots(caps.device_type, caps.arm_firmware_version),
      240, 60, "charge/discharge slots 3-10 and their target SOCs won't be shown (they can still be set)"),
+    ("Gateway rates", lambda caps: caps.is_gateway, 313, 2,
+     "the current charge/discharge rates won't be shown (they can still be set)"),
 ]
 
 async def _extra_reads(client):
