@@ -4,17 +4,23 @@ Writes givenergy-modbus doesn't allow yet, each enabled only on the models it ap
 library doesn't do. Each one was written by GivTCP's previous modbus library (givenergy_modbus_async), and
 each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, item number in brackets):
 
-- Battery pause mode and pause slot, HR 318-320, on Gen 1 (ARM firmware 187+) and Gen 2 hybrids, and on
-  AC-coupled inverters from ARM firmware 200 [1].
-  The library only allows these on models with the AC config block (AC, All-in-One), and only reads
-  HR 300-359 on those, because older hybrids time out on that block (#162). This also reads just
-  HR 318-320 after each load_config() on these hybrids, so the current pause mode and slot are known.
+- Battery pause mode, HR 318, and pause slot, HR 319-320 [1]. The library allows these on no model.
+  Pause mode and slot on the All-in-One, Gateway, Gen 2, Gen 3, HV Gen 3, and Gen 1 from ARM firmware
+  187 (britkat1980/giv_tcp#441); pause mode only on the AC from ARM firmware 200 (confirmed by a user), as it
+  has no pause slot. Three-phase and the
+  EMS have no pause functions. The library only reads HR 300-359 on models with the AC config block
+  (AC, All-in-One), because older hybrids time out on that block (#162), so this also reads just
+  HR 318-320 after each load_config() on the others, so the current pause mode and slot are known.
 - Per-slot charge/discharge target SOC, HR 242-269 / 272-299 (every third register), on models with the
   10-slot layout and on three-phase [2]. The library reads these on 10-slot models but has no writer. On
   three-phase it doesn't read HR 240-299 at all (slots 3-10 and their targets), so this also reads that
   block after each load_config() there.
 - Three-phase charge/discharge rate, HR 1110 / 1108 [3]. The library reads these but only allows the
   single-phase AC rate registers (HR 313/314).
+- Gateway charge/discharge rate, HR 313 / 314 [3]. The Gateway controls the All-in-Ones behind it, and these
+  are its rate controls (givenergy-modbus#373), but the library only reads and allows them on models with the
+  AC config block. This also reads HR 313-314 after each load_config() on the Gateway, so the current rates
+  are known.
 - EMS car charge boost, HR 2073, 0-22000 W [10]. The library reads it but has no writer.
 
 Remove each one once the library supports it.
@@ -29,40 +35,52 @@ from givenergy_modbus.pdu import write_registers
 
 logger = logging.getLogger("read_logger")     # GivTCP's main log (GivLUT.logger)
 
-PAUSE_REGISTERS = frozenset({318, 319, 320})     # pause mode, pause slot start, pause slot end
+PAUSE_MODE_REGISTER = 318
+PAUSE_SLOT_REGISTERS = frozenset({319, 320})     # pause slot start, pause slot end
+PAUSE_REGISTERS = frozenset({PAUSE_MODE_REGISTER}) | PAUSE_SLOT_REGISTERS
 # Lowest Gen 1 ARM firmware known to support pause mode (the firmware that added real-time control)
 GEN1_PAUSE_MIN_ARM_FW = 187
 # Lowest AC-coupled ARM firmware confirmed by users to support pause mode
 AC_PAUSE_MIN_ARM_FW = 200
+
+PAUSE_MODELS = frozenset({Model.ALL_IN_ONE, Model.GATEWAY, Model.HYBRID_GEN2, Model.HYBRID_GEN3,
+                          Model.HYBRID_HV_GEN3})
 
 # Per-slot target SOC: slot N at base + 3*(N-1), matching the library's charge/discharge_target_soc_N reads
 SLOT_TARGET_BASE = {"charge": 242, "discharge": 272}
 SLOT_TARGET_REGISTERS = frozenset(base + 3 * i for base in SLOT_TARGET_BASE.values() for i in range(10))
 
 THREE_PHASE_AC_LIMIT = {"charge": 1110, "discharge": 1108}
+GATEWAY_AC_LIMIT = frozenset({313, 314})     # AC charge limit, AC discharge limit
 EMS_CAR_CHARGE_BOOST = 2073
 CAR_CHARGE_BOOST_MAX = 22000
 
-def pause_supported(model, arm_fw):
-    """True for the models this patch enables pause mode on"""
-    if model == Model.HYBRID_GEN2:
-        return True
-    if model == Model.HYBRID_GEN1:
-        return arm_fw is not None and int(arm_fw) >= GEN1_PAUSE_MIN_ARM_FW
+def pause_registers(model, arm_fw):
+    """The pause registers this model can write"""
     if model == Model.AC:
-        return arm_fw is not None and int(arm_fw) >= AC_PAUSE_MIN_ARM_FW
-    return False
+        if arm_fw is not None and int(arm_fw) >= AC_PAUSE_MIN_ARM_FW:
+            return frozenset({PAUSE_MODE_REGISTER})
+        return frozenset()
+    if model in PAUSE_MODELS:
+        return PAUSE_REGISTERS
+    if model == Model.HYBRID_GEN1 and arm_fw is not None and int(arm_fw) >= GEN1_PAUSE_MIN_ARM_FW:
+        return PAUSE_REGISTERS
+    return frozenset()
+
+def _pause_read_needed(model, arm_fw):
+    # The library reads HR 300-359, which includes the pause registers, on models with the AC config block
+    return bool(pause_registers(model, arm_fw)) and not manifest.has_capability("has_ac_config_block", model)
 
 # --- writes ------------------------------------------------------------------------------------------------
 
 def _extra_write_registers(model, arm_fw):
-    extra = set()
-    if pause_supported(model, arm_fw):
-        extra |= PAUSE_REGISTERS
+    extra = set(pause_registers(model, arm_fw))
     if model is not None and (manifest.has_extended_slots(model, arm_fw) or manifest.has_capability("is_three_phase", model)):
         extra |= SLOT_TARGET_REGISTERS
     if manifest.has_capability("is_three_phase", model):
         extra |= set(THREE_PHASE_AC_LIMIT.values())
+    if manifest.has_capability("is_gateway", model):
+        extra |= GATEWAY_AC_LIMIT
     if manifest.has_capability("is_ems", model):
         extra.add(EMS_CAR_CHARGE_BOOST)
     return extra
@@ -110,11 +128,12 @@ _library_load_config = Client.load_config
 
 # Extra reads after load_config(): (name, test on the capabilities, base register, count, what's lost if it fails)
 EXTRA_READS = [
-    # (models with the AC config block, such as AC, already have HR 318-320 read by the library's HR 300-359 read)
-    ("pause", lambda caps: pause_supported(caps.device_type, caps.arm_firmware_version) and not caps.has_ac_config_block, 318, 3,
+    ("pause", lambda caps: _pause_read_needed(caps.device_type, caps.arm_firmware_version), 318, 3,
      "the current pause mode won't be shown (pause controls can still be set)"),
     ("three-phase slots", lambda caps: caps.is_three_phase and not manifest.has_extended_slots(caps.device_type, caps.arm_firmware_version),
      240, 60, "charge/discharge slots 3-10 and their target SOCs won't be shown (they can still be set)"),
+    ("Gateway rates", lambda caps: caps.is_gateway, 313, 2,
+     "the current charge/discharge rates won't be shown (they can still be set)"),
 ]
 
 async def _extra_reads(client):

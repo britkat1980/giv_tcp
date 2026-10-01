@@ -33,7 +33,7 @@ The registers pass `WriteHoldingRegisterRequest.ensure_valid_state()`, since the
 2. Implement the firmware gate `write_safe_registers(model, arm_fw)` already allows for, so 318 (and 319/320 if confirmed) is allowed on single-phase hybrids at or above the first firmware that supports pause. 187 is confirmed on Gen 1; we don't know the exact first version for Gen 1, 2 or 3. GivTCP users can supply captures or test builds.
 3. Reading the state needs the same gate. `load_config()` only reads HR(300-359) for `has_ac_config_block` models (hybrids time out on the whole block, per #162). A narrow read such as HR(318, 3) for pause-capable hybrids would let consumers show the current pause mode.
 
-**GivTCP workaround:** `GivTCP/modbus_patches.py` adds HR 318-320 to the write-safe set for `HYBRID_GEN2`, for `HYBRID_GEN1` from ARM firmware 187, and for `AC` from ARM firmware 200 (confirmed by a user; the library already reads HR 300-359 on AC), and reads HR(318, 3) after `load_config()` on those models. Remove it once the library supports this.
+**GivTCP workaround:** `GivTCP/modbus_patches.py` adds HR 318-320 to the write-safe set for `ALL_IN_ONE`, `GATEWAY`, `HYBRID_GEN2`, `HYBRID_GEN3`, `HYBRID_HV_GEN3`, and `HYBRID_GEN1` from ARM firmware 187, and HR 318 only for `AC` from ARM firmware 200 (confirmed by a user; it has pause mode but no pause slot). Three-phase and EMS have no pause functions. It reads HR(318, 3) after `load_config()` on the models without the AC config block. Remove it once the library supports this.
 
 Impact: Predbat uses pause mode to hold the battery (for example "freeze" and "hold for car"). Without these writes it can't do that on any GivEnergy inverter through GivTCP v2.
 
@@ -62,7 +62,7 @@ GivTCP exposes per-slot targets as Home Assistant controls, and users automate t
 
 - `ThreePhaseInverter` reads `battery_charge_limit_ac` at **HR 1110** and `battery_discharge_limit_ac` at **HR 1108** (the manifest notes three-phase remaps the AC-config controls there). Neither is in `WRITE_SAFE_THREE_PHASE` and there's no command helper, so a consumer can't set the charge/discharge rate on three-phase or HV Gen 3. The old async fork wrote these as `TPH_BATTERY_CHARGE_LIMIT_AC = 1110` / `TPH_BATTERY_DISCHARGE_LIMIT_AC = 1108`.
 - `set_battery_charge_limit_ac()` / `set_battery_discharge_limit_ac()` write HR 313/314, which are only write-safe with the AC-config block, so only on `AC` and `ALL_IN_ONE`.
-- On a **Gateway**, none of 313/314/1108/1110 are write-safe. We don't know which register the Gateway uses for parallel-AIO charge/discharge rate; it would help to know whether it's supported.
+- On a **Gateway**, none of 313/314/1108/1110 are write-safe, and HR(300-359) isn't read. givenergy-modbus#373 settled the routing: the Gateway controls the AIOs behind it, and a capture showed GivTCP setting the AC charge/discharge limit (HR 313/314) on the Gateway at device 0x11. The library's own Gateway capture (`gateway_gaaa0014`) includes the whole HR(300-359) block, and a Gateway on firmware A0.014 answers live reads of it (HR 313/314 = 50/100). HR 111/112 read 0 on a Gateway, so the AC pair is its rate control. Requested upstream as givenergy-modbus#427.
 
 **Possible inconsistency to check**
 
@@ -71,9 +71,9 @@ GivTCP exposes per-slot targets as Home Assistant controls, and users automate t
 **Request**
 
 - Three-phase helpers (or model-aware routing) for the AC charge/discharge limits at 1110/1108, added to `WRITE_SAFE_THREE_PHASE`.
-- Guidance, or support, for the Gateway's rate control.
+- Add `Model.GATEWAY` to `has_ac_config_block`, so `load_config()` reads HR(300-359) and HR 313/314 are write-safe (givenergy-modbus#427).
 
-**GivTCP workaround:** `GivTCP/modbus_patches.py` allows HR 1110 / 1108 on `is_three_phase` models and writes them directly. The Gateway rate is still open. Remove it once the library supports this.
+**GivTCP workaround:** `GivTCP/modbus_patches.py` allows HR 1110 / 1108 on `is_three_phase` models and writes them directly, and allows HR 313 / 314 on `is_gateway` and reads HR(313, 2) after `load_config()` there. Remove it once the library supports this.
 
 ---
 
