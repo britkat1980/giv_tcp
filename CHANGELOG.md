@@ -16,6 +16,7 @@ Key changes since the last dev build published on the `dev3` branch (3.5.22).
 - The config page lists inverters so you can add or remove them, with no fixed limit of five. Inverters found by the last network scan are shown so you can add them in one click. Slots 1–5 keep REST ports 6345–6349, and slot 6 onwards start at 6356.
 - Saving from the config page no longer resets settings the page doesn't manage back to their defaults.
 - The config page now runs inside the Home Assistant sidebar (ingress) and no longer needs opening in a new tab by IP address.
+- The config page works on a phone in portrait: the sections show as wrapping buttons, with a new Welcome button, and the section navigation and Previous/Save/Next buttons stay at the top while you scroll (thanks @jim-ip).
 - The web pages have a new header menu (Config, Readme, Settings Guide, Datapoints, Dashboard, Logs) and restyled pages to match the config page.
 - Routine messages (detecting the inverter, reconnecting, publishing discovery) are no longer logged as critical.
 - Redis now only listens on localhost.
@@ -26,7 +27,7 @@ Key changes since the last dev build published on the `dev3` branch (3.5.22).
 - **Settings Guide and Datapoints pages** in the web UI, generated from [docs/SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md) and the new [docs/DATAPOINTS.md](docs/DATAPOINTS.md), which describes every value GivTCP publishes.
 - **REST request log**: each REST request and its result are written to their own log file alongside the main log. Settings requests are never logged in full, as they can contain passwords, and full data dumps are logged by size only.
 - **Data age stat** (`Data_Age`): shows how old the inverter data is, so values held from the last good read can be spotted.
-- **HV battery stack charge and discharge MOS state** entities, showing whether each stack's charge and discharge switches are open or closed (thanks @plandregan).
+- **Battery charge and discharge MOS state** entities, showing whether each battery's charge and discharge switches are open or closed: for each HV battery stack and each LV battery (thanks @plandregan).
 - Better support for HV Gen 3, three-phase, All-in-One, EMS and Gateway systems, including battery counts and stack details for HV batteries.
 
 ### Fixed
@@ -55,6 +56,8 @@ Key changes since the last dev build published on the `dev3` branch (3.5.22).
 - **Export Power Limit** now shows in Watts in HA, instead of as an amp slider.
 - **Battery pause slot changes** now show in HA immediately, instead of after the next full read.
 - The Settings Guide page opened the settings API instead of the guide.
+- The config page could load blank in Chrome after an update, because the browser kept an old copy of the page that pointed at files that no longer exist. The page is no longer cached (thanks @jim-ip).
+- The Smart Target setting was ignored and followed the Dynamic Tariff setting instead (thanks @jim-ip).
 - Charge rate on large battery banks no longer jumps to 50% at the inverter maximum.
 - The limits used to filter bad readings are higher, so large systems aren't wrongly rejected: 20 kW battery power for parallel All-in-Ones, 100 kWh/day for homes with heat pumps and EVs.
 - Unused slots with a 0% target are no longer published, which stops repeated HA errors.
