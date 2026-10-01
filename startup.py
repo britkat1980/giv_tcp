@@ -198,7 +198,7 @@ def createsettingsjson(inv):
         outp.write("    Debug_File_Location_Write=\"/config/GivTCP/logs/write_log_inv_"+str(inv)+".log\"\n")
         outp.write("    Debug_File_Location_REST=\"/config/GivTCP/logs/rest_log_inv_"+str(inv)+".log\"\n")
         outp.write("    inverter_num=\""+str(inv)+"\"\n")
-        outp.write("    Smart_Target="+str(setts["dynamic_tariff"]).capitalize()+"\n")
+        outp.write("    Smart_Target="+str(setts["Smart_Target"]).capitalize()+"\n")
         outp.write("    GE_API=\""+str(setts["GE_API"])+"\"\n")
         outp.write("    PALM_WINTER=\""+str(setts["PALM_WINTER"])+"\"\n")
         outp.write("    PALM_SHOULDER=\""+str(setts["PALM_SHOULDER"])+"\"\n")
