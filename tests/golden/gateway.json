@@ -226,6 +226,11 @@
       17,
       111,
       50
+     ],
+     [
+      17,
+      318,
+      0
      ]
     ]
    }
@@ -267,6 +272,11 @@
       17,
       111,
       50
+     ],
+     [
+      17,
+      318,
+      0
      ]
     ]
    },
@@ -296,6 +306,11 @@
       17,
       116,
       100
+     ],
+     [
+      17,
+      318,
+      0
      ]
     ]
    }
@@ -351,6 +366,11 @@
      [
       17,
       45,
+      0
+     ],
+     [
+      17,
+      318,
       0
      ]
     ]
@@ -408,6 +428,11 @@
       17,
       45,
       0
+     ],
+     [
+      17,
+      318,
+      0
      ]
     ]
    },
@@ -451,6 +476,11 @@
      [
       17,
       59,
+      0
+     ],
+     [
+      17,
+      318,
       0
      ]
     ]
@@ -702,85 +732,65 @@
   "setBatteryPauseMode({'state': 'Disabled'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to Disabled was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      0
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode({'state': 'PauseBoth'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseBoth was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      3
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode({'state': 'PauseCharge'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseCharge was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      1
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode({'state': 'PauseDischarge'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseDischarge was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      2
+     ]
+    ]
    }
   ],
   "setBatteryReserve({'reservePercent': '2'})": [
@@ -1611,64 +1621,54 @@
   "setPauseEnd({'finish': '19:00'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(320) is not permitted for GATEWAY inverter (registers: 320)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for GATEWAY inverter'} (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for GATEWAY inverter'} (write.py:N)"
+     "result": "Setting Pause Slot End to: 19:00 was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      320,
+      1900
+     ]
+    ]
    }
   ],
   "setPauseSlot({'start': '16:00', 'finish': '19:00'})": [
    {
     "jobs": [],
-    "logs": [
+    "logs": [],
+    "result": {
+     "result": "Setting Pause Slot to: 16:00 - 19:00 was a success"
+    },
+    "writes": [
      [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(319) is not permitted for GATEWAY inverter (registers: 319, 320)"
+      17,
+      319,
+      1600
      ],
      [
-      "write_logger",
-      "ERROR",
-      "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for GATEWAY inverter (write.py:N)"
+      17,
+      320,
+      1900
      ]
-    ],
-    "result": {
-     "result": "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for GATEWAY inverter (write.py:N)"
-    },
-    "writes": []
+    ]
    }
   ],
   "setPauseStart({'start': '16:00'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(319) is not permitted for GATEWAY inverter (registers: 319)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for GATEWAY inverter'} (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for GATEWAY inverter'} (write.py:N)"
+     "result": "Setting Pause Slot Start to: 16:00 was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      319,
+      1600
+     ]
+    ]
    }
   ],
   "switchRate(day)": [
@@ -2085,6 +2085,11 @@
       17,
       111,
       50
+     ],
+     [
+      17,
+      318,
+      0
      ]
     ]
    }
@@ -2129,6 +2134,11 @@
       17,
       111,
       50
+     ],
+     [
+      17,
+      318,
+      0
      ]
     ]
    },
@@ -2199,6 +2209,11 @@
       17,
       45,
       0
+     ],
+     [
+      17,
+      318,
+      0
      ]
     ]
    }
@@ -2257,6 +2272,11 @@
      [
       17,
       45,
+      0
+     ],
+     [
+      17,
+      318,
       0
      ]
     ]
@@ -2582,18 +2602,7 @@
   "setBatteryPauseMode(Disabled)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2602,24 +2611,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      0
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode(PauseBoth)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2628,24 +2632,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      3
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode(PauseCharge)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2654,24 +2653,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      1
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode(PauseDischarge)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2680,7 +2674,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      2
+     ]
+    ]
    }
   ],
   "setBatteryReserve(20)": [
@@ -5028,18 +5028,7 @@
   "setPauseEnd(19:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(320) is not permitted for GATEWAY inverter (registers: 320)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for GATEWAY inverter'} (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setPauseEnd",
@@ -5048,24 +5037,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      320,
+      1900
+     ]
+    ]
    }
   ],
   "setPauseStart(16:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(319) is not permitted for GATEWAY inverter (registers: 319)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for GATEWAY inverter'} (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setPauseStart",
@@ -5074,7 +5058,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      319,
+      1600
+     ]
+    ]
    }
   ],
   "switchRate(day)": [
@@ -5271,6 +5261,7 @@
     "Battery_Calibration": "Off",
     "Battery_Power_Cutoff": 4,
     "Battery_Power_Reserve": 4,
+    "Battery_pause_mode": "Disabled",
     "Charge_Target_SOC_1": null,
     "Charge_Target_SOC_10": null,
     "Charge_Target_SOC_2": null,
@@ -5443,6 +5434,8 @@
     "status": "online"
    },
    "Timeslots": {
+    "Battery_pause_end_time_slot": "23:59:00",
+    "Battery_pause_start_time_slot": "00:00:00",
     "Charge_end_time_slot_1": "05:00:00",
     "Charge_end_time_slot_10": "00:00:00",
     "Charge_end_time_slot_2": "00:00:00",
@@ -5560,6 +5553,7 @@
     "Battery_Calibration": "Off",
     "Battery_Power_Cutoff": 4,
     "Battery_Power_Reserve": 4,
+    "Battery_pause_mode": "Disabled",
     "Charge_Target_SOC_1": null,
     "Charge_Target_SOC_10": null,
     "Charge_Target_SOC_2": null,
@@ -5732,6 +5726,8 @@
     "status": "online"
    },
    "Timeslots": {
+    "Battery_pause_end_time_slot": "23:59:00",
+    "Battery_pause_start_time_slot": "00:00:00",
     "Charge_end_time_slot_1": "05:00:00",
     "Charge_end_time_slot_10": "00:00:00",
     "Charge_end_time_slot_2": "00:00:00",
@@ -5876,6 +5872,9 @@
    "homeassistant/number/GivEnergy/GW2412G000_Temp_Pause_Charge_Num/config",
    "homeassistant/number/GivEnergy/GW2412G000_Temp_Pause_Discharge_Num/config",
    "homeassistant/select/GivEnergy/GW2412G000_Battery_Calibration/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Battery_pause_end_time_slot/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Battery_pause_mode/config",
+   "homeassistant/select/GivEnergy/GW2412G000_Battery_pause_start_time_slot/config",
    "homeassistant/select/GivEnergy/GW2412G000_Charge_end_time_slot_1/config",
    "homeassistant/select/GivEnergy/GW2412G000_Charge_end_time_slot_10/config",
    "homeassistant/select/GivEnergy/GW2412G000_Charge_end_time_slot_2/config",
@@ -6031,6 +6030,8 @@
    "homeassistant/switch/GivEnergy/GW2412G000_Enable_Charge_Target/config",
    "homeassistant/switch/GivEnergy/GW2412G000_Enable_Discharge_Schedule/config",
    "homeassistant/switch/GivEnergy/GW2412G000_Real_Time_Control/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Battery_pause_end_time_slot/config",
+   "homeassistant/time/GivEnergy/GW2412G000_Battery_pause_start_time_slot/config",
    "homeassistant/time/GivEnergy/GW2412G000_Charge_end_time_slot_1/config",
    "homeassistant/time/GivEnergy/GW2412G000_Charge_end_time_slot_10/config",
    "homeassistant/time/GivEnergy/GW2412G000_Charge_end_time_slot_2/config",
@@ -6077,6 +6078,7 @@
    "GivEnergy/GW2412G000/Control/Battery_Calibration",
    "GivEnergy/GW2412G000/Control/Battery_Power_Cutoff",
    "GivEnergy/GW2412G000/Control/Battery_Power_Reserve",
+   "GivEnergy/GW2412G000/Control/Battery_pause_mode",
    "GivEnergy/GW2412G000/Control/Eco_Mode",
    "GivEnergy/GW2412G000/Control/Enable_Charge_Schedule",
    "GivEnergy/GW2412G000/Control/Enable_Charge_Target",
@@ -6199,6 +6201,8 @@
    "GivEnergy/GW2412G000/Stats/Time_Since_Last_Update",
    "GivEnergy/GW2412G000/Stats/Write_Count",
    "GivEnergy/GW2412G000/Stats/status",
+   "GivEnergy/GW2412G000/Timeslots/Battery_pause_end_time_slot",
+   "GivEnergy/GW2412G000/Timeslots/Battery_pause_start_time_slot",
    "GivEnergy/GW2412G000/Timeslots/Charge_end_time_slot_1",
    "GivEnergy/GW2412G000/Timeslots/Charge_end_time_slot_10",
    "GivEnergy/GW2412G000/Timeslots/Charge_end_time_slot_2",
@@ -6490,6 +6494,11 @@
       17,
       111,
       50
+     ],
+     [
+      17,
+      318,
+      0
      ]
     ]
    },
@@ -6541,6 +6550,11 @@
       17,
       111,
       50
+     ],
+     [
+      17,
+      318,
+      0
      ]
     ]
    }
@@ -6597,6 +6611,11 @@
      [
       17,
       45,
+      0
+     ],
+     [
+      17,
+      318,
       0
      ]
     ]
@@ -6663,6 +6682,11 @@
      [
       17,
       45,
+      0
+     ],
+     [
+      17,
+      318,
       0
      ]
     ]
@@ -6910,89 +6934,69 @@
   "/setBatteryPauseMode({'state': 'Disabled'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to Disabled was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      0
+     ]
+    ]
    }
   ],
   "/setBatteryPauseMode({'state': 'PauseBoth'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseBoth was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      3
+     ]
+    ]
    }
   ],
   "/setBatteryPauseMode({'state': 'PauseCharge'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseCharge was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      1
+     ]
+    ]
    }
   ],
   "/setBatteryPauseMode({'state': 'PauseDischarge'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for GATEWAY inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseDischarge was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      2
+     ]
+    ]
    }
   ],
   "/setBatteryReserve({'reservePercent': '20'})": [
@@ -7609,23 +7613,23 @@
   "/setPauseSlot({'start': '16:00', 'finish': '19:00'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(319) is not permitted for GATEWAY inverter (registers: 319, 320)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for GATEWAY inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for GATEWAY inverter (write.py:N)"
+     "result": "Setting Pause Slot to: 16:00 - 19:00 was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      319,
+      1600
+     ],
+     [
+      17,
+      320,
+      1900
+     ]
+    ]
    }
   ],
   "/switchRate({'rate': 'day'})": [

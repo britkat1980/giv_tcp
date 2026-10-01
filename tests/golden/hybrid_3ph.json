@@ -7205,7 +7205,11 @@
     }
    }
   },
-  "discovery removed": [],
+  "discovery removed": [
+   "Battery_pause_end_time_slot",
+   "Battery_pause_mode",
+   "Battery_pause_start_time_slot"
+  ],
   "discovery topics": [
    "homeassistant/button/GivEnergy/TC2337G000_Reboot_Addon/config",
    "homeassistant/button/GivEnergy/TC2337G000_Reboot_Invertor/config",

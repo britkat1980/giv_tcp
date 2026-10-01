@@ -26,7 +26,7 @@ Key changes since the last dev build published on the `dev3` branch (3.5.22).
 - **Time picker controls for timeslots** in Home Assistant 2026.5 or later, alongside the existing drop-downs. For example, "Charge start slot 1" sits next to "Charge start time slot 1". Both stay in sync.
 - **Settings Guide and Datapoints pages** in the web UI, generated from [docs/SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md) and the new [docs/DATAPOINTS.md](docs/DATAPOINTS.md), which describes every value GivTCP publishes.
 - **REST request log**: each REST request and its result are written to their own log file alongside the main log. Settings requests are never logged in full, as they can contain passwords, and full data dumps are logged by size only.
-- **Battery Pause Mode and the pause timeslot on Gen 1 (firmware 187 or later) and Gen 2 hybrids.** givenergy-modbus doesn't support them on hybrids yet, so GivTCP adds them itself until it does.
+- **Battery Pause Mode and the pause timeslot on Gen 1 (firmware 187 or later), Gen 2, Gen 3 and HV Gen 3 hybrids, the All-in-One and the Gateway, and Battery Pause Mode on the AC.** givenergy-modbus doesn't support them on these models yet, so GivTCP adds them itself until it does.
 - **Data age stat** (`Data_Age`): shows how old the inverter data is, so values held from the last good read can be spotted.
 - **Battery charge and discharge MOS state** entities, showing whether each battery's charge and discharge switches are open or closed: for each HV battery stack and each LV battery (thanks @plandregan).
 - Better support for HV Gen 3, three-phase, All-in-One, EMS and Gateway systems, including battery counts and stack details for HV batteries.
@@ -52,7 +52,8 @@ Key changes since the last dev build published on the `dev3` branch (3.5.22).
 - Force Charge, Force Export and Temp Pause failed on models whose data didn't include the settings they save for reverting (three-phase battery reserve, EMS charge rate).
 - A control that isn't available on your inverter model now says so ("not available for Ems inverters"), rather than giving an `AttributeError`. This covers, for example, three-phase-only controls on single-phase inverters, inverter controls on the EMS, and Force Charge/Export on the EMS.
 - A control sent at the same moment as the read loop checked for requests could be lost, along with any other pending requests.
-- **Leftover pause entities on older inverters.** Battery Pause Mode and the pause timeslots are now removed from Home Assistant on inverters that don't support them (Gen 1 hybrid, AC).
+- **Leftover pause entities on older inverters.** Battery Pause Mode and the pause timeslots are now removed from Home Assistant on inverters that don't support them (older Gen 1 hybrids, three-phase and EMS; the pause timeslots on the AC, which has Battery Pause Mode but no timeslot).
+- **Force Charge and Force Export on the AC and All-in-One** failed with `HR(318) is not permitted`, because givenergy-modbus doesn't allow pause mode writes on them.
 - Gen 1 Home Assistant discovery failed on the battery BMS current entity, so no entities were created.
 - **Export Power Limit** now shows in Watts in HA, instead of as an amp slider.
 - **Battery pause slot changes** now show in HA immediately, instead of after the next full read.

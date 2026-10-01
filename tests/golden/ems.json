@@ -5076,7 +5076,11 @@
     }
    }
   },
-  "discovery removed": [],
+  "discovery removed": [
+   "Battery_pause_end_time_slot",
+   "Battery_pause_mode",
+   "Battery_pause_start_time_slot"
+  ],
   "discovery topics": [
    "homeassistant/number/GivEnergy/EMS2522000_Car_Charge_Boost/config",
    "homeassistant/number/GivEnergy/EMS2522000_Car_Charge_Count/config",

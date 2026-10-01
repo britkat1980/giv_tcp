@@ -691,85 +691,65 @@
   "setBatteryPauseMode({'state': 'Disabled'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to Disabled was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      0
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode({'state': 'PauseBoth'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseBoth was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      3
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode({'state': 'PauseCharge'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseCharge was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      1
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode({'state': 'PauseDischarge'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseDischarge was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      2
+     ]
+    ]
    }
   ],
   "setBatteryReserve({'reservePercent': '2'})": [
@@ -2593,18 +2573,7 @@
   "setBatteryPauseMode(Disabled)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2613,24 +2582,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      0
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode(PauseBoth)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2639,24 +2603,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      3
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode(PauseCharge)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2665,24 +2624,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      1
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode(PauseDischarge)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2691,7 +2645,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      2
+     ]
+    ]
    }
   ],
   "setBatteryReserve(20)": [
@@ -5748,7 +5708,6 @@
   },
   "discovery removed": [
    "Battery_pause_end_time_slot",
-   "Battery_pause_mode",
    "Battery_pause_start_time_slot",
    "PV_Current_String_1",
    "PV_Current_String_2",
@@ -6749,89 +6708,69 @@
   "/setBatteryPauseMode({'state': 'Disabled'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to Disabled was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      0
+     ]
+    ]
    }
   ],
   "/setBatteryPauseMode({'state': 'PauseBoth'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseBoth was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      3
+     ]
+    ]
    }
   ],
   "/setBatteryPauseMode({'state': 'PauseCharge'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseCharge was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      1
+     ]
+    ]
    }
   ],
   "/setBatteryPauseMode({'state': 'PauseDischarge'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for AC inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseDischarge was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      2
+     ]
+    ]
    }
   ],
   "/setBatteryReserve({'reservePercent': '20'})": [

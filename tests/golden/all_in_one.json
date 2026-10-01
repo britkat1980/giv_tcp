@@ -714,85 +714,65 @@
   "setBatteryPauseMode({'state': 'Disabled'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to Disabled was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      0
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode({'state': 'PauseBoth'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseBoth was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      3
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode({'state': 'PauseCharge'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseCharge was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      1
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode({'state': 'PauseDischarge'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseDischarge was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      2
+     ]
+    ]
    }
   ],
   "setBatteryReserve({'reservePercent': '2'})": [
@@ -1623,64 +1603,54 @@
   "setPauseEnd({'finish': '19:00'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(320) is not permitted for ALL_IN_ONE inverter (registers: 320)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for ALL_IN_ONE inverter'} (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for ALL_IN_ONE inverter'} (write.py:N)"
+     "result": "Setting Pause Slot End to: 19:00 was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      320,
+      1900
+     ]
+    ]
    }
   ],
   "setPauseSlot({'start': '16:00', 'finish': '19:00'})": [
    {
     "jobs": [],
-    "logs": [
+    "logs": [],
+    "result": {
+     "result": "Setting Pause Slot to: 16:00 - 19:00 was a success"
+    },
+    "writes": [
      [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(319) is not permitted for ALL_IN_ONE inverter (registers: 319, 320)"
+      17,
+      319,
+      1600
      ],
      [
-      "write_logger",
-      "ERROR",
-      "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for ALL_IN_ONE inverter (write.py:N)"
+      17,
+      320,
+      1900
      ]
-    ],
-    "result": {
-     "result": "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for ALL_IN_ONE inverter (write.py:N)"
-    },
-    "writes": []
+    ]
    }
   ],
   "setPauseStart({'start': '16:00'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(319) is not permitted for ALL_IN_ONE inverter (registers: 319)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for ALL_IN_ONE inverter'} (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for ALL_IN_ONE inverter'} (write.py:N)"
+     "result": "Setting Pause Slot Start to: 16:00 was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      319,
+      1600
+     ]
+    ]
    }
   ],
   "switchRate(day)": [
@@ -2616,18 +2586,7 @@
   "setBatteryPauseMode(Disabled)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2636,24 +2595,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      0
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode(PauseBoth)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2662,24 +2616,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      3
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode(PauseCharge)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2688,24 +2637,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      1
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode(PauseDischarge)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2714,7 +2658,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      2
+     ]
+    ]
    }
   ],
   "setBatteryReserve(20)": [
@@ -5062,18 +5012,7 @@
   "setPauseEnd(19:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(320) is not permitted for ALL_IN_ONE inverter (registers: 320)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for ALL_IN_ONE inverter'} (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setPauseEnd",
@@ -5082,24 +5021,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      320,
+      1900
+     ]
+    ]
    }
   ],
   "setPauseStart(16:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(319) is not permitted for ALL_IN_ONE inverter (registers: 319)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for ALL_IN_ONE inverter'} (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setPauseStart",
@@ -5108,7 +5042,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      319,
+      1600
+     ]
+    ]
    }
   ],
   "switchRate(day)": [
@@ -8135,89 +8075,69 @@
   "/setBatteryPauseMode({'state': 'Disabled'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to Disabled was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      0
+     ]
+    ]
    }
   ],
   "/setBatteryPauseMode({'state': 'PauseBoth'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseBoth was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      3
+     ]
+    ]
    }
   ],
   "/setBatteryPauseMode({'state': 'PauseCharge'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseCharge was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      1
+     ]
+    ]
    }
   ],
   "/setBatteryPauseMode({'state': 'PauseDischarge'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for ALL_IN_ONE inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseDischarge was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      2
+     ]
+    ]
    }
   ],
   "/setBatteryReserve({'reservePercent': '20'})": [
@@ -8848,23 +8768,23 @@
   "/setPauseSlot({'start': '16:00', 'finish': '19:00'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(319) is not permitted for ALL_IN_ONE inverter (registers: 319, 320)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for ALL_IN_ONE inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for ALL_IN_ONE inverter (write.py:N)"
+     "result": "Setting Pause Slot to: 16:00 - 19:00 was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      319,
+      1600
+     ],
+     [
+      17,
+      320,
+      1900
+     ]
+    ]
    }
   ],
   "/switchRate({'rate': 'day'})": [
