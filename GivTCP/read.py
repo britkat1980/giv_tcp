@@ -1681,11 +1681,13 @@ def processGatewayInfo(plant: Plant):
         power_output['PV_Power']=GEInv.p_pv
         power_output['Load_Power']=GEInv.p_load
         #power_output['Parallel_Load_Power']=GEInv.parallel_aio_load_power
-        power_output['Battery_Power']=-GEInv.p_aio_total      # For Gateway we proxy battery by invertor power minus PV
-        power_output['Liberty_Power']=-GEInv.p_liberty      #invert to get negative for export
+        # givenergy-modbus 2.x already reports the Gateway's AIO powers (p_aio_total, p_liberty, p_aio<n>_inverter)
+        # positive for discharge (givenergy-modbus#372), so they aren't inverted here as they were for the old library
+        power_output['Battery_Power']=GEInv.p_aio_total      # For Gateway we proxy battery by invertor power minus PV
+        power_output['Liberty_Power']=GEInv.p_liberty
         power_output['Grid_Relay_Voltage']=GEInv.v_grid_relay
         power_output['Inverter_Relay_Voltage']=GEInv.v_inverter_relay
-        power_output['Invertor_Power']=-GEInv.p_aio_total
+        power_output['Invertor_Power']=GEInv.p_aio_total
         
         controlmode={}    
         timeslots={}
@@ -1722,7 +1724,7 @@ def processGatewayInfo(plant: Plant):
                 power_output['SOC']=average
                 power_output['SOC_kWh'] = round((int(power_output['SOC'])*(inverterModel.batterycapacity))/100,2)
 
-                Battery_power=-GEInv.p_aio_total
+                Battery_power=GEInv.p_aio_total
                 if Battery_power >= 0:
                     discharge_power = abs(Battery_power)
                     charge_power = 0
@@ -1807,7 +1809,7 @@ def processGatewayInfo(plant: Plant):
             inv1['AC_Discharge_Energy_Today_kWh']=GEInv.e_aio1_discharge_today
             inv1['AC_Discharge_Energy_Total_kWh']=round(GEInv.e_aio1_discharge_total/1000,2)
             inv1['SOC']=GEInv.aio1_soc
-            inv1['Invertor_Power']=-GEInv.p_aio1_inverter           #invert to get negative for export
+            inv1['Invertor_Power']=GEInv.p_aio1_inverter
             inv1['AIO_1_Serial_Number']=GEInv.aio1_serial_number
             #inverters[GEInv.aio1_serial_number]=inv1
             inverters["AIO_1"]=inv1
@@ -1818,7 +1820,7 @@ def processGatewayInfo(plant: Plant):
             inv2['AC_Discharge_Energy_Today_kWh']=GEInv.e_aio2_discharge_today
             inv2['AC_Discharge_Energy_Total_kWh']=round(GEInv.e_aio2_discharge_total/1000,2)
             inv2['SOC']=GEInv.aio2_soc
-            inv2['Invertor_Power']=-GEInv.p_aio2_inverter           #invert to get negative for export
+            inv2['Invertor_Power']=GEInv.p_aio2_inverter
             inv2['AIO_2_Serial_Number']=GEInv.aio2_serial_number
             #inverters[GEInv.aio2_serial_number]=inv2
             inverters["AIO_2"]=inv2
@@ -1829,7 +1831,7 @@ def processGatewayInfo(plant: Plant):
             inv3['AC_Discharge_Energy_Today_kWh']=GEInv.e_aio3_discharge_today
             inv3['AC_Discharge_Energy_Total_kWh']=round(GEInv.e_aio3_discharge_total/1000,2)
             inv3['SOC']=GEInv.aio3_soc
-            inv3['Invertor_Power']=-GEInv.p_aio3_inverter           #invert to get negative for export
+            inv3['Invertor_Power']=GEInv.p_aio3_inverter
             inv3['AIO_3_Serial_Number']=GEInv.aio3_serial_number
             #inverters[GEInv.aio3_serial_number]=inv3
             inverters["AIO_3"]=inv3

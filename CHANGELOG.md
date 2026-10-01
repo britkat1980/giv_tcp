@@ -49,6 +49,7 @@ Key changes since the last dev build published on the `dev3` branch (3.5.22).
 - **EMS discharge target SOC** can now be set over MQTT.
 - **Three-phase Force Charge, Force Discharge and AC Charge** can now be set over REST.
 - Several controls could fail with an error that dropped every other pending control and left a REST caller waiting for a timeout: Set Charge/Discharge Rate and Set Eco Mode on EMS, and Force Charge/Export before any inverter data had been read. They now fail with a clear message.
+- **Gateway battery power had the wrong sign**: discharging showed as charging, and the reverse. The same applied to the Gateway's inverter and Liberty power, the battery power flows, the charge/discharge time remaining, and each All-in-One's inverter power shown through the Gateway.
 - Force Charge, Force Export and Temp Pause failed on models whose data didn't include the settings they save for reverting (three-phase battery reserve, EMS charge rate).
 - A control that isn't available on your inverter model now says so ("not available for Ems inverters"), rather than giving an `AttributeError`. This covers, for example, three-phase-only controls on single-phase inverters, inverter controls on the EMS, and Force Charge/Export on the EMS.
 - A control sent at the same moment as the read loop checked for requests could be lost, along with any other pending requests.
