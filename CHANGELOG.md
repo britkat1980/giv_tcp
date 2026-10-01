@@ -4,6 +4,8 @@ All notable changes to GivTCP are documented in this file.
 
 ## [Unreleased]
 
+## [3.6.0-beta1] - 2026-10-01
+
 Key changes since the last dev build published on the `dev3` branch (3.5.22).
 
 ### Changed
