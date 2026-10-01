@@ -54,6 +54,7 @@ Key changes since the last dev build published on the `dev3` branch (3.5.22).
 - A control sent at the same moment as the read loop checked for requests could be lost, along with any other pending requests.
 - **Leftover pause entities on older inverters.** Battery Pause Mode and the pause timeslots are now removed from Home Assistant on inverters that don't support them (older Gen 1 hybrids, three-phase and EMS; the pause timeslots on the AC, which has Battery Pause Mode but no timeslot).
 - **Force Charge and Force Export on the AC and All-in-One** failed with `HR(318) is not permitted`, because givenergy-modbus doesn't allow pause mode writes on them.
+- **Charge and discharge rate on the Gateway** (Set Charge/Discharge Rate, their AC versions, and Temp Pause Charge/Discharge) failed with `not yet supported by givenergy-modbus for Gateway inverters`, and the current rates weren't shown. The Gateway sets them for the All-in-Ones behind it, through the AC charge/discharge limit, as before 3.5.23.
 - Gen 1 Home Assistant discovery failed on the battery BMS current entity, so no entities were created.
 - **Export Power Limit** now shows in Watts in HA, instead of as an amp slider.
 - **Battery pause slot changes** now show in HA immediately, instead of after the next full read.

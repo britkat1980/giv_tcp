@@ -160,8 +160,9 @@ async def sendAsyncCommand(reqs,readloop):
 
 def acLimit(kind,val):
     # The AC charge/discharge limit (HR313/314). givenergy-modbus only allows it on models with the AC config
-    # block (AC and All-in-One); Gateway, three-phase and HV Gen3 have no rate write it permits yet, so fail clearly
-    if GiV_Settings.inverter_type.lower() in ("ac","all_in_one"):
+    # block (AC and All-in-One); modbus_patches adds it on the Gateway. Three-phase and HV Gen3 have no rate
+    # write it permits yet, so fail clearly
+    if GiV_Settings.inverter_type.lower() in ("ac","all_in_one","gateway"):
         return getattr(gecommands,"set_battery_"+kind+"_limit_ac")(val)
     raise NotImplementedError("Setting the AC "+kind+" rate is not yet supported by givenergy-modbus for "+str(GiV_Settings.inverter_type)+" inverters")
 

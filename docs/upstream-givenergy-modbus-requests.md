@@ -60,7 +60,7 @@ GivTCP exposes per-slot targets as Home Assistant controls, and users automate t
 
 - `ThreePhaseInverter` reads `battery_charge_limit_ac` at **HR 1110** and `battery_discharge_limit_ac` at **HR 1108** (the manifest notes three-phase remaps the AC-config controls there). Neither is in `WRITE_SAFE_THREE_PHASE` and there's no command helper, so a consumer can't set the charge/discharge rate on three-phase or HV Gen 3. The old async fork wrote these as `TPH_BATTERY_CHARGE_LIMIT_AC = 1110` / `TPH_BATTERY_DISCHARGE_LIMIT_AC = 1108`.
 - `set_battery_charge_limit_ac()` / `set_battery_discharge_limit_ac()` write HR 313/314, which are only write-safe with the AC-config block, so only on `AC` and `ALL_IN_ONE`.
-- On a **Gateway**, none of 313/314/1108/1110 are write-safe. We don't know which register the Gateway uses for parallel-AIO charge/discharge rate; it would help to know whether it's supported.
+- On a **Gateway**, none of 313/314/1108/1110 are write-safe, and HR(300-359) isn't read. givenergy-modbus#373 settled the routing: the Gateway controls the AIOs behind it, and a capture showed GivTCP setting the AC charge/discharge limit (HR 313/314) on the Gateway at device 0x11. The library's own Gateway capture (`gateway_gaaa0014`) includes the whole HR(300-359) block, and a Gateway on firmware A0.014 answers live reads of it (HR 313/314 = 50/100). HR 111/112 read 0 on a Gateway, so the AC pair is its rate control.
 
 **Possible inconsistency to check**
 
@@ -69,7 +69,9 @@ GivTCP exposes per-slot targets as Home Assistant controls, and users automate t
 **Request**
 
 - Three-phase helpers (or model-aware routing) for the AC charge/discharge limits at 1110/1108, added to `WRITE_SAFE_THREE_PHASE`.
-- Guidance, or support, for the Gateway's rate control.
+- Add `Model.GATEWAY` to `has_ac_config_block`, so `load_config()` reads HR(300-359) and HR 313/314 are write-safe.
+
+**GivTCP workaround:** `GivTCP/modbus_patches.py` adds HR 313/314 to the write-safe set on `GATEWAY`, and reads HR(313, 8) after `load_config()` there (which also covers the pause registers from item 1).
 
 ---
 
