@@ -569,17 +569,17 @@
   "setCarChargeBoost({'boost': '2500'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+     "result": "Setting Car Charge Boost to 2500W was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      2073,
+      2500
+     ]
+    ]
    }
   ],
   "setChargeRate({'chargeRate': '2500'})": [
@@ -2225,13 +2225,7 @@
   "setCarChargeBoost(2500)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setCarChargeBoost",
@@ -2240,7 +2234,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      2073,
+      2500
+     ]
+    ]
    }
   ],
   "setChargeEnd1(05:00:00)": [
@@ -5871,18 +5871,18 @@
   "/setCarChargeBoost({'boost': '2500'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+     "result": "Setting Car Charge Boost to 2500W was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      2073,
+      2500
+     ]
+    ]
    }
   ],
   "/setChargeRate({'chargeRate': '2500'})": [

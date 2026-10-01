@@ -52,6 +52,8 @@ GivTCP exposes per-slot targets as Home Assistant controls, and users automate t
 - Helpers such as `set_charge_slot_target_soc(idx, soc)` / `set_discharge_slot_target_soc(idx, soc)`, resolving registers from the slot map the way `set_charge_slot_start(idx, …)` does.
 - Add those registers to the write-safe set for `has_extended_slots` models.
 
+**GivTCP workaround:** `GivTCP/modbus_patches.py` allows HR 242-269 / 272-299 (every third register) on `has_extended_slots` and `is_three_phase` models and writes them directly. On three-phase without `has_extended_slots` (`HYBRID_3PH`, `AC_3PH`) the library doesn't read HR(240, 60) at all, so slots 3-10 (which `THREE_PHASE_SLOTS` maps there) and their targets are never populated; the patch reads that block after `load_config()`. Remove it once the library supports this.
+
 ---
 
 ## 3. Charge/discharge rate writes on three-phase, HV Gen 3 and Gateway
@@ -70,6 +72,8 @@ GivTCP exposes per-slot targets as Home Assistant controls, and users automate t
 
 - Three-phase helpers (or model-aware routing) for the AC charge/discharge limits at 1110/1108, added to `WRITE_SAFE_THREE_PHASE`.
 - Guidance, or support, for the Gateway's rate control.
+
+**GivTCP workaround:** `GivTCP/modbus_patches.py` allows HR 1110 / 1108 on `is_three_phase` models and writes them directly. The Gateway rate is still open. Remove it once the library supports this.
 
 ---
 
@@ -148,6 +152,8 @@ The v2 `Ems` model reads `car_charge_boost` at **HR 2073**, but there's no comma
 
 - A helper such as `Ems.set_car_charge_boost(watts)`, bounded 0–22000.
 - Add HR 2073 to the EMS write-safe set.
+
+**GivTCP workaround:** `GivTCP/modbus_patches.py` allows HR 2073 on EMS (adding it to both write-safe sets) and writes it directly, bounded 0-22000. Remove it once the library supports this.
 
 ---
 

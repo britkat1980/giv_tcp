@@ -23,6 +23,7 @@ import asyncio
 from logging.handlers import TimedRotatingFileHandler
 
 from GivLUT import GivClientAsync, SharedTimedRotatingFileHandler
+import modbus_patches       # writes givenergy-modbus doesn't provide yet
 
 logging.getLogger("givenergy_modbus").setLevel(logging.CRITICAL)
 
@@ -159,10 +160,13 @@ async def sendAsyncCommand(reqs,readloop):
     return output
 
 def acLimit(kind,val):
-    # The AC charge/discharge limit (HR313/314). givenergy-modbus only allows it on models with the AC config
-    # block (AC and All-in-One); Gateway, three-phase and HV Gen3 have no rate write it permits yet, so fail clearly
+    # The AC charge/discharge limit: HR313/314 on models with the AC config block (AC and All-in-One), and
+    # HR1110/1108 on three-phase (written via modbus_patches until givenergy-modbus supports it). Gateway and
+    # HV Gen3 have no rate write it permits yet, so fail clearly
     if GiV_Settings.inverter_type.lower() in ("ac","all_in_one"):
         return getattr(gecommands,"set_battery_"+kind+"_limit_ac")(val)
+    if "3ph" in GiV_Settings.inverter_type.lower():
+        return modbus_patches.three_phase_ac_limit(kind,val)
     raise NotImplementedError("Setting the AC "+kind+" rate is not yet supported by givenergy-modbus for "+str(GiV_Settings.inverter_type)+" inverters")
 
 def optionalAcLimit(kind,val):
@@ -223,12 +227,16 @@ def chargeTargetSOC(device,target):
         return gecommands.set_charge_target_soc_3ph(int(target))
     return device.set_charge_target_soc(int(target))
 
-def slotTargetSOC(kind,slot,target):
-    # Per-slot target SOC. givenergy-modbus only provides these for EMS so far; for inverters the
-    # registers (HR 242+) are not in its write-safe list, so fail clearly rather than with an AttributeError
+def slotTargetSOC(device,kind,slot,target):
+    # Per-slot target SOC. givenergy-modbus provides these for EMS; for inverters with 10 time slots the
+    # charge/discharge targets (HR 242+ / 272+) are written via modbus_patches until it does
     if 'ems' in GiV_Settings.inverter_type.lower():
         return getattr(gecommands,"set_ems_"+kind+"_target_soc")(int(slot),int(target))
-    raise NotImplementedError(kind.capitalize()+" target SOC for slot "+str(slot)+" is not yet supported by givenergy-modbus for this inverter")
+    if kind=="export":
+        raise NotImplementedError("Export target SOC is only available on the EMS")
+    if len(device.slot_map.charge_slots)<10:
+        raise NotImplementedError(kind.capitalize()+" target SOC per slot is only available on inverters with 10 time slots")
+    return modbus_patches.slot_target_soc(kind,slot,target)
 
 async def sbcla(device,target,readloop=False):
     temp={}
@@ -443,7 +451,7 @@ async def setChargeTarget2(device,payload,readloop=False):
         target=int(payload['chargeToPercent'])
         slot=int(payload['slot'])
         logger.debug("Setting Charge Target "+str(slot) + " to: "+str(target))
-        reqs=slotTargetSOC("charge",slot,target)
+        reqs=slotTargetSOC(device,"charge",slot,target)
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
             raise Exception(result['error'])
@@ -468,7 +476,7 @@ async def setExportTarget(device,payload,readloop=False):
         slot=int(payload['slot'])
         logger.debug("Setting Export Target "+str(slot) + " to: "+str(target))
         #temp= await sest(target,slot,readloop)
-        reqs=slotTargetSOC("export",slot,target)
+        reqs=slotTargetSOC(device,"export",slot,target)
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
             raise Exception(result['error'])
@@ -490,7 +498,7 @@ async def setDischargeTarget(device,payload,readloop=False):
         slot=int(payload['slot'])
         logger.debug("Setting Discharge Target "+str(slot) + " to: "+str(target))
         #temp= await sdct(target,slot,readloop)
-        reqs=slotTargetSOC("discharge",slot,target)
+        reqs=slotTargetSOC(device,"discharge",slot,target)
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
             raise Exception(result['error'])
@@ -557,9 +565,19 @@ async def setExportLimit(device,payload,readloop=False):
 async def setCarChargeBoost(device,payload,readloop=False):
     temp={}
     try:
-        # givenergy-modbus v2 reads car_charge_boost (EMS HR 2073) but has no writer and doesn't allow the
-        # register in its write-safe set, so fail clearly (see docs/upstream-givenergy-modbus-requests.md #10)
-        raise NotImplementedError("Setting Car Charge Boost is not yet supported by givenergy-modbus")
+        if type(payload) is not dict: payload=json.loads(payload)
+        if not isEMS(device):
+            raise NotImplementedError("Car Charge Boost is only available on the EMS")
+        # EMS HR 2073, written via modbus_patches until givenergy-modbus supports it
+        reqs=modbus_patches.car_charge_boost(payload['boost'])
+        watts=reqs[0].value
+        logger.debug("Setting Car Charge Boost to: "+str(watts)+"W")
+        result= await sendAsyncCommand(reqs,readloop)
+        if 'error' in result:
+            raise Exception(result['error'])
+        updateControlCache("Car_Charge_Boost",watts)
+        temp['result']="Setting Car Charge Boost to "+str(watts)+"W was a success"
+        logger.info(temp['result'])
     except:
         e=controlError()
         temp['result']="Setting Car Charge Boost failed: " + str(e)
@@ -659,7 +677,7 @@ async def setChargeRate(device,payload,readloop=False):
             invmaxrate=maxBatteryRate(multi_output_old)
             batcap=batteryCapacityWh(multi_output_old)
             if "3ph" in GiV_Settings.inverter_type.lower() or "gateway" in GiV_Settings.inverter_type.lower():
-                target= round((int(payload['chargeRate'])/invmaxrate)*100,0)
+                target= min(100,round((int(payload['chargeRate'])/invmaxrate)*100,0))     # above the maximum means full rate
                 if target<1:
                     # The AC limit register rejects 0% (library enforces 1-100), so the closest to a pause is 1%
                     logger.info("AC charge limit can't be 0%, setting 1% instead")
@@ -727,7 +745,7 @@ async def setDischargeRate(device,payload,readloop=False):
             invmaxrate=maxBatteryRate(multi_output_old)
             batcap=batteryCapacityWh(multi_output_old)
             if "3ph" in GiV_Settings.inverter_type.lower() or "gateway" in GiV_Settings.inverter_type.lower():
-                target= round((int(payload['dischargeRate'])/invmaxrate)*100,0)
+                target= min(100,round((int(payload['dischargeRate'])/invmaxrate)*100,0))     # above the maximum means full rate
                 if target<1:
                     # The AC limit register rejects 0% (library enforces 1-100), so the closest to a pause is 1%
                     logger.info("AC discharge limit can't be 0%, setting 1% instead")

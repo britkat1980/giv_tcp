@@ -809,11 +809,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+      "Setting Car Charge Boost failed: NotImplementedError: Car Charge Boost is only available on the EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+     "result": "Setting Car Charge Boost failed: NotImplementedError: Car Charge Boost is only available on the EMS (write.py:N)"
     },
     "writes": []
    }
@@ -1022,65 +1022,65 @@
   "setChargeTarget2({'chargeToPercent': '85', 'slot': 1, 'EMS': True})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     "result": "Setting Charge Target 1 was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      242,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget2({'chargeToPercent': '85', 'slot': 10})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 10 failed: NotImplementedError: Charge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Charge Target 10 failed: NotImplementedError: Charge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     "result": "Setting Charge Target 10 was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      269,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget2({'chargeToPercent': '85', 'slot': 1})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     "result": "Setting Charge Target 1 was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      242,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget2({'chargeToPercent': '85', 'slot': 2})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 2 failed: NotImplementedError: Charge target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Charge Target 2 failed: NotImplementedError: Charge target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     "result": "Setting Charge Target 2 was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      245,
+      85
+     ]
+    ]
    }
   ],
   "setDateTime({'dateTime': '01/01/2026 12:00:00'})": [
@@ -1286,33 +1286,33 @@
   "setDischargeTarget({'dischargeToPercent': '30', 'slot': '1'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     "result": "Setting Discharge Target 1 was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      272,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget({'dischargeToPercent': '30', 'slot': '10'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 10 failed: NotImplementedError: Discharge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Discharge Target 10 failed: NotImplementedError: Discharge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     "result": "Setting Discharge Target 10 was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      299,
+      30
+     ]
+    ]
    }
   ],
   "setEcoMode({'state': 'disable'})": [
@@ -1482,11 +1482,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Target 1 failed: NotImplementedError: Export target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+      "Setting Export Target 1 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Export Target 1 failed: NotImplementedError: Export target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     "result": "Setting Export Target 1 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
     },
     "writes": []
    }
@@ -2698,7 +2698,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+      "Setting Car Charge Boost failed: NotImplementedError: Car Charge Boost is only available on the EMS (write.py:N)"
      ]
     ],
     "queued": [
@@ -3228,13 +3228,7 @@
   "setChargeTarget1(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3244,19 +3238,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      242,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget10(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 10 failed: NotImplementedError: Charge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3266,19 +3260,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      269,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget2(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 2 failed: NotImplementedError: Charge target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3288,19 +3282,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      245,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget3(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 3 failed: NotImplementedError: Charge target SOC for slot 3 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3310,19 +3304,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      248,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget4(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 4 failed: NotImplementedError: Charge target SOC for slot 4 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3332,19 +3326,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      251,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget5(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 5 failed: NotImplementedError: Charge target SOC for slot 5 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3354,19 +3348,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      254,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget6(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 6 failed: NotImplementedError: Charge target SOC for slot 6 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3376,19 +3370,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      257,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget7(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 7 failed: NotImplementedError: Charge target SOC for slot 7 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3398,19 +3392,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      260,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget8(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 8 failed: NotImplementedError: Charge target SOC for slot 8 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3420,19 +3414,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      263,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget9(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 9 failed: NotImplementedError: Charge target SOC for slot 9 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3442,7 +3436,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      266,
+      85
+     ]
+    ]
    }
   ],
   "setDateTime(01/01/2026 12:00:00)": [
@@ -3976,13 +3976,7 @@
   "setDischargeTarget1(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -3992,19 +3986,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      272,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget10(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 10 failed: NotImplementedError: Discharge target SOC for slot 10 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4014,19 +4008,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      299,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget2(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 2 failed: NotImplementedError: Discharge target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4036,19 +4030,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      275,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget3(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 3 failed: NotImplementedError: Discharge target SOC for slot 3 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4058,19 +4052,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      278,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget4(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 4 failed: NotImplementedError: Discharge target SOC for slot 4 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4080,19 +4074,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      281,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget5(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 5 failed: NotImplementedError: Discharge target SOC for slot 5 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4102,19 +4096,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      284,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget6(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 6 failed: NotImplementedError: Discharge target SOC for slot 6 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4124,19 +4118,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      287,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget7(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 7 failed: NotImplementedError: Discharge target SOC for slot 7 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4146,19 +4140,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      290,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget8(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 8 failed: NotImplementedError: Discharge target SOC for slot 8 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4168,19 +4162,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      293,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget9(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 9 failed: NotImplementedError: Discharge target SOC for slot 9 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4190,7 +4184,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      296,
+      30
+     ]
+    ]
    }
   ],
   "setEMSChargeEnd1(05:00:00)": [
@@ -4334,13 +4334,7 @@
   "setEMSChargeTarget1(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -4351,19 +4345,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      242,
+      85
+     ]
+    ]
    }
   ],
   "setEMSChargeTarget2(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 2 failed: NotImplementedError: Charge target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -4374,19 +4368,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      245,
+      85
+     ]
+    ]
    }
   ],
   "setEMSChargeTarget3(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 3 failed: NotImplementedError: Charge target SOC for slot 3 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -4397,7 +4391,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      248,
+      85
+     ]
+    ]
    }
   ],
   "setEMSDischargeEnd1(19:00:00)": [
@@ -4782,7 +4782,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Target 1 failed: NotImplementedError: Export target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+      "Setting Export Target 1 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
      ]
     ],
     "queued": [
@@ -4804,7 +4804,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Target 2 failed: NotImplementedError: Export target SOC for slot 2 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+      "Setting Export Target 2 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
      ]
     ],
     "queued": [
@@ -4826,7 +4826,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Target 3 failed: NotImplementedError: Export target SOC for slot 3 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+      "Setting Export Target 3 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
      ]
     ],
     "queued": [
@@ -6816,11 +6816,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+      "Setting Car Charge Boost failed: NotImplementedError: Car Charge Boost is only available on the EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Car Charge Boost failed: NotImplementedError: Setting Car Charge Boost is not yet supported by givenergy-modbus (write.py:N)"
+     "result": "Setting Car Charge Boost failed: NotImplementedError: Car Charge Boost is only available on the EMS (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -7182,18 +7182,18 @@
   "/setDischargeTarget({'dischargeToPercent': '30', 'slot': '1'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     "result": "Setting Discharge Target 1 was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      272,
+      30
+     ]
+    ]
    }
   ],
   "/setEcoMode({'state': 'disable'})": [
@@ -7339,11 +7339,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Export Target 1 failed: NotImplementedError: Export target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+      "Setting Export Target 1 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Export Target 1 failed: NotImplementedError: Export target SOC for slot 1 is not yet supported by givenergy-modbus for this inverter (write.py:N)"
+     "result": "Setting Export Target 1 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
     },
     "status": 200,
     "writes": []
