@@ -1,6 +1,7 @@
 """GivLUT: Various objects to interface to GivEnergy inverters """
 from giverrors import errDetail
 from givenergy_modbus.client.client import Client
+import modbus_patches  # noqa: F401  (local givenergy-modbus extensions, applied on import)
 from givenergy_modbus.exceptions import CommunicationError
 from settings import GiV_Settings
 import logging

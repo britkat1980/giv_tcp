@@ -9,7 +9,7 @@
     <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
     <script>
        $(function() {
-          $("#includeHead").load("header.html");
+          $("#includeHead").load("header.html?_=" + Date.now());   // unique URL, so a cached (stale) header is never used
        });
     </script>
 

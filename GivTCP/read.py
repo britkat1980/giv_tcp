@@ -28,6 +28,7 @@ from datetime import timedelta
 import asyncio
 from typing import Callable, Optional
 from mqtt import GivMQTT
+from modbus_patches import pause_supported
 import copy
 
 logging.getLogger("givenergy_modbus").setLevel(logging.ERROR) 
@@ -85,8 +86,14 @@ def rebootaddon():
 def capsFile():
     return GivLUT.config_dir+"/"+GiV_Settings.serial_number+"_caps.pkl"
 
-# Models with no battery pause mode/slot (givenergy-modbus doesn't read HR 318-320 on them)
-PAUSE_UNSUPPORTED=[Model.HYBRID_GEN1, Model.AC]
+def pauseUnsupported(caps):
+    # Battery pause mode/slot (HR 318-320): not on AC, and on Gen 1 only from the firmware that added it
+    # (modbus_patches enables it for newer Gen 1 and Gen 2 hybrids)
+    if caps is None:
+        return False
+    if caps.device_type==Model.AC:
+        return True
+    return caps.device_type==Model.HYBRID_GEN1 and not pause_supported(caps.device_type, caps.arm_firmware_version)
 # Models whose PV string voltage/current registers aren't real string readings (they echo the AC side), which
 # givenergy-modbus 2.13+ reports as None
 PV_STRING_VI_UNSUPPORTED=[Model.AC, Model.ALL_IN_ONE]
@@ -96,11 +103,12 @@ def unsupportedEntities():
     # and their retained discovery messages keep them there, so discovery removes them explicitly
     try:
         with open(capsFile(), 'rb') as inp:
-            device_type=pickle.load(inp).device_type
+            caps=pickle.load(inp)
+        device_type=caps.device_type
     except Exception:
         return []
     unsupported=[]
-    if device_type in PAUSE_UNSUPPORTED:
+    if pauseUnsupported(caps):
         unsupported+=['Battery_pause_mode','Battery_pause_start_time_slot','Battery_pause_end_time_slot']
     if device_type in PV_STRING_VI_UNSUPPORTED:
         unsupported+=['PV_Voltage_String_1','PV_Voltage_String_2','PV_Current_String_1','PV_Current_String_2']
@@ -717,7 +725,7 @@ def getTimeslots(plant: Plant, multi_output_old=None):
     except:
         logger.debug("New Charge/Discharge timeslots don't exist for this model")
 
-    if not plant.capabilities.device_type in PAUSE_UNSUPPORTED and GEInv.battery_pause_slot_1 is not None:   #Battery Pause slots not on Gen 1 Hybrid or AC only
+    if not pauseUnsupported(plant.capabilities) and GEInv.battery_pause_slot_1 is not None:   #Battery Pause slots not on AC or older Gen 1
         timeslots['Battery_pause_start_time_slot'] = validateTimeslot(getattr(GEInv.battery_pause_slot_1,'start',None),"Battery_pause_start_time_slot",multi_output_old)
         timeslots['Battery_pause_end_time_slot'] = validateTimeslot(getattr(GEInv.battery_pause_slot_1,'end',None),"Battery_pause_end_time_slot",multi_output_old)
     # Unused slots report a 0% target, which HA rejects (min 4%) on every poll - don't publish them

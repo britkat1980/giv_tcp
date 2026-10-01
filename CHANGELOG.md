@@ -26,6 +26,7 @@ Key changes since the last dev build published on the `dev3` branch (3.5.22).
 - **Time picker controls for timeslots** in Home Assistant 2026.5 or later, alongside the existing drop-downs. For example, "Charge start slot 1" sits next to "Charge start time slot 1". Both stay in sync.
 - **Settings Guide and Datapoints pages** in the web UI, generated from [docs/SETTINGS-GUIDE.md](docs/SETTINGS-GUIDE.md) and the new [docs/DATAPOINTS.md](docs/DATAPOINTS.md), which describes every value GivTCP publishes.
 - **REST request log**: each REST request and its result are written to their own log file alongside the main log. Settings requests are never logged in full, as they can contain passwords, and full data dumps are logged by size only.
+- **Battery Pause Mode and the pause timeslot on Gen 1 (firmware 187 or later) and Gen 2 hybrids.** givenergy-modbus doesn't support them on hybrids yet, so GivTCP adds them itself until it does.
 - **Data age stat** (`Data_Age`): shows how old the inverter data is, so values held from the last good read can be spotted.
 - **Battery charge and discharge MOS state** entities, showing whether each battery's charge and discharge switches are open or closed: for each HV battery stack and each LV battery (thanks @plandregan).
 - Better support for HV Gen 3, three-phase, All-in-One, EMS and Gateway systems, including battery counts and stack details for HV batteries.
