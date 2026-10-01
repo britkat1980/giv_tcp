@@ -33,7 +33,7 @@ The registers pass `WriteHoldingRegisterRequest.ensure_valid_state()`, since the
 2. Implement the firmware gate `write_safe_registers(model, arm_fw)` already allows for, so 318 (and 319/320 if confirmed) is allowed on single-phase hybrids at or above the first firmware that supports pause. 187 is confirmed on Gen 1; we don't know the exact first version for Gen 1, 2 or 3. GivTCP users can supply captures or test builds.
 3. Reading the state needs the same gate. `load_config()` only reads HR(300-359) for `has_ac_config_block` models (hybrids time out on the whole block, per #162). A narrow read such as HR(318, 3) for pause-capable hybrids would let consumers show the current pause mode.
 
-**GivTCP workaround:** `GivTCP/modbus_patches.py` adds HR 318-320 to the write-safe set for `HYBRID_GEN2`, and for `HYBRID_GEN1` from ARM firmware 187, and reads HR(318, 3) after `load_config()` on those models. Remove it once the library supports this.
+**GivTCP workaround:** `GivTCP/modbus_patches.py` adds HR 318-320 to the write-safe set for `HYBRID_GEN2`, for `HYBRID_GEN1` from ARM firmware 187, and for `AC` from ARM firmware 200 (confirmed by a user; the library already reads HR 300-359 on AC), and reads HR(318, 3) after `load_config()` on those models. Remove it once the library supports this.
 
 Impact: Predbat uses pause mode to hold the battery (for example "freeze" and "hold for car"). Without these writes it can't do that on any GivEnergy inverter through GivTCP v2.
 

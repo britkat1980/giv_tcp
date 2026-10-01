@@ -96,13 +96,11 @@ def capsFile():
     return GivLUT.config_dir+"/"+GiV_Settings.serial_number+"_caps.pkl"
 
 def pauseUnsupported(caps):
-    # Battery pause mode/slot (HR 318-320): not on AC, and on Gen 1 only from the firmware that added it
-    # (modbus_patches enables it for newer Gen 1 and Gen 2 hybrids)
+    # Battery pause mode/slot (HR 318-320): on AC and Gen 1 only from the firmware that added it
+    # (modbus_patches enables it for newer AC and Gen 1, and for Gen 2 hybrids)
     if caps is None:
         return False
-    if caps.device_type==Model.AC:
-        return True
-    return caps.device_type==Model.HYBRID_GEN1 and not pause_supported(caps.device_type, caps.arm_firmware_version)
+    return caps.device_type in (Model.AC, Model.HYBRID_GEN1) and not pause_supported(caps.device_type, caps.arm_firmware_version)
 # Models whose PV string voltage/current registers aren't real string readings (they echo the AC side), which
 # givenergy-modbus 2.13+ reports as None
 PV_STRING_VI_UNSUPPORTED=[Model.AC, Model.ALL_IN_ONE]

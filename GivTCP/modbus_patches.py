@@ -4,7 +4,8 @@ Writes givenergy-modbus doesn't allow yet, each enabled only on the models it ap
 library doesn't do. Each one was written by GivTCP's previous modbus library (givenergy_modbus_async), and
 each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, item number in brackets):
 
-- Battery pause mode and pause slot, HR 318-320, on Gen 1 (ARM firmware 187+) and Gen 2 hybrids [1].
+- Battery pause mode and pause slot, HR 318-320, on Gen 1 (ARM firmware 187+) and Gen 2 hybrids, and on
+  AC-coupled inverters from ARM firmware 200 [1].
   The library only allows these on models with the AC config block (AC, All-in-One), and only reads
   HR 300-359 on those, because older hybrids time out on that block (#162). This also reads just
   HR 318-320 after each load_config() on these hybrids, so the current pause mode and slot are known.
@@ -31,6 +32,8 @@ logger = logging.getLogger("read_logger")     # GivTCP's main log (GivLUT.logger
 PAUSE_REGISTERS = frozenset({318, 319, 320})     # pause mode, pause slot start, pause slot end
 # Lowest Gen 1 ARM firmware known to support pause mode (the firmware that added real-time control)
 GEN1_PAUSE_MIN_ARM_FW = 187
+# Lowest AC-coupled ARM firmware confirmed by users to support pause mode
+AC_PAUSE_MIN_ARM_FW = 200
 
 # Per-slot target SOC: slot N at base + 3*(N-1), matching the library's charge/discharge_target_soc_N reads
 SLOT_TARGET_BASE = {"charge": 242, "discharge": 272}
@@ -41,11 +44,13 @@ EMS_CAR_CHARGE_BOOST = 2073
 CAR_CHARGE_BOOST_MAX = 22000
 
 def pause_supported(model, arm_fw):
-    """True for the hybrids this patch enables pause mode on"""
+    """True for the models this patch enables pause mode on"""
     if model == Model.HYBRID_GEN2:
         return True
     if model == Model.HYBRID_GEN1:
         return arm_fw is not None and int(arm_fw) >= GEN1_PAUSE_MIN_ARM_FW
+    if model == Model.AC:
+        return arm_fw is not None and int(arm_fw) >= AC_PAUSE_MIN_ARM_FW
     return False
 
 # --- writes ------------------------------------------------------------------------------------------------
@@ -105,7 +110,8 @@ _library_load_config = Client.load_config
 
 # Extra reads after load_config(): (name, test on the capabilities, base register, count, what's lost if it fails)
 EXTRA_READS = [
-    ("pause", lambda caps: pause_supported(caps.device_type, caps.arm_firmware_version), 318, 3,
+    # (models with the AC config block, such as AC, already have HR 318-320 read by the library's HR 300-359 read)
+    ("pause", lambda caps: pause_supported(caps.device_type, caps.arm_firmware_version) and not caps.has_ac_config_block, 318, 3,
      "the current pause mode won't be shown (pause controls can still be set)"),
     ("three-phase slots", lambda caps: caps.is_three_phase and not manifest.has_extended_slots(caps.device_type, caps.arm_firmware_version),
      240, 60, "charge/discharge slots 3-10 and their target SOCs won't be shown (they can still be set)"),
