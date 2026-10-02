@@ -11,6 +11,7 @@ All notable changes to GivTCP are documented in this file.
 - **Sync Time could set the inverter an hour out**: it used the container's own clock, which can be UTC (e.g. Docker without `TZ`). It now uses GivTCP's configured timezone.
 - **Battery Charge/Discharge Energy Total showing 0 or nothing** on Gen 1, Gen 2 and AC inverters in the 3.6 betas (#600). They are read from the first battery's BMS again, as in 3.5, and from the inverter's registers when the BMS has none (some Gen 1 firmware). If neither has them they are left out rather than published as 0, because Home Assistant takes a drop to 0 as a meter reset and counts the whole total again when it comes back.
 - **EVC log, and the main inverter log, could keep writing to a rotated file** after midnight (#566). The EVC loops, and every REST and MQTT process (through the EVC code they load), used a log handler that isn't safe with several processes. They now use the same shared handler as the write log, which follows the new file when another process rotates it.
+- **Force Charge doing nothing on inverters with 10 charge slots** (Gen 3, All-in-One, HV Gen 3) when the SOC was already above slot 1's own target (#576). The inverter stops at the lower of the charge target and slot 1's target, and Force Charge only set the first. It now sets slot 1's target to 100% too, and puts it back when Force Charge ends.
 
 ## [3.6.0-beta2] - 2026-10-02
 

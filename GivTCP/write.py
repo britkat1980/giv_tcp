@@ -1255,6 +1255,8 @@ async def FCResume(device,revert,readloop=False):
             reqs.extend(device.set_charge_slot(1,slot))
         if "targetSOC" in revert:
             reqs.extend(chargeTargetSOC(device,int(revert["targetSOC"])))
+        if "slot1TargetSOC" in revert:
+            reqs.extend(slotTargetSOC(device,"charge",1,int(revert["slot1TargetSOC"])))
         if "batteryPauseMode" in revert:
             reqs.extend(gecommands.set_battery_pause_mode(GivLUT.battery_pause_mode.index(revert["batteryPauseMode"])))
         if "3ph" in GiV_Settings.inverter_type.lower():
@@ -1345,6 +1347,9 @@ async def forceCharge(device, chargeTime, readloop=False):
             elif "Battery_Charge_Rate_AC" in regCacheStack[-1]["Control"]:
                 revert["chargeRateAC"]=regCacheStack[-1]["Control"]["Battery_Charge_Rate_AC"]
             revert["targetSOC"]=regCacheStack[-1]["Control"]["Target_SOC"]
+            # On inverters with 10 slots, slot 1 also has its own target (HR242), and the inverter stops charging
+            # at the lower of the two: left as it is, Force Charge does nothing once the SOC is above it (#576)
+            revert["slot1TargetSOC"]=regCacheStack[-1]["Control"].get("Charge_Target_SOC_1")
             revert["chargeScheduleEnable"]=regCacheStack[-1]["Control"]["Enable_Charge_Schedule"]
             if "Battery_pause_mode" in regCacheStack[-1]["Control"]:
                 revert["batteryPauseMode"]=regCacheStack[-1]["Control"]["Battery_pause_mode"]
@@ -1357,6 +1362,8 @@ async def forceCharge(device, chargeTime, readloop=False):
         revert={k:v for k,v in revert.items() if v is not None}     # only revert what was read
         finish=GivLUT.getTime(datetime.now()+timedelta(minutes=chargeTime))
         reqs=chargeTargetSOC(device,100)
+        if "slot1TargetSOC" in revert:
+            reqs.extend(slotTargetSOC(device,"charge",1,100))
         slot=TimeSlot(datetime.strptime(GivLUT.getTime(datetime.now()),"%H:%M"),datetime.strptime(finish,"%H:%M"))
         reqs.extend(device.set_charge_slot(1,slot))
         if "3ph" in GiV_Settings.inverter_type.lower():
