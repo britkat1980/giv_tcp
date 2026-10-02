@@ -22,6 +22,7 @@ class Recorder:
 recorder = Recorder()
 
 real_wrong_inverter = [None]     # read.wrongInverter, which install() replaces
+real_check_clock = [None]        # read.checkInverterClock, likewise
 
 class FakeMqttClient:
     connected_flag = True
@@ -119,6 +120,8 @@ def install():
     read.updateFirstRun = lambda SN: None     # it edits the settings.py next to read.py (the developer's own)
     real_wrong_inverter[0] = read.wrongInverter
     read.wrongInverter = lambda client: None  # the harness settings use made-up serials (see test_detect_serial.py)
+    real_check_clock[0] = read.checkInverterClock
+    read.checkInverterClock = lambda invTime: None  # the captures' clocks are weeks from FROZEN_NOW (see test_inverter_clock.py)
     givlut_module.GivQueue.q = FakeQueue()
 
     read.datetime = _frozen_datetime_module()

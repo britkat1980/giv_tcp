@@ -104,6 +104,16 @@ def checkInverterClock(invTime):
                    " against "+now.strftime(shown)+"), so its Today energy counters reset at the wrong time. "
                    "Use the Sync Time button, or the GivEnergy portal, to correct it")
 
+def batteryTotals(GEInv, battery):
+    # Lifetime battery charge/discharge (kWh) for a single-phase LV inverter. Firmware keeps them in different places:
+    # the first battery's BMS (IR105/106: Gen 2, AC and most Gen 1) or the inverter (IR180/181: some Gen 1, eg. fw 449,
+    # where the BMS reads 0). Battery first, as 3.5 did, so the HA statistics carry on from the same counter
+    charge,discharge=battery.e_battery_charge_total, battery.e_battery_discharge_total
+    if not charge and not discharge:
+        charge=GEInv.e_battery_charge_total if GEInv.e_battery_charge_total is not None else GEInv.e_battery_charge_total_alt1
+        discharge=GEInv.e_battery_discharge_total if GEInv.e_battery_discharge_total is not None else GEInv.e_battery_discharge_total_alt1
+    return charge,discharge
+
 def rebootaddon():
     if GiV_Settings.isAddon:
         access_token = os.getenv("SUPERVISOR_TOKEN")
@@ -1244,12 +1254,14 @@ def processInverterInfo(plant: Plant):
         if not isHV:
             #if GEInv.e_battery_charge_total == 0 and GEInv.e_battery_discharge_total == 0 and not GiV_Settings.numBatteries==0:  # If no values in "nomal" registers then grab from back up registers - for some f/w versions
             if len(GEBat)>0:
-                if GEInv.e_battery_charge_total == 0 and GEInv.e_battery_discharge_total == 0:  # If no values in "nomal" registers then grab from back up registers - for some f/w versions
-                    energy_total_output['Battery_Charge_Energy_Total_kWh'] = GEInv._battery_energy("charge","total")
-                    energy_total_output['Battery_Discharge_Energy_Total_kWh'] = GEInv.e_battery_discharge_total_alt1
+                charge,discharge=batteryTotals(GEInv,GEBat[0])
+                if charge or discharge:
+                    energy_total_output['Battery_Charge_Energy_Total_kWh'] = charge
+                    energy_total_output['Battery_Discharge_Energy_Total_kWh'] = discharge
                 else:
-                    energy_total_output['Battery_Charge_Energy_Total_kWh'] = GEInv.e_battery_charge_total
-                    energy_total_output['Battery_Discharge_Energy_Total_kWh'] = GEInv.e_battery_discharge_total
+                    # Nothing holds them on this firmware. Leave them out rather than publish 0: HA treats a total
+                    # dropping to 0 as a meter reset, and counts the whole total again when it comes back
+                    logger.debug("No battery charge/discharge totals available, so not publishing them")
 
         energy_total_output['Export_Energy_Total_kWh'] = GEInv.e_grid_out_total
         energy_total_output['Import_Energy_Total_kWh'] = GEInv.e_grid_in_total

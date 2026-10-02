@@ -5232,13 +5232,7 @@
   ]
  },
  "read": {
-  "cycle 1 logs": [
-   [
-    "read_logger",
-    "WARNING",
-    "Inverter clock is 10 days behind GivTCP's (05 Jun 12:19 against 15 Jun 12:00), so its Today energy counters reset at the wrong time. Use the Sync Time button, or the GivEnergy portal, to correct it"
-   ]
-  ],
+  "cycle 1 logs": [],
   "cycle 1 output": {
    "Battery_Details": {
     "Battery_Stack_1": {

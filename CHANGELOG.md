@@ -5,10 +5,11 @@ All notable changes to GivTCP are documented in this file.
 ## [Unreleased]
 
 ### Added
-- **Warning when an inverter's clock is out** by 10 minutes or more (logged once a day). The inverter resets its Today energy counters at midnight by its own clock, so a clock left on GMT in summer makes them reset at 01:00 in Home Assistant (#601). Use the Sync Time button, or the GivEnergy portal, to correct it.
+- **Warning when an inverter's clock is out** by 5 minutes or more (logged once a day). The inverter resets its Today energy counters at midnight by its own clock, so a clock left on GMT in summer makes them reset at 01:00 in Home Assistant (#601). Use the Sync Time button, or the GivEnergy portal, to correct it.
 
 ### Fixed
 - **Sync Time could set the inverter an hour out**: it used the container's own clock, which can be UTC (e.g. Docker without `TZ`). It now uses GivTCP's configured timezone.
+- **Battery Charge/Discharge Energy Total showing 0 or nothing** on Gen 1, Gen 2 and AC inverters in the 3.6 betas (#600). They are read from the first battery's BMS again, as in 3.5, and from the inverter's registers when the BMS has none (some Gen 1 firmware). If neither has them they are left out rather than published as 0, because Home Assistant takes a drop to 0 as a meter reset and counts the whole total again when it comes back.
 
 ## [3.6.0-beta2] - 2026-10-02
 
