@@ -18,12 +18,12 @@ import sys
 #Logging config
 import logging, os
 import sys
-from logging.handlers import TimedRotatingFileHandler
+from sharedlog import SharedTimedRotatingFileHandler
 logging.basicConfig(format='%(asctime)s - EVC'+ \
                     ' - %(module)-11s -  [%(levelname)-8s] - %(message)s')
 formatter = logging.Formatter(
     '%(asctime)s - %(module)s - [%(levelname)s] - %(message)s')
-fh = TimedRotatingFileHandler(GiV_Settings.Debug_File_Location, when='midnight', backupCount=7)
+fh = SharedTimedRotatingFileHandler(GiV_Settings.Debug_File_Location, when='midnight', backupCount=7)   # written by several processes (#566)
 fh.setFormatter(formatter)
 logger = logging.getLogger('evc_logger')
 logger.addHandler(fh)
