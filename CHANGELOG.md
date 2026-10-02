@@ -4,17 +4,25 @@ All notable changes to GivTCP are documented in this file.
 
 ## [Unreleased]
 
+## [3.6.0-beta2] - 2026-10-02
+
+Changes since 3.6.0-beta1.
+
 ### Added
 - **"Timeslot entities in Home Assistant" setting** to keep the drop-downs, the time pickers or both for each timeslot. The type turned off is removed from Home Assistant (#603).
 - **Startup logs where each meter and battery was found** (the `bcu_stacks` and `hv_bmus` addresses), to diagnose batteries that are found but return no data.
 
 ### Changed
 - **"Only report battery data" now takes effect.** Before 3.6 this inverter setting was ignored, so every inverter published all its data. Inverters with it ticked (usually AC or hybrid inverters behind an EMS or Gateway) now publish only their battery details, and their inverter-level entities and controls stop updating. Untick it on the config page to keep them. Startup logs which inverters have it on (#591).
+- **Smaller Docker image**: unused packages (pandas, numpy, scapy and others) are no longer installed.
 
 ### Fixed
 - **Model shown as "All_in_one" for HV Gen 3 hybrids**, and their battery charge/discharge rate capped at 6,000 W instead of 10,000 W. GivTCP now uses the model the library resolves at detection (e.g. Hybrid_gen1, Hybrid_hv_gen3) for the Invertor_Type, timeslot count and battery rate (#603).
 - **Battery charge/discharge rate stopping just short of the maximum** (e.g. 2976W instead of 3000W on an AC 3.0). The rate is set as a whole percent of battery capacity, and rounding to the nearest percent could land below the maximum. Asking for the maximum, or more, now sets the smallest percent that reaches it, as the GivEnergy portal does, rather than 50% (which can throttle large battery banks, #562).
 - **Inverter shown as the wrong model on the config page** in multi-inverter setups (#599). Detected capabilities are cached per serial number and were trusted from then on, so a cache saved from another inverter (e.g. while two inverters' IP addresses were swapped) gave an inverter the wrong model. Startup now checks the cached model against the inverter's own model code and firmware, and re-detects if they differ. The read loop no longer saves capabilities when the inverter at the IP address isn't the one in the settings, and logs an error instead.
+- **REST API restarting every minute** (#602). When the REST server stopped, its worker processes were left running and held the port, so every restart failed. Restarts now stop the whole process group. The log says why it stopped, and the REST server's own errors go to `rest_gunicorn_inv_N.log` (and `rest_gunicorn_settings.log`), which the log viewer shows.
+- **"No module named 'givenergy_modbus_async'" after upgrading from 3.5** (#599). Cached data saved by the old library couldn't be read. GivTCP now sets an unreadable cache file aside (renamed to `.unreadable`) and starts afresh, instead of failing.
+- **Empty "Combined Generation Power" sensor on HV Gen 3**: it is only created when the inverter provides a value.
 
 ## [3.6.0-beta1] - 2026-10-01
 
