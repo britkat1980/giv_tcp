@@ -80,6 +80,30 @@ def newInverterDay(invTime, multi_output_old, grace=True):
         return True
     return grace and old.hour==0 and old.minute<TODAY_RESET_GRACE_MINUTES
 
+# How far the inverter's clock can be from GivTCP's before it is worth a warning, and the day it was last given
+CLOCK_DRIFT_MINUTES=5
+_clockWarned=None
+
+def checkInverterClock(invTime):
+    # The inverter resets its Today counters at midnight by its own clock, so a clock that is out (often an hour,
+    # when it hasn't changed for summer time) moves the reset away from midnight in HA. Warn once a day
+    global _clockWarned
+    try:
+        inv=datetime.datetime.fromisoformat(str(invTime))
+        now=datetime.datetime.now(GivLUT.timezone)
+        offset=round((inv-now).total_seconds()/60)
+    except (TypeError, ValueError):
+        return
+    if abs(offset)<CLOCK_DRIFT_MINUTES or _clockWarned==now.date():
+        return
+    _clockWarned=now.date()
+    size=abs(offset)
+    amount=str(size)+" minutes" if size<120 else str(round(size/60))+" hours" if size<2880 else str(round(size/1440))+" days"
+    shown="%H:%M" if inv.date()==now.date() else "%d %b %H:%M"
+    logger.warning("Inverter clock is "+amount+" "+("behind" if offset<0 else "ahead of")+" GivTCP's ("+inv.strftime(shown)+
+                   " against "+now.strftime(shown)+"), so its Today energy counters reset at the wrong time. "
+                   "Use the Sync Time button, or the GivEnergy portal, to correct it")
+
 def rebootaddon():
     if GiV_Settings.isAddon:
         access_token = os.getenv("SUPERVISOR_TOKEN")
@@ -2200,6 +2224,7 @@ def processData(plant: Plant):
         givtcpdata['Safe_Write_Count']= safecount
 
         multi_output['Stats']=givtcpdata
+        checkInverterClock(finditem(multi_output,"Invertor_Time"))
         regCacheStack = GivLUT.get_regcache()
         if regCacheStack is None and exists(GivLUT.regcache):  # Transient failure - retry once (no file yet is normal on first run)
             logger.warning("regCache read failed, retrying...")

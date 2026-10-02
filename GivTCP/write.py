@@ -1653,7 +1653,9 @@ async def syncDateTime(device, payload, readloop=False):
     targetresult="Success"
     #convert payload to dateTime components
     try:
-        iDateTime=datetime.now()   #format '12/11/2021 09:15:32'
+        # Local time in GivTCP's timezone: the container's own clock can be UTC (eg. Docker without TZ), which would
+        # leave the inverter an hour out in summer, and its Today counters resetting at 01:00
+        iDateTime=datetime.now(GivLUT.timezone).replace(tzinfo=None)
         logger.debug("Syncing inverter time to: "+str(iDateTime))
         #Set Date and Time on inverter
         #temp= await sdt(iDateTime,readloop)

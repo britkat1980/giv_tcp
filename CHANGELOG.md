@@ -4,6 +4,12 @@ All notable changes to GivTCP are documented in this file.
 
 ## [Unreleased]
 
+### Added
+- **Warning when an inverter's clock is out** by 10 minutes or more (logged once a day). The inverter resets its Today energy counters at midnight by its own clock, so a clock left on GMT in summer makes them reset at 01:00 in Home Assistant (#601). Use the Sync Time button, or the GivEnergy portal, to correct it.
+
+### Fixed
+- **Sync Time could set the inverter an hour out**: it used the container's own clock, which can be UTC (e.g. Docker without `TZ`). It now uses GivTCP's configured timezone.
+
 ## [3.6.0-beta2] - 2026-10-02
 
 Changes since 3.6.0-beta1.
