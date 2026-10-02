@@ -14,6 +14,7 @@ All notable changes to GivTCP are documented in this file.
 ### Fixed
 - **Model shown as "All_in_one" for HV Gen 3 hybrids**, and their battery charge/discharge rate capped at 6,000 W instead of 10,000 W. GivTCP now uses the model the library resolves at detection (e.g. Hybrid_gen1, Hybrid_hv_gen3) for the Invertor_Type, timeslot count and battery rate (#603).
 - **Battery charge/discharge rate stopping just short of the maximum** (e.g. 2976W instead of 3000W on an AC 3.0). The rate is set as a whole percent of battery capacity, and rounding to the nearest percent could land below the maximum. Asking for the maximum, or more, now sets the smallest percent that reaches it, as the GivEnergy portal does, rather than 50% (which can throttle large battery banks, #562).
+- **Inverter shown as the wrong model on the config page** in multi-inverter setups (#599). Detected capabilities are cached per serial number and were trusted from then on, so a cache saved from another inverter (e.g. while two inverters' IP addresses were swapped) gave an inverter the wrong model. Startup now checks the cached model against the inverter's own model code and firmware, and re-detects if they differ. The read loop no longer saves capabilities when the inverter at the IP address isn't the one in the settings, and logs an error instead.
 
 ## [3.6.0-beta1] - 2026-10-01
 

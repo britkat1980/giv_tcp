@@ -11,6 +11,8 @@ import requests
 import asyncio
 from GivTCP.netscan import scan, as_list, INVERTER_PORT, EVC_PORT
 from givenergy_modbus.client.client import Client
+from givenergy_modbus.model.inverter import resolve_model
+from givenergy_modbus.model.register import HR
 from pymodbus.client import ModbusTcpClient
 
 selfRun={}
@@ -131,6 +133,16 @@ async def getInvDeets(HOST):
         SN=ident.serial_number
 
         caps=loadCaps(SN)
+        if caps:
+            # Detect works the model out from HR0 and HR21, which the probe has just read, so check the cached
+            # model still matches. It won't after a firmware update that changes generation, or if the file was
+            # saved from another inverter (eg. while two inverters' IP addresses were swapped)
+            regs=client.plant.register_caches.get(0x11)
+            current=resolve_model(regs.get(HR(0)), regs.get(HR(21)) or 0) if regs and regs.get(HR(0)) is not None else None
+            if current is not None and current!=caps.device_type:
+                logger.warning("Cached capabilities for "+str(SN)+" are for a "+caps.device_type.name.capitalize()+
+                               " but it is a "+current.name.capitalize()+", running full detect")
+                caps=None
         if caps:
             logger.info("Using cached capabilities for "+str(SN)+", skipping detect")
         else:

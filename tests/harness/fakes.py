@@ -21,6 +21,8 @@ class Recorder:
 
 recorder = Recorder()
 
+real_wrong_inverter = [None]     # read.wrongInverter, which install() replaces
+
 class FakeMqttClient:
     connected_flag = True
 
@@ -115,6 +117,8 @@ def install():
     HA_Discovery.time = types.SimpleNamespace(sleep=lambda s: None, time=time.time)
 
     read.updateFirstRun = lambda SN: None     # it edits the settings.py next to read.py (the developer's own)
+    real_wrong_inverter[0] = read.wrongInverter
+    read.wrongInverter = lambda client: None  # the harness settings use made-up serials (see test_detect_serial.py)
     givlut_module.GivQueue.q = FakeQueue()
 
     read.datetime = _frozen_datetime_module()

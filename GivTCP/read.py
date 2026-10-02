@@ -136,6 +136,17 @@ def unsupportedEntities():
         unsupported+=['PV_Voltage_String_1','PV_Voltage_String_2','PV_Current_String_1','PV_Current_String_2']
     return unsupported
 
+def wrongInverter(client):
+    # The serial of the inverter that answered, if it isn't the one in the settings (eg. two inverters' IP
+    # addresses have swapped), otherwise None
+    try:
+        found=client.plant.inverter.serial_number
+    except Exception:
+        return None
+    if found and GiV_Settings.serial_number and found!=GiV_Settings.serial_number:
+        return found
+    return None
+
 async def detectPlant(client, force=False):
     # Detect only when there is no capabilities file for this inverter (startup normally creates one).
     # Returns True if cached capabilities were used, so callers can re-detect if they turn out to be stale
@@ -149,6 +160,12 @@ async def detectPlant(client, force=False):
             logger.warning("Unable to load cached capabilities, running full detect: "+str(e))
     logger.info("Detecting inverter characteristics...")
     await client.detect()
+    found=wrongInverter(client)
+    if found:
+        # Saving another inverter's capabilities under this serial would give this inverter the wrong model from then on
+        logger.error("Inverter at "+str(GiV_Settings.invertorIP)+" is "+str(found)+", not "+str(GiV_Settings.serial_number)+
+                     " as in settings, so its capabilities are not being saved. Check the IP address in the settings")
+        return False
     try:
         with open(capsFile(), 'wb') as outp:
             pickle.dump(client.plant.capabilities, outp, pickle.HIGHEST_PROTOCOL)
