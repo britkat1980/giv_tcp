@@ -1,7 +1,7 @@
 import logging
 import asyncio
 from GivTCP.findInvertor import findInvertor
-from GivTCP.givenergy_modbus_async.client.client import Client
+from givenergy_modbus.client.client import Client
 logger = logging.getLogger(__name__)
 
 subnet="172.16.10.185"
@@ -9,28 +9,30 @@ invList={}
 inverterStats={}
 
 async def getInvDeets2(HOST):
+    # As startup.getInvDeets, with givenergy-modbus v2: detect() resolves the model and the attached devices
     try:
         Stats={}
         client=Client(HOST,8899,3)
         await client.connect()
-        await client.detect_plant(additional=False)
-        
-        SN= client.plant.inverter.serial_number
-        #logger.debug("Deets retrieved from found Inverter are: "+str(stats))
-        #SN=stats[2]
-        gen=client.plant.inverter.generation
-        model=client.plant.inverter.model
-        fw=client.plant.inverter.arm_firmware_version
-        numbats=client.plant.number_batteries
+        caps=await client.detect()
+        ident=client.plant.inverter
+        SN=ident.serial_number
+        model=caps.device_type
+        fw=ident.arm_firmware_version
+        # number_batteries only counts LV batteries; HV/three-phase/AIO batteries are modules
+        numbats=max(len(caps.lv_battery_addresses), sum(n for _,n in caps.bcu_stacks), len(caps.aio_battery_module_addresses), len(caps.hv_bmu_addresses))
+        try:
+            await client.close()
+        except Exception:
+            pass
         Stats['Serial_Number']=SN
         Stats['Firmware']=fw
         Stats['Model']=model
-        Stats['Generation']=gen
         Stats['Number_of_Batteries']=numbats
         Stats['IP_Address']=HOST
-        logger.info(f'Inverter {str(SN)} which is a {str(gen.name.capitalize())} - {str(model.name.capitalize())} with {str(numbats)} batteries has been found at: {str(HOST)}')
+        logger.info(f'Inverter {str(SN)} which is a {str(model.name.capitalize())} with {str(numbats)} batteries has been found at: {str(HOST)}')
         return Stats
-    except:
+    except Exception:
         logger.debug("Gathering inverter details for " + str(HOST) + " failed.")
         return None
 

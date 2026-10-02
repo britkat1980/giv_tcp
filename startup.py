@@ -10,7 +10,6 @@ import sys
 import requests
 import asyncio
 from GivTCP.netscan import scan, as_list, INVERTER_PORT, EVC_PORT
-#from GivTCP.givenergy_modbus_async.client.client import Client
 from givenergy_modbus.client.client import Client
 from pymodbus.client import ModbusTcpClient
 

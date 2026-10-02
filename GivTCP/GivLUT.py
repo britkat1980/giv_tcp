@@ -222,6 +222,25 @@ class GivLUT:
     cachelock=Lock()
     restlock=Lock()
 
+    def load_pickle(path):
+        """Load a file GivTCP saved with pickle, or None if it can't be loaded.
+
+        A file saved by a different GivTCP version can hold objects from a modbus library that isn't installed
+        (eg. givenergy_modbus_async), and a damaged file can't be read at all. Rather than fail every time it's
+        read, move it aside so GivTCP rebuilds it"""
+        try:
+            with open(path, 'rb') as inp:
+                return pickle.load(inp)
+        except (ImportError, AttributeError, EOFError, pickle.UnpicklingError, ValueError) as e:
+            aside=path+".unreadable"
+            try:
+                os.replace(path, aside)
+            except OSError:
+                aside="(couldn't move it: delete it to clear this warning)"
+            logger.warning("Couldn't load %s, so it will be rebuilt - it was probably saved by a different version "
+                           "of GivTCP (%s: %s). Moved to %s", path, type(e).__name__, e, aside)
+            return None
+
     def get_regcache():
         try:
             count=0
@@ -252,8 +271,7 @@ class GivLUT:
                 inp.write(datetime.datetime.now(datetime.timezone.utc).isoformat())
             if exists(GivLUT.regcache):
                 logger.debug("Opening regcache at: "+str(GivLUT.regcache))
-                with open(GivLUT.regcache, 'rb') as inp:
-                    regCacheStack = pickle.load(inp)
+                regCacheStack = GivLUT.load_pickle(GivLUT.regcache)
                 remove(GivLUT.cachelockfile)
                 return regCacheStack
             else:

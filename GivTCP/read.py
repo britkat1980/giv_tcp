@@ -2856,9 +2856,8 @@ def dataSmoother2(dataNew, dataOld, lastUpdate, invtype,inv_time):
 def checkRawcache(newData,name,abssmooth):
     #Get rawdata cache to check if unallowed changes are persistent and should be allowed
     bigjump=False
-    if exists(GivLUT.rawpkl):
-        with open(GivLUT.rawpkl, 'rb') as inp:
-            rawCacheStack = pickle.load(inp)
+    rawCacheStack = GivLUT.load_pickle(GivLUT.rawpkl) if exists(GivLUT.rawpkl) else None
+    if rawCacheStack:
         oldData=rawCacheStack[1]['invertor'][GivLUT.raw_to_pub[name]]
         if abs(newData-oldData)>abssmooth:
             bigjump=True
