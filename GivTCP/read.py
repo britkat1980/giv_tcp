@@ -1443,7 +1443,9 @@ def processInverterInfo(plant: Plant):
         else:
             freq=GEInv.f_ac1_output
         power_output['Inverter_Output_Frequency'] = freq
-        if resolvedModel(plant, GEInv) in (Model.HYBRID_GEN3, Model.HYBRID_GEN4, Model.HYBRID_HV_GEN3, Model.HYBRID_3PH, Model.ALL_IN_ONE_HYBRID, Model.AIO_COMMERCIAL):
+        # Not every model in the list has IR 247-248 read (eg. HV Gen 3), so only add it when there is a value
+        if resolvedModel(plant, GEInv) in (Model.HYBRID_GEN3, Model.HYBRID_GEN4, Model.HYBRID_HV_GEN3, Model.HYBRID_3PH, Model.ALL_IN_ONE_HYBRID, Model.AIO_COMMERCIAL) \
+                and GEInv.p_combined_generation is not None:
             power_output['Combined_Generation_Power'] = GEInv.p_combined_generation
 
         # Power flows

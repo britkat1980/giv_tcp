@@ -5437,7 +5437,7 @@
     "Invertor_Serial_Number": "SA2114G000",
     "Invertor_Temperature": 48.1,
     "Invertor_Time": "2026-06-05T12:19:53+01:00",
-    "Invertor_Type": "Hybrid",
+    "Invertor_Type": "Hybrid_gen1",
     "Meter_Type": "Em115",
     "Modbus_Version": "1.40"
    },
@@ -5670,7 +5670,7 @@
     "Invertor_Serial_Number": "SA2114G000",
     "Invertor_Temperature": 48.1,
     "Invertor_Time": "2026-06-05T12:19:53+01:00",
-    "Invertor_Type": "Hybrid",
+    "Invertor_Type": "Hybrid_gen1",
     "Meter_Type": "Em115",
     "Modbus_Version": "1.40"
    },
