@@ -41,3 +41,6 @@ givenergy_modbus/__pycache__/modbus.cpython-310.pyc
 givenergy_modbus/__pycache__/pdu.cpython-310.pyc
 givenergy_modbus/__pycache__/transaction.cpython-310.pyc
 givenergy_modbus/__pycache__/util.cpython-310.pyc
+
+# Manufacturer modbus register map (not for redistribution)
+hybrid_modbus_rtu_protocol_*.docx
