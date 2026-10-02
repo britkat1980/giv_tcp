@@ -85,6 +85,12 @@ def _extra_write_registers(model, arm_fw):
         extra.add(EMS_CAR_CHARGE_BOOST)
     return extra
 
+# The Gateway has the 10-slot block (HR 240-299: slots 3-10 and every slot's target SOC) like every model but
+# AC 3.0 and Gen 1/2 (GivEnergy register map v4.1.6), and answers it, but the library gives it the 2-slot map.
+# has_extended_slots() reads this set on every call, so this one change gives the Gateway the 10-slot reads,
+# slot map and slot writes (and, below, the target SOC writes) (#577)
+manifest._EXTENDED_SLOT_MODELS = manifest._EXTENDED_SLOT_MODELS | {Model.GATEWAY}
+
 _library_write_safe_registers = manifest.write_safe_registers
 
 def _write_safe_registers(model, arm_fw=None):
@@ -130,9 +136,7 @@ _library_load_config = Client.load_config
 EXTRA_READS = [
     ("pause", lambda caps: _pause_read_needed(caps.device_type, caps.arm_firmware_version), 318, 3,
      "the current pause mode won't be shown (pause controls can still be set)"),
-    # The 10-slot block (HR 240-299: slots 3-10 and every slot's target SOC) is on all models but AC 3.0 and
-    # Gen 1/2 (GivEnergy register map v4.1.6), and the Gateway answers it, but the library doesn't read it there (#577)
-    ("10-slot block", lambda caps: (caps.is_three_phase or caps.is_gateway) and not manifest.has_extended_slots(caps.device_type, caps.arm_firmware_version),
+    ("three-phase slots", lambda caps: caps.is_three_phase and not manifest.has_extended_slots(caps.device_type, caps.arm_firmware_version),
      240, 60, "charge/discharge slots 3-10 and their target SOCs won't be shown (they can still be set)"),
     ("Gateway rates", lambda caps: caps.is_gateway, 313, 2,
      "the current charge/discharge rates won't be shown (they can still be set)"),

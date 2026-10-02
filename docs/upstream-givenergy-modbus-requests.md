@@ -168,3 +168,15 @@ The v2 `Ems` model reads `car_charge_boost` at **HR 2073**, but there's no comma
 - Confirm whether the single-phase write set is correct for the Gateway (mode, discharge enable, charge/discharge slots, targets, reserve), or define a Gateway write-safe set.
 - Either compose the command mixin onto `GatewayV1`/`GatewayV2`, or document `plant.inverter` as the write path for Gateways.
 - Rate control is covered in item 3, and identity in item 5.
+
+## 12. Gateway uses the 10-slot map
+
+**Problem**
+
+`Model.GATEWAY` is not in `_EXTENDED_SLOT_MODELS`, so the library treats the Gateway as a 2-slot device: it doesn't read HR 240-299, `slot_map` has two charge and two discharge slots, and writes to slots 3-10 and to the per-slot target SOCs are refused. GivEnergy's Modbus register map (v4.1.6, holding registers 240-479, "Ten stage charge and discharge time control") says the 10-slot block is available on every model except AC 3.0 and Gen 1/2. A Gateway capture holds the whole of HR 240-299 with sensible values (charge targets 100%, discharge targets 4%, in the documented layout).
+
+GivTCP patches `manifest._EXTENDED_SLOT_MODELS` to add `Model.GATEWAY` (see `GivTCP/modbus_patches.py`, #577). That gives the Gateway the 10-slot reads, slot map and slot writes, and lets GivTCP's per-slot target writes (item 2) through.
+
+**Request**
+
+- Add `Model.GATEWAY` to `_EXTENDED_SLOT_MODELS`, ideally confirmed with a write test on a real Gateway.

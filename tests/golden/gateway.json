@@ -209,6 +209,11 @@
      ],
      [
       17,
+      242,
+      100
+     ],
+     [
+      17,
       94,
       1200
      ],
@@ -251,6 +256,11 @@
      [
       17,
       116,
+      100
+     ],
+     [
+      17,
+      242,
       100
      ],
      [
@@ -310,6 +320,11 @@
      [
       17,
       116,
+      100
+     ],
+     [
+      17,
+      242,
       100
      ],
      [
@@ -1055,65 +1070,65 @@
   "setChargeTarget2({'chargeToPercent': '85', 'slot': 1, 'EMS': True})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
+     "result": "Setting Charge Target 1 was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      242,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget2({'chargeToPercent': '85', 'slot': 10})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 10 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Charge Target 10 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
+     "result": "Setting Charge Target 10 was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      269,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget2({'chargeToPercent': '85', 'slot': 1})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
+     "result": "Setting Charge Target 1 was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      242,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget2({'chargeToPercent': '85', 'slot': 2})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 2 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Charge Target 2 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
+     "result": "Setting Charge Target 2 was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      245,
+      85
+     ]
+    ]
    }
   ],
   "setDateTime({'dateTime': '01/01/2026 12:00:00'})": [
@@ -1319,33 +1334,33 @@
   "setDischargeTarget({'dischargeToPercent': '30', 'slot': '1'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
+     "result": "Setting Discharge Target 1 was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      272,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget({'dischargeToPercent': '30', 'slot': '10'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 10 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Discharge Target 10 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
+     "result": "Setting Discharge Target 10 was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      299,
+      30
+     ]
+    ]
    }
   ],
   "setEcoMode({'state': 'disable'})": [
@@ -2100,6 +2115,11 @@
      ],
      [
       17,
+      242,
+      100
+     ],
+     [
+      17,
       94,
       1200
      ],
@@ -2145,6 +2165,11 @@
      [
       17,
       116,
+      100
+     ],
+     [
+      17,
+      242,
       100
      ],
      [
@@ -2782,13 +2807,7 @@
   "setChargeEnd10(05:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 10 failed: ValueError: Charge slot index (10) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotEnd",
@@ -2798,7 +2817,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      268,
+      500
+     ]
+    ]
    }
   ],
   "setChargeEnd2(05:00:00)": [
@@ -2826,13 +2851,7 @@
   "setChargeEnd3(05:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotEnd",
@@ -2842,19 +2861,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      247,
+      500
+     ]
+    ]
    }
   ],
   "setChargeEnd4(05:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 4 failed: ValueError: Charge slot index (4) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotEnd",
@@ -2864,19 +2883,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      250,
+      500
+     ]
+    ]
    }
   ],
   "setChargeEnd5(05:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 5 failed: ValueError: Charge slot index (5) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotEnd",
@@ -2886,19 +2905,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      253,
+      500
+     ]
+    ]
    }
   ],
   "setChargeEnd6(05:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 6 failed: ValueError: Charge slot index (6) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotEnd",
@@ -2908,19 +2927,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      256,
+      500
+     ]
+    ]
    }
   ],
   "setChargeEnd7(05:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 7 failed: ValueError: Charge slot index (7) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotEnd",
@@ -2930,19 +2949,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      259,
+      500
+     ]
+    ]
    }
   ],
   "setChargeEnd8(05:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 8 failed: ValueError: Charge slot index (8) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotEnd",
@@ -2952,19 +2971,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      262,
+      500
+     ]
+    ]
    }
   ],
   "setChargeEnd9(05:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 9 failed: ValueError: Charge slot index (9) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotEnd",
@@ -2974,7 +2993,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      265,
+      500
+     ]
+    ]
    }
   ],
   "setChargeRate(2500)": [
@@ -3044,13 +3069,7 @@
   "setChargeStart10(02:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 10 failed: ValueError: Charge slot index (10) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotStart",
@@ -3060,7 +3079,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      267,
+      200
+     ]
+    ]
    }
   ],
   "setChargeStart2(02:00:00)": [
@@ -3088,13 +3113,7 @@
   "setChargeStart3(02:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotStart",
@@ -3104,19 +3123,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      246,
+      200
+     ]
+    ]
    }
   ],
   "setChargeStart4(02:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 4 failed: ValueError: Charge slot index (4) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotStart",
@@ -3126,19 +3145,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      249,
+      200
+     ]
+    ]
    }
   ],
   "setChargeStart5(02:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 5 failed: ValueError: Charge slot index (5) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotStart",
@@ -3148,19 +3167,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      252,
+      200
+     ]
+    ]
    }
   ],
   "setChargeStart6(02:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 6 failed: ValueError: Charge slot index (6) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotStart",
@@ -3170,19 +3189,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      255,
+      200
+     ]
+    ]
    }
   ],
   "setChargeStart7(02:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 7 failed: ValueError: Charge slot index (7) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotStart",
@@ -3192,19 +3211,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      258,
+      200
+     ]
+    ]
    }
   ],
   "setChargeStart8(02:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 8 failed: ValueError: Charge slot index (8) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotStart",
@@ -3214,19 +3233,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      261,
+      200
+     ]
+    ]
    }
   ],
   "setChargeStart9(02:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 9 failed: ValueError: Charge slot index (9) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotStart",
@@ -3236,7 +3255,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      264,
+      200
+     ]
+    ]
    }
   ],
   "setChargeTarget(85)": [
@@ -3273,13 +3298,7 @@
   "setChargeTarget1(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3289,19 +3308,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      242,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget10(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 10 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3311,19 +3330,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      269,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget2(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 2 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3333,19 +3352,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      245,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget3(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 3 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3355,19 +3374,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      248,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget4(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 4 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3377,19 +3396,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      251,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget5(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 5 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3399,19 +3418,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      254,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget6(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 6 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3421,19 +3440,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      257,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget7(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 7 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3443,19 +3462,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      260,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget8(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 8 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3465,19 +3484,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      263,
+      85
+     ]
+    ]
    }
   ],
   "setChargeTarget9(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 9 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -3487,7 +3506,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      266,
+      85
+     ]
+    ]
    }
   ],
   "setDateTime(01/01/2026 12:00:00)": [
@@ -3561,13 +3586,7 @@
   "setDischargeEnd10(19:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot End 10 failed: ValueError: Discharge slot index (10) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotEnd",
@@ -3577,7 +3596,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      298,
+      1900
+     ]
+    ]
    }
   ],
   "setDischargeEnd2(19:00:00)": [
@@ -3605,13 +3630,7 @@
   "setDischargeEnd3(19:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot End 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotEnd",
@@ -3621,19 +3640,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      277,
+      1900
+     ]
+    ]
    }
   ],
   "setDischargeEnd4(19:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot End 4 failed: ValueError: Discharge slot index (4) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotEnd",
@@ -3643,19 +3662,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      280,
+      1900
+     ]
+    ]
    }
   ],
   "setDischargeEnd5(19:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot End 5 failed: ValueError: Discharge slot index (5) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotEnd",
@@ -3665,19 +3684,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      283,
+      1900
+     ]
+    ]
    }
   ],
   "setDischargeEnd6(19:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot End 6 failed: ValueError: Discharge slot index (6) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotEnd",
@@ -3687,19 +3706,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      286,
+      1900
+     ]
+    ]
    }
   ],
   "setDischargeEnd7(19:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot End 7 failed: ValueError: Discharge slot index (7) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotEnd",
@@ -3709,19 +3728,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      289,
+      1900
+     ]
+    ]
    }
   ],
   "setDischargeEnd8(19:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot End 8 failed: ValueError: Discharge slot index (8) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotEnd",
@@ -3731,19 +3750,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      292,
+      1900
+     ]
+    ]
    }
   ],
   "setDischargeEnd9(19:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot End 9 failed: ValueError: Discharge slot index (9) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotEnd",
@@ -3753,7 +3772,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      295,
+      1900
+     ]
+    ]
    }
   ],
   "setDischargeRate(2500)": [
@@ -3823,13 +3848,7 @@
   "setDischargeStart10(16:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot start 10 failed: ValueError: Discharge slot index (10) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotStart",
@@ -3839,7 +3858,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      297,
+      1600
+     ]
+    ]
    }
   ],
   "setDischargeStart2(16:00:00)": [
@@ -3867,13 +3892,7 @@
   "setDischargeStart3(16:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot start 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotStart",
@@ -3883,19 +3902,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      276,
+      1600
+     ]
+    ]
    }
   ],
   "setDischargeStart4(16:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot start 4 failed: ValueError: Discharge slot index (4) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotStart",
@@ -3905,19 +3924,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      279,
+      1600
+     ]
+    ]
    }
   ],
   "setDischargeStart5(16:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot start 5 failed: ValueError: Discharge slot index (5) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotStart",
@@ -3927,19 +3946,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      282,
+      1600
+     ]
+    ]
    }
   ],
   "setDischargeStart6(16:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot start 6 failed: ValueError: Discharge slot index (6) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotStart",
@@ -3949,19 +3968,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      285,
+      1600
+     ]
+    ]
    }
   ],
   "setDischargeStart7(16:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot start 7 failed: ValueError: Discharge slot index (7) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotStart",
@@ -3971,19 +3990,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      288,
+      1600
+     ]
+    ]
    }
   ],
   "setDischargeStart8(16:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot start 8 failed: ValueError: Discharge slot index (8) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotStart",
@@ -3993,19 +4012,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      291,
+      1600
+     ]
+    ]
    }
   ],
   "setDischargeStart9(16:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot start 9 failed: ValueError: Discharge slot index (9) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotStart",
@@ -4015,19 +4034,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      294,
+      1600
+     ]
+    ]
    }
   ],
   "setDischargeTarget1(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4037,19 +4056,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      272,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget10(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 10 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4059,19 +4078,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      299,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget2(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 2 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4081,19 +4100,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      275,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget3(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 3 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4103,19 +4122,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      278,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget4(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 4 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4125,19 +4144,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      281,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget5(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 5 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4147,19 +4166,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      284,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget6(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 6 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4169,19 +4188,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      287,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget7(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 7 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4191,19 +4210,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      290,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget8(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 8 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4213,19 +4232,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      293,
+      30
+     ]
+    ]
    }
   ],
   "setDischargeTarget9(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 9 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4235,7 +4254,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      296,
+      30
+     ]
+    ]
    }
   ],
   "setEMSChargeEnd1(05:00:00)": [
@@ -4287,13 +4312,7 @@
   "setEMSChargeEnd3(05:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotEnd",
@@ -4304,7 +4323,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      247,
+      500
+     ]
+    ]
    }
   ],
   "setEMSChargeStart1(02:00:00)": [
@@ -4356,13 +4381,7 @@
   "setEMSChargeStart3(02:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeSlotStart",
@@ -4373,19 +4392,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      246,
+      200
+     ]
+    ]
    }
   ],
   "setEMSChargeTarget1(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 1 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -4396,19 +4415,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      242,
+      85
+     ]
+    ]
    }
   ],
   "setEMSChargeTarget2(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 2 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -4419,19 +4438,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      245,
+      85
+     ]
+    ]
    }
   ],
   "setEMSChargeTarget3(85)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Target 3 failed: NotImplementedError: Charge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeTarget2",
@@ -4442,7 +4461,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      248,
+      85
+     ]
+    ]
    }
   ],
   "setEMSDischargeEnd1(19:00:00)": [
@@ -4494,13 +4519,7 @@
   "setEMSDischargeEnd3(19:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot End 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotEnd",
@@ -4511,7 +4530,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      277,
+      1900
+     ]
+    ]
    }
   ],
   "setEMSDischargeStart1(16:00:00)": [
@@ -4563,13 +4588,7 @@
   "setEMSDischargeStart3(16:00:00)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot start 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeSlotStart",
@@ -4580,7 +4599,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      276,
+      1600
+     ]
+    ]
    }
   ],
   "setEcoMode(disable)": [
@@ -6543,6 +6568,11 @@
      ],
      [
       17,
+      242,
+      100
+     ],
+     [
+      17,
       94,
       1200
      ],
@@ -6595,6 +6625,11 @@
      [
       17,
       116,
+      100
+     ],
+     [
+      17,
+      242,
       100
      ],
      [
@@ -7217,18 +7252,28 @@
   "/setChargeSlot3({'start': '01:30', 'finish': '04:30', 'chargeToPercent': '90'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Charge Slot 3 failed: ValueError: Charge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     "result": "Setting Charge Slot 3 to: 01:30 - 04:30 was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      246,
+      130
+     ],
+     [
+      17,
+      247,
+      430
+     ],
+     [
+      17,
+      116,
+      90
+     ]
+    ]
    }
   ],
   "/setChargeTarget({'chargeToPercent': '85'})": [
@@ -7418,15 +7463,9 @@
   "/setDischargeSlot3({'start': '16:00', 'finish': '19:00', 'dischargeToPercent': '20'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Slot 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Discharge Slot 3 failed: ValueError: Discharge slot index (3) must be in [1-2] for the given slot map (commands.py:N, via write.py:N)"
+     "result": "Setting Discharge Slot 3 to: 16:00 - 19:00 was a success"
     },
     "status": 200,
     "writes": [
@@ -7434,6 +7473,16 @@
       17,
       110,
       20
+     ],
+     [
+      17,
+      276,
+      1600
+     ],
+     [
+      17,
+      277,
+      1900
      ]
     ]
    }
@@ -7441,18 +7490,18 @@
   "/setDischargeTarget({'dischargeToPercent': '30', 'slot': '1'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
+     "result": "Setting Discharge Target 1 was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      272,
+      30
+     ]
+    ]
    }
   ],
   "/setEcoMode({'state': 'disable'})": [
