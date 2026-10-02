@@ -21,6 +21,8 @@
         if ((m = base.match(/^log_inv_(\d+)\.log$/))) return { label: "Inverter " + m[1], tag: "Inv " + m[1], order: "1-" + pad(m[1]) + "-0" };
         if ((m = base.match(/^write_log_inv_(\d+)\.log$/))) return { label: "Inverter " + m[1] + " writes", tag: "Inv " + m[1] + " write", order: "1-" + pad(m[1]) + "-1" };
         if ((m = base.match(/^rest_log_inv_(\d+)\.log$/))) return { label: "Inverter " + m[1] + " REST", tag: "Inv " + m[1] + " REST", order: "1-" + pad(m[1]) + "-2" };
+        if ((m = base.match(/^rest_gunicorn_inv_(\d+)\.log$/))) return { label: "Inverter " + m[1] + " REST server", tag: "Inv " + m[1] + " gunicorn", order: "1-" + pad(m[1]) + "-3" };
+        if (base === "rest_gunicorn_settings.log") return { label: "Settings server", tag: "Settings srv", order: "0-1" };
         if (base === "log_evc.log") return { label: "EV charger", tag: "EVC", order: "2-0" };
         if (base === "write_log_evc.log") return { label: "EV charger writes", tag: "EVC write", order: "2-1" };
         return { label: base, tag: base.replace(/\.log$/, ""), order: "3-" + base };

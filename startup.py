@@ -1,7 +1,7 @@
 from GivTCP.giverrors import errDetail
 from datetime import datetime, timedelta, timezone, UTC
 from os.path import exists
-import os, pickle, subprocess, logging,shutil, shlex, schedule
+import os, pickle, subprocess, logging,shutil, shlex, schedule, signal
 import traceback
 from time import sleep
 import json
@@ -27,6 +27,32 @@ SuperTimezone=""
 # Check if config directory exists and creates it if not
 
 INVERTER_KEY_DEFAULTS={"inverter_enable_":False,"invertorIP_":"","serial_number_":"","Model_":"","inverter_battery_only_":False}
+
+def startGunicorn(app, port, workers, logname):
+    # Gunicorn's own errors (eg. a worker failing to load the app, or the port being in use) go to a log in
+    # /config/GivTCP/logs, so they show in the log viewer. It runs in its own process group so a restart can
+    # stop its workers as well (a worker left behind would keep the port and stop the new one starting)
+    command=["/usr/local/bin/gunicorn","-w",str(workers),"-b",":"+str(port),"--log-level","warning",
+             "--error-logfile","/config/GivTCP/logs/"+logname+".log",app]
+    return subprocess.Popen(command, start_new_session=True)
+
+def stopGunicorn(proc):
+    # Stop the gunicorn master and any of its workers that are still running
+    try:
+        os.killpg(proc.pid, signal.SIGKILL)
+    except OSError:
+        pass
+    try:
+        proc.wait(timeout=5)
+    except Exception:
+        pass
+
+def exitReason(code):
+    # A negative code means it was killed (eg. -9 by the system when out of memory). Otherwise gunicorn exits
+    # with 1 for several reasons (a worker failing to load the app, the port being in use), so see its log
+    if code is not None and code<0:
+        return "killed by signal "+str(-code)
+    return "exit code "+str(code)
 
 def invPort(inv):
     # REST API port for inverter slot N. Slots 1-5 keep their historic 6345-6349 (Predbat etc. point at them);
@@ -646,8 +672,7 @@ else:
 
 os.chdir("/app/GivTCP")
 logger.debug ("Starting Settings Gunicorn on port 6350")
-command=shlex.split("/usr/local/bin/gunicorn -w 1 -b :6350 --log-level warning settings_rest:giv_api")
-setting_rest=subprocess.Popen(command)
+setting_rest=startGunicorn("settings_rest:giv_api",6350,1,"rest_gunicorn_settings")
 
 
 ## Run EVC first
@@ -744,8 +769,7 @@ for inv in range(1,setts['number_of_inverters']+1):
         
         GUPORT=invPort(inv)
         logger.debug ("Starting Gunicorn on port "+str(GUPORT))
-        command=shlex.split("/usr/local/bin/gunicorn -w 3 -b :"+str(GUPORT)+" --log-level warning REST:giv_api")
-        gunicorn[inv]=subprocess.Popen(command)
+        gunicorn[inv]=startGunicorn("REST:giv_api",GUPORT,3,"rest_gunicorn_inv_"+str(inv))
 
 
 if setts['Web_Dash']==True:
@@ -828,13 +852,14 @@ while True:
                     # Should I remove the cache here
 
             if not gunicorn[inv].poll()==None:
-                gunicorn[inv].kill()
-                logger.error("REST API process died. Restarting...")
+                code=gunicorn[inv].poll()
+                stopGunicorn(gunicorn[inv])
+                logger.error("REST API process died ("+exitReason(code)+"). Restarting... "
+                             "Its errors are in rest_gunicorn_inv_"+str(inv)+".log")
                 os.chdir(PATH)
                 GUPORT=invPort(inv)
                 logger.info ("Starting Gunicorn on port "+str(GUPORT))
-                command=shlex.split("/usr/local/bin/gunicorn -w 3 -b :"+str(GUPORT)+" --log-level warning REST:giv_api")
-                gunicorn[inv]=subprocess.Popen(command)
+                gunicorn[inv]=startGunicorn("REST:giv_api",GUPORT,3,"rest_gunicorn_inv_"+str(inv))
         
         if setts['MQTT_Address']=="127.0.0.1" and mqttBroker is not None:
             if not mqttBroker.poll()==None:
