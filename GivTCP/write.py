@@ -1363,7 +1363,10 @@ async def forceCharge(device, chargeTime, readloop=False):
         finish=GivLUT.getTime(datetime.now()+timedelta(minutes=chargeTime))
         reqs=chargeTargetSOC(device,100)
         if "slot1TargetSOC" in revert:
-            reqs.extend(slotTargetSOC(device,"charge",1,100))
+            try:
+                reqs.extend(slotTargetSOC(device,"charge",1,100))
+            except NotImplementedError:
+                del revert["slot1TargetSOC"]    # read but can't be written here yet (eg. Gateway), so leave it
         slot=TimeSlot(datetime.strptime(GivLUT.getTime(datetime.now()),"%H:%M"),datetime.strptime(finish,"%H:%M"))
         reqs.extend(device.set_charge_slot(1,slot))
         if "3ph" in GiV_Settings.inverter_type.lower():
