@@ -12,6 +12,7 @@ import settings
 import time
 from os.path import exists
 import pickle,os
+import math
 import GivLUT
 from GivLUT import GivLUT, GivQueue
 from givenergy_modbus.model import TimeSlot
@@ -195,6 +196,16 @@ def batteryCapacityWh(multi_output):
     if not capacity:
         raise NotImplementedError("the battery capacity isn't known for this inverter, so the rate can't be set")
     return float(capacity)*1000
+
+def batteryLimitPercent(rate,batcap,invmaxrate):
+    # HR111/112 hold the rate as a whole percent of battery capacity (the GivEnergy app caps it at 50), so most
+    # rates fall between two steps. Use the nearest, except at or above the inverter maximum: rounding down there
+    # can never reach the maximum (eg. 3000W on 9.6kWh is 31.25%, and 31% is 2976W), so go up a step. The
+    # inverter limits it to its maximum anyway. Not straight to 50, which is far above it on large banks (#562)
+    percent=rate/batcap*100
+    if rate>=invmaxrate:
+        percent=math.ceil(invmaxrate/batcap*100)
+    return min(round(percent),50)
 
 def maxBatteryRate(multi_output):
     rate=finditem(multi_output,'Invertor_Max_Bat_Rate')
@@ -687,7 +698,7 @@ async def setChargeRate(device,payload,readloop=False):
             else:
                 # Percent of battery capacity, capped at 50 - the same value the GivEnergy app writes.
                 # Don't jump straight to 50 at the inverter max: on large battery banks that's far above max (#562)
-                target=round(min((int(payload['chargeRate'])/(batcap/2))*50,50))
+                target=batteryLimitPercent(int(payload['chargeRate']),batcap,invmaxrate)
                 logger.debug ("Setting battery charge rate to: " + str(payload['chargeRate'])+" ("+str(target)+")")
                 #temp= await sbcl(target,readloop)
                 reqs=device.set_battery_charge_limit(target)
@@ -754,7 +765,7 @@ async def setDischargeRate(device,payload,readloop=False):
             else:
                 # Percent of battery capacity, capped at 50 - the same value the GivEnergy app writes.
                 # Don't jump straight to 50 at the inverter max: on large battery banks that's far above max (#562)
-                target=round(min((int(payload['dischargeRate'])/(batcap/2))*50,50))
+                target=batteryLimitPercent(int(payload['dischargeRate']),batcap,invmaxrate)
                 #temp= await sbdl(target,readloop)
                 reqs=device.set_battery_discharge_limit(target)
             result= await sendAsyncCommand(reqs,readloop)
