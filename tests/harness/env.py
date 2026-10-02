@@ -55,6 +55,7 @@ DEFAULT_SETTINGS = dict(
     refresh_max_age=0,
     queue_retries=2,
     data_smoother="None",
+    timeslot_entities="both",
     dynamic_tariff=False,
     day_rate=0.30,
     day_rate_start="07:30",

@@ -421,6 +421,13 @@ def batteryCount(plant: Plant):
         count=max(count, sum(n for _,n in caps.bcu_stacks), len(caps.aio_battery_module_addresses), len(caps.hv_bmu_addresses))
     return count
 
+def resolvedModel(plant: Plant, device=None):
+    # The model detect resolved (Model.HYBRID_GEN1, HYBRID_HV_GEN3, ...). The device model's own .model is a coarse
+    # decode of the device type code: Model.HYBRID for every Gen 1/2 hybrid, and Model.ALL_IN_ONE for HV Gen 3 (81xx)
+    if plant.capabilities is not None:
+        return plant.capabilities.device_type
+    return getattr(device, 'model', None)
+
 def getInvModel(plant: Plant):
 ##### Feels like this needs reviewing and maybe moving to the device models
     inverterModel = InvType
@@ -436,7 +443,7 @@ def getInvModel(plant: Plant):
         inverterModel.model=Model.GATEWAY
         inverterModel.invmaxrate=plant.inverter.inverter_max_power
     else:
-        inverterModel.model=GEInv.model
+        inverterModel.model=resolvedModel(plant, GEInv)
         #inverterModel.generation=GEInv.generation
         #inverterModel.phase=GEInv.num_phases
         inverterModel.invmaxrate=GEInv.inverter_max_power
@@ -693,7 +700,8 @@ def getTimeslots(plant: Plant, multi_output_old=None):
     timeslots['Charge_end_time_slot_1'] = validateTimeslot(getattr(GEInv.charge_slot_1,'end',None),"Charge_end_time_slot_1",multi_output_old)
 
     try:
-        if GEInv.model in [Model.ALL_IN_ONE, Model.AC_3PH, Model.HYBRID_3PH, Model.GATEWAY, Model.HYBRID_GEN4, Model.HYBRID_HV_GEN3] or (GEInv.model == Model.HYBRID_GEN3 and int(GEInv.arm_firmware_version)>302):   #10 slots don't apply to AC/Hybrid except new fw on Gen 3
+        model=resolvedModel(plant, GEInv)
+        if model in [Model.ALL_IN_ONE, Model.AC_3PH, Model.HYBRID_3PH, Model.GATEWAY, Model.HYBRID_GEN4, Model.HYBRID_HV_GEN3] or (model == Model.HYBRID_GEN3 and int(GEInv.arm_firmware_version)>302):   #10 slots don't apply to AC/Hybrid except new fw on Gen 3
             timeslots['Charge_start_time_slot_2'] = validateTimeslot(getattr(GEInv.charge_slot_2,'start',None),"Charge_start_time_slot_2",multi_output_old)
             timeslots['Charge_end_time_slot_2'] = validateTimeslot(getattr(GEInv.charge_slot_2,'end',None),"Charge_end_time_slot_2",multi_output_old)
             timeslots['Charge_start_time_slot_3'] = validateTimeslot(getattr(GEInv.charge_slot_3,'start',None),"Charge_start_time_slot_3",multi_output_old)
@@ -1119,7 +1127,7 @@ def processPVInfo(plant: Plant):
         inverter['Invertor_Firmware'] = GEInv.firmware_version
         metertype = GEInv.meter_type.name.capitalize()
         inverter['Meter_Type'] = metertype
-        inverter['Invertor_Type'] = GEInv.model.name.capitalize()
+        inverter['Invertor_Type'] = resolvedModel(plant, GEInv).name.capitalize()
         inverter['Invertor_Max_Inv_Rate'] = inverterModel.invmaxrate
         inverter['Invertor_Temperature'] = GEInv.t_inverter_heatsink
         inverter['Export_Limit']=GEInv.grid_port_max_power_output
@@ -1210,7 +1218,9 @@ def processInverterInfo(plant: Plant):
         energy_total_output['AC_Charge_Energy_Total_kWh'] = GEInv.e_inverter_in_total
 
         # Calculate total Load to avoid rounding errors
-        if inverterModel.model in (Model.HYBRID_GEN1,Model.HYBRID_GEN2,Model.HYBRID_GEN3,Model.HYBRID_GEN4 ):
+        # Deliberately the coarse model (never a HYBRID_GENn), so every model uses the second formula, as before:
+        # switching hybrids to the first changes their Load figures, which is a separate decision
+        if GEInv.model in (Model.HYBRID_GEN1,Model.HYBRID_GEN2,Model.HYBRID_GEN3,Model.HYBRID_GEN4 ):
             total_load = max(0,round((energy_total_output['Invertor_Energy_Total_kWh']-energy_total_output['AC_Charge_Energy_Total_kWh']) -
                                                                     (energy_total_output['Export_Energy_Total_kWh']-energy_total_output['Import_Energy_Total_kWh']), 2))
         else:
@@ -1249,7 +1259,7 @@ def processInverterInfo(plant: Plant):
         # Calculate Self Consumption and Load to avoid rounding errors
         today_self = max(0,round(energy_today_output['PV_Energy_Today_kWh'], 2)-round(energy_today_output['Export_Energy_Today_kWh'], 2))
         # Calculate Load to avoid rounding errors
-        if inverterModel.model in (Model.HYBRID_GEN1,Model.HYBRID_GEN2,Model.HYBRID_GEN3,Model.HYBRID_GEN4 ):
+        if GEInv.model in (Model.HYBRID_GEN1,Model.HYBRID_GEN2,Model.HYBRID_GEN3,Model.HYBRID_GEN4 ):     # coarse model, as above
             today_load = max(0,round((energy_today_output['Invertor_Energy_Today_kWh']-energy_today_output['AC_Charge_Energy_Today_kWh']) -
                         (energy_today_output['Export_Energy_Today_kWh']-energy_today_output['Import_Energy_Today_kWh']), 2))
         else:
@@ -1433,7 +1443,7 @@ def processInverterInfo(plant: Plant):
         else:
             freq=GEInv.f_ac1_output
         power_output['Inverter_Output_Frequency'] = freq
-        if GEInv.model in (Model.HYBRID_GEN3, Model.HYBRID_GEN4, Model.HYBRID_HV_GEN3, Model.HYBRID_3PH, Model.ALL_IN_ONE_HYBRID, Model.AIO_COMMERCIAL):
+        if resolvedModel(plant, GEInv) in (Model.HYBRID_GEN3, Model.HYBRID_GEN4, Model.HYBRID_HV_GEN3, Model.HYBRID_3PH, Model.ALL_IN_ONE_HYBRID, Model.AIO_COMMERCIAL):
             power_output['Combined_Generation_Power'] = GEInv.p_combined_generation
 
         # Power flows
@@ -1496,7 +1506,7 @@ def processInverterInfo(plant: Plant):
         inverter['Invertor_Firmware'] = GEInv.firmware_version
         metertype = GEInv.meter_type.name.capitalize()
         inverter['Meter_Type'] = metertype
-        inverter['Invertor_Type'] = GEInv.model.name.capitalize()
+        inverter['Invertor_Type'] = resolvedModel(plant, GEInv).name.capitalize()
         inverter['Invertor_Max_Inv_Rate'] = inverterModel.invmaxrate
         inverter['Invertor_Max_Bat_Rate'] = inverterModel.batmaxrate
         inverter['Invertor_Temperature'] = GEInv.t_inverter_heatsink
@@ -2043,7 +2053,7 @@ def processThreePhaseInfo(plant: Plant):
         inverter['Start_Delay_Time']=GEInv.start_delay_time
         inverter['Power_Factor']=GEInv.power_factor
         inverter['Battery_Type'] = GEInv.battery_type.name.capitalize()
-        inverter['Invertor_Type'] = "Gen 3 - " + GEInv.model.name.capitalize()
+        inverter['Invertor_Type'] = "Gen 3 - " + resolvedModel(plant, GEInv).name.capitalize()
         inverter['Invertor_Max_Bat_Rate'] = inverterModel.batmaxrate
         inverter['Invertor_Max_Inv_Rate'] = GEInv.inverter_max_power
         inverter['Battery_Priority']=GivLUT.tph_battery_priority.get(GEInv.battery_priority,str(GEInv.battery_priority))

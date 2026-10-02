@@ -157,6 +157,11 @@ async def getInvDeets(HOST):
         Stats['Number_of_Batteries']=numbats
         Stats['IP_Address']=HOST
         logger.info(f'Inverter {str(SN)} which is a {str(model.name.capitalize())}({ident.device_type_code}) with {str(numbats)} batteries and {str(nummeters)} meters has been found at: {str(HOST)}')
+        # The library's own detect log is silenced, so log where it found each device, to diagnose missing batteries
+        addrs=lambda a: "["+", ".join(f"0x{x:02x}" for x in a)+"]"
+        logger.info("Inverter "+str(SN)+" devices: meters="+addrs(caps.meter_addresses)+", lv_batteries="+addrs(caps.lv_battery_addresses)
+                    +", bcu_stacks=["+", ".join(f"0x{a:02x}:{n}" for a,n in caps.bcu_stacks)+"]"
+                    +", aio_modules="+addrs(caps.aio_battery_module_addresses)+", hv_bmus="+addrs(caps.hv_bmu_addresses))
 
         return Stats
     except Exception:
@@ -218,6 +223,7 @@ def createsettingsjson(inv):
         outp.write("    day_rate_start=\""+str(setts["day_rate_start"])+"\"\n")
         outp.write("    night_rate_start=\""+str(setts["night_rate_start"])+"\"\n")
         outp.write("    data_smoother=\""+str(setts["data_smoother"])+"\"\n")
+        outp.write("    timeslot_entities=\""+str(setts.get("timeslot_entities") or "both")+"\"\n")
         outp.write("    cache_location=\"/config/GivTCP\"\n")
         outp.write("    Debug_File_Location=\"/config/GivTCP/logs/log_inv_"+str(inv)+".log\"\n")
         outp.write("    Debug_File_Location_Write=\"/config/GivTCP/logs/write_log_inv_"+str(inv)+".log\"\n")

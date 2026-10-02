@@ -57,6 +57,8 @@ class HAMQTT():
             rootTopic=str(GiV_Settings.MQTT_Topic+"/"+SN+"/")
             array['Stats/Timeout_Error']=0    # Set this always at start in case it doesn't exist
             publisher=[]
+            cleared=[]      # discovery topics of entities turned off, to remove from HA
+            slotEntities=str(getattr(GiV_Settings,'timeslot_entities','both') or 'both').lower()
             ### For each topic create a discovery message
             for p_load in array:
                 if p_load != "raw":
@@ -82,10 +84,22 @@ class HAMQTT():
                     #    elif e_type[0]=="binary_sensor":
                     #        client.publish("homeassistant2/binary_sensor/GivEnergy/"+str(topic).split("/")[-1]+"/config",HAMQTT.create_binary_sensor_payload(topic,SN),retain=True)
                         elif e_type.devType=="select":
-                            publisher.append(["homeassistant/select/GivEnergy/"+SN+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
-                            # Timeslots also get a native HA time picker alongside the select (HA 2026.5+)
-                            if "time_slot" in str(topic).split("/")[-1].lower():
-                                publisher.append(["homeassistant/time/GivEnergy/"+SN+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_time_payload(topic,SN,inv_type)])
+                            item=str(topic).split("/")[-1]
+                            selectTopic="homeassistant/select/GivEnergy/"+SN+"_"+item+"/config"
+                            # Timeslots can also have a native HA time picker (HA 2026.5+): the timeslot_entities
+                            # setting picks the drop-down, the time picker or both, and the other is removed from HA
+                            if "time_slot" in item.lower():
+                                timeTopic="homeassistant/time/GivEnergy/"+SN+"_"+item+"/config"
+                                if slotEntities=="time":
+                                    cleared.append(selectTopic)
+                                else:
+                                    publisher.append([selectTopic,HAMQTT.create_device_payload(topic,SN,inv_type)])
+                                if slotEntities=="dropdown":
+                                    cleared.append(timeTopic)
+                                else:
+                                    publisher.append([timeTopic,HAMQTT.create_time_payload(topic,SN,inv_type)])
+                            else:
+                                publisher.append([selectTopic,HAMQTT.create_device_payload(topic,SN,inv_type)])
                         elif e_type.devType=="button":
                             publisher.append(["homeassistant/button/GivEnergy/"+SN+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
 
@@ -95,6 +109,7 @@ class HAMQTT():
             if unsupported:
                 CheckDisco.removeunsupported(SN,unsupported)
             CheckDisco.removedisco(SN,publisher)
+            CheckDisco.cleartopics(cleared)
             time.sleep(3)
             while not complete:
                 publisher=HAMQTT.sendDiscoMsg(publisher,SN)     #send to broker and return any missing items after a check
@@ -420,6 +435,27 @@ class CheckDisco():
             e=errDetail()
             logger.error("checkdisco: Error connecting to MQTT Broker: " + str(e))
             client.disconnect()
+
+    def cleartopics(topics):
+        # Remove HA entities by their exact discovery topic (eg. the timeslot entity type turned off in settings).
+        # Clearing a topic that has no retained message does nothing, so this is safe to repeat
+        if not topics:
+            return
+        try:
+            client = paho_mqtt.Client(paho_mqtt.CallbackAPIVersion.VERSION2,"GivEnergy_GivTCP_cleartopics_"+str(GiV_Settings.givtcp_instance))
+            if HAMQTT.MQTTCredentials:
+                client.username_pw_set(HAMQTT.MQTT_Username,HAMQTT.MQTT_Password)
+            client.connect(GiV_Settings.MQTT_Address, GiV_Settings.MQTT_Port, 60)
+            client.loop_start()
+            for topic in topics:
+                client.publish(topic,None,0,True)
+            time.sleep(1)
+            client.loop_stop()
+            client.disconnect()
+            logger.debug("Cleared "+str(len(topics))+" discovery messages for entities that are turned off")
+        except:
+            e=errDetail()
+            logger.error("cleartopics: Error connecting to MQTT Broker: " + str(e))
 
     def removeunsupported(SN,items):
         # Clear the retained discovery and state messages for entities this inverter can't have, so HA drops

@@ -111,6 +111,7 @@ def install():
     HA_Discovery.HAMQTT.sendDiscoMsg = send
     HA_Discovery.CheckDisco.removedisco = lambda SN, messages: None
     HA_Discovery.CheckDisco.removeunsupported = lambda SN, items: recorder.removed.extend(items)
+    HA_Discovery.CheckDisco.cleartopics = lambda topics: recorder.removed.extend(topics)
     HA_Discovery.time = types.SimpleNamespace(sleep=lambda s: None, time=time.time)
 
     read.updateFirstRun = lambda SN: None     # it edits the settings.py next to read.py (the developer's own)

@@ -111,6 +111,7 @@ export const useTcpStore = defineStore('givtcp-form', {
       Log_Level: "Info",
       queue_retries: 2,
       data_smoother: "medium",
+      timeslot_entities: "both",
     })
   })
 })
@@ -559,6 +560,19 @@ export const useCard = defineStore('card', {
             parent: 'misc',
             items: ["high", "medium", "low","none"],
             key: 'data_smoother'
+          }
+        },
+        {
+          type: 'select',
+          options: {
+            label: 'Timeslot entities in Home Assistant',
+            parent: 'misc',
+            items: [
+              { title: 'Drop-down and time picker', value: 'both' },
+              { title: 'Time picker only', value: 'time' },
+              { title: 'Drop-down only', value: 'dropdown' }
+            ],
+            key: 'timeslot_entities'
           }
         },
         {

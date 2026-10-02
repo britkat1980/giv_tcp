@@ -50,6 +50,7 @@
     "refresh_max_age": 0,
     "queue_retries": 2,
     "data_smoother": "none",
+    "timeslot_entities": "both",
     "Influx_Output": false,
     "influxURL": "",
     "influxToken": "",

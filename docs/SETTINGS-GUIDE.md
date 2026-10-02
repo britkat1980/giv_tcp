@@ -19,7 +19,7 @@ GivTCP provides a wide range of inverter control settings. When using HA an MQTT
 | Battery Pause Start/End Time Slot | Sets the time window in which Battery Pause Mode applies | — |
 | Battery Power Cutoff | Sets the SOC, as a percentage, at which the battery stops discharging altogether | Battery Cutoff % Limit |
 | Battery Power Reserve | Sets the minimum SOC the battery will discharge to in normal operation, as a percentage | Battery Reserve % Limit |
-| Charge Start/End Time Slot (1-10) | Sets the start and end time of each charge slot. On HA 2026.5 or later, each slot also has a time picker entity (e.g. "Charge start slot 1") that does the same job | — |
+| Charge Start/End Time Slot (1-10) | Sets the start and end time of each charge slot. On HA 2026.5 or later, each slot also has a time picker entity (e.g. "Charge start slot 1") that does the same job. To keep only one of them, set "Timeslot entities in Home Assistant" on the settings page | — |
 | Charge Target SOC (1-10) | Sets the target SOC for each charge slot, as a percentage. Available on inverters that support a target per slot | AC Charge 1 Upper SOC % Limit |
 | Discharge Start/End Time Slot (1-10) | Sets the start and end time of each discharge slot | — |
 | Discharge Target SOC (1-10) | Sets the SOC to stop discharging at for each discharge slot, as a percentage. Minimum = Battery Power Reserve | AC Discharge 1 Lower SOC % Limit |
