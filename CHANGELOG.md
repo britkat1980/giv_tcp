@@ -8,6 +8,9 @@ All notable changes to GivTCP are documented in this file.
 - **"Timeslot entities in Home Assistant" setting** to keep the drop-downs, the time pickers or both for each timeslot. The type turned off is removed from Home Assistant (#603).
 - **Startup logs where each meter and battery was found** (the `bcu_stacks` and `hv_bmus` addresses), to diagnose batteries that are found but return no data.
 
+### Changed
+- **"Only report battery data" now takes effect.** Before 3.6 this inverter setting was ignored, so every inverter published all its data. Inverters with it ticked (usually AC or hybrid inverters behind an EMS or Gateway) now publish only their battery details, and their inverter-level entities and controls stop updating. Untick it on the config page to keep them. Startup logs which inverters have it on (#591).
+
 ### Fixed
 - **Model shown as "All_in_one" for HV Gen 3 hybrids**, and their battery charge/discharge rate capped at 6,000 W instead of 10,000 W. GivTCP now uses the model the library resolves at detection (e.g. Hybrid_gen1, Hybrid_hv_gen3) for the Invertor_Type, timeslot count and battery rate (#603).
 
