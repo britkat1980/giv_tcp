@@ -7,6 +7,9 @@ All notable changes to GivTCP are documented in this file.
 ### Changed
 - **Old log files keep the `.log` extension** (#606). Each day's log is now saved as, for example, `log_inv_1.2026-10-03.log` rather than `log_inv_1.log.2026-10-03`, so it can be attached to a GitHub issue as it is. Logs already saved the old way are renamed when GivTCP starts. The log viewer shows both, and only the last 7 days are kept as before.
 
+### Fixed
+- **Wrong inverter model shown on the config page** with more than one inverter (#599). 3.5 saved each inverter's model under its position in the network scan rather than its own slot, so two inverters could swap models. 3.6 only rewrote the models when auto scan was on, so the swap carried over. GivTCP now takes each inverter's model from its saved capabilities at startup, and logs any it corrects. The model is also passed to that inverter's read and write processes, which use it for some model-specific checks, so these now get the right one too.
+
 ## [3.6.0-beta4] - 2026-10-03
 
 Changes since 3.6.0-beta3.

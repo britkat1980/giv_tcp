@@ -186,9 +186,17 @@ def createsettingsjson(inv):
     logger.debug("Recreating settings.py for invertor "+str(inv))
     with open(SFILE, 'r') as f1:
         setts=json.load(f1)
-    if setts["Model_"+str(inv)]=="":
+    # Take the model from this serial's saved capabilities when there are some: 3.5 saved each model under the
+    # slot of its position in the scan rather than its own slot, so a model can be in the wrong slot (#599)
+    caps=loadCaps(setts["serial_number_"+str(inv)]) if setts["serial_number_"+str(inv)] else None
+    model=caps.device_type.name.capitalize() if caps else setts["Model_"+str(inv)]
+    if model=="":
         inverter_type= asyncio.run(getInvDeets(str(setts["invertorIP_"+str(inv)])))
-        setts["Model_"+str(inv)]= inverter_type['Model'].name.capitalize()
+        model= inverter_type['Model'].name.capitalize()
+    if model!=setts["Model_"+str(inv)]:
+        if setts["Model_"+str(inv)]:
+            logger.info("Inverter "+str(inv)+" ("+str(setts["serial_number_"+str(inv)])+") model corrected: "+str(setts["Model_"+str(inv)])+" -> "+model)
+        setts["Model_"+str(inv)]=model
         with open(SFILE, 'w') as f:
             f.write(json.dumps(setts,indent=4))
 
