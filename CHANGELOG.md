@@ -4,6 +4,10 @@ All notable changes to GivTCP are documented in this file.
 
 ## [Unreleased]
 
+## [3.6.0-beta3] - 2026-10-03
+
+Changes since 3.6.0-beta2.
+
 ### Added
 - **Warning when an inverter's clock is out** by 5 minutes or more (logged once a day). The inverter resets its Today energy counters at midnight by its own clock, so a clock left on GMT in summer makes them reset at 01:00 in Home Assistant (#601). Use the Sync Time button, or the GivEnergy portal, to correct it.
 
