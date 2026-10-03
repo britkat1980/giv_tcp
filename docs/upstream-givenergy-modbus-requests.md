@@ -180,3 +180,15 @@ GivTCP patches `manifest._EXTENDED_SLOT_MODELS` to add `Model.GATEWAY` (see `Giv
 **Request**
 
 - Add `Model.GATEWAY` to `_EXTENDED_SLOT_MODELS`, ideally confirmed with a write test on a real Gateway.
+
+## 13. Enable the charge target without writing the target
+
+**Problem**
+
+There's no command that sets just `ENABLE_CHARGE_TARGET` (HR 20) to 1. `disable_charge_target()` clears it, but the only way to set it is `set_charge_target_enabled(target_soc)`, which also writes the enable-charge flag (HR 96, or AC charge, HR 1112, on three-phase) and the target. For a 100% target it clears HR 20 instead. So a consumer that only wants to turn the charge target on has to pass a target, and if the target it passes is stale (for example read before a new one was set) it overwrites the new one, or turns the charge target off. The old async fork had `enable_charge_target()`, which wrote only HR 20 = 1.
+
+**Request**
+
+- An `enable_charge_target()` command (and the three-phase equivalent, if it differs) that writes only HR 20 = 1, the counterpart of `disable_charge_target()`.
+
+**GivTCP workaround:** `enableChargeTarget()` in `GivTCP/write.py` writes HR 20 = 1 directly. It isn't in `GivTCP/modbus_patches.py`, which is for writes the library doesn't allow yet: HR 20 is already write-safe on every inverter model. Remove it once the library has the command.
