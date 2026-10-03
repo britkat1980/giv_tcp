@@ -163,6 +163,8 @@ PV_STRING_VI_UNSUPPORTED=[Model.AC, Model.ALL_IN_ONE]
 # DC-coupled hybrids, whose PV goes through the inverter: Load = inverter output - AC charge - export + import.
 # AC-coupled models also add the PV, which comes from a separate inverter
 DC_HYBRID_MODELS=(Model.HYBRID_GEN1,Model.HYBRID_GEN2,Model.HYBRID_GEN3,Model.HYBRID_GEN4,Model.HYBRID_HV_GEN3)
+# Max battery current (A) by device type code for HV Gen 3 hybrids; unlisted models assume 25A
+HV_GEN3_BAT_CURRENT={"8102":25,"8103":30}
 # Bump when the Load calculation changes, so the hold that stops Load going down lets it drop once to the new value
 LOAD_FORMULA_VERSION="2"
 
@@ -539,6 +541,13 @@ def getInvModel(plant: Plant):
         inverterModel.batterycapacity=13.5*int(GEInv.parallel_aio_num or 0)
     elif inverterModel.model in [Model.HYBRID_GEN4,Model.ALL_IN_ONE]:
         inverterModel.batmaxrate=6000
+    elif inverterModel.model==Model.HYBRID_HV_GEN3 and plant.capabilities.bcu_stacks:
+        # Battery power is capped by the inverter's battery current at the stack voltage (~80V a module), so a
+        # short stack can't reach the headline rate (#604). Stacks run in parallel, so voltage follows modules per stack
+        modules=max(n for _,n in plant.capabilities.bcu_stacks)
+        stackrate=HV_GEN3_BAT_CURRENT.get(str(GEInv.device_type_code),25) * 80 * modules
+        if modules:
+            inverterModel.batmaxrate=min(stackrate, inverterModel.batmaxrate or stackrate)
     return inverterModel
 
 def getRaw(plant: Plant):
