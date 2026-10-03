@@ -5674,7 +5674,10 @@
     }
    }
   },
-  "discovery removed": [],
+  "discovery removed": [
+   "Battery_BMS_Current",
+   "Battery_Discharge_Current"
+  ],
   "discovery topics": [
    "homeassistant/button/GivEnergy/FG2444G000_Reboot_Addon/config",
    "homeassistant/button/GivEnergy/FG2444G000_Reboot_Invertor/config",

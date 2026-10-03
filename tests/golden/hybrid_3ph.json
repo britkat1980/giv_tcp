@@ -7192,6 +7192,8 @@
    }
   },
   "discovery removed": [
+   "Battery_BMS_Current",
+   "Battery_Discharge_Current",
    "Battery_pause_end_time_slot",
    "Battery_pause_mode",
    "Battery_pause_start_time_slot"

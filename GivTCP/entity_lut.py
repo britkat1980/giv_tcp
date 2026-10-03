@@ -147,7 +147,7 @@ class Entity_Type():
         "Battery_USB_present":GEType("binary_sensor","","",0,8,True,False,False),
         "Battery_Temperature":GEType("sensor","temperature","",'-maxTemp','maxTemp',False,True,False),
         "Battery_Voltage":GEType("sensor","voltage","",0,350,False,True,False),
-        "Battery_BMS_Current":GEType("sensor","current","",-500,500,False,True,False),
+        "Battery_Discharge_Current":GEType("sensor","current","",-500,500,False,True,False),
         "Battery_Charge_MOS_State":GEType("sensor","string","","","",False,False,False),
         "Battery_Discharge_MOS_State":GEType("sensor","string","","","",False,False,False),
         "BMS_Temperature":GEType("sensor","temperature","",'-maxTemp','maxTemp',False,True,False),

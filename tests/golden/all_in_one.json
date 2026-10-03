@@ -6523,6 +6523,8 @@
    }
   },
   "discovery removed": [
+   "Battery_BMS_Current",
+   "Battery_Discharge_Current",
    "PV_Current_String_1",
    "PV_Current_String_2",
    "PV_Voltage_String_1",

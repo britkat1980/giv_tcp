@@ -23,6 +23,9 @@ each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, it
   AC config block. This also reads HR 313-314 after each load_config() on the Gateway, so the current rates
   are known.
 - EMS car charge boost, HR 2073, 0-22000 W [10]. The library reads it but has no writer.
+- Battery pack current, IR 95 [13]. The library reports it on every model, but it only holds a real value
+  from BMS firmware 3022/4009 on Gen 3 and AC inverters above ARM firmware 214, and reads 0 elsewhere. This
+  clears it to None everywhere else.
 
 Remove each one once the library supports it.
 """
@@ -31,6 +34,7 @@ import logging
 from givenergy_modbus.client.client import Client
 from givenergy_modbus.model import manifest
 from givenergy_modbus.model.inverter import Model
+from givenergy_modbus.model.plant import Plant
 from givenergy_modbus.pdu import ReadHoldingRegistersRequest, WriteHoldingRegisterRequest
 from givenergy_modbus.pdu import write_registers
 
@@ -174,3 +178,30 @@ async def _load_config(self, *args, **kwargs):
         await _extra_reads(self)
 
 Client.load_config = _load_config
+
+# --- battery pack current ----------------------------------------------------------------------------------
+
+# IR 95 (Im_Avg, i_battery) only holds the pack's current from BMS firmware 3022 (3xxx) or 4009 (4xxx), and only
+# Gen 3 and AC inverters above ARM firmware 214 pass it on (GivEnergy, britkat1980/giv_tcp#605). Everywhere else
+# it reads 0 whatever the current, so it's cleared to None rather than report a misleading 0A
+BMS_CURRENT_MODELS = frozenset({Model.HYBRID_GEN3, Model.AC})
+BMS_CURRENT_MIN_ARM_FW = 215
+
+def bms_current_inverter(model, arm_fw):
+    """True if this inverter passes on each battery pack's current"""
+    return model in BMS_CURRENT_MODELS and arm_fw is not None and int(arm_fw) >= BMS_CURRENT_MIN_ARM_FW
+
+def bms_current_firmware(bms_fw):
+    """True if a pack's BMS firmware reports its current"""
+    return bms_fw is not None and (3022 <= bms_fw < 4000 or bms_fw >= 4009)
+
+_library_batteries = Plant.batteries
+
+def _batteries(self):
+    batteries = _library_batteries.fget(self)
+    caps = self.capabilities
+    inverter = bms_current_inverter(caps.device_type, caps.arm_firmware_version) if caps else False
+    return [b if b.i_battery is None or (inverter and bms_current_firmware(b.bms_firmware_version))
+            else b.model_copy(update={"i_battery": None}) for b in batteries]
+
+Plant.batteries = property(_batteries)

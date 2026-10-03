@@ -5213,7 +5213,6 @@
    "Battery_Details": {
     "Battery_Stack_1": {
      "BE0000G000": {
-      "Battery_BMS_Current": 0.0,
       "Battery_Capacity": 81.6,
       "Battery_Cell_10_Voltage": 3.27,
       "Battery_Cell_11_Voltage": 3.275,
@@ -5239,6 +5238,7 @@
       "Battery_Charge_MOS_State": "Closed",
       "Battery_Cycles": 1366,
       "Battery_Design_Capacity": 102.0,
+      "Battery_Discharge_Current": 0.0,
       "Battery_Discharge_MOS_State": "Closed",
       "Battery_Firmware_Version": 3022,
       "Battery_Remaining_Capacity": 47.81,
@@ -5249,7 +5249,6 @@
       "Battery_Voltage": 52.305
      },
      "BJ0000G000": {
-      "Battery_BMS_Current": 0.0,
       "Battery_Capacity": 101.19,
       "Battery_Cell_10_Voltage": 3.293,
       "Battery_Cell_11_Voltage": 3.293,
@@ -5275,6 +5274,7 @@
       "Battery_Charge_MOS_State": "Closed",
       "Battery_Cycles": 1108,
       "Battery_Design_Capacity": 102.0,
+      "Battery_Discharge_Current": 0.0,
       "Battery_Discharge_MOS_State": "Closed",
       "Battery_Firmware_Version": 3022,
       "Battery_Remaining_Capacity": 51.55,
@@ -5456,7 +5456,6 @@
    "Battery_Details": {
     "Battery_Stack_1": {
      "BE0000G000": {
-      "Battery_BMS_Current": 0.0,
       "Battery_Capacity": 81.6,
       "Battery_Cell_10_Voltage": 3.27,
       "Battery_Cell_11_Voltage": 3.275,
@@ -5482,6 +5481,7 @@
       "Battery_Charge_MOS_State": "Closed",
       "Battery_Cycles": 1366,
       "Battery_Design_Capacity": 102.0,
+      "Battery_Discharge_Current": 0.0,
       "Battery_Discharge_MOS_State": "Closed",
       "Battery_Firmware_Version": 3022,
       "Battery_Remaining_Capacity": 47.81,
@@ -5492,7 +5492,6 @@
       "Battery_Voltage": 52.305
      },
      "BJ0000G000": {
-      "Battery_BMS_Current": 0.0,
       "Battery_Capacity": 101.19,
       "Battery_Cell_10_Voltage": 3.293,
       "Battery_Cell_11_Voltage": 3.293,
@@ -5518,6 +5517,7 @@
       "Battery_Charge_MOS_State": "Closed",
       "Battery_Cycles": 1108,
       "Battery_Design_Capacity": 102.0,
+      "Battery_Discharge_Current": 0.0,
       "Battery_Discharge_MOS_State": "Closed",
       "Battery_Firmware_Version": 3022,
       "Battery_Remaining_Capacity": 51.55,
@@ -5682,6 +5682,7 @@
    }
   },
   "discovery removed": [
+   "Battery_BMS_Current",
    "Battery_pause_end_time_slot",
    "Battery_pause_start_time_slot",
    "PV_Current_String_1",
@@ -5717,7 +5718,6 @@
    "homeassistant/sensor/GivEnergy/CE2231G000_AC_Charge_Energy_Today_kWh/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_AC_Charge_Energy_Total_kWh/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_AC_Charge_Power/config",
-   "homeassistant/sensor/GivEnergy/CE2231G000_BE0000G000_Battery_BMS_Current/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BE0000G000_Battery_Capacity/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BE0000G000_Battery_Cell_10_Voltage/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BE0000G000_Battery_Cell_11_Voltage/config",
@@ -5743,6 +5743,7 @@
    "homeassistant/sensor/GivEnergy/CE2231G000_BE0000G000_Battery_Charge_MOS_State/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BE0000G000_Battery_Cycles/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BE0000G000_Battery_Design_Capacity/config",
+   "homeassistant/sensor/GivEnergy/CE2231G000_BE0000G000_Battery_Discharge_Current/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BE0000G000_Battery_Discharge_MOS_State/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BE0000G000_Battery_Firmware_Version/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BE0000G000_Battery_Remaining_Capacity/config",
@@ -5750,7 +5751,6 @@
    "homeassistant/sensor/GivEnergy/CE2231G000_BE0000G000_Battery_Serial_Number/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BE0000G000_Battery_Temperature/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BE0000G000_Battery_Voltage/config",
-   "homeassistant/sensor/GivEnergy/CE2231G000_BJ0000G000_Battery_BMS_Current/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BJ0000G000_Battery_Capacity/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BJ0000G000_Battery_Cell_10_Voltage/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BJ0000G000_Battery_Cell_11_Voltage/config",
@@ -5776,6 +5776,7 @@
    "homeassistant/sensor/GivEnergy/CE2231G000_BJ0000G000_Battery_Charge_MOS_State/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BJ0000G000_Battery_Cycles/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BJ0000G000_Battery_Design_Capacity/config",
+   "homeassistant/sensor/GivEnergy/CE2231G000_BJ0000G000_Battery_Discharge_Current/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BJ0000G000_Battery_Discharge_MOS_State/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BJ0000G000_Battery_Firmware_Version/config",
    "homeassistant/sensor/GivEnergy/CE2231G000_BJ0000G000_Battery_Remaining_Capacity/config",
@@ -5888,7 +5889,6 @@
    "homeassistant/time/GivEnergy/CE2231G000_Discharge_start_time_slot_2/config"
   ],
   "mqtt topics": [
-   "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BE0000G000/Battery_BMS_Current",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BE0000G000/Battery_Capacity",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BE0000G000/Battery_Cell_10_Voltage",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BE0000G000/Battery_Cell_11_Voltage",
@@ -5914,6 +5914,7 @@
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BE0000G000/Battery_Charge_MOS_State",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BE0000G000/Battery_Cycles",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BE0000G000/Battery_Design_Capacity",
+   "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BE0000G000/Battery_Discharge_Current",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BE0000G000/Battery_Discharge_MOS_State",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BE0000G000/Battery_Firmware_Version",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BE0000G000/Battery_Remaining_Capacity",
@@ -5922,7 +5923,6 @@
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BE0000G000/Battery_Temperature",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BE0000G000/Battery_USB_present",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BE0000G000/Battery_Voltage",
-   "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BJ0000G000/Battery_BMS_Current",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BJ0000G000/Battery_Capacity",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BJ0000G000/Battery_Cell_10_Voltage",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BJ0000G000/Battery_Cell_11_Voltage",
@@ -5948,6 +5948,7 @@
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BJ0000G000/Battery_Charge_MOS_State",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BJ0000G000/Battery_Cycles",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BJ0000G000/Battery_Design_Capacity",
+   "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BJ0000G000/Battery_Discharge_Current",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BJ0000G000/Battery_Discharge_MOS_State",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BJ0000G000/Battery_Firmware_Version",
    "GivEnergy/CE2231G000/Battery_Details/Battery_Stack_1/BJ0000G000/Battery_Remaining_Capacity",

@@ -307,7 +307,7 @@ Each timeslot appears in Home Assistant twice: as a `select` (a drop-down of one
 | `Battery_Design_Capacity` | sensor | Ah | Capacity when new |
 | `Battery_Remaining_Capacity` | sensor | Ah | Charge currently stored |
 | `Battery_Voltage` | sensor | V | Module voltage |
-| `Battery_BMS_Current` | sensor | A | Module current reported by its BMS (low-voltage batteries) |
+| `Battery_Discharge_Current` | sensor | A | Pack discharge current reported by its BMS (low-voltage batteries). Only on Gen 3 and AC inverters above ARM firmware 214, with BMS firmware 3022 or 4009 onwards |
 | `Battery_Charge_MOS_State` / `Battery_Discharge_MOS_State` | sensor | | `Closed` when the module's charge / discharge switch is closed and current can flow, `Open` when the BMS has opened it to stop charging / discharging (low-voltage batteries, where the battery reports it) |
 | `Battery_Cells` | sensor | | Number of cells |
 | `Battery_Cycles` | sensor | | Charge cycles |
