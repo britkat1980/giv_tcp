@@ -4,6 +4,10 @@ All notable changes to GivTCP are documented in this file.
 
 ## [Unreleased]
 
+## [3.6.0-beta4] - 2026-10-03
+
+Changes since 3.6.0-beta3.
+
 ### Changed
 - **"Only report battery data" now keeps the inverter's controls** (renamed "Only report battery data and controls"). Before 3.6 the setting was ignored, so these inverters published everything. Since beta 1 it left only the battery data, which removed controls such as Battery Pause Mode and Battery Discharge Rate that automations behind an EMS rely on (#591). The EMS has no battery pause or rate control of its own. The setting only ever filtered what was published: the inverter is still polled in full, as it always has been.
 - **HV Gen 3 maximum battery rate now follows the stack size** (#604). It's the battery current limit (25 A on the 8 kW, 30 A on the 10 kW) × 80 V per module × modules in one stack, capped at the inverter's rated battery power. A 3-module stack on an 8 kW inverter is 6000 W, as the GivEnergy portal shows, rather than 8000 W. Parallel stacks don't add voltage, so two stacks of 4 on a 10 kW inverter are 9600 W.
