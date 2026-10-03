@@ -40,7 +40,7 @@
               <v-text-field v-model="inv.name" :label="'Friendly Name (HA Device Prefix), eg. ' + defaultName(i)" />
               <v-switch
                 v-model="inv.batteryOnly"
-                label="Only report battery data (for use when this inverter is connected to EMS or Gateway in parallel mode)"
+                label="Only report battery data and controls (for use when this inverter is connected to EMS or Gateway in parallel mode)"
                 color="#4fbba9"
               />
               <p class="text-caption mb-2">

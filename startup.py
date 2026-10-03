@@ -784,7 +784,7 @@ for inv in range(1,setts['number_of_inverters']+1):
             logger.info ("Running Invertor "+str(inv)+" ("+str(setts["serial_number_"+str(inv)])+") read loop every "+str(setts['self_run_timer'])+"/"+str(setts['self_run_timer_full'])+"s")
             if str(setts.get("inverter_battery_only_"+str(inv))).lower()=="true":     # as settings.py gets it
                 # Ignored before 3.6 (it was written as a string), so make it obvious why inverter data isn't published
-                logger.info ("Invertor "+str(inv)+" only publishes battery data, as \"Only report battery data\" is ticked in its settings")
+                logger.info ("Invertor "+str(inv)+" only publishes battery data and controls, as \"Only report battery data and controls\" is ticked in its settings")
             selfRun[inv]=subprocess.Popen(["/usr/local/bin/python3",PATH+"/read.py", "start"])
 
         

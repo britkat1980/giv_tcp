@@ -2573,9 +2573,9 @@ def publishOutput(array, SN):
     # then referenced here with any settings required added into settings.py
 
     if GiV_Settings.Battery_Only==True:
-        temp=array['Battery_Details']
-        array={}
-        array['Battery_Details']=temp
+        # Only filters what's published (the inverter is still fully polled). Keep the controls, so per-inverter
+        # automations (eg. pause discharge during an EV charge) still work behind an EMS (#591)
+        array={key:array[key] for key in ('Battery_Details','Control','Timeslots') if key in array}
     tempoutput = {}
     tempoutput = iterate_dict(array)
 
