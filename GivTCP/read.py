@@ -336,9 +336,10 @@ async def processWriteRequests(client):
     return False
 
 class ConnectionDrops:
-    """Logs how long the connection was idle each time the inverter closes it: the first time, then a summary
-    every 5 minutes. Drops after ~10s idle are the dongle closing idle connections; drops straight after
-    traffic point to something else (another client taking over, or the dongle resetting)"""
+    """Logs each time the inverter closes the connection, with how long since the last traffic: the first time,
+    then a summary every 5 minutes. Drops ~10s after traffic, every poll, are a dongle closing idle connections
+    (#604); occasional drops at random times, followed by failed reconnects, are the dongle going offline briefly
+    (a restart or lost Wi-Fi). Also logs how long it took to reconnect when the first attempts fail"""
     SUMMARY_SECONDS=300
     BUSY_SECONDS=2
 
@@ -346,30 +347,43 @@ class ConnectionDrops:
         self.noted=False
         self.idle=[]
         self.lastsummary=None
+        self.lostat=None        # when the connection was lost (or the first reconnect failed), until it reconnects
+        self.failures=0
 
     def note(self, plant: Plant):
         if self.noted:      # once per drop: the loop sees it again every pass until it reconnects
             return
         self.noted=True
+        self.lostat=datetime.datetime.now()
         stamps=plant.register_block_updated_at.values()
         idle=(datetime.datetime.now(datetime.timezone.utc)-max(stamps)).total_seconds() if stamps else None
         if self.lastsummary is None:
             self.lastsummary=datetime.datetime.now()
-            logger.info("Inverter closed the Modbus connection after "+self.fmt(idle)+" without traffic. GivTCP reconnects when it next needs to")
+            logger.info("Inverter closed the Modbus connection (last traffic "+self.fmt(idle)+" before). GivTCP will reconnect when it next needs to")
             return
         self.idle.append(idle)
-        logger.debug("Inverter closed the Modbus connection after "+self.fmt(idle)+" without traffic")
+        logger.debug("Inverter closed the Modbus connection (last traffic "+self.fmt(idle)+" before)")
         if (datetime.datetime.now()-self.lastsummary).total_seconds()>=self.SUMMARY_SECONDS:
             known=[i for i in self.idle if i is not None]
             busy=sum(1 for i in known if i<self.BUSY_SECONDS)
             logger.info("Inverter closed the Modbus connection "+str(len(self.idle))+" times in the last "+str(round((datetime.datetime.now()-self.lastsummary).total_seconds()/60))+" minutes"
-                +(", after "+self.fmt(min(known))+" to "+self.fmt(max(known))+" without traffic" if known else "")
-                +(" ("+str(busy)+" within "+str(self.BUSY_SECONDS)+"s of traffic)" if busy else "")+". GivTCP reconnected each time")
+                +(", last traffic "+self.fmt(min(known))+" to "+self.fmt(max(known))+" before" if known else "")
+                +(" ("+str(busy)+" within "+str(self.BUSY_SECONDS)+"s of traffic)" if busy else "")+". GivTCP will reconnect when it next needs to")
             self.idle=[]
             self.lastsummary=datetime.datetime.now()
 
+    def failed(self):
+        self.failures+=1
+        if self.lostat is None:
+            self.lostat=datetime.datetime.now()
+
     def reconnected(self):
+        if self.failures:
+            logger.info("Reconnected to the inverter after "+str(self.failures)+" failed attempt"+("s" if self.failures>1 else "")
+                +" ("+self.fmt((datetime.datetime.now()-self.lostat).total_seconds())+" after the connection was lost)")
         self.noted=False
+        self.lostat=None
+        self.failures=0
 
     @staticmethod
     def fmt(seconds):
@@ -462,8 +476,12 @@ async def watch_plant(
                         drops.reconnected()
                     except CommunicationError as e:
                         connectErrors=connectErrors+1
+                        drops.failed()
                         cause=e.__cause__ or e
-                        logger.error ("Unable to connect to inverter on: "+str(GiV_Settings.invertorIP)+" ("+type(cause).__name__+": "+str(cause)+")")
+                        # A dongle going offline briefly (restart, Wi-Fi) usually fails a couple of attempts, so only
+                        # treat it as an error once it persists
+                        logger.log(logging.WARNING if connectErrors<=2 else logging.ERROR,
+                            "Unable to connect to inverter on: "+str(GiV_Settings.invertorIP)+" ("+type(cause).__name__+": "+str(cause)+")")
                         failcount=commsFailure()
                         if failcount>=10:
                             logger.error("Lost communications with Inverter. Restarting container to detect IP change")

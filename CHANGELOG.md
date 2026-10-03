@@ -9,6 +9,7 @@ All notable changes to GivTCP are documented in this file.
 Changes since 3.6.0-beta4.
 
 ### Changed
+- **Clearer logging when the inverter drops the connection.** Some dongles go offline for a few seconds now and then (a restart or lost Wi-Fi), which also closes the connection and makes the next one or two reconnects fail. The connection-closed log line no longer says GivTCP has already reconnected, and it gives the time since the last traffic without implying that idle time was the cause. The first two failed reconnects are now warnings rather than errors, and once GivTCP reconnects after failures it logs how long that took, for example "Reconnected to the inverter after 2 failed attempts (8.2s after the connection was lost)".
 - **Old log files keep the `.log` extension** (#606). Each day's log is now saved as, for example, `log_inv_1.2026-10-03.log` rather than `log_inv_1.log.2026-10-03`, so it can be attached to a GitHub issue as it is. Logs already saved the old way are renamed when GivTCP starts. The log viewer shows both, and only the last 7 days are kept as before.
 
 ### Fixed

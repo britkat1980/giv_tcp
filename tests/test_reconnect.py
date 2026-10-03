@@ -55,5 +55,18 @@ def test_connection_drops_logs_idle_time_once_then_summarises(caplog):
     lines = [r.getMessage() for r in caplog.records if "closed the Modbus connection" in r.getMessage()]
     infos = [r.getMessage() for r in caplog.records if r.levelno == logging.INFO and "closed the Modbus connection" in r.getMessage()]
     assert len(lines) == 4            # once per drop: first, one debug, last debug plus its summary
-    assert infos[0].startswith("Inverter closed the Modbus connection after 10.2s without traffic")
-    assert "2 times in the last 5 minutes, after 0.5s to 9.8s without traffic (1 within 2s of traffic)" in infos[1]
+    assert infos[0].startswith("Inverter closed the Modbus connection (last traffic 10.2s before)")
+    assert "2 times in the last 5 minutes, last traffic 0.5s to 9.8s before (1 within 2s of traffic)" in infos[1]
+
+def test_reconnect_after_failures_logs_how_long_it_took(caplog):
+    import logging
+    import read
+    drops = read.ConnectionDrops()
+    with caplog.at_level(logging.INFO, logger=read.logger.name):
+        drops.reconnected()                     # first time straight away: nothing to report
+        drops.failed()
+        drops.failed()
+        drops.reconnected()
+    lines = [r.getMessage() for r in caplog.records if "Reconnected" in r.getMessage()]
+    assert len(lines) == 1 and lines[0].startswith("Reconnected to the inverter after 2 failed attempts (")
+    assert drops.failures == 0 and drops.lostat is None
