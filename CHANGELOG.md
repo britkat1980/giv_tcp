@@ -9,6 +9,8 @@ All notable changes to GivTCP are documented in this file.
 
 ### Fixed
 - **Wrong inverter model shown on the config page** with more than one inverter (#599). 3.5 saved each inverter's model under its position in the network scan rather than its own slot, so two inverters could swap models. 3.6 only rewrote the models when auto scan was on, so the swap carried over. GivTCP now takes each inverter's model from its saved capabilities at startup, and logs any it corrects. The model is also passed to that inverter's read and write processes, which use it for some model-specific checks, so these now get the right one too.
+- **HV Gen 3 battery capacity too high** (#604): a 3-module stack showed 15.96 kWh rather than 10.2 kWh. The library multiplies the battery's Ah by the All-in-One's 307 V, as it groups HV Gen 3 with the All-in-One. Battery Capacity is now 3.4 kWh (each module's rating) × the modules in all stacks, so 10.2 kWh for 3 modules. SOC kWh, the charge/discharge time remaining and the percentage-to-watts conversion for the power controls all use this figure, so they change too.
+- **`IndexError: list index out of range (startup.py:92)` during the network scan** (#604). GivTCP checks each device on the EV charger port by reading its clock, and some other Modbus devices answer with fewer registers. Those are now skipped as not being an EV charger.
 
 ## [3.6.0-beta4] - 2026-10-03
 

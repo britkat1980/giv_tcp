@@ -87,7 +87,7 @@ def validateEVC(HOST):
     try:
         client = ModbusTcpClient(HOST)
         registers = client.read_holding_registers(97,count=6)
-        if hasattr(registers,"registers"):
+        if hasattr(registers,"registers") and len(registers.registers)>=6:     # other Modbus devices can answer with fewer (#604)
             regs=registers.registers
             systime=datetime(regs[0],regs[1],regs[2],regs[3],regs[4],regs[5]).replace(tzinfo=timezone.utc).isoformat()
             #get serial number here now and put in the settings file

@@ -165,6 +165,8 @@ PV_STRING_VI_UNSUPPORTED=[Model.AC, Model.ALL_IN_ONE]
 DC_HYBRID_MODELS=(Model.HYBRID_GEN1,Model.HYBRID_GEN2,Model.HYBRID_GEN3,Model.HYBRID_GEN4,Model.HYBRID_HV_GEN3)
 # Max battery current (A) by device type code for HV Gen 3 hybrids; unlisted models assume 25A
 HV_GEN3_BAT_CURRENT={"8102":25,"8103":30}
+# Rated capacity of a GIV-BAT-3.4-HV stackable module (GivEnergy datasheet: 3 modules 10.2kWh ... 6 modules 20.4kWh)
+HV_MODULE_KWH=3.4
 # Bump when the Load calculation changes, so the hold that stops Load going down lets it drop once to the new value
 LOAD_FORMULA_VERSION="2"
 
@@ -596,6 +598,11 @@ def getInvModel(plant: Plant):
         stackrate=HV_GEN3_BAT_CURRENT.get(str(GEInv.device_type_code),25) * 80 * modules
         if modules:
             inverterModel.batmaxrate=min(stackrate, inverterModel.batmaxrate or stackrate)
+        # The library's capacity is HR55 Ah x the All-in-One's 307V, as it groups HV Gen 3 with the All-in-One, so
+        # use the modules' rating instead. Unlike voltage, capacity adds up across parallel stacks (#604)
+        total=sum(n for _,n in plant.capabilities.bcu_stacks)
+        if total:
+            inverterModel.batterycapacity=round(HV_MODULE_KWH*total,1)
     return inverterModel
 
 def getRaw(plant: Plant):
