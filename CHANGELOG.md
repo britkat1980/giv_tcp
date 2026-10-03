@@ -4,6 +4,10 @@ All notable changes to GivTCP are documented in this file.
 
 ## [Unreleased]
 
+## [3.6.0-beta5] - 2026-10-03
+
+Changes since 3.6.0-beta4.
+
 ### Changed
 - **Old log files keep the `.log` extension** (#606). Each day's log is now saved as, for example, `log_inv_1.2026-10-03.log` rather than `log_inv_1.log.2026-10-03`, so it can be attached to a GitHub issue as it is. Logs already saved the old way are renamed when GivTCP starts. The log viewer shows both, and only the last 7 days are kept as before.
 
