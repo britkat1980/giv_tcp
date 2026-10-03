@@ -152,6 +152,29 @@ def pauseValue(plant, GEInv, key):
 # givenergy-modbus 2.13+ reports as None
 PV_STRING_VI_UNSUPPORTED=[Model.AC, Model.ALL_IN_ONE]
 
+# DC-coupled hybrids, whose PV goes through the inverter: Load = inverter output - AC charge - export + import.
+# AC-coupled models also add the PV, which comes from a separate inverter
+DC_HYBRID_MODELS=(Model.HYBRID_GEN1,Model.HYBRID_GEN2,Model.HYBRID_GEN3,Model.HYBRID_GEN4,Model.HYBRID_HV_GEN3)
+# Bump when the Load calculation changes, so the hold that stops Load going down lets it drop once to the new value
+LOAD_FORMULA_VERSION="2"
+
+def loadFormulaChanged():
+    # True the first time this is called with a new LOAD_FORMULA_VERSION (and on a first run, which changes nothing)
+    marker=GiV_Settings.cache_location+"/.load_formula_"+str(GiV_Settings.givtcp_instance)
+    try:
+        with open(marker) as inp:
+            if inp.read().strip()==LOAD_FORMULA_VERSION:
+                return False
+    except OSError:
+        pass
+    try:
+        with open(marker,'w') as outp:
+            outp.write(LOAD_FORMULA_VERSION)
+        logger.info("Load energy calculation updated, so Load Energy Today/Total may drop once to the corrected value")
+    except OSError as e:
+        logger.warning("Unable to save the load formula version: "+str(e))
+    return True
+
 def unsupportedEntities():
     # Entities this inverter model can't have. Older GivTCP versions created some of these in HA,
     # and their retained discovery messages keep them there, so discovery removes them explicitly
@@ -1270,17 +1293,19 @@ def processInverterInfo(plant: Plant):
         energy_total_output['PV_Energy_Total_kWh'] = GEInv.e_pv_total
         energy_total_output['AC_Charge_Energy_Total_kWh'] = GEInv.e_inverter_in_total
 
-        # Calculate total Load to avoid rounding errors
-        # Deliberately the coarse model (never a HYBRID_GENn), so every model uses the second formula, as before:
-        # switching hybrids to the first changes their Load figures, which is a separate decision
-        if GEInv.model in (Model.HYBRID_GEN1,Model.HYBRID_GEN2,Model.HYBRID_GEN3,Model.HYBRID_GEN4 ):
+        # Calculate total Load to avoid rounding errors. On a DC hybrid the PV is already in the inverter's output,
+        # so only AC-coupled models add it. Needs the resolved model: the library's own .model is only the family
+        # (HYBRID), which sent hybrids down the AC formula and counted their PV twice from the v2 library on
+        dcHybrid=resolvedModel(plant, GEInv) in DC_HYBRID_MODELS
+        formulaChanged=loadFormulaChanged()
+        if dcHybrid:
             total_load = max(0,round((energy_total_output['Invertor_Energy_Total_kWh']-energy_total_output['AC_Charge_Energy_Total_kWh']) -
                                                                     (energy_total_output['Export_Energy_Total_kWh']-energy_total_output['Import_Energy_Total_kWh']), 2))
         else:
             total_load= max(0,round((energy_total_output['Invertor_Energy_Total_kWh']-energy_total_output['AC_Charge_Energy_Total_kWh']) -
                                                                     (energy_total_output['Export_Energy_Total_kWh']-energy_total_output['Import_Energy_Total_kWh'])+energy_total_output['PV_Energy_Total_kWh'], 2))
         
-        if multi_output_old:
+        if multi_output_old and not formulaChanged:     # once, after the formula fix, let it drop to the right value
             if total_load < multi_output_old["Energy"]["Total"]['Load_Energy_Total_kWh']:       #Stop any rounding calculation from making load reduce in Today stats
                 energy_total_output['Load_Energy_Total_kWh']=multi_output_old["Energy"]["Total"]['Load_Energy_Total_kWh']
             else:
@@ -1312,7 +1337,7 @@ def processInverterInfo(plant: Plant):
         # Calculate Self Consumption and Load to avoid rounding errors
         today_self = max(0,round(energy_today_output['PV_Energy_Today_kWh'], 2)-round(energy_today_output['Export_Energy_Today_kWh'], 2))
         # Calculate Load to avoid rounding errors
-        if GEInv.model in (Model.HYBRID_GEN1,Model.HYBRID_GEN2,Model.HYBRID_GEN3,Model.HYBRID_GEN4 ):     # coarse model, as above
+        if dcHybrid:
             today_load = max(0,round((energy_today_output['Invertor_Energy_Today_kWh']-energy_today_output['AC_Charge_Energy_Today_kWh']) -
                         (energy_today_output['Export_Energy_Today_kWh']-energy_today_output['Import_Energy_Today_kWh']), 2))
         else:
@@ -1326,7 +1351,7 @@ def processInverterInfo(plant: Plant):
                 energy_today_output['Self_Consumption_Energy_Today_kWh']=multi_output_old["Energy"]["Today"]['Self_Consumption_Energy_Today_kWh']
             else:
                 energy_today_output['Self_Consumption_Energy_Today_kWh']=today_self
-            if today_load < multi_output_old["Energy"]["Today"]['Load_Energy_Today_kWh']:
+            if today_load < multi_output_old["Energy"]["Today"]['Load_Energy_Today_kWh'] and not formulaChanged:
                 energy_today_output['Load_Energy_Today_kWh']=multi_output_old["Energy"]["Today"]['Load_Energy_Today_kWh']
             else:
                 energy_today_output['Load_Energy_Today_kWh']=today_load

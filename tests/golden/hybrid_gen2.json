@@ -5344,7 +5344,7 @@
      "Export_Energy_Today_kWh": 18.9,
      "Import_Energy_Today_kWh": 22.7,
      "Invertor_Energy_Today_kWh": 28.6,
-     "Load_Energy_Today_kWh": 52.1,
+     "Load_Energy_Today_kWh": 27.6,
      "PV_Energy_Today_kWh": 24.5,
      "Self_Consumption_Energy_Today_kWh": 5.600000000000001
     },
@@ -5356,7 +5356,7 @@
      "Export_Energy_Total_kWh": 8053.0,
      "Import_Energy_Total_kWh": 31457.8,
      "Invertor_Energy_Total_kWh": 9035.7,
-     "Load_Energy_Total_kWh": 35466.5,
+     "Load_Energy_Total_kWh": 29026.6,
      "PV_Energy_Total_kWh": 6439.9,
      "Self_Consumption_Energy_Total_kWh": 0
     }
@@ -5592,7 +5592,7 @@
      "Export_Energy_Today_kWh": 18.9,
      "Import_Energy_Today_kWh": 22.7,
      "Invertor_Energy_Today_kWh": 28.6,
-     "Load_Energy_Today_kWh": 52.1,
+     "Load_Energy_Today_kWh": 27.6,
      "PV_Energy_Today_kWh": 24.5,
      "Self_Consumption_Energy_Today_kWh": 5.600000000000001
     },
@@ -5604,7 +5604,7 @@
      "Export_Energy_Total_kWh": 8053.0,
      "Import_Energy_Total_kWh": 31457.8,
      "Invertor_Energy_Total_kWh": 9035.7,
-     "Load_Energy_Total_kWh": 35466.5,
+     "Load_Energy_Total_kWh": 29026.6,
      "PV_Energy_Total_kWh": 6439.9,
      "Self_Consumption_Energy_Total_kWh": 0
     }
