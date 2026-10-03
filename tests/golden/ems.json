@@ -51,11 +51,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no disable_charge_target for this model)"
+      "Setting Charge Target failed: NotImplementedError: Charge Target isn't available on the EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no disable_charge_target for this model)"
+     "result": "Setting Charge Target failed: NotImplementedError: Charge Target isn't available on the EMS (write.py:N)"
     },
     "writes": []
    }
@@ -67,11 +67,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
+      "Setting Charge Target failed: NotImplementedError: Charge Target isn't available on the EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
+     "result": "Setting Charge Target failed: NotImplementedError: Charge Target isn't available on the EMS (write.py:N)"
     },
     "writes": []
    }
@@ -764,11 +764,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
+      "Setting Charge Target failed: NotImplementedError: Charge Target isn't available on the EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
+     "result": "Setting Charge Target failed: NotImplementedError: Charge Target isn't available on the EMS (write.py:N)"
     },
     "writes": []
    }
@@ -1565,7 +1565,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no disable_charge_target for this model)"
+      "Setting Charge Target failed: NotImplementedError: Charge Target isn't available on the EMS (write.py:N)"
      ]
     ],
     "queued": [
@@ -1586,7 +1586,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
+      "Setting Charge Target failed: NotImplementedError: Charge Target isn't available on the EMS (write.py:N)"
      ]
     ],
     "queued": [
@@ -2732,7 +2732,7 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
+      "Setting Charge Target failed: NotImplementedError: Charge Target isn't available on the EMS (write.py:N)"
      ]
     ],
     "queued": [
@@ -5376,11 +5376,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no disable_charge_target for this model)"
+      "Setting Charge Target failed: NotImplementedError: Charge Target isn't available on the EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no disable_charge_target for this model)"
+     "result": "Setting Charge Target failed: NotImplementedError: Charge Target isn't available on the EMS (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -5393,11 +5393,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
+      "Setting Charge Target failed: NotImplementedError: Charge Target isn't available on the EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
+     "result": "Setting Charge Target failed: NotImplementedError: Charge Target isn't available on the EMS (write.py:N)"
     },
     "status": 200,
     "writes": []
@@ -6040,11 +6040,11 @@
      [
       "write_logger",
       "ERROR",
-      "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
+      "Setting Charge Target failed: NotImplementedError: Charge Target isn't available on the EMS (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Charge Target failed: not available for Ems inverters (givenergy-modbus has no set_charge_target_enabled for this model)"
+     "result": "Setting Charge Target failed: NotImplementedError: Charge Target isn't available on the EMS (write.py:N)"
     },
     "status": 200,
     "writes": []

@@ -4,6 +4,9 @@ All notable changes to GivTCP are documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- **Set Charge Target and Enable Charge Target wrote more than they should** since the move to the v2 library. Set Charge Target also turned on the charge schedule (HR 96, or AC charge on three-phase) and set the charge target's enable flag (HR 20), and for a 100% target cleared that flag instead, so setting 100% turned the charge target off. Enable Charge Target also wrote the target, and for a 100% target cleared the flag rather than setting it. When it ran in the same batch as a new target, it put back the target from before. Both now write only what they did before v2: the target (HR 116, or HR 1111 on three-phase) and the enable flag (HR 20). Enable and Disable Charge Target also update the published state straight away, so a consumer reading it back, such as Predbat, no longer reports `REST failed to enableChargeTarget`. As in 3.5, Set Charge Target no longer turns the charge target on by itself: automations that only set the target should also turn on Enable Charge Target (Predbat already does).
+
 ## [3.6.0-beta5] - 2026-10-03
 
 Changes since 3.6.0-beta4.
