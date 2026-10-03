@@ -330,6 +330,46 @@ async def processWriteRequests(client):
             os.remove(GivLUT.writerequests)
     return False
 
+class ConnectionDrops:
+    """Logs how long the connection was idle each time the inverter closes it: the first time, then a summary
+    every 5 minutes. Drops after ~10s idle are the dongle closing idle connections; drops straight after
+    traffic point to something else (another client taking over, or the dongle resetting)"""
+    SUMMARY_SECONDS=300
+    BUSY_SECONDS=2
+
+    def __init__(self):
+        self.noted=False
+        self.idle=[]
+        self.lastsummary=None
+
+    def note(self, plant: Plant):
+        if self.noted:      # once per drop: the loop sees it again every pass until it reconnects
+            return
+        self.noted=True
+        stamps=plant.register_block_updated_at.values()
+        idle=(datetime.datetime.now(datetime.timezone.utc)-max(stamps)).total_seconds() if stamps else None
+        if self.lastsummary is None:
+            self.lastsummary=datetime.datetime.now()
+            logger.info("Inverter closed the Modbus connection after "+self.fmt(idle)+" without traffic. GivTCP reconnects when it next needs to")
+            return
+        self.idle.append(idle)
+        logger.debug("Inverter closed the Modbus connection after "+self.fmt(idle)+" without traffic")
+        if (datetime.datetime.now()-self.lastsummary).total_seconds()>=self.SUMMARY_SECONDS:
+            known=[i for i in self.idle if i is not None]
+            busy=sum(1 for i in known if i<self.BUSY_SECONDS)
+            logger.info("Inverter closed the Modbus connection "+str(len(self.idle))+" times in the last "+str(round((datetime.datetime.now()-self.lastsummary).total_seconds()/60))+" minutes"
+                +(", after "+self.fmt(min(known))+" to "+self.fmt(max(known))+" without traffic" if known else "")
+                +(" ("+str(busy)+" within "+str(self.BUSY_SECONDS)+"s of traffic)" if busy else "")+". GivTCP reconnected each time")
+            self.idle=[]
+            self.lastsummary=datetime.datetime.now()
+
+    def reconnected(self):
+        self.noted=False
+
+    @staticmethod
+    def fmt(seconds):
+        return "an unknown time" if seconds is None else str(round(seconds,1))+"s"
+
 async def watch_plant(
         handler: Optional[Callable] = None,
         refresh_period: float = 15.0,
@@ -395,18 +435,26 @@ async def watch_plant(
         timeoutErrors=0
         connectErrors=0
         partialPolls=0
+        drops=ConnectionDrops()
         logger.info("Starting data refresh cycle")
         while True:
             try:
                 if not client.connected:
-                    #in case the client has died, reopen it
-                    logger.info("Re-opening Modbus Connecion to: "+str(GiV_Settings.invertorIP))
+                    if getattr(client,'_connection_lost',False):     # the inverter end closed it, not GivTCP
+                        drops.note(client.plant)
+                    # Many dongles close a connection after ~10s without traffic (#604), so only reconnect when
+                    # there's something to send rather than straight away, which would just be closed again
+                    if not exists(GivLUT.writerequests) and datetime.datetime.now()<nextpoll:
+                        await asyncio.sleep(0.5)
+                        continue
+                    logger.debug("Re-opening Modbus Connecion to: "+str(GiV_Settings.invertorIP))
                     try:
                         if connectErrors>=2:
                             # The same client can keep failing to reconnect while a new one connects first time
                             await GivClientAsync.new_client()
-                        client=await GivClientAsync.get_connection()
+                        client=await GivClientAsync.get_connection(reconnect=True)
                         connectErrors=0
+                        drops.reconnected()
                     except CommunicationError as e:
                         connectErrors=connectErrors+1
                         cause=e.__cause__ or e

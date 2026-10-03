@@ -34,3 +34,26 @@ def test_new_client_recovers_a_stuck_connection(plants):
         session.loop.run(Client.close(stuck))
         if fresh is not None:
             session.loop.run(fresh.close())
+
+def test_connection_drops_logs_idle_time_once_then_summarises(caplog):
+    import datetime
+    import logging
+    from types import SimpleNamespace
+    import read
+    now = read.datetime.datetime.now(datetime.timezone.utc)      # the harness freezes read's clock
+    def plant(idle):
+        return SimpleNamespace(register_block_updated_at={("x", "IR", 0, 60): now - datetime.timedelta(seconds=idle)})
+    drops = read.ConnectionDrops()
+    with caplog.at_level(logging.DEBUG, logger=read.logger.name):
+        drops.note(plant(10.2))
+        drops.note(plant(10.2))       # the loop sees the same drop until it reconnects
+        drops.reconnected()
+        drops.note(plant(0.5))
+        drops.reconnected()
+        drops.lastsummary -= datetime.timedelta(minutes=5)
+        drops.note(plant(9.8))
+    lines = [r.getMessage() for r in caplog.records if "closed the Modbus connection" in r.getMessage()]
+    infos = [r.getMessage() for r in caplog.records if r.levelno == logging.INFO and "closed the Modbus connection" in r.getMessage()]
+    assert len(lines) == 4            # once per drop: first, one debug, last debug plus its summary
+    assert infos[0].startswith("Inverter closed the Modbus connection after 10.2s without traffic")
+    assert "2 times in the last 5 minutes, after 0.5s to 9.8s without traffic (1 within 2s of traffic)" in infos[1]

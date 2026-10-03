@@ -141,7 +141,7 @@ def lastWritePerRegister(reqs):
 async def sendAsyncCommand(reqs,readloop):
     output={}
     reqs=lastWritePerRegister(reqs)
-    asyncclient=await GivClientAsync.get_connection()
+    asyncclient=await GivClientAsync.get_connection(reconnect=readloop)
     if not asyncclient.connected:
         logger.info("Write client not connected after import")
         await asyncclient.connect()

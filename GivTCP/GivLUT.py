@@ -25,7 +25,7 @@ _client = Client(GiV_Settings.invertorIP,8899)
 _connection_lock = asyncio.Lock()
 
 class GivClientAsync:
-    async def get_connection(cold_start=False):
+    async def get_connection(cold_start=False, reconnect=False):
         """Return a shared Client instance, creating or reconnecting as required.
 
         This function serialises connect/close activity using an asyncio.Lock so
@@ -54,7 +54,8 @@ class GivClientAsync:
                 if getattr(_client, 'connected', False):
                     return _client
 
-                logger.critical("Opening Modbus Connection to %s", str(GiV_Settings.invertorIP))
+                # Routine reconnects (eg. after the dongle closes an idle connection) aren't worth a log line each
+                logger.log(logging.DEBUG if reconnect else logging.CRITICAL, "Opening Modbus Connection to %s", str(GiV_Settings.invertorIP))
 
                 last_exc = None
                 for attempt in range(1, max(1, connect_retries) + 1):
