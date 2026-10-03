@@ -33,7 +33,10 @@
         var groups = {};
         listing.forEach(function(f) {
             if (f.type !== "file") return;
-            var m = f.name.match(/^(.+\.log)(?:\.(\d{4}-\d{2}-\d{2}))?$/);
+            // Rotated days are name.YYYY-MM-DD.log (#606), or name.log.YYYY-MM-DD from older versions
+            var m = f.name.match(/^(.+)\.(\d{4}-\d{2}-\d{2})\.log$/);
+            if (m) m = [m[0], m[1] + ".log", m[2]];
+            else m = f.name.match(/^(.+\.log)(?:\.(\d{4}-\d{2}-\d{2}))?$/);
             if (!m) return;
             var g = groups[m[1]] || (groups[m[1]] = { base: m[1], files: [] });
             g.files.push({ name: f.name, day: m[2] || null, size: f.size, mtime: f.mtime });

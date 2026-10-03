@@ -32,6 +32,7 @@ def test_follows_file_rotated_by_another_process(tmp_path):
     rotated = [p for p in tmp_path.iterdir() if p.name != log.name]
     assert lines(log) == ["after", "after too"]
     assert len(rotated) == 1 and lines(rotated[0]) == ["before", "before too"]
+    assert rotated[0].name.startswith("write_log_inv_1.") and rotated[0].suffix == ".log"     # #606
 
 def test_second_rollover_in_same_period_does_not_rotate_again(tmp_path):
     log = tmp_path / "log_evc.log"

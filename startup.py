@@ -390,12 +390,12 @@ def findinv(networks):
 #os.makedirs(os.path.dirname("/config/GivTCP/"),exist_ok=True)
 os.makedirs(os.path.dirname("/config/GivTCP/logs/"),exist_ok=True)
 
-from logging.handlers import TimedRotatingFileHandler
+from GivTCP.sharedlog import SharedTimedRotatingFileHandler
 logging.basicConfig(format='%(asctime)s'+ \
                     ' - %(module)-11s -  [%(levelname)-8s] - %(message)s')
 formatter = logging.Formatter(
     '%(asctime)s - %(module)s - [%(levelname)s] - %(message)s')
-fh = TimedRotatingFileHandler("/config/GivTCP/logs/startup.log", when='midnight', backupCount=7)
+fh = SharedTimedRotatingFileHandler("/config/GivTCP/logs/startup.log", when='midnight', backupCount=7)   # rotated files keep .log (#606)
 fh.setFormatter(formatter)
 logger = logging.getLogger()
 logger.addHandler(fh)
