@@ -142,6 +142,14 @@ def pauseSlotsUnsupported(caps):
         return False
     return not PAUSE_SLOT_REGISTERS <= pause_registers(caps.device_type, caps.arm_firmware_version)
 
+def pauseSlotAvailable():
+    # For callers without the plant (REST): False only if the saved capabilities say there's no pause slot
+    try:
+        with open(capsFile(), 'rb') as inp:
+            return not pauseSlotsUnsupported(pickle.load(inp))
+    except Exception:
+        return True     # not known, so let the write decide
+
 def pauseValue(plant, GEInv, key):
     # The Gateway model has no pause fields, so decode them from its registers as the inverter model does
     if hasattr(GEInv, key):

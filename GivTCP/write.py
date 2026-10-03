@@ -847,10 +847,21 @@ async def setChargeSlot(device,payload,readloop=False):
         logger.error (temp['result'])
     return json.dumps(temp)
 
+def checkPauseSlot(device):
+    # Gen 1 and AC have pause mode but no pause slot, and reject writes to HR 319-320
+    from givenergy_modbus.model.inverter import resolve_model
+    try:
+        model=resolve_model(int(device.device_type_code,16), int(device.arm_firmware_version or 0))
+    except (AttributeError, TypeError, ValueError):
+        return      # not known, so let the write decide
+    if not modbus_patches.PAUSE_SLOT_REGISTERS <= modbus_patches.pause_registers(model, device.arm_firmware_version):
+        raise NotImplementedError("this inverter has no battery pause slot")
+
 async def setPauseSlot(device,payload,readloop=False):
     temp={}
     if type(payload) is not dict: payload=json.loads(payload)
     try:
+        checkPauseSlot(device)
         logger.debug("Setting Battery Pause slot to: "+str(payload['start'])+" - "+str(payload['finish']))
         #temp= await sps(payload,readloop)
         slot=TimeSlot(datetime.strptime(payload['start'],"%H:%M"),datetime.strptime(payload['finish'],"%H:%M"))
@@ -1073,6 +1084,7 @@ async def setPauseStart(device,payload,readloop=False):
     temp={}
     if type(payload) is not dict: payload=json.loads(payload)
     try:
+        checkPauseSlot(device)
         logger.debug("Setting Pause Slot Start to: "+str(payload['start']))
         #temp= await spss(payload,readloop)
         reqs=gecommands.set_pause_slot_start(datetime.strptime(payload['start'],"%H:%M"))
@@ -1092,6 +1104,7 @@ async def setPauseEnd(device,payload,readloop=False):
     temp={}
     if type(payload) is not dict: payload=json.loads(payload)
     try:
+        checkPauseSlot(device)
         logger.debug("Setting Pause Slot End to: "+str(payload['finish']))
         #temp= await spse(payload,readloop)
         reqs=gecommands.set_pause_slot_end(datetime.strptime(payload['finish'],"%H:%M"))

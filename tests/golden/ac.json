@@ -1584,16 +1584,11 @@
      [
       "write_logger",
       "ERROR",
-      "Error in write command: InvalidPduState HR(320) is not permitted for AC inverter (registers: 320)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for AC inverter'} (write.py:N)"
+      "Setting Pause Slot End failed: NotImplementedError: this inverter has no battery pause slot (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for AC inverter'} (write.py:N)"
+     "result": "Setting Pause Slot End failed: NotImplementedError: this inverter has no battery pause slot (write.py:N)"
     },
     "writes": []
    }
@@ -1605,16 +1600,11 @@
      [
       "write_logger",
       "ERROR",
-      "Error in write command: InvalidPduState HR(319) is not permitted for AC inverter (registers: 319, 320)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for AC inverter (write.py:N)"
+      "Setting Battery Pause Slot failed: NotImplementedError: this inverter has no battery pause slot (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for AC inverter (write.py:N)"
+     "result": "Setting Battery Pause Slot failed: NotImplementedError: this inverter has no battery pause slot (write.py:N)"
     },
     "writes": []
    }
@@ -1626,16 +1616,11 @@
      [
       "write_logger",
       "ERROR",
-      "Error in write command: InvalidPduState HR(319) is not permitted for AC inverter (registers: 319)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for AC inverter'} (write.py:N)"
+      "Setting Pause Slot Start failed: NotImplementedError: this inverter has no battery pause slot (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for AC inverter'} (write.py:N)"
+     "result": "Setting Pause Slot Start failed: NotImplementedError: this inverter has no battery pause slot (write.py:N)"
     },
     "writes": []
    }
@@ -5003,12 +4988,7 @@
      [
       "write_logger",
       "ERROR",
-      "Error in write command: InvalidPduState HR(320) is not permitted for AC inverter (registers: 320)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for AC inverter'} (write.py:N)"
+      "Setting Pause Slot End failed: NotImplementedError: this inverter has no battery pause slot (write.py:N)"
      ]
     ],
     "queued": [
@@ -5029,12 +5009,7 @@
      [
       "write_logger",
       "ERROR",
-      "Error in write command: InvalidPduState HR(319) is not permitted for AC inverter (registers: 319)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for AC inverter'} (write.py:N)"
+      "Setting Pause Slot Start failed: NotImplementedError: this inverter has no battery pause slot (write.py:N)"
      ]
     ],
     "queued": [
@@ -7389,20 +7364,9 @@
   "/setPauseSlot({'start': '16:00', 'finish': '19:00'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(319) is not permitted for AC inverter (registers: 319, 320)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for AC inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for AC inverter (write.py:N)"
+     "result": "Setting Battery Pause Slot failed: this inverter has no battery pause slot"
     },
     "status": 200,
     "writes": []

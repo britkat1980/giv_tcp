@@ -5,12 +5,13 @@ library doesn't do. Each one was written by GivTCP's previous modbus library (gi
 each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, item number in brackets):
 
 - Battery pause mode, HR 318, and pause slot, HR 319-320 [1]. The library allows these on no model.
-  Pause mode and slot on the All-in-One, Gateway, Gen 2, Gen 3, HV Gen 3, and Gen 1 from ARM firmware
-  187 (britkat1980/giv_tcp#441); pause mode only on the AC from ARM firmware 200 (confirmed by a user), as it
-  has no pause slot. Three-phase and the
+  Pause mode and slot on the All-in-One, Gateway, Gen 2, Gen 3 and HV Gen 3. Pause mode only on Gen 1 from
+  ARM firmware 187 (britkat1980/giv_tcp#441), which rejects reads and writes of the slot registers, and on
+  the AC from ARM firmware 200 (confirmed by a user), as neither has a pause slot. Three-phase and the
   EMS have no pause functions. The library only reads HR 300-359 on models with the AC config block
   (AC, All-in-One), because older hybrids time out on that block (#162), so this also reads just
-  HR 318-320 after each load_config() on the others, so the current pause mode and slot are known.
+  HR 318-320 (just HR 318 where there's no slot) after each load_config() on the others, so the current
+  pause mode and slot are known.
 - Per-slot charge/discharge target SOC, HR 242-269 / 272-299 (every third register), on models with the
   10-slot layout and on three-phase [2]. The library reads these on 10-slot models but has no writer. On
   three-phase it doesn't read HR 240-299 at all (slots 3-10 and their targets), so this also reads that
@@ -64,8 +65,12 @@ def pause_registers(model, arm_fw):
     if model in PAUSE_MODELS:
         return PAUSE_REGISTERS
     if model == Model.HYBRID_GEN1 and arm_fw is not None and int(arm_fw) >= GEN1_PAUSE_MIN_ARM_FW:
-        return PAUSE_REGISTERS
+        # Mode only: a Gen 1 rejects writes to HR 319-320, and a read including them
+        return frozenset({PAUSE_MODE_REGISTER})
     return frozenset()
+
+def _has_pause_slot(caps):
+    return PAUSE_SLOT_REGISTERS <= pause_registers(caps.device_type, caps.arm_firmware_version)
 
 def _pause_read_needed(model, arm_fw):
     # The library reads HR 300-359, which includes the pause registers, on models with the AC config block
@@ -134,8 +139,11 @@ _library_load_config = Client.load_config
 
 # Extra reads after load_config(): (name, test on the capabilities, base register, count, what's lost if it fails)
 EXTRA_READS = [
-    ("pause", lambda caps: _pause_read_needed(caps.device_type, caps.arm_firmware_version), 318, 3,
+    ("pause", lambda caps: _pause_read_needed(caps.device_type, caps.arm_firmware_version) and _has_pause_slot(caps), 318, 3,
      "the current pause mode won't be shown (pause controls can still be set)"),
+    # Where there's no pause slot the inverter rejects a read that includes HR 319-320, so read the mode alone
+    ("pause mode", lambda caps: _pause_read_needed(caps.device_type, caps.arm_firmware_version) and not _has_pause_slot(caps), 318, 1,
+     "the current pause mode won't be shown (it can still be set)"),
     ("three-phase slots", lambda caps: caps.is_three_phase and not manifest.has_extended_slots(caps.device_type, caps.arm_firmware_version),
      240, 60, "charge/discharge slots 3-10 and their target SOCs won't be shown (they can still be set)"),
     ("Gateway rates", lambda caps: caps.is_gateway, 313, 2,

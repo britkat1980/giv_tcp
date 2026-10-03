@@ -4,6 +4,9 @@ All notable changes to GivTCP are documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- **Battery pause slot errors on Gen 1 hybrids** (e.g. `WriteHoldingRegisterResponse(ERROR 319 ...)` when Predbat sets the pause slot). Gen 1 has battery pause mode but no pause slot, and its firmware rejects writes to HR 319-320 and any read that includes them. GivTCP no longer offers the pause slot on Gen 1, so its HA entities are removed, and it reads the pause mode register on its own instead of with the slot registers, so the current mode should now show. A request to set the pause slot on any inverter without one (Gen 1, AC, three-phase, EMS) is now refused with "this inverter has no battery pause slot", and REST refuses it straight away rather than sending it to the inverter.
+
 ## [3.6.0-beta3] - 2026-10-03
 
 Changes since 3.6.0-beta2.

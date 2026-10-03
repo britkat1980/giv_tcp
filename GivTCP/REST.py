@@ -404,6 +404,11 @@ def setPausSlot():
     Payload: {'start':'16:00','finish':'19:00'}
     """
     payload = request.get_json(silent=True, force=True)
+    if not rd.pauseSlotAvailable():
+        # Refuse it here rather than queue a write the inverter rejects (eg. Predbat on a Gen 1, which has
+        # pause mode but no pause slot)
+        logger.info("Refused setPauseSlot: this inverter has no battery pause slot")
+        return json.dumps({"result":"Setting Battery Pause Slot failed: this inverter has no battery pause slot"})
     requestcommand("setPauseSlot",payload)
     return response("setPauseSlot")
 

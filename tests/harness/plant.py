@@ -53,6 +53,8 @@ class PlantSession:
         env.clear_state()
         self.activate()
         loop.run(read.detectPlant(self.client, force=True))
+        with open(read.capsFile(), 'rb') as inp:
+            self.caps = inp.read()
         self.read_failures = loop.run(read.readPlant(self.client, True))
         self.settings["numBatteries"] = read.batteryCount(self.client.plant)
         self.activate()
@@ -73,6 +75,11 @@ class PlantSession:
         import GivLUT as givlut_module
         env.configure(**self.settings)
         givlut_module._client = self.client
+        if getattr(self, "caps", None):
+            # Several devices' made-up serials are the same (eg. HYBRID_GEN), so put back this device's own file
+            import read
+            with open(read.capsFile(), 'wb') as outp:
+                outp.write(self.caps)
         if state is not None:
             env.restore_state(state)
             self._restore_registers()

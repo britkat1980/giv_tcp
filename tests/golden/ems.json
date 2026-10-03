@@ -6463,20 +6463,9 @@
   "/setPauseSlot({'start': '16:00', 'finish': '19:00'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter (registers: 319, 320)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter (write.py:N)"
+     "result": "Setting Battery Pause Slot failed: this inverter has no battery pause slot"
     },
     "status": 200,
     "writes": []
