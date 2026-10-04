@@ -180,3 +180,17 @@ GivTCP patches `manifest._EXTENDED_SLOT_MODELS` to add `Model.GATEWAY` (see `Giv
 **Request**
 
 - Add `Model.GATEWAY` to `_EXTENDED_SLOT_MODELS`, ideally confirmed with a write test on a real Gateway.
+
+## 14. HV BMU addresses for the second and later stacks
+
+**Problem**
+
+`_hv_bmu_candidates()` and `Plant.hv_stacks` give each stack's modules the next device addresses after the previous stack's (0x55-0x59 for the second of two 5-module stacks), each read at IR 60-119. The `hv_stacks` docstring notes this multi-stack layout isn't wire-confirmed (#265). On a two-stack HV Gen 3, the second stack's modules never answer there, so they never decode and the stack has no cell data (britkat1980/giv_tcp#611). The BCUs at 0x70/0x71 read fine.
+
+givenergy_modbus_async, which read both stacks on the same system, restarts the module addresses at 0x50 for every stack and picks the stack by register offset: module k of the stack at BCU 0x70 + n is device 0x50 + k, IR (60 + 120n)-(119 + 120n). That matches the address note in GivEnergy's HV BMU register map: register start = base + 120 × (BAMS_Addr − 0x90) × 32 + 120 × (BCU_Addr − 0x70).
+
+GivTCP patches `_refresh_banks` and `Plant.hv_stacks` to read and decode the second and later stacks' modules this way (see `GivTCP/modbus_patches.py`), keeping the library's address for any module that answered at detect.
+
+**Request**
+
+- Probe, poll and decode each stack's BMUs at 0x50 + k with a register base of 120 × the stack's BCU offset, and pass that base to `decode_cells_temps_serial()`.

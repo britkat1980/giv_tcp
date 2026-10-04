@@ -702,10 +702,13 @@ _emptyBatteryPolls={}
 
 def batteryNotReady(key):
     # The library withholds a battery's data until a second read confirms the first (cold-start guard),
-    # so one or two empty polls after connecting are expected. Only report it as an error if it persists
+    # so one or two empty polls after connecting are expected. Only report it as an error if it persists,
+    # and only once, rather than every poll (#611)
     _emptyBatteryPolls[key]=_emptyBatteryPolls.get(key,0)+1
-    if _emptyBatteryPolls[key]>=3:
-        logger.error("Battery "+str(key)+" has returned no valid data for "+str(_emptyBatteryPolls[key])+" polls, skipping")
+    if _emptyBatteryPolls[key]==3:
+        logger.error("Battery "+str(key)+" has returned no valid data for 3 polls, skipping it until it does")
+    elif _emptyBatteryPolls[key]>3:
+        logger.debug("Battery "+str(key)+" has returned no valid data for "+str(_emptyBatteryPolls[key])+" polls, skipping")
     else:
         logger.debug("Battery "+str(key)+" data not confirmed yet (first reads after connecting), skipping this poll")
 

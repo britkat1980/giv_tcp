@@ -26,15 +26,23 @@ each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, it
 - Battery pack current, IR 95 [13]. The library reports it on every model, but it only holds a real value
   from BMS firmware 3022/4009 on Gen 3 and AC inverters above ARM firmware 214, and reads 0 elsewhere. This
   clears it to None everywhere else.
+- HV battery modules in the second and later stacks [14]. The library looks for them at the next device
+  addresses after the first stack's (0x55+ after a 5-module stack), which don't answer
+  (britkat1980/giv_tcp#611). As in the old library, every stack's module k is at 0x50 + k and the stack is
+  picked by register offset, 120 per stack, so this also reads those and decodes the modules from them.
 
 Remove each one once the library supports it.
 """
 import logging
 
+from givenergy_modbus.client import client as client_module
 from givenergy_modbus.client.client import Client
+from givenergy_modbus.exceptions import RefreshPartiallySucceeded
 from givenergy_modbus.model import manifest
+from givenergy_modbus.model.hv_bcu import Bmu, decode_cells_temps_serial
 from givenergy_modbus.model.inverter import Model
 from givenergy_modbus.model.plant import Plant
+from givenergy_modbus.model.register_cache import RegisterCache
 from givenergy_modbus.pdu import ReadHoldingRegistersRequest, WriteHoldingRegisterRequest
 from givenergy_modbus.pdu import write_registers
 
@@ -205,3 +213,91 @@ def _batteries(self):
             else b.model_copy(update={"i_battery": None}) for b in batteries]
 
 Plant.batteries = property(_batteries)
+
+# --- HV battery modules in the second and later stacks -----------------------------------------------------
+
+# Every stack's module k answers at 0x50 + k, with stack n's registers (n from 0) at IR 60-119 + 120*n
+# (GivEnergy register map: register = base + 120 * (BCU address - 0x70)). The library gives stack 2 onwards
+# the next device addresses with no offset, so their modules never read (#611)
+HV_BMU_BASE_ADDRESS = 0x50
+HV_STACK_REGISTER_STRIDE = 120
+# A stack module read that fails this many polls in a row isn't asked for again until GivTCP restarts
+HV_STACK_MODULE_MAX_FAILURES = 3
+
+def _offset_layout(caps, offset, first_addr, k):
+    # Stack 1 is the same in both layouts, and where the library's address for a module answered at detect
+    # (hv_bmu_addresses holds those), keep the library's layout for it
+    return offset != 0 and first_addr + k not in caps.hv_bmu_addresses
+
+def hv_stack_module_banks(caps):
+    """(device address, base register, count) for each stack module read the library doesn't do"""
+    if caps is None or not caps.is_hv or caps.device_type is Model.ALL_IN_ONE:
+        return []
+    banks = []
+    first_addr = HV_BMU_BASE_ADDRESS
+    for offset, modules in caps.bcu_stacks:
+        for k in range(modules):
+            if _offset_layout(caps, offset, first_addr, k):
+                banks.append((HV_BMU_BASE_ADDRESS + k, 60 + HV_STACK_REGISTER_STRIDE * offset, 60))
+        first_addr += modules
+    return banks
+
+_library_refresh_banks = client_module._refresh_banks
+
+def _refresh_banks(caps):
+    banks = _library_refresh_banks(caps)
+    return banks + [b for b in hv_stack_module_banks(caps) if b not in banks]
+
+# _refresh_ranges() looks this up on the client module on every refresh
+client_module._refresh_banks = _refresh_banks
+
+_library_hv_stacks = Plant.hv_stacks
+
+def _hv_stacks(self):
+    stacks = _library_hv_stacks.fget(self)
+    caps = self.capabilities
+    if not stacks or not caps.is_hv or caps.device_type is Model.ALL_IN_ONE:
+        return stacks
+    first_addr = HV_BMU_BASE_ADDRESS
+    for stack, (offset, modules) in zip(stacks, caps.bcu_stacks):
+        for k in range(min(modules, len(stack.bmus))):
+            if _offset_layout(caps, offset, first_addr, k):
+                cache = self.register_caches.get(HV_BMU_BASE_ADDRESS + k, RegisterCache())
+                data = decode_cells_temps_serial(cache, base=HV_STACK_REGISTER_STRIDE * offset)
+                data["bmu_index"] = k
+                stack.bmus[k] = Bmu.model_validate(data)
+        first_addr += modules
+    return stacks
+
+Plant.hv_stacks = property(_hv_stacks)
+
+def track_stack_module_reads(client, failures):
+    """Stop asking for a stack module read that keeps failing, so it doesn't cost a timeout every poll"""
+    banks = hv_stack_module_banks(client.plant.capabilities)
+    if not banks:
+        return
+    failed = {(f.device_address, f.base_register) for f in failures}
+    counts = client.__dict__.setdefault("_givtcp_stack_module_failures", {})
+    for addr, base, count in banks:
+        if (addr, base) not in failed:
+            counts.pop((addr, base), None)
+            continue
+        counts[(addr, base)] = counts.get((addr, base), 0) + 1
+        if counts[(addr, base)] == HV_STACK_MODULE_MAX_FAILURES:
+            client.plant.mark_absent(addr, "IR", base, count)
+            logger.warning("HV battery module registers IR " + str(base) + "-" + str(base + count - 1) + " at 0x"
+                           + format(addr, "02x") + " failed " + str(HV_STACK_MODULE_MAX_FAILURES)
+                           + " polls in a row, so that module's cell data won't be shown")
+
+_library_refresh = Client.refresh
+
+async def _refresh(self, *args, **kwargs):
+    try:
+        result = await _library_refresh(self, *args, **kwargs)
+    except RefreshPartiallySucceeded as e:
+        track_stack_module_reads(self, e.failures)
+        raise
+    track_stack_module_reads(self, [])
+    return result
+
+Client.refresh = _refresh

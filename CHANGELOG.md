@@ -4,6 +4,10 @@ All notable changes to GivTCP are documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- **HV second battery stack: BMS Temperature stuck and no module data** (#611). The stack's BMS Temperature is the average of its modules' temperature sensors, but no module in the second or later stacks was read. givenergy-modbus looks for them at the next device addresses after the first stack's, which don't answer. As in 3.5, GivTCP now reads every stack's modules at the same addresses as the first stack's, at that stack's register offset, so the second stack's BMS Temperature, cell voltages and cell temperatures are back. If one of these reads fails 3 polls in a row, GivTCP stops asking for it until it restarts, so it doesn't slow every poll.
+- **"Battery ... has returned no valid data" logged every poll.** It's now logged once when a battery or module has returned no data for 3 polls, then at debug level.
+
 ## [3.6.0-beta5] - 2026-10-03
 
 Changes since 3.6.0-beta4.
