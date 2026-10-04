@@ -167,6 +167,8 @@ DC_HYBRID_MODELS=(Model.HYBRID_GEN1,Model.HYBRID_GEN2,Model.HYBRID_GEN3,Model.HY
 HV_GEN3_BAT_CURRENT={"8102":25,"8103":30}
 # Rated capacity of a GIV-BAT-3.4-HV stackable module (GivEnergy datasheet: 3 modules 10.2kWh ... 6 modules 20.4kWh)
 HV_MODULE_KWH=3.4
+# Volts a module for HV battery power: the inverter's battery current limit x this x modules a stack (#604)
+HV_MODULE_VOLTS=80
 # Bump when the Load calculation changes, so the hold that stops Load going down lets it drop once to the new value
 LOAD_FORMULA_VERSION="2"
 
@@ -611,6 +613,8 @@ def resolvedModel(plant: Plant, device=None):
 def getInvModel(plant: Plant):
 ##### Feels like this needs reviewing and maybe moving to the device models
     inverterModel = InvType
+    # The capacity the battery rate (HR111/112, a C-rate) is a percentage of, where it isn't batterycapacity
+    inverterModel.ratecapacity=None
     if plant.capabilities.is_ems:
         GEInv=plant.ems
     elif plant.capabilities.is_gateway:
@@ -641,7 +645,7 @@ def getInvModel(plant: Plant):
         # Battery power is capped by the inverter's battery current at the stack voltage (~80V a module), so a
         # short stack can't reach the headline rate (#604). Stacks run in parallel, so voltage follows modules per stack
         modules=max(n for _,n in plant.capabilities.bcu_stacks)
-        stackrate=HV_GEN3_BAT_CURRENT.get(str(GEInv.device_type_code),25) * 80 * modules
+        stackrate=HV_GEN3_BAT_CURRENT.get(str(GEInv.device_type_code),25) * HV_MODULE_VOLTS * modules
         if modules:
             inverterModel.batmaxrate=min(stackrate, inverterModel.batmaxrate or stackrate)
         # The library's capacity is HR55 Ah x the All-in-One's 307V, as it groups HV Gen 3 with the All-in-One, so
@@ -649,6 +653,14 @@ def getInvModel(plant: Plant):
         total=sum(n for _,n in plant.capabilities.bcu_stacks)
         if total:
             inverterModel.batterycapacity=round(HV_MODULE_KWH*total,1)
+        # The battery rate's C is each module's Ah rating, not its usable kWh: a rate of 50% (0.5C) charges and
+        # discharges a 3-module stack at the inverter's ~6kW maximum, not 0.5 x 10.2kWh = 5.1kW (#604)
+        ratecap=0
+        for hvstack,(_,n) in zip(plant.hv_stacks,plant.capabilities.bcu_stacks):
+            ah=hvstack.bcu.battery_nominal_capacity_ah if hvstack.bcu.is_valid() else None
+            ratecap+=(ah or 0)*HV_MODULE_VOLTS*(n or 0)/1000
+        if ratecap:
+            inverterModel.ratecapacity=round(ratecap,2)
     return inverterModel
 
 def getRaw(plant: Plant):
@@ -1065,9 +1077,10 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
     # NON 3PH controls go here
     if not plant.capabilities.device_type in (Model.AC_3PH, Model.HYBRID_3PH, Model.GATEWAY):        #Not on 3Ph OR GATEWAY
         # HR111/112 can be unread (None) if the HR(60-119) block failed - fall back to the previous values
+        ratecapacity=getattr(inverterModel,'ratecapacity',None) or inverterModel.batterycapacity
         for key, limit in (('Battery_Discharge_Rate', GEInv.battery_discharge_limit), ('Battery_Charge_Rate', GEInv.battery_charge_limit)):
-            if limit is not None and inverterModel.batterycapacity:
-                controlmode[key]=int(min((limit/100)*inverterModel.batterycapacity*1000, inverterModel.batmaxrate))
+            if limit is not None and ratecapacity:
+                controlmode[key]=int(min((limit/100)*ratecapacity*1000, inverterModel.batmaxrate))
             elif multi_output_old and key in multi_output_old.get('Control',{}):
                 controlmode[key]=multi_output_old['Control'][key]
     else:
@@ -1708,6 +1721,9 @@ def processInverterInfo(plant: Plant):
         logger.debug("Getting inverter Details")
         inverter['Battery_Type'] = enumText(GEInv.battery_type)
         inverter['Battery_Capacity_kWh'] = inverterModel.batterycapacity        #Ah x nom voltage @ 90%
+        if getattr(inverterModel,'ratecapacity',None):
+            # So write.py converts a rate in W to the same percentage (HV Gen 3, #604)
+            inverter['Battery_Rate_Capacity_kWh'] = inverterModel.ratecapacity
         inverter['Invertor_Serial_Number'] = plant.inverter_serial_number
         inverter['Modbus_Version'] = GEInv.modbus_version
         inverter['Invertor_Firmware'] = GEInv.firmware_version

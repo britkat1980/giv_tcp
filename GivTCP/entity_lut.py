@@ -78,6 +78,7 @@ class Entity_Type():
         "Battery_Type":GEType("sensor","string","","","",False,False,False),
         "Battery_Capacity_kWh":GEType("sensor","","",0,50,True,True,False),
         "Battery_Capacity_kWh_calc":GEType("sensor","","",0,50,True,True,False),
+        "Battery_Rate_Capacity_kWh":GEType("sensor","","",0,50,True,True,False),
         "Invertor_Serial_Number":GEType("sensor","string","","","",False,False,False),
         "AIO_1_Serial_Number":GEType("sensor","string","","","",False,False,False),
         "AIO_2_Serial_Number":GEType("sensor","string","","","",False,False,False),

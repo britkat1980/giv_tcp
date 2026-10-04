@@ -220,6 +220,7 @@ Three-phase inverters, EMS and Gateway also publish:
 | `Battery_Type` | sensor | | Battery type reported by the inverter |
 | `Battery_Capacity_kWh` | sensor | kWh | Battery capacity |
 | `Battery_Capacity_kWh_calc` | sensor | kWh | Battery capacity calculated by GivTCP from the battery modules |
+| `Battery_Rate_Capacity_kWh` | sensor | kWh | HV Gen 3 only: the capacity the battery charge/discharge rate is a percentage of (module Ah x 80V x modules), used to convert the rate to watts |
 | `Battery_Calibration_Status` | sensor | | Stage of any running battery calibration |
 | `Invertor_Temperature` | sensor | °C | Inverter heatsink temperature |
 | `status` | sensor | | Inverter status |

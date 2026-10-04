@@ -192,8 +192,9 @@ def revert3phFlags(device,revert,keys):
     return reqs
 
 def batteryCapacityWh(multi_output):
-    # The rate controls are worked out from the battery capacity, which EMS and some models don't report
-    capacity=finditem(multi_output,'Battery_Capacity_kWh')
+    # The rate controls (HR111/112, a percentage of capacity) are worked out from the battery capacity, which EMS
+    # and some models don't report. HV Gen 3 publishes the capacity they're a percentage of separately (#604)
+    capacity=finditem(multi_output,'Battery_Rate_Capacity_kWh') or finditem(multi_output,'Battery_Capacity_kWh')
     if not capacity:
         raise NotImplementedError("the battery capacity isn't known for this inverter, so the rate can't be set")
     return float(capacity)*1000
@@ -1157,7 +1158,7 @@ async def FEResume(device,revert, readloop=False):
                 regCacheStack=GivLUT.get_regcache()
                 multi_output_old = regCacheStack[-1]
                 invmaxrate=int(finditem(multi_output_old,"Invertor_Max_Bat_Rate"))
-                batcap=float(finditem(multi_output_old,'Battery_Capacity_kWh'))*1000
+                batcap=batteryCapacityWh(multi_output_old)
                 target=round(min((int(revert['dischargeRate'])/(batcap/2))*50,50))
             reqs.extend(device.set_battery_discharge_limit(target))
         elif "dischargeRateAC" in revert:
@@ -1264,7 +1265,7 @@ async def FCResume(device,revert,readloop=False):
                 regCacheStack=GivLUT.get_regcache()
                 multi_output_old = regCacheStack[-1]
                 invmaxrate=int(finditem(multi_output_old,"Invertor_Max_Bat_Rate"))
-                batcap=float(finditem(multi_output_old,'Battery_Capacity_kWh'))*1000
+                batcap=batteryCapacityWh(multi_output_old)
                 if is3ph:
                     target=max(1,min(100,round(int(revert['chargeRate'])/invmaxrate*100)))
                 else:

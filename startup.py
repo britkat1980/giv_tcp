@@ -2,7 +2,6 @@ from GivTCP.giverrors import errDetail
 from datetime import datetime, timedelta, timezone, UTC
 from os.path import exists
 import os, pickle, subprocess, logging,shutil, shlex, schedule, signal
-import traceback
 from time import sleep
 import json
 import zoneinfo
@@ -11,6 +10,7 @@ import requests
 import asyncio
 from GivTCP.netscan import scan, as_list, INVERTER_PORT, EVC_PORT
 from givenergy_modbus.client.client import Client
+from givenergy_modbus.exceptions import CommunicationError
 from givenergy_modbus.model.inverter import resolve_model
 from givenergy_modbus.model.register import HR
 from pymodbus.client import ModbusTcpClient
@@ -117,7 +117,11 @@ def loadCaps(SN):
         logger.warning("Unable to read cached capabilities for "+str(SN)+", will run a full detect: "+str(e))
         return None
 
+class InverterNoResponse(Exception):
+    pass
+
 async def getInvDeets(HOST):
+    client=None
     try:
         Stats={}
         client=Client(HOST,8899,3)
@@ -126,7 +130,7 @@ async def getInvDeets(HOST):
         # Cheap identity read (HR 0-59) to get the serial number before deciding whether a full detect is needed.
         # This serial is also used for settings.py, so read.py finds the same caps file
         if not await client.probe_alive(timeout=3, retries=2):
-            raise Exception("No response from inverter at "+str(HOST))
+            raise InverterNoResponse("connected, but it didn't answer")
         # The identity block (HR 0-59) holds the serial, model and firmware for every device type, so
         # nothing more needs reading here - the read loop does the full reads straight after startup
         ident=client.plant.inverter
@@ -151,10 +155,6 @@ async def getInvDeets(HOST):
             logger.info("Saving capabilities to cache: "+str(capsFile(SN)))
             with open(capsFile(SN), 'wb') as outp:
                 pickle.dump(caps, outp, pickle.HIGHEST_PROTOCOL)
-        try:
-            await client.close()
-        except:
-            pass
 
         model=caps.device_type     # detect's resolved type; the raw device code maps HV Gen3 (81xx) to All-in-One (#565)
         fw=ident.arm_firmware_version
@@ -176,9 +176,20 @@ async def getInvDeets(HOST):
                     +", aio_modules="+addrs(caps.aio_battery_module_addresses)+", hv_bmus="+addrs(caps.hv_bmu_addresses))
 
         return Stats
-    except Exception:
-        logger.error("Gathering inverter details for " + str(HOST) + " failed. Error: "+ str((traceback.format_exc())))
+    except (InverterNoResponse, CommunicationError, OSError, asyncio.TimeoutError) as e:
+        # Expected when the inverter or its dongle is busy, restarting or offline, so no traceback
+        cause=e.__cause__ or e
+        logger.warning("No response from inverter at "+str(HOST)+" ("+(type(cause).__name__+": " if not isinstance(cause,InverterNoResponse) else "")+str(cause)+")")
         return None
+    except Exception:
+        logger.error("Gathering inverter details for " + str(HOST) + " failed: "+errDetail())
+        return None
+    finally:
+        if client is not None:
+            try:
+                await client.close()
+            except Exception:
+                pass
 
 def createsettingsjson(inv):
     PATH= "/app/GivTCP_"+str(inv)
@@ -192,7 +203,10 @@ def createsettingsjson(inv):
     model=caps.device_type.name.capitalize() if caps else setts["Model_"+str(inv)]
     if model=="":
         inverter_type= asyncio.run(getInvDeets(str(setts["invertorIP_"+str(inv)])))
-        model= inverter_type['Model'].name.capitalize()
+        if inverter_type:
+            model= inverter_type['Model'].name.capitalize()
+        else:
+            logger.error("Inverter "+str(inv)+" model unknown, as the inverter at "+str(setts["invertorIP_"+str(inv)])+" didn't respond. It will be set once the inverter responds at the next start")
     if model!=setts["Model_"+str(inv)]:
         if setts["Model_"+str(inv)]:
             logger.info("Inverter "+str(inv)+" ("+str(setts["serial_number_"+str(inv)])+") model corrected: "+str(setts["Model_"+str(inv)])+" -> "+model)
@@ -366,6 +380,7 @@ def findinv(networks):
                                 break   #If we found the deets then don't try again
                             count=count+1
                         else:
+                            logger.error("Inverter at "+str(invList[inv])+" was found by the network scan but didn't respond after "+str(count)+" attempts, so it's been skipped")
                             break
             if len(invList)==0:
                 logger.info("No inverters found...")
