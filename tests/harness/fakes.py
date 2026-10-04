@@ -95,6 +95,9 @@ def normalise(text):
     text = re.sub(r" - \d+\)$", " - N)", text)     # processData's "(Exception: message - <line number>)"
     return re.sub(r"job\d+", "jobN", text)
 
+# The real functions install() replaces, for tests of the functions themselves
+real = {}
+
 def install():
     """Patch the loaded GivTCP modules to use the fakes. Call after harness.env.bootstrap()"""
     import GivLUT as givlut_module
@@ -112,6 +115,7 @@ def install():
         recorder.discovery.extend(array)
         return []           # nothing left unpublished
     HA_Discovery.HAMQTT.sendDiscoMsg = send
+    real["removedisco"] = HA_Discovery.CheckDisco.removedisco      # tested on its own in test_discovery_cleanup.py
     HA_Discovery.CheckDisco.removedisco = lambda SN, messages: None
     HA_Discovery.CheckDisco.removeunsupported = lambda SN, items: recorder.removed.extend(items)
     HA_Discovery.CheckDisco.cleartopics = lambda topics: recorder.removed.extend(topics)

@@ -419,6 +419,7 @@ class CheckDisco():
 
             client.loop_start()
             time.sleep(5)
+            client.loop_stop()
             client.disconnect()
             temp={}
             logger.debug("Sent "+ str(len(array))+" discovery messages")
@@ -496,15 +497,13 @@ class CheckDisco():
             logger.error("removeunsupported: Error removing unsupported entities: " + str(e))
 
     def removedisco(SN,messages):
+        # Clear the retained discovery messages for this inverter whose payload has changed (all of them on a V3
+        # upgrade), so HA picks up the new config. Collects the retained messages itself, as CheckDisco.msgs is
+        # otherwise only filled when removeunsupported() ran first (#609)
+        client=None
         try:
             logger.debug("removedisco: SN: "+str(SN))
-            logger.debug("removedisco: CheckDisco.msgs: "+str(CheckDisco.msgs))
-            # if no msgs, just return otherwise will cause misleading exception in for loop below: 'for topic in CheckDisco.msgs:'
-            if not CheckDisco.msgs:
-                logger.debug("removedisco: nothing to do")
-                return None
-            foundmessages=0
-            moremessages=0
+            CheckDisco.msgs={}
             client = paho_mqtt.Client(paho_mqtt.CallbackAPIVersion.VERSION2,"GivEnergy_GivTCP_removedisco_"+str(GiV_Settings.givtcp_instance))
             client.on_connect = CheckDisco.on_connect
             client.on_message = CheckDisco.on_message
@@ -515,47 +514,49 @@ class CheckDisco():
 
             client.loop_start()
 
-            ## Can we check here to see when num of messages stops increasing?
-            loop=1
+            # Wait for the retained messages to stop arriving: 5s in a row with no new topics, or 10s at most
+            foundmessages=-1
             count=0
-            while True:
+            for _ in range(10):
                 time.sleep(1)
                 moremessages=len(CheckDisco.msgs)
-                logger.debug("Foundmessages= "+str(foundmessages))
-                logger.debug("Moremessages= "+str(moremessages))
-                if moremessages == foundmessages:
-                    count+=1
-                if count==5 or loop==10:
+                logger.debug("removedisco: found "+str(moremessages)+" messages")
+                count=count+1 if moremessages==foundmessages else 0
+                if count==5:
                     break
-                loop+=1
                 foundmessages=moremessages
             #Loop through all msgs and remove if they are GivTCP ones
             newmsg={}
             for message in messages:
                 newmsg[message[0]]=message[1]
+            v3upgrade=exists('/config/GivTCP/.v3upgrade_'+str(GiV_Settings.givtcp_instance))
             count=0
-            for topic in CheckDisco.msgs:
-                msg=CheckDisco.msgs[topic]
+            # The client's network thread keeps adding to CheckDisco.msgs (GivTCP's own state messages arrive under
+            # GivEnergy/#), so work through a copy
+            for topic,msg in list(CheckDisco.msgs.items()):
                 if SN in topic or SN in msg: # ("GivEnergy" in msg or GiV_Settings.MQTT_Topic in msg):
-                    if exists('/config/GivTCP/.v3upgrade_'+str(GiV_Settings.givtcp_instance)):
-                        logger.debug("V3 Upgrade so dropping old Discovery Messages")
+                    if v3upgrade:
                         client.publish(topic,None,0,True)     #delete regardless of if it has changed
-                    else:
-                        if topic in newmsg:
-                            old=newmsg[topic]
-                            new=msg[2:-1]     #.split('}')[:0]
-                            if not old == new:       #if payload is different delete old one
-                                client.publish(topic,None,0,True)
-                                count+=1
-            logger.debug(str(count)+" discovery messages changed and removed")
+                        CheckDisco.msgs.pop(topic,None)
+                        count+=1
+                    elif topic in newmsg:
+                        old=newmsg[topic]
+                        new=msg[2:-1]     #.split('}')[:0]
+                        if not old == new:       #if payload is different delete old one
+                            client.publish(topic,None,0,True)
+                            # So checkdisco() doesn't take the old message as the new one having arrived
+                            CheckDisco.msgs.pop(topic,None)
+                            count+=1
+            if v3upgrade:
+                logger.debug("removedisco: V3 upgrade, so dropped "+str(count)+" old discovery messages")
+            else:
+                logger.debug("removedisco: "+str(count)+" discovery messages changed and removed")
             time.sleep(2)
-            client.loop_stop()
-            client.disconnect()
         except gaierror:
             logger.error("removedisco: Error in to MQTT Address. Check config and update.")
-            client.disconnect()
         except:
-            e=errDetail()
-            # catches any error, not just error connecting to MQTT Broker
-            logger.error("removedisco: Error connecting to MQTT Broker: " + str(e))
-            client.disconnect()
+            logger.error("removedisco: Error removing changed discovery messages: " + errDetail())
+        finally:
+            if client is not None:
+                client.loop_stop()
+                client.disconnect()
