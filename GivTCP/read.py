@@ -389,6 +389,23 @@ class ConnectionDrops:
     def fmt(seconds):
         return "an unknown time" if seconds is None else str(round(seconds,1))+"s"
 
+# After a full refresh that couldn't read some settings (holding registers), retry it on this many more polls (#608)
+FULL_REFRESH_RETRIES=3
+# Seconds to the first poll if the full refresh when connecting failed
+FULL_REFRESH_RETRY_DELAY=10
+
+def settingsRetry(failures, retries):
+    """After a full refresh, whether to make the next poll a full one too, and the new retry count. Retries while
+    some settings (holding registers) weren't read, rather than wait for the next full refresh (#608)"""
+    settingsFailed=[f for f in failures if f.request_type=="ReadHoldingRegistersRequest"]
+    if settingsFailed and retries<FULL_REFRESH_RETRIES:
+        logger.debug("Inverter settings not all read (attempt "+str(retries+1)+"), next poll is a full refresh")
+        return True, retries+1
+    if settingsFailed:
+        logger.warning("Some inverter settings could not be read after "+str(retries+1)+" attempts, trying again at the next full refresh: "+
+                       ", ".join(f"HR(0x{f.device_address:02x},{f.base_register})" for f in settingsFailed))
+    return False, 0
+
 async def watch_plant(
         handler: Optional[Callable] = None,
         refresh_period: float = 15.0,
@@ -401,11 +418,15 @@ async def watch_plant(
         try:
             client = await GivClientAsync.get_connection(cold_start=True)
             usedCache=await detectPlant(client)
+            initialFull=False
             try:
                 logger.debug ("Running full refresh")
                 await client.load_config()
+                initialFull=True
             except Exception as e:
-                logger.debug("Initial full refresh incomplete: "+str(e))
+                # Often the inverter is still recovering after a restart. Without these the inverter details can't
+                # be processed, so retry soon rather than wait for the next full refresh (#608)
+                logger.warning("Unable to read all the inverter settings after connecting, retrying shortly: "+str(e))
             try:
                 await readPlant(client, False)
             except CommunicationError:
@@ -448,9 +469,10 @@ async def watch_plant(
             except:
                 pass
             return
-        # set last full_refresh time
-        lastfulltime=datetime.datetime.now()
-        nextpoll=datetime.datetime.now()+timedelta(seconds=refresh_period)
+        # set last full_refresh time. If the first full refresh failed, the first poll (sooner than usual) is a full one
+        lastfulltime=datetime.datetime.now() if initialFull else datetime.datetime.min
+        nextpoll=datetime.datetime.now()+timedelta(seconds=refresh_period if initialFull else min(FULL_REFRESH_RETRY_DELAY,refresh_period))
+        fullRetries=0
         timeoutErrors=0
         connectErrors=0
         partialPolls=0
@@ -528,7 +550,10 @@ async def watch_plant(
                                 client.plant.capabilities=previousCaps
                                 logger.error("Re-detect failed, keeping current capabilities: "+str(e))
                         logger.debug("Data get was successful, now running handler if needed: ")
+                        retry=False
                         if fullRefresh:
+                            retry,fullRetries=settingsRetry(failures,fullRetries)
+                        if fullRefresh and not retry:
                             # Only mark full refresh done once it succeeds, so a post-write readback isn't lost
                             lastfulltime=datetime.datetime.now()
                             if exists(".fullrefresh"):
@@ -697,6 +722,11 @@ def getMeters(plant: Plant):
         meter['Export_Energy_kWh']=temp.e_export_active
         meters['Meter_ID'+str(m)]=meter
     return meters
+
+def enumText(value):
+    # An enum field's name, eg. "Normal", or None until its register has been read (eg. a holding register after
+    # the first read following a restart failed), so one missing value doesn't fail the whole poll (#608)
+    return value.name.capitalize() if value is not None else None
 
 _emptyBatteryPolls={}
 
@@ -1113,9 +1143,10 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
     pauseMode=None if pauseModeUnsupported(plant.capabilities) else pauseValue(plant,GEInv,'battery_pause_mode')
     if pauseMode is not None:
         controlmode['Battery_pause_mode'] = GivLUT.battery_pause_mode[int(pauseMode)]
-    if GEInv.battery_calibration_stage.name.capitalize() in GivLUT.battery_calibration:
-        controlmode['Battery_Calibration'] = GEInv.battery_calibration_stage.name.capitalize()
-    else:
+    calibration=enumText(GEInv.battery_calibration_stage)
+    if calibration in GivLUT.battery_calibration:
+        controlmode['Battery_Calibration'] = calibration
+    elif calibration is not None:
         controlmode['Battery_Calibration'] = "Running"
     controlmode['Active_Power_Rate']= GEInv.active_power_rate
     controlmode['Reboot_Invertor']="disable"
@@ -1296,8 +1327,7 @@ def processPVInfo(plant: Plant):
         inverter['Invertor_Serial_Number'] = plant.inverter_serial_number
         inverter['Modbus_Version'] = GEInv.modbus_version
         inverter['Invertor_Firmware'] = GEInv.firmware_version
-        metertype = GEInv.meter_type.name.capitalize()
-        inverter['Meter_Type'] = metertype
+        inverter['Meter_Type'] = enumText(GEInv.meter_type)
         inverter['Invertor_Type'] = resolvedModel(plant, GEInv).name.capitalize()
         inverter['Invertor_Max_Inv_Rate'] = inverterModel.invmaxrate
         inverter['Invertor_Temperature'] = GEInv.t_inverter_heatsink
@@ -1676,19 +1706,18 @@ def processInverterInfo(plant: Plant):
 
         ######## Get Inverter Details ########
         logger.debug("Getting inverter Details")
-        inverter['Battery_Type'] = GEInv.battery_type.name.capitalize()
+        inverter['Battery_Type'] = enumText(GEInv.battery_type)
         inverter['Battery_Capacity_kWh'] = inverterModel.batterycapacity        #Ah x nom voltage @ 90%
         inverter['Invertor_Serial_Number'] = plant.inverter_serial_number
         inverter['Modbus_Version'] = GEInv.modbus_version
         inverter['Invertor_Firmware'] = GEInv.firmware_version
-        metertype = GEInv.meter_type.name.capitalize()
-        inverter['Meter_Type'] = metertype
+        inverter['Meter_Type'] = enumText(GEInv.meter_type)
         inverter['Invertor_Type'] = resolvedModel(plant, GEInv).name.capitalize()
         inverter['Invertor_Max_Inv_Rate'] = inverterModel.invmaxrate
         inverter['Invertor_Max_Bat_Rate'] = inverterModel.batmaxrate
         inverter['Invertor_Temperature'] = GEInv.t_inverter_heatsink
         inverter['Export_Limit']=GEInv.grid_port_max_power_output
-        inverter['Battery_Calibration_Status'] = GEInv.battery_calibration_stage.name.capitalize()
+        inverter['Battery_Calibration_Status'] = enumText(GEInv.battery_calibration_stage)
 
         ######## Get Meter Details ########
 
@@ -2224,12 +2253,12 @@ def processThreePhaseInfo(plant: Plant):
                     count += 1
         power_output['SOC_kWh'] = sockwh / count if count > 0 else 0                                      # Average SOC of all stacks...
 
-        inverter['status']=GEInv.status.name.capitalize()
+        inverter['status']=enumText(GEInv.status)
         # givenergy-modbus v2 decodes system_mode and battery_priority as plain ints (the old lib used enums)
         inverter['System_Mode']=GivLUT.tph_system_mode.get(GEInv.system_mode,str(GEInv.system_mode))
         inverter['Start_Delay_Time']=GEInv.start_delay_time
         inverter['Power_Factor']=GEInv.power_factor
-        inverter['Battery_Type'] = GEInv.battery_type.name.capitalize()
+        inverter['Battery_Type'] = enumText(GEInv.battery_type)
         inverter['Invertor_Type'] = "Gen 3 - " + resolvedModel(plant, GEInv).name.capitalize()
         inverter['Invertor_Max_Bat_Rate'] = inverterModel.batmaxrate
         inverter['Invertor_Max_Inv_Rate'] = GEInv.inverter_max_power
@@ -2247,11 +2276,11 @@ def processThreePhaseInfo(plant: Plant):
         inverter['Inverter_Temperature']=GEInv.t_inverter
         inverter['Boost_Temperature']=GEInv.t_boost
         inverter['Buck_Boost_Temperature']=GEInv.t_buck_boost
-        inverter['DC_Status']=GEInv.dc_status.name.capitalize()
+        inverter['DC_Status']=enumText(GEInv.dc_status)
         inverter['Invertor_Serial_Number']=plant.inverter_serial_number
         inverter['Invertor_Software']=GEInv.tph_software_version
         inverter['Invertor_Firmware']=GEInv.tph_firmware_version
-        inverter['Battery_Calibration_Status'] = GEInv.battery_calibration_stage.name.capitalize()
+        inverter['Battery_Calibration_Status'] = enumText(GEInv.battery_calibration_stage)
         firmware=GEInv.firmware_version
 
         controlmode={}
@@ -2320,8 +2349,12 @@ def processData(plant: Plant):
     cleanRegCache = {}
     try:
         logger.debug("Beginning parsing of Inverter data")
-        #Don't use models in case its not ready
-        modeltype=hex(plant.register_caches[plant.capabilities.inverter_address].get(HR(0)))[2:4]
+        # HR(0), the device type, is missing until the holding registers have been read, eg. if the first read after
+        # a restart failed (#608). Processing needs that block (model, firmware, rates), so say so plainly
+        devicetype=plant.register_caches.get(plant.capabilities.inverter_address,{}).get(HR(0))
+        if devicetype is None:
+            raise Exception("Inverter settings not read yet")
+        modeltype=hex(devicetype)[2:4]
         if modeltype=="23":
             multi_output=processPVInfo(plant)
         elif plant.capabilities.is_ems:
