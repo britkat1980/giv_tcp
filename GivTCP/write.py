@@ -18,6 +18,7 @@ from GivLUT import GivLUT, GivQueue
 from givenergy_modbus.model import TimeSlot
 from givenergy_modbus.model.ems import Ems
 from givenergy_modbus.client import commands as gecommands     # v2 exposes some writes only as module functions
+from givenergy_modbus.pdu import WriteHoldingRegisterRequest
 import requests
 import importlib
 import asyncio
@@ -412,21 +413,30 @@ async def enableRTC(device,payload,readloop=False):
 async def enableChargeTarget(device,payload,readloop=False):
     temp={}
     try:
+        if isEMS(device):
+            raise NotImplementedError("Charge Target isn't available on the EMS")
         if payload['state']=="enable":
             logger.debug("Enabling Charge Target")
             #temp= await ect(readloop)
-            reqs=device.set_charge_target_enabled(device.charge_target_soc or 100)
+            # Write only the enable flag (HR 20), as before v2. set_charge_target_enabled() also writes the target,
+            # and for a 100% target it clears the flag instead - including when the device still holds the target
+            # from before a new one was set in the same batch. givenergy-modbus has no enable-only writer yet
+            # (docs/upstream-givenergy-modbus-requests.md, item 15)
+            reqs=[WriteHoldingRegisterRequest(gecommands.RegisterMap.ENABLE_CHARGE_TARGET, 1)]
             result= await sendAsyncCommand(reqs,readloop)
             if 'error' in result:
                 raise Exception(result['error'])
+            updateControlCache("Enable_Charge_Target","enable")
             temp['result']="Enabling Charge Target was a success"
         elif payload['state']=="disable":
             logger.debug("Disabling Charge Target")
             #temp= await dct(readloop)
-            reqs=device.disable_charge_target()
+            reqs=device.disable_charge_target()     # also sets the target to 100%
             result= await sendAsyncCommand(reqs,readloop)
             if 'error' in result:
                 raise Exception(result['error'])
+            updateControlCache("Enable_Charge_Target","disable")
+            updateControlCache("Target_SOC",100)
             temp['result']="Disabling Charge Target was a success"
         logger.info(temp['result'])
     except:
@@ -442,7 +452,11 @@ async def setChargeTarget(device,payload,readloop=False):
         target=int(payload['chargeToPercent'])
         logger.debug("Setting Charge Target to: "+str(target))
         #temp=await sct(target,readloop)
-        reqs=device.set_charge_target_enabled(int(target))
+        if isEMS(device):
+            raise NotImplementedError("Charge Target isn't available on the EMS")
+        # Only the target, as before v2. set_charge_target_enabled() also turns on the charge schedule (HR 96)
+        # and sets the enable flag (HR 20), clearing it for a 100% target; Enable Charge Target controls that
+        reqs=chargeTargetSOC(device,target)
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
             raise Exception(result['error'])

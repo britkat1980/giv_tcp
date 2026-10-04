@@ -118,6 +118,22 @@ class PlantSession:
 
     # --- writes ------------------------------------------------------------------------------------------------
 
+    def run_batch(self, commands):
+        """Queue several write.py commands and run them as one read-loop batch, as when they arrive together
+        (eg. Predbat sending one control after another). read.processWriteRequests builds the device once per
+        batch, so each command sees the plant as it was before the batch, not after the commands ahead of it.
+        Returns the registers written, the MQTT messages published and warnings/errors logged"""
+        import read
+        from GivLUT import GivLUT
+        self.activate(self.state)       # also clears the recorder and the recorded writes
+        GivLUT.save_writerequests([[command, payload, False] for command, payload in commands])
+        self.loop.run(read.processWriteRequests(self.client))
+        pending = self._drain()
+        outcome = self._outcome(mqtt=[list(m) for m in recorder.mqtt])
+        if pending:
+            outcome["still_sending_after_return"] = pending
+        return outcome
+
     def run_case(self, entry, steps, api=None):
         """Run a catalogue case (see harness.catalogue) from this plant's post-read state. entry is "direct",
         "rest" or "mqtt". Returns the outcome of each step: GivTCP's result, the registers written to the plant,
