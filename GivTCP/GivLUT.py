@@ -24,6 +24,24 @@ logger = logging.getLogger("GivLUT")
 _client = Client(GiV_Settings.invertorIP,8899)
 _connection_lock = asyncio.Lock()
 
+def _collect(task):
+    # Handle a finished network task's error, so asyncio doesn't report "Task exception was never retrieved"
+    if not task.cancelled() and task.exception() is not None:
+        logger.debug("Old modbus client's %s task ended with %s: %s", task.get_name(), type(task.exception()).__name__, task.exception())
+
+async def closeClient(client, timeout=5.0):
+    """Close a Client, and stop its network tasks even if close() fails part way. givenergy-modbus's close() stops
+    at writer.wait_closed() if that raises anything but ConnectionResetError, eg. TimeoutError on a dead socket,
+    leaving the reader task to fail on its own later with nothing to handle its error (#613). Raises what close() did"""
+    try:
+        await asyncio.wait_for(client.close(), timeout=timeout)
+    finally:
+        for name in ('network_consumer_task', 'network_producer_task'):
+            task = getattr(client, name, None)
+            if task is not None:
+                task.cancel()
+                task.add_done_callback(_collect)
+
 class GivClientAsync:
     async def get_connection(cold_start=False, reconnect=False):
         """Return a shared Client instance, creating or reconnecting as required.
@@ -46,7 +64,7 @@ class GivClientAsync:
                 if cold_start and getattr(_client, 'connected', False):
                     logger.info("Cold start requested: closing open modbus connection")
                     try:
-                        await asyncio.wait_for(_client.close(), timeout=5.0)
+                        await closeClient(_client)
                     except Exception:
                         logger.debug("Timed out or failed to close existing client during cold start")
 
@@ -103,7 +121,7 @@ class GivClientAsync:
             old = _client
             logger.warning("Replacing the modbus client after repeated failures to reconnect to %s", str(GiV_Settings.invertorIP))
             try:
-                await asyncio.wait_for(old.close(), timeout=5.0)
+                await closeClient(old)
             except Exception as exc:
                 logger.warning("Closing the old modbus client failed: %s: %s", type(exc).__name__, exc)
             _client = Client(old.host, old.port, plant=old.plant)

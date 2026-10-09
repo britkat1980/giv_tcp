@@ -70,3 +70,55 @@ def test_reconnect_after_failures_logs_how_long_it_took(caplog):
     lines = [r.getMessage() for r in caplog.records if "Reconnected" in r.getMessage()]
     assert len(lines) == 1 and lines[0].startswith("Reconnected to the inverter after 2 failed attempts (")
     assert drops.failures == 0 and drops.lostat is None
+
+def test_reconnect_within_a_read_cycle_logs_at_debug(caplog):
+    import datetime
+    import logging
+    import read
+    drops = read.ConnectionDrops(refresh_period=60)
+    with caplog.at_level(logging.DEBUG, logger=read.logger.name):
+        drops.failed()
+        drops.lostat -= datetime.timedelta(seconds=8)        # back within one read cycle: no data missed
+        drops.reconnected()
+        drops.failed()
+        drops.lostat -= datetime.timedelta(seconds=90)       # longer than a read cycle
+        drops.reconnected()
+    lines = [(r.levelno, r.getMessage()) for r in caplog.records if "Reconnected" in r.getMessage()]
+    assert [level for level, _ in lines] == [logging.DEBUG, logging.INFO]
+    assert "(90." in lines[1][1]
+
+def test_closing_a_dead_client_leaves_no_unhandled_task_error():
+    """#613: the library's close() stops at writer.wait_closed() on TimeoutError, leaving the reader task to fail
+    later with nobody handling it, so asyncio logged "Task exception was never retrieved" """
+    import asyncio
+    import gc
+    from GivLUT import closeClient
+
+    unhandled = []
+
+    async def run():
+        asyncio.get_running_loop().set_exception_handler(lambda loop, context: unhandled.append(context))
+        reader_failed = asyncio.Event()
+
+        async def reader():
+            await reader_failed.wait()
+            raise TimeoutError(110, "Operation timed out")
+
+        class DeadClient:
+            network_consumer_task = asyncio.create_task(reader(), name="network_consumer")
+            network_producer_task = None
+            async def close(self):
+                raise TimeoutError(110, "Operation timed out")     # before close() cancels the reader task
+
+        client = DeadClient()
+        with pytest.raises(TimeoutError):
+            await closeClient(client)
+        reader_failed.set()
+        await asyncio.sleep(0.05)
+        assert client.network_consumer_task.done()
+        DeadClient.network_consumer_task = None
+        del client
+
+    asyncio.run(run())
+    gc.collect()
+    assert unhandled == []

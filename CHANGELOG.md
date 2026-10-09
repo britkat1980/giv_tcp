@@ -4,6 +4,12 @@ All notable changes to GivTCP are documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- **`Task exception was never retrieved ... network_consumer ... TimeoutError: [Errno 110]`** logged some time after a reconnect (#613). When GivTCP replaced a modbus client whose connection had died, the library's `close()` stopped partway on the dead socket and left the old client's reader task running. That task later failed with nothing to handle its error. GivTCP now always stops the old client's tasks and handles their errors. It was only log noise: GivTCP had already reconnected.
+
+### Changed
+- **"Reconnected to the inverter after N failed attempts" is only logged when it took longer than a read cycle.** A reconnect within one read cycle costs no data, so it's now logged at debug level.
+
 ## [3.6.0-beta6] - 2026-10-04
 
 Changes since 3.6.0-beta5.

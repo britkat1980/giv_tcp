@@ -206,3 +206,15 @@ There's no command that sets just `ENABLE_CHARGE_TARGET` (HR 20) to 1. `disable_
 - An `enable_charge_target()` command (and the three-phase equivalent, if it differs) that writes only HR 20 = 1, the counterpart of `disable_charge_target()`.
 
 **GivTCP workaround:** `enableChargeTarget()` in `GivTCP/write.py` writes HR 20 = 1 directly. It isn't in `GivTCP/modbus_patches.py`, which is for writes the library doesn't allow yet: HR 20 is already write-safe on every inverter model. Remove it once the library has the command.
+
+## 16. `close()` should finish cleaning up when `wait_closed()` fails
+
+**Problem**
+
+`Client.close()` only catches `ConnectionResetError` around `await self.writer.wait_closed()`. On a socket that has already died (for example after `network_producer: writer drain stalled`), `wait_closed()` can raise `TimeoutError: [Errno 110] Operation timed out` instead. `close()` then stops there: it never cancels `network_consumer_task` or cleans up the reader. The consumer task later fails with the same error, and as nothing awaits it, asyncio logs `Task exception was never retrieved` when the task is garbage collected, often long after the reconnect (britkat1980/giv_tcp#613).
+
+**Request**
+
+- Catch `OSError` (which includes `TimeoutError` and `ConnectionResetError`) around `wait_closed()`, or move the task and reader cleanup into a `finally`, so `close()` always cancels both network tasks.
+
+**GivTCP workaround:** `closeClient()` in `GivTCP/GivLUT.py` cancels both tasks after `close()`, whether or not it succeeded, and collects their exceptions. Remove it once `close()` does this.

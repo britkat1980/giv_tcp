@@ -341,11 +341,13 @@ class ConnectionDrops:
     """Logs each time the inverter closes the connection, with how long since the last traffic: the first time,
     then a summary every 5 minutes. Drops ~10s after traffic, every poll, are a dongle closing idle connections
     (#604); occasional drops at random times, followed by failed reconnects, are the dongle going offline briefly
-    (a restart or lost Wi-Fi). Also logs how long it took to reconnect when the first attempts fail"""
+    (a restart or lost Wi-Fi). Also logs how long it took to reconnect when the first attempts fail, at info level
+    only if it took longer than a read cycle (refresh_period), as a quicker reconnect costs no data"""
     SUMMARY_SECONDS=300
     BUSY_SECONDS=2
 
-    def __init__(self):
+    def __init__(self, refresh_period=None):
+        self.refresh_period=refresh_period
         self.noted=False
         self.idle=[]
         self.lastsummary=None
@@ -381,8 +383,11 @@ class ConnectionDrops:
 
     def reconnected(self):
         if self.failures:
-            logger.info("Reconnected to the inverter after "+str(self.failures)+" failed attempt"+("s" if self.failures>1 else "")
-                +" ("+self.fmt((datetime.datetime.now()-self.lostat).total_seconds())+" after the connection was lost)")
+            took=(datetime.datetime.now()-self.lostat).total_seconds()
+            slow=self.refresh_period is None or took>self.refresh_period
+            logger.log(logging.INFO if slow else logging.DEBUG,
+                "Reconnected to the inverter after "+str(self.failures)+" failed attempt"+("s" if self.failures>1 else "")
+                +" ("+self.fmt(took)+" after the connection was lost)")
         self.noted=False
         self.lostat=None
         self.failures=0
@@ -454,7 +459,7 @@ async def watch_plant(
 
         except CommunicationError as e:
             cause=e.__cause__ or e
-            logger.error ("Unable to connect to inverter on: "+str(GiV_Settings.invertorIP)+" ("+type(cause).__name__+": "+str(cause)+")")
+            logger.debug ("Unable to connect to inverter on: "+str(GiV_Settings.invertorIP)+" ("+type(cause).__name__+": "+str(cause)+")")
             failcount=commsFailure()
             if failcount>=10:
                 logger.error("Lost communications with Inverter. Restarting container to detect IP change")
@@ -478,7 +483,7 @@ async def watch_plant(
         timeoutErrors=0
         connectErrors=0
         partialPolls=0
-        drops=ConnectionDrops()
+        drops=ConnectionDrops(refresh_period)
         logger.info("Starting data refresh cycle")
         while True:
             try:
