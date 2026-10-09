@@ -4,6 +4,16 @@ All notable changes to GivTCP are documented in this file.
 
 ## [Unreleased]
 
+### Added
+- **Pause When Inverter Stops Responding**, set per inverter on the config page (`recovery_pause_N`, seconds, 0 = off, the default) (#610, thanks @lancer73). Some dongles crash when they're sent more requests while they're struggling, and only recover if left alone for a while. With this set, a poll or reconnect that gets no response is retried at the normal poll interval rather than sooner. If that fails too, GivTCP closes the connection and sends the inverter nothing for this many seconds, then reconnects. The same applies when GivTCP can't connect at startup. Polls where only some reads fail don't count, as the inverter is still answering. During the pause:
+  - Stats/status is set to `paused`, so Predbat and automations can tell why there are no updates. The next good poll sets it back to `online`.
+  - Write commands sent over REST are answered straight away with "not sent", rather than timing out after 15 seconds. Callers such as Predbat retry, and the retries would otherwise all be sent as soon as the pause ends.
+  - Other write commands (MQTT, and scheduled ones such as the end of a force charge) are sent once the pause is over, without duplicates.
+  - The check that restarts a stuck read loop allows for the pause, so it doesn't restart it partway through.
+  - Each pause, rather than each failed reconnect, counts towards the restart after 10 failures (to pick up a changed IP address).
+
+  With it off, nothing changes.
+
 ### Fixed
 - **`Task exception was never retrieved ... network_consumer ... TimeoutError: [Errno 110]`** logged some time after a reconnect (#613). When GivTCP replaced a modbus client whose connection had died, the library's `close()` stopped partway on the dead socket and left the old client's reader task running. That task later failed with nothing to handle its error. GivTCP now always stops the old client's tasks and handles their errors. It was only log noise: GivTCP had already reconnected.
 - **"Removed N retained MQTT messages for entities not supported by this inverter" on every restart** (#612). On AC and All-in-One inverters, GivTCP removed the PV string voltage and current entities, which these models don't have, then created them again straight away, so the next restart removed them again. They're no longer created. The message also listed every entity the model can't have, not just the ones it removed, so the count didn't match the list. It now names only what it removed. Entities you've disabled in Home Assistant aren't removed by this: Home Assistant keeps disabled entities, so delete them in Settings → Entities.

@@ -28,7 +28,7 @@ SuperTimezone=""
 
 # Check if config directory exists and creates it if not
 
-INVERTER_KEY_DEFAULTS={"inverter_enable_":False,"invertorIP_":"","serial_number_":"","Model_":"","inverter_battery_only_":False}
+INVERTER_KEY_DEFAULTS={"inverter_enable_":False,"invertorIP_":"","serial_number_":"","Model_":"","inverter_battery_only_":False,"recovery_pause_":0}
 
 def startGunicorn(app, port, workers, logname):
     # Gunicorn's own errors (eg. a worker failing to load the app, or the port being in use) go to a log in
@@ -247,6 +247,7 @@ def createsettingsjson(inv):
         outp.write("    self_run_timer="+str(setts["self_run_timer"])+"\n")
         outp.write("    self_run_timer_full="+str(setts["self_run_timer_full"])+"\n")
         outp.write("    refresh_max_age="+str(float(setts.get("refresh_max_age") or 0))+"\n")
+        outp.write("    recovery_pause="+str(float(setts.get("recovery_pause_"+str(inv)) or 0))+"\n")
         outp.write("    queue_retries="+str(setts["queue_retries"])+"\n")    
         outp.write("    givtcp_instance="+str(inv)+"\n")
         outp.write("    default_path=\""+str(PATH)+"\"\n")
@@ -882,7 +883,8 @@ while True:
                     os.chdir(PATH)
                     logger.info ("Restarting Invertor read loop every "+str(setts['self_run_timer'])+"s")
                     selfRun[inv]=subprocess.Popen(["/usr/local/bin/python3",PATH+"/read.py", "start"])
-                elif timesince>(float(setts['self_run_timer'])*10):
+                elif timesince>(float(setts['self_run_timer'])*10)+float(setts.get('recovery_pause_'+str(inv)) or 0):
+                    # Allowing for a recovery pause, when the read loop deliberately sends nothing (#610)
                     logger.error("Self Run loop process stuck. Killing and restarting...")
                     os.chdir(PATH)
                     selfRun[inv].kill()

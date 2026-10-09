@@ -18,7 +18,7 @@ import time
 import write
 import inspect
 import requests
-from GivLUT import GivLUT, maxvalues, InvType, GivClientAsync
+from GivLUT import GivLUT, maxvalues, InvType, GivClientAsync, closeClient
 from entity_lut import Entity_Type
 from settings import GiV_Settings
 from os.path import exists
@@ -269,6 +269,57 @@ async def readPlant(client, fullRefresh):
 # Pause between queued write commands, so the dongle isn't flooded
 WRITE_COMMAND_GAP=0.3
 
+def restRespond(command,result):
+    # Hand a write command's result to the REST request waiting for it (REST.response)
+    responses=[]
+    with GivLUT.restlock:
+        if exists(GivLUT.restresponse):
+            with open(GivLUT.restresponse,'r') as inp:
+                responses=json.load(inp)
+        responses.append({'id':command,'result':result})
+        logger.debug("responses is: "+str(responses))
+        with open(GivLUT.restresponse,'w') as outp:
+            outp.write(json.dumps(responses))
+
+def holdWrites(seconds_left):
+    """During a recovery pause: answer REST write requests straight away rather than leave them to time out, as
+    callers like Predbat retry, and the retries would all be sent in a burst when the pause ends. Keep the other
+    queued commands (MQTT, and scheduled reverts such as the end of a force charge) for after the pause, dropping
+    exact duplicates (#610)"""
+    if not exists(GivLUT.writerequests):
+        return
+    try:
+        with open(GivLUT.writerequests,'rb') as inp:
+            queued=pickle.load(inp)
+        kept=[]
+        for command in queued:
+            if command[2]==True:
+                logger.info(str(command[0])+" not sent: the inverter isn't responding, so GivTCP is sending it nothing for another "+str(round(seconds_left))+"s")
+                restRespond(command[0],json.dumps({'result':str(command[0])+" not sent: the inverter isn't responding, so GivTCP has paused communication with it for another "+str(round(seconds_left))+"s to let it recover"}))
+            elif command not in kept:
+                kept.append(command)
+        # Anything queued since reading the file is handled next time round
+        with open(GivLUT.writerequests,'rb') as inp:
+            latest=pickle.load(inp)
+        if kept!=queued or len(latest)>len(queued):
+            GivLUT.save_writerequests(kept+latest[len(queued):])
+    except Exception as e:
+        logger.error("Error holding write requests during the recovery pause: "+str(e.__class__.__name__)+": "+str(e))
+
+def publishStatus(status):
+    # Set Stats/status in the REST cache and on MQTT straight away (eg. "paused"); the next good poll sets it back to "online"
+    try:
+        with GivLUT.cachelock:
+            regCacheStack=GivLUT.get_regcache()
+            if regCacheStack and isinstance(regCacheStack[-1].get('Stats'),dict):
+                regCacheStack[-1]['Stats']['status']=status
+                with open(GivLUT.regcache,'wb') as outp:
+                    pickle.dump(regCacheStack, outp, pickle.HIGHEST_PROTOCOL)
+        if GiV_Settings.MQTT_Output:
+            GivMQTT.single_MQTT_publish((GiV_Settings.MQTT_Topic or "GivEnergy")+"/"+str(GiV_Settings.serial_number)+"/Stats/status",status)
+    except Exception as e:
+        logger.debug("Unable to publish status "+status+": "+str(e))
+
 async def processWriteRequests(client):
     """Run any write commands queued in GivLUT.writerequests (by REST, MQTT or the RQ worker) against the plant.
     Returns True if more commands arrived while these were running, so the caller should call again straight away"""
@@ -295,22 +346,7 @@ async def processWriteRequests(client):
                     result = func(device,command[1],True)
                 #send result to touchfile for REST response
                 if command[2]==True:
-                    response={}
-                    responses=[]
-                    response['id']=command[0]
-                    response['result']=result
-                    if exists(GivLUT.restresponse):
-                        with GivLUT.restlock:
-                            with open(GivLUT.restresponse,'r') as inp:
-                                responses=json.load(inp)
-                        responses.append(response)
-                        logger.debug("responses is: "+str(responses))
-                    else:
-                        responses.append(response)
-                        logger.debug("responses is: "+str(responses))
-                    with GivLUT.restlock:
-                        with open(GivLUT.restresponse,'w') as outp:
-                            outp.write(json.dumps(responses))
+                    restRespond(command[0],result)
                 await asyncio.sleep(WRITE_COMMAND_GAP)        #Pause between commands
             else:
                 logger.error("Unknown write command: "+str(command[0])+" - ignoring")
@@ -413,13 +449,61 @@ def settingsRetry(failures, retries):
                        ", ".join(f"HR(0x{f.device_address:02x},{f.base_register})" for f in settingsFailed))
     return False, 0
 
+class Recovery:
+    """Gives an inverter that stops responding time to recover, rather than retrying sooner (recovery_pause setting,
+    seconds, 0=off). A failed poll or reconnect is retried at the normal interval. After STRIKES in a row GivTCP
+    closes the connection and sends nothing, write commands included, for recovery_pause seconds. Polls where only
+    some reads failed don't count: the inverter is still answering"""
+    STRIKES=2
+
+    def __init__(self, pause=None):
+        self.pause=float((getattr(GiV_Settings,'recovery_pause',0) or 0) if pause is None else pause)
+        self.strikes=0
+        self.until=None
+
+    @property
+    def enabled(self):
+        return self.pause>0
+
+    def ok(self):
+        self.strikes=0
+
+    def failed(self):
+        """Count a failure. True if it's time to pause, which starts the pause"""
+        if not self.enabled:
+            return False
+        self.strikes+=1
+        if self.strikes<self.STRIKES:
+            return False
+        self.strikes=0
+        self.until=datetime.datetime.now()+timedelta(seconds=self.pause)
+        logger.warning("Inverter not responding ("+str(self.STRIKES)+" failures in a row), sending it nothing for "+str(round(self.pause))+"s to let it recover")
+        publishStatus("paused")     # so consumers (Predbat, automations) know why there are no updates
+        return True
+
+    def waiting(self):
+        if self.until is None:
+            return False
+        if datetime.datetime.now()<self.until:
+            return True
+        self.until=None
+        logger.info("Recovery pause over, reconnecting to the inverter")
+        return False
+
+    async def wait(self):
+        while self.waiting():
+            holdWrites((self.until-datetime.datetime.now()).total_seconds())
+            await asyncio.sleep(1)
+
 async def watch_plant(
         handler: Optional[Callable] = None,
         refresh_period: float = 15.0,
         full_refresh_period: float = 60,
         passive: bool = False,
+        recovery: Optional[Recovery] = None,
     ):
         totalTimeoutErrors=0
+        recovery=recovery or Recovery()
 
         """Refresh data about the Plant."""
         try:
@@ -460,10 +544,11 @@ async def watch_plant(
         except CommunicationError as e:
             cause=e.__cause__ or e
             logger.debug ("Unable to connect to inverter on: "+str(GiV_Settings.invertorIP)+" ("+type(cause).__name__+": "+str(cause)+")")
-            failcount=commsFailure()
-            if failcount>=10:
-                logger.error("Lost communications with Inverter. Restarting container to detect IP change")
-                rebootaddon()
+            if not recovery.enabled:        # with a recovery pause, self_run counts each pause instead
+                failcount=commsFailure()
+                if failcount>=10:
+                    logger.error("Lost communications with Inverter. Restarting container to detect IP change")
+                    rebootaddon()
             try:
                 await client.close()
             except:
@@ -476,9 +561,11 @@ async def watch_plant(
             except:
                 pass
             return
-        # set last full_refresh time. If the first full refresh failed, the first poll (sooner than usual) is a full one
+        recovery.ok()
+        # set last full_refresh time. If the first full refresh failed, the first poll (sooner than usual, unless
+        # giving the inverter time to recover) is a full one
         lastfulltime=datetime.datetime.now() if initialFull else datetime.datetime.min
-        nextpoll=datetime.datetime.now()+timedelta(seconds=refresh_period if initialFull else min(FULL_REFRESH_RETRY_DELAY,refresh_period))
+        nextpoll=datetime.datetime.now()+timedelta(seconds=refresh_period if initialFull or recovery.enabled else min(FULL_REFRESH_RETRY_DELAY,refresh_period))
         fullRetries=0
         timeoutErrors=0
         connectErrors=0
@@ -511,6 +598,17 @@ async def watch_plant(
                         # treat it as an error once it persists
                         logger.log(logging.WARNING if connectErrors<=2 else logging.ERROR,
                             "Unable to connect to inverter on: "+str(GiV_Settings.invertorIP)+" ("+type(cause).__name__+": "+str(cause)+")")
+                        if recovery.enabled:
+                            # Wait a normal interval, write commands included, and pause if it fails again. Count each
+                            # pause, not each attempt, towards the restart for an IP change, so it isn't after 5 pauses
+                            if recovery.failed():
+                                if commsFailure()>=10:
+                                    logger.error("Lost communications with Inverter. Restarting container to detect IP change")
+                                    rebootaddon()
+                                await recovery.wait()
+                            else:
+                                await asyncio.sleep(refresh_period)
+                            continue
                         failcount=commsFailure()
                         if failcount>=10:
                             logger.error("Lost communications with Inverter. Restarting container to detect IP change")
@@ -543,6 +641,7 @@ async def watch_plant(
                     try:
                         failures=await readPlant(client, fullRefresh)
                         timeoutErrors=0     # Reset timeouts if all is good this run
+                        recovery.ok()
                         # A device that fails every poll (eg. a battery removed since the capabilities were
                         # cached) means they are stale, so re-detect once it has persisted for a while
                         partialPolls=partialPolls+1 if failures else 0
@@ -573,6 +672,16 @@ async def watch_plant(
                         timeoutErrors=timeoutErrors+1
                         logger.debug("Error num "+str(timeoutErrors)+" in watch loop read: "+str(err.__class__.__name__)+": "+str(err))
                         logger.debug("Not running handler")
+                        if recovery.enabled:
+                            # The next poll is at the normal time rather than sooner, and a second failure pauses
+                            if recovery.failed():
+                                try:
+                                    await closeClient(client)       # can raise on a dead socket (#613)
+                                except Exception:
+                                    pass
+                                await recovery.wait()
+                                timeoutErrors=0
+                            continue
                         if timeoutErrors>5:
                             logger.error("5 consecutive read errors in watch loop. Restarting modbus connection")
                             await client.close()    # Reconnect happens at the top of the loop
@@ -2687,12 +2796,19 @@ def getCache():     # Get latest cache data and return it (for use in REST)
 
 async def self_run():
     # re-run everytime watch_plant Dies
+    recovery=Recovery()
     while True:
         try:
             logger.info("Starting watch_plant loop...")
-            await watch_plant(handler=runAll2, refresh_period=GiV_Settings.self_run_timer,full_refresh_period=GiV_Settings.self_run_timer_full)
+            await watch_plant(handler=runAll2, refresh_period=GiV_Settings.self_run_timer,full_refresh_period=GiV_Settings.self_run_timer_full,recovery=recovery)
             # watch_plant only returns if initial connect/detect failed, so pause before retrying
-            await asyncio.sleep(10)
+            if recovery.failed():
+                if commsFailure()>=10:      # watch_plant leaves the counting to here when the pause is on
+                    logger.error("Lost communications with Inverter. Restarting container to detect IP change")
+                    rebootaddon()
+                await recovery.wait()
+            else:
+                await asyncio.sleep(GiV_Settings.self_run_timer if recovery.enabled else 10)
         except:
             e=errDetail()
             logger.error("Error in self_run. Re-running watch_plant: "+str(e))

@@ -53,6 +53,7 @@ DEFAULT_SETTINGS = dict(
     self_run_timer=15,
     self_run_timer_full=60,
     refresh_max_age=0,
+    recovery_pause=0,
     queue_retries=2,
     data_smoother="None",
     timeslot_entities="both",
