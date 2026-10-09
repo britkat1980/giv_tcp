@@ -98,3 +98,26 @@ def test_clock_compared_with_when_it_was_read(caplog):
         assert not [r for r in caplog.records if "Inverter clock" in r.getMessage()]
         fakes.real_check_clock[0]((read_at - datetime.timedelta(minutes=20)).isoformat(), read_at)
     assert [r for r in caplog.records if "20 minutes behind" in r.getMessage()]
+
+def test_extra_read_not_dropped_after_one_failure(caplog):
+    # A Gen 1 that answers HR 318 fine had one read fail, and the pause mode was never read again that session
+    import asyncio
+    import logging
+    calls = []
+    outcomes = iter([TimeoutError("busy"), None, TimeoutError("busy"), TimeoutError("busy"), TimeoutError("busy"), None])
+    async def execute_reads(reqs, **kwargs):
+        calls.append(reqs[0].base_register)
+        outcome = next(outcomes)
+        if outcome:
+            raise outcome
+    plant = types.SimpleNamespace(capabilities=types.SimpleNamespace(
+        device_type=Model.HYBRID_GEN1, arm_firmware_version=187, inverter_address=0x11, is_three_phase=False, is_gateway=False))
+    client = types.SimpleNamespace(plant=plant, _execute_reads=execute_reads)
+    with caplog.at_level(logging.DEBUG, logger=modbus_patches.logger.name):
+        for _ in range(5):
+            asyncio.run(modbus_patches._extra_reads(client))
+    assert calls == [318, 318, 318, 318, 318]       # fail, ok, then 3 fails in a row: given up
+    asyncio.run(modbus_patches._extra_reads(client))
+    assert len(calls) == 5
+    warnings = [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING]
+    assert len(warnings) == 1 and "3 times in a row" in warnings[0]

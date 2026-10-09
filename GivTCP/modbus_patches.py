@@ -165,21 +165,35 @@ EXTRA_READS = [
      "the current charge/discharge rates won't be shown (they can still be set)"),
 ]
 
+# An extra read that fails this many times in a row isn't tried again until GivTCP restarts, as the inverter doesn't
+# support it. Fewer are a busy or briefly offline dongle: on a Gen 1 that answers HR 318 fine, one failed read
+# stopped the pause mode being read (and its value updating) for the rest of the session
+EXTRA_READ_MAX_FAILURES = 3
+_extra_read_failures = {}       # per plant, which outlives a replaced client: {id(plant): {read name: failures in a row}}
+
 async def _extra_reads(client):
     caps = client.plant.capabilities
     if caps is None:
         return
-    failed = client.__dict__.setdefault("_givtcp_failed_reads", set())
+    failures = _extra_read_failures.setdefault(id(client.plant), {})
     for name, applies, base, count, lost in EXTRA_READS:
-        if name in failed or not applies(caps):
-            continue        # skip a read the inverter didn't answer before, rather than log the same error every time
+        if failures.get(name, 0) >= EXTRA_READ_MAX_FAILURES or not applies(caps):
+            continue
+        regs = "HR " + str(base) + "-" + str(base + count - 1)
         try:
             await client._execute_reads(
                 [ReadHoldingRegistersRequest(base_register=base, register_count=count, device_address=caps.inverter_address)],
-                timeout=2.0, retries=1, retry_delay=0.5)
+                timeout=3.0, retries=2, retry_delay=0.5)
+            if failures.pop(name, 0):
+                logger.debug("Registers " + regs + " read again after failing")
         except Exception as e:
-            failed.add(name)
-            logger.warning("Registers HR " + str(base) + "-" + str(base + count - 1) + " could not be read, so " + lost + ": " + str(e))
+            fails = failures[name] = failures.get(name, 0) + 1
+            if fails >= EXTRA_READ_MAX_FAILURES:
+                logger.warning("Registers " + regs + " could not be read " + str(fails) + " times in a row, so " + lost +
+                               ". Not trying again until GivTCP restarts: " + str(e))
+            else:
+                # The value read last time is kept, and it's read again with the next full refresh
+                logger.debug("Registers " + regs + " could not be read this time (" + str(fails) + " in a row): " + str(e))
 
 async def _load_config(self, *args, **kwargs):
     try:
