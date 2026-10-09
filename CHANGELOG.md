@@ -4,6 +4,10 @@ All notable changes to GivTCP are documented in this file.
 
 ## [Unreleased]
 
+## [3.6.0-beta7] - 2026-10-09
+
+Changes since 3.6.0-beta6.
+
 ### Added
 - **Pause When Inverter Stops Responding**, set per inverter on the config page (`recovery_pause_N`, seconds, 0 = off, the default) (#610, thanks @lancer73). Some dongles crash when they're sent more requests while they're struggling, and only recover if left alone for a while. With this set, a poll or reconnect that gets no response is retried at the normal poll interval rather than sooner. If that fails too, GivTCP closes the connection and sends the inverter nothing for this many seconds, then reconnects. The same applies when GivTCP can't connect at startup. Polls where only some reads fail don't count, as the inverter is still answering. During the pause:
   - Stats/status is set to `paused`, so Predbat and automations can tell why there are no updates. The next good poll sets it back to `online`.
