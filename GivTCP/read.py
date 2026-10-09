@@ -1515,10 +1515,12 @@ def processInverterInfo(plant: Plant):
             power_output['PV_Power_String_1'] = PV_power_1
             power_output['PV_Power_String_2'] = PV_power_2
             power_output['PV_Power'] = PV_power
-        power_output['PV_Voltage_String_1'] = GEInv.v_pv1
-        power_output['PV_Voltage_String_2'] = GEInv.v_pv2
-        power_output['PV_Current_String_1'] = GEInv.i_pv1
-        power_output['PV_Current_String_2'] = GEInv.i_pv2
+        if inverterModel.model not in PV_STRING_VI_UNSUPPORTED:
+            # Not on AC-coupled models, which don't have them: a None here still created a Home Assistant entity (#612)
+            power_output['PV_Voltage_String_1'] = GEInv.v_pv1
+            power_output['PV_Voltage_String_2'] = GEInv.v_pv2
+            power_output['PV_Current_String_1'] = GEInv.i_pv1
+            power_output['PV_Current_String_2'] = GEInv.i_pv2
         power_output['Grid_Voltage'] = GEInv.v_ac1
         power_output['Grid_Current'] = GEInv.i_grid_port 
 

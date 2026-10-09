@@ -117,6 +117,7 @@ def install():
     HA_Discovery.HAMQTT.sendDiscoMsg = send
     real["removedisco"] = HA_Discovery.CheckDisco.removedisco      # tested on its own in test_discovery_cleanup.py
     HA_Discovery.CheckDisco.removedisco = lambda SN, messages: None
+    real["removeunsupported"] = HA_Discovery.CheckDisco.removeunsupported
     HA_Discovery.CheckDisco.removeunsupported = lambda SN, items: recorder.removed.extend(items)
     HA_Discovery.CheckDisco.cleartopics = lambda topics: recorder.removed.extend(topics)
     HA_Discovery.time = types.SimpleNamespace(sleep=lambda s: None, time=time.time)

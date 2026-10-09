@@ -6,6 +6,7 @@ All notable changes to GivTCP are documented in this file.
 
 ### Fixed
 - **`Task exception was never retrieved ... network_consumer ... TimeoutError: [Errno 110]`** logged some time after a reconnect (#613). When GivTCP replaced a modbus client whose connection had died, the library's `close()` stopped partway on the dead socket and left the old client's reader task running. That task later failed with nothing to handle its error. GivTCP now always stops the old client's tasks and handles their errors. It was only log noise: GivTCP had already reconnected.
+- **"Removed N retained MQTT messages for entities not supported by this inverter" on every restart** (#612). On AC and All-in-One inverters, GivTCP removed the PV string voltage and current entities, which these models don't have, then created them again straight away, so the next restart removed them again. They're no longer created. The message also listed every entity the model can't have, not just the ones it removed, so the count didn't match the list. It now names only what it removed. Entities you've disabled in Home Assistant aren't removed by this: Home Assistant keeps disabled entities, so delete them in Settings → Entities.
 
 ### Changed
 - **"Reconnected to the inverter after N failed attempts" is only logged when it took longer than a read cycle.** A reconnect within one read cycle costs no data, so it's now logged at debug level.

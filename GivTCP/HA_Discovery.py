@@ -66,6 +66,8 @@ class HAMQTT():
                     logger.debug('Publishing: '+rootTopic+p_load)
                     output=GivMQTT.iterate_dict(payload,rootTopic+p_load)   #create LUT for MQTT publishing
                     for topic in output:
+                        if str(topic).split("/")[-1] in unsupported:
+                            continue        # removed by removeunsupported() below, so don't create it again (#612)
                         e_type= Entity_Type.entity_type[str(topic).split("/")[-1]]
                         #Determine Entitiy type (switch/sensor/number) and publish the right message
                         if e_type.devType=="sensor":
@@ -462,6 +464,7 @@ class CheckDisco():
         # Clear the retained discovery and state messages for entities this inverter can't have, so HA drops
         # entities left behind by older GivTCP versions. Matches by name so any older topic layout is caught too
         try:
+            CheckDisco.msgs={}
             client = paho_mqtt.Client(paho_mqtt.CallbackAPIVersion.VERSION2,"GivEnergy_GivTCP_removeunsupported_"+str(GiV_Settings.givtcp_instance))
             client.on_connect = CheckDisco.on_connect
             client.on_message = CheckDisco.on_message
@@ -478,6 +481,7 @@ class CheckDisco():
                 found=len(CheckDisco.msgs)
             stateRoot=(GiV_Settings.MQTT_Topic or "GivEnergy")+"/"+SN+"/"
             count=0
+            removed=[]
             for topic in list(CheckDisco.msgs):
                 for item in items:
                     isDisco=topic.startswith("homeassistant/") and SN in topic and topic.endswith("_"+item+"/config")
@@ -486,9 +490,13 @@ class CheckDisco():
                         client.publish(topic,None,0,True)
                         CheckDisco.msgs.pop(topic,None)
                         count+=1
+                        if item not in removed:
+                            removed.append(item)
                         break
+            # Name only what was there to remove, not every entity this model can't have (#612)
+            logger.debug("removeunsupported: checked for "+", ".join(items))
             if count:
-                logger.info("Removed "+str(count)+" retained MQTT messages for entities not supported by this inverter: "+", ".join(items))
+                logger.info("Removed "+str(count)+" retained MQTT message"+("s" if count>1 else "")+" for entities not supported by this inverter: "+", ".join(removed))
             time.sleep(1)
             client.loop_stop()
             client.disconnect()
