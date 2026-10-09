@@ -27,9 +27,12 @@ each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, it
   from BMS firmware 3022/4009 on Gen 3 and AC inverters above ARM firmware 214, and reads 0 elsewhere. This
   clears it to None everywhere else.
 - HV battery modules in the second and later stacks [14]. The library looks for them at the next device
-  addresses after the first stack's (0x55+ after a 5-module stack), which don't answer
-  (britkat1980/giv_tcp#611). As in the old library, every stack's module k is at 0x50 + k and the stack is
-  picked by register offset, 120 per stack, so this also reads those and decodes the modules from them.
+  addresses after the first stack's (0x55+ after a 5-module stack), which don't hold their data
+  (britkat1980/giv_tcp#611 on HV Gen 3, #614 on three-phase, where detect still lists those addresses). As in the
+  old library, every stack's module k is at 0x50 + k and the stack is picked by register offset, 120 per stack,
+  so this reads and decodes them from there instead.
+- HV battery module cell data is only re-read on full refreshes (read.py sets skip_banks between them), as each
+  module is a read of its own and cell voltages and temperatures don't need updating every poll (#614).
 
 Remove each one once the library supports it.
 """
@@ -225,13 +228,16 @@ HV_STACK_REGISTER_STRIDE = 120
 HV_STACK_MODULE_MAX_FAILURES = 3
 
 def _offset_layout(caps, offset, first_addr, k):
-    # Stack 1 is the same in both layouts, and where the library's address for a module answered at detect
-    # (hv_bmu_addresses holds those), keep the library's layout for it
-    return offset != 0 and first_addr + k not in caps.hv_bmu_addresses
+    # Stack 1 is the same in both layouts. Later stacks use the offset layout even where detect listed the
+    # library's address: on a three-phase with two stacks it did, but those never held the modules' data (#614)
+    return offset != 0
+
+def _hv(caps):
+    return caps is not None and caps.is_hv and caps.device_type is not Model.ALL_IN_ONE
 
 def hv_stack_module_banks(caps):
     """(device address, base register, count) for each stack module read the library doesn't do"""
-    if caps is None or not caps.is_hv or caps.device_type is Model.ALL_IN_ONE:
+    if not _hv(caps):
         return []
     banks = []
     first_addr = HV_BMU_BASE_ADDRESS
@@ -242,11 +248,35 @@ def hv_stack_module_banks(caps):
         first_addr += modules
     return banks
 
+def _library_only_banks(caps):
+    # The library's reads of the later stacks' modules at the next addresses after the first stack's, replaced by
+    # the offset reads above. Not an address that's also one of the first stack's modules
+    if not _hv(caps) or len(caps.bcu_stacks) < 2:
+        return set()
+    first = {HV_BMU_BASE_ADDRESS + k for offset, n in caps.bcu_stacks if offset == 0 for k in range(n)}
+    return {(a, 60, 60) for a in caps.hv_bmu_addresses if a not in first}
+
+def hv_module_banks(caps):
+    """Every HV battery module read, in the order Plant.hv_stacks lists the modules (#614)"""
+    if not _hv(caps):
+        return []
+    banks = []
+    for offset, n in caps.bcu_stacks:
+        base = 60 + HV_STACK_REGISTER_STRIDE * offset
+        banks += [(HV_BMU_BASE_ADDRESS + k, base, 60) for k in range(n)]
+    return banks
+
+# Module reads to leave out of the next refresh. read.py sets this for polls between full refreshes, to the
+# modules that already have data: their cell data doesn't need updating every poll, and each is a read (#614)
+skip_banks = set()
+
 _library_refresh_banks = client_module._refresh_banks
 
 def _refresh_banks(caps):
-    banks = _library_refresh_banks(caps)
-    return banks + [b for b in hv_stack_module_banks(caps) if b not in banks]
+    dropped = _library_only_banks(caps)
+    banks = [b for b in _library_refresh_banks(caps) if b not in dropped]
+    banks += [b for b in hv_stack_module_banks(caps) if b not in banks]
+    return [b for b in banks if b not in skip_banks]
 
 # _refresh_ranges() looks this up on the client module on every refresh
 client_module._refresh_banks = _refresh_banks

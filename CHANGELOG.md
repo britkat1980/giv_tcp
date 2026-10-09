@@ -15,10 +15,13 @@ All notable changes to GivTCP are documented in this file.
   With it off, nothing changes.
 
 ### Fixed
+- **Second HV battery stack on three-phase inverters: no module data, and 6 wasted reads every poll** (#614). Detect listed the second stack's modules at the next addresses after the first stack's, but those never return its data, so GivTCP polled them every cycle for nothing. As 3.5 did, and as GivTCP already did for HV Gen 3 when detect didn't list them (#611), the second and later stacks' modules are now always read at the first stack's addresses, at that stack's register offset.
+- **"Inverter clock is N minutes behind" when it isn't** (#614). The inverter's clock is only read on full refreshes, but was compared with the time it was checked, so a longer full refresh interval looked like a clock running behind. It's now compared with the time it was read.
 - **`Task exception was never retrieved ... network_consumer ... TimeoutError: [Errno 110]`** logged some time after a reconnect (#613). When GivTCP replaced a modbus client whose connection had died, the library's `close()` stopped partway on the dead socket and left the old client's reader task running. That task later failed with nothing to handle its error. GivTCP now always stops the old client's tasks and handles their errors. It was only log noise: GivTCP had already reconnected.
 - **"Removed N retained MQTT messages for entities not supported by this inverter" on every restart** (#612). On AC and All-in-One inverters, GivTCP removed the PV string voltage and current entities, which these models don't have, then created them again straight away, so the next restart removed them again. They're no longer created. The message also listed every entity the model can't have, not just the ones it removed, so the count didn't match the list. It now names only what it removed. Entities you've disabled in Home Assistant aren't removed by this: Home Assistant keeps disabled entities, so delete them in Settings → Entities.
 
 ### Changed
+- **Lighter polling on HV systems** (#614). Each HV battery module is a read of its own (12 on two 6-module stacks), so a poll on a three-phase inverter with two stacks was 24 reads, keeping its dongle busy for about a third of each 30-second cycle. The module reads (cell voltages and temperatures) are now only repeated on full refreshes, once each module has been read. The stack values (SOC, power, voltage, energy) come from each stack's BCU, which is still read every poll.
 - **"Reconnected to the inverter after N failed attempts" is only logged when it took longer than a read cycle.** A reconnect within one read cycle costs no data, so it's now logged at debug level.
 
 ## [3.6.0-beta6] - 2026-10-04

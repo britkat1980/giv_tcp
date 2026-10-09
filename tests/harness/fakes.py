@@ -126,7 +126,7 @@ def install():
     real_wrong_inverter[0] = read.wrongInverter
     read.wrongInverter = lambda client: None  # the harness settings use made-up serials (see test_detect_serial.py)
     real_check_clock[0] = read.checkInverterClock
-    read.checkInverterClock = lambda invTime: None  # the captures' clocks are weeks from FROZEN_NOW (see test_inverter_clock.py)
+    read.checkInverterClock = lambda invTime, readAt=None: None  # the captures' clocks are weeks from FROZEN_NOW (see test_inverter_clock.py)
     givlut_module.GivQueue.q = FakeQueue()
 
     read.datetime = _frozen_datetime_module()

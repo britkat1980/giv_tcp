@@ -19,6 +19,7 @@ import write
 import inspect
 import requests
 from GivLUT import GivLUT, maxvalues, InvType, GivClientAsync, closeClient
+import modbus_patches
 from entity_lut import Entity_Type
 from settings import GiV_Settings
 from os.path import exists
@@ -84,14 +85,16 @@ def newInverterDay(invTime, multi_output_old, grace=True):
 CLOCK_DRIFT_MINUTES=5
 _clockWarned=None
 
-def checkInverterClock(invTime):
+def checkInverterClock(invTime, readAt=None):
     # The inverter resets its Today counters at midnight by its own clock, so a clock that is out (often an hour,
-    # when it hasn't changed for summer time) moves the reset away from midnight in HA. Warn once a day
+    # when it hasn't changed for summer time) moves the reset away from midnight in HA. Warn once a day.
+    # readAt is when the time was read: it's a holding register, only read on full refreshes, so it can be
+    # minutes old by the time it's checked, which looked like a clock that was behind (#614)
     global _clockWarned
     try:
         inv=datetime.datetime.fromisoformat(str(invTime))
         now=datetime.datetime.now(GivLUT.timezone)
-        offset=round((inv-now).total_seconds()/60)
+        offset=round((inv-(readAt.astimezone(GivLUT.timezone) if readAt else now)).total_seconds()/60)
     except (TypeError, ValueError):
         return
     if abs(offset)<CLOCK_DRIFT_MINUTES or _clockWarned==now.date():
@@ -103,6 +106,12 @@ def checkInverterClock(invTime):
     logger.warning("Inverter clock is "+amount+" "+("behind" if offset<0 else "ahead of")+" GivTCP's ("+inv.strftime(shown)+
                    " against "+now.strftime(shown)+"), so its Today energy counters reset at the wrong time. "
                    "Use the Sync Time button, or the GivEnergy portal, to correct it")
+
+def settingsReadAt(plant: Plant):
+    # When the inverter's holding registers (its settings and clock) were last read, or None if not known
+    addr=plant.capabilities.inverter_address if plant.capabilities else None
+    stamps=[ts for (dev,regtype,_,_),ts in plant.register_block_updated_at.items() if dev==addr and regtype=="HR"]
+    return max(stamps) if stamps else None
 
 def batteryTotals(GEInv, battery):
     # Lifetime battery charge/discharge (kWh) for a single-phase LV inverter. Firmware keeps them in different places:
@@ -248,12 +257,24 @@ async def detectPlant(client, force=False):
         logger.warning("Unable to save capabilities cache: "+str(e))
     return False
 
+def hvModulesRead(plant: Plant):
+    # The module reads whose module already has data (a serial), which a partial refresh can leave out
+    banks=modbus_patches.hv_module_banks(plant.capabilities)
+    if not banks:
+        return set()
+    valid=[b.is_valid() for hvstack in plant.hv_stacks for b in hvstack.bmus]
+    return {bank for bank,ok in zip(banks,valid) if ok} if len(valid)==len(banks) else set()
+
 async def readPlant(client, fullRefresh):
     # Run the register reads. Partial failures still leave good data in the register cache so keep going,
     # only a total failure (RefreshFailed) or lost connection is raised
     # refresh_max_age skips IR banks the dongle has already relayed recently from another poller (cloud/app)
     max_age=getattr(GiV_Settings,'refresh_max_age',0) or None
     failures=[]
+    # Between full refreshes, leave out the HV battery module reads once their data has been read: it's cell
+    # voltages and temperatures, and each module is a read of its own, so 12 of 24 reads a poll on two 6-module
+    # stacks (#614). The stack values (SOC, power, voltage) come from the BCU, which is still read every poll
+    modbus_patches.skip_banks=set() if fullRefresh else hvModulesRead(client.plant)
     reads=[lambda: client.refresh(max_age=max_age)]
     if fullRefresh:
         reads.append(client.load_config)    #Run full HR read on fullRefresh
@@ -2523,7 +2544,7 @@ def processData(plant: Plant):
         givtcpdata['Safe_Write_Count']= safecount
 
         multi_output['Stats']=givtcpdata
-        checkInverterClock(finditem(multi_output,"Invertor_Time"))
+        checkInverterClock(finditem(multi_output,"Invertor_Time"),settingsReadAt(plant))
         regCacheStack = GivLUT.get_regcache()
         if regCacheStack is None and exists(GivLUT.regcache):  # Transient failure - retry once (no file yet is normal on first run)
             logger.warning("regCache read failed, retrying...")
