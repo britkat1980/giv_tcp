@@ -51,7 +51,7 @@ Controllable datapoints also have a command topic, `GivEnergy/control/<serial>/<
 | Name | Type | Unit | Description |
 |---|---|---|---|
 | `PV_Power` | sensor | W | Total solar generation |
-| `PV_Power_String_1` / `_2` | sensor | W | Solar generation per PV string |
+| `PV_Power_String_1` / `_2` | sensor | W | Solar generation per PV string (not on AC or All-in-One, which only measure the total) |
 | `PV_Voltage_String_1` / `_2` | sensor | V | Voltage per PV string. Not published on AC-coupled and All-in-One inverters, where these registers don't hold real string readings |
 | `PV_Current_String_1` / `_2` | sensor | A | Current per PV string. Not published on AC-coupled and All-in-One inverters |
 | `Grid_Power` | sensor | W | Grid power: positive = export, negative = import |

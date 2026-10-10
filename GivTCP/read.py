@@ -239,7 +239,8 @@ def unsupportedEntities():
     if pauseSlotsUnsupported(caps):
         unsupported+=['Battery_pause_start_time_slot','Battery_pause_end_time_slot']
     if device_type in PV_STRING_VI_UNSUPPORTED:
-        unsupported+=['PV_Voltage_String_1','PV_Voltage_String_2','PV_Current_String_1','PV_Current_String_2']
+        unsupported+=['PV_Voltage_String_1','PV_Voltage_String_2','PV_Current_String_1','PV_Current_String_2',
+                      'PV_Power_String_1','PV_Power_String_2']
     unsupported+=['Battery_BMS_Current']      # renamed Battery_Discharge_Current in 3.6 beta 5 (#605)
     if not bms_current_inverter(device_type, caps.arm_firmware_version):
         unsupported+=['Battery_Discharge_Current']      # this inverter never passes on pack current (#605)
@@ -1682,9 +1683,11 @@ def processInverterInfo(plant: Plant):
         PV_power_2 = GEInv.p_pv2
         PV_power = PV_power_1+PV_power_2
         if PV_power < 15000:
-            power_output['PV_Power_String_1'] = PV_power_1
-            power_output['PV_Power_String_2'] = PV_power_2
             power_output['PV_Power'] = PV_power
+            if inverterModel.model not in PV_STRING_VI_UNSUPPORTED:
+                # AC-coupled models only measure the total from the PV inverter (its CT clamp), not each string (#612)
+                power_output['PV_Power_String_1'] = PV_power_1
+                power_output['PV_Power_String_2'] = PV_power_2
         if inverterModel.model not in PV_STRING_VI_UNSUPPORTED:
             # Not on AC-coupled models, which don't have them: a None here still created a Home Assistant entity (#612)
             power_output['PV_Voltage_String_1'] = GEInv.v_pv1
