@@ -8,6 +8,7 @@ All notable changes to GivTCP are documented in this file.
 - **Power flow entities on three-phase inverters**, from the meter's import and export and the battery's charge and discharge power.
 
 ### Fixed
+- **Gateway energy totals were 1000 times too small** (in MWh, though labelled kWh). This affected the Gateway's Import, Export, PV, Load, Battery Charge/Discharge and Parallel Total Charge/Discharge Energy Totals, and each All-in-One's AC Charge/Discharge Energy Totals. The registers are in 0.1 kWh (GivEnergy register map v4.1.6), and the library already gives them in kWh, but GivTCP divided them by 1000 again, as 3.5 did. The Today values were correct. **These totals jump by 1000 times once after upgrading** (for example from 12.68 to 12,682.7). Home Assistant takes that as one very large increase, so for any of them used in the Energy dashboard, correct that hour in Developer Tools → Statistics.
 - **Power flow entities** (Solar to House, Battery to Grid and the rest) are now worked out the same way on every model, and fixed:
   - **Solar to House was never above 0 on PV-only inverters.**
   - **Grid to Battery could be negative**, or more than the import, when a little power was imported while solar covered the battery.

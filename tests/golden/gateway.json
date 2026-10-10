@@ -5332,14 +5332,14 @@
      "Parallel_Total_Discharge_Energy_Today_kWh": 15.7
     },
     "Total": {
-     "Battery_Charge_Energy_Total_kWh": 8.84,
-     "Battery_Discharge_Energy_Total_kWh": 9.0,
-     "Export_Energy_Total_kWh": 2.19,
-     "Import_Energy_Total_kWh": 12.68,
-     "Load_Energy_Total_kWh": 12.0,
-     "PV_Energy_Total_kWh": 5.08,
-     "Parallel_Total_Charge_Energy_Total_kWh": 10.55,
-     "Parallel_Total_Discharge_Energy_Total_kWh": 6.98
+     "Battery_Charge_Energy_Total_kWh": 8837.9,
+     "Battery_Discharge_Energy_Total_kWh": 8996.2,
+     "Export_Energy_Total_kWh": 2191.8,
+     "Import_Energy_Total_kWh": 12682.7,
+     "Load_Energy_Total_kWh": 11998.1,
+     "PV_Energy_Total_kWh": 5083.9,
+     "Parallel_Total_Charge_Energy_Total_kWh": 10553.6,
+     "Parallel_Total_Discharge_Energy_Total_kWh": 6976.8
     }
    },
    "GW2412G000": {
@@ -5359,18 +5359,18 @@
    "Inverters": {
     "AIO_1": {
      "AC_Charge_Energy_Today_kWh": 10.1,
-     "AC_Charge_Energy_Total_kWh": 7.86,
+     "AC_Charge_Energy_Total_kWh": 7862.6,
      "AC_Discharge_Energy_Today_kWh": 9.3,
-     "AC_Discharge_Energy_Total_kWh": 7.99,
+     "AC_Discharge_Energy_Total_kWh": 7987.1,
      "AIO_1_Serial_Number": "CH2414G000",
      "Invertor_Power": 386,
      "SOC": 43
     },
     "AIO_2": {
      "AC_Charge_Energy_Today_kWh": 10.2,
-     "AC_Charge_Energy_Total_kWh": 0.98,
+     "AC_Charge_Energy_Total_kWh": 975.3,
      "AC_Discharge_Energy_Today_kWh": 9.0,
-     "AC_Discharge_Energy_Total_kWh": 1.01,
+     "AC_Discharge_Energy_Total_kWh": 1009.1,
      "AIO_2_Serial_Number": "CH2542G000",
      "Invertor_Power": 411,
      "SOC": 45
@@ -5628,14 +5628,14 @@
      "Parallel_Total_Discharge_Energy_Today_kWh": 15.7
     },
     "Total": {
-     "Battery_Charge_Energy_Total_kWh": 8.84,
-     "Battery_Discharge_Energy_Total_kWh": 9.0,
-     "Export_Energy_Total_kWh": 2.19,
-     "Import_Energy_Total_kWh": 12.68,
-     "Load_Energy_Total_kWh": 12.0,
-     "PV_Energy_Total_kWh": 5.08,
-     "Parallel_Total_Charge_Energy_Total_kWh": 10.55,
-     "Parallel_Total_Discharge_Energy_Total_kWh": 6.98
+     "Battery_Charge_Energy_Total_kWh": 8837.9,
+     "Battery_Discharge_Energy_Total_kWh": 8996.2,
+     "Export_Energy_Total_kWh": 2191.8,
+     "Import_Energy_Total_kWh": 12682.7,
+     "Load_Energy_Total_kWh": 11998.1,
+     "PV_Energy_Total_kWh": 5083.9,
+     "Parallel_Total_Charge_Energy_Total_kWh": 10553.6,
+     "Parallel_Total_Discharge_Energy_Total_kWh": 6976.8
     }
    },
    "GW2412G000": {
@@ -5655,18 +5655,18 @@
    "Inverters": {
     "AIO_1": {
      "AC_Charge_Energy_Today_kWh": 10.1,
-     "AC_Charge_Energy_Total_kWh": 7.86,
+     "AC_Charge_Energy_Total_kWh": 7862.6,
      "AC_Discharge_Energy_Today_kWh": 9.3,
-     "AC_Discharge_Energy_Total_kWh": 7.99,
+     "AC_Discharge_Energy_Total_kWh": 7987.1,
      "AIO_1_Serial_Number": "CH2414G000",
      "Invertor_Power": 386,
      "SOC": 43
     },
     "AIO_2": {
      "AC_Charge_Energy_Today_kWh": 10.2,
-     "AC_Charge_Energy_Total_kWh": 0.98,
+     "AC_Charge_Energy_Total_kWh": 975.3,
      "AC_Discharge_Energy_Today_kWh": 9.0,
-     "AC_Discharge_Energy_Total_kWh": 1.01,
+     "AC_Discharge_Energy_Total_kWh": 1009.1,
      "AIO_2_Serial_Number": "CH2542G000",
      "Invertor_Power": 411,
      "SOC": 45

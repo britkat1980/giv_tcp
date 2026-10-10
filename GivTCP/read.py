@@ -2152,9 +2152,9 @@ def processGatewayInfo(plant: Plant):
         if GEInv.e_aio1_charge_today:
             inv1={}
             inv1['AC_Charge_Energy_Today_kWh']=GEInv.e_aio1_charge_today
-            inv1['AC_Charge_Energy_Total_kWh']=round(GEInv.e_aio1_charge_total/1000,2)
+            inv1['AC_Charge_Energy_Total_kWh']=GEInv.e_aio1_charge_total
             inv1['AC_Discharge_Energy_Today_kWh']=GEInv.e_aio1_discharge_today
-            inv1['AC_Discharge_Energy_Total_kWh']=round(GEInv.e_aio1_discharge_total/1000,2)
+            inv1['AC_Discharge_Energy_Total_kWh']=GEInv.e_aio1_discharge_total
             inv1['SOC']=GEInv.aio1_soc
             inv1['Invertor_Power']=GEInv.p_aio1_inverter
             inv1['AIO_1_Serial_Number']=GEInv.aio1_serial_number
@@ -2163,9 +2163,9 @@ def processGatewayInfo(plant: Plant):
         if GEInv.e_aio2_charge_today:
             inv2={}
             inv2['AC_Charge_Energy_Today_kWh']=GEInv.e_aio2_charge_today
-            inv2['AC_Charge_Energy_Total_kWh']=round(GEInv.e_aio2_charge_total/1000,2)
+            inv2['AC_Charge_Energy_Total_kWh']=GEInv.e_aio2_charge_total
             inv2['AC_Discharge_Energy_Today_kWh']=GEInv.e_aio2_discharge_today
-            inv2['AC_Discharge_Energy_Total_kWh']=round(GEInv.e_aio2_discharge_total/1000,2)
+            inv2['AC_Discharge_Energy_Total_kWh']=GEInv.e_aio2_discharge_total
             inv2['SOC']=GEInv.aio2_soc
             inv2['Invertor_Power']=GEInv.p_aio2_inverter
             inv2['AIO_2_Serial_Number']=GEInv.aio2_serial_number
@@ -2174,9 +2174,9 @@ def processGatewayInfo(plant: Plant):
         if GEInv.e_aio3_charge_today:
             inv3={}
             inv3['AC_Charge_Energy_Today_kWh']=GEInv.e_aio3_charge_today
-            inv3['AC_Charge_Energy_Total_kWh']=round(GEInv.e_aio3_charge_total/1000,2)
+            inv3['AC_Charge_Energy_Total_kWh']=GEInv.e_aio3_charge_total
             inv3['AC_Discharge_Energy_Today_kWh']=GEInv.e_aio3_discharge_today
-            inv3['AC_Discharge_Energy_Total_kWh']=round(GEInv.e_aio3_discharge_total/1000,2)
+            inv3['AC_Discharge_Energy_Total_kWh']=GEInv.e_aio3_discharge_total
             inv3['SOC']=GEInv.aio3_soc
             inv3['Invertor_Power']=GEInv.p_aio3_inverter
             inv3['AIO_3_Serial_Number']=GEInv.aio3_serial_number
@@ -2195,14 +2195,15 @@ def processGatewayInfo(plant: Plant):
         energy_today_output['Parallel_Total_Discharge_Energy_Today_kWh']=GEInv.e_aio_discharge_today
 
         energy_total_output={}
-        energy_total_output['Import_Energy_Total_kWh']=round(GEInv.e_grid_import_total/1000,2)
-        energy_total_output['PV_Energy_Total_kWh']=round(GEInv.e_pv_total/1000,2)
-        energy_total_output['Export_Energy_Total_kWh']=round(GEInv.e_grid_export_total/1000,2)
-        energy_total_output['Load_Energy_Total_kWh']=round(GEInv.e_load_total/1000,2)
-        energy_total_output['Battery_Charge_Energy_Total_kWh']=round(GEInv.e_battery_charge_total/1000,2)
-        energy_total_output['Battery_Discharge_Energy_Total_kWh']=round(GEInv.e_battery_discharge_total/1000,2)
-        energy_total_output['Parallel_Total_Charge_Energy_Total_kWh']=round(GEInv.e_aio_charge_total/1000,2)
-        energy_total_output['Parallel_Total_Discharge_Energy_Total_kWh']=round(GEInv.e_aio_discharge_total/1000,2)
+        # givenergy-modbus already gives the totals in kWh (0.1kWh registers). They used to be divided by 1000 too, so were in MWh
+        energy_total_output['Import_Energy_Total_kWh']=GEInv.e_grid_import_total
+        energy_total_output['PV_Energy_Total_kWh']=GEInv.e_pv_total
+        energy_total_output['Export_Energy_Total_kWh']=GEInv.e_grid_export_total
+        energy_total_output['Load_Energy_Total_kWh']=GEInv.e_load_total
+        energy_total_output['Battery_Charge_Energy_Total_kWh']=GEInv.e_battery_charge_total
+        energy_total_output['Battery_Discharge_Energy_Total_kWh']=GEInv.e_battery_discharge_total
+        energy_total_output['Parallel_Total_Charge_Energy_Total_kWh']=GEInv.e_aio_charge_total
+        energy_total_output['Parallel_Total_Discharge_Energy_Total_kWh']=GEInv.e_aio_discharge_total
         
 
         ######## Get Meter Details ########
