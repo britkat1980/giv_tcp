@@ -437,7 +437,7 @@ class ConnectionDrops:
         idle=(datetime.datetime.now(datetime.timezone.utc)-max(stamps)).total_seconds() if stamps else None
         if self.lastsummary is None:
             self.lastsummary=datetime.datetime.now()
-            logger.info("Inverter closed the Modbus connection (last traffic "+self.fmt(idle)+" before). GivTCP will reconnect when it next needs to")
+            logger.debug("Inverter closed the Modbus connection (last traffic "+self.fmt(idle)+" before). GivTCP will reconnect when it next needs to")
             return
         self.idle.append(idle)
         logger.debug("Inverter closed the Modbus connection (last traffic "+self.fmt(idle)+" before)")
@@ -634,7 +634,7 @@ async def watch_plant(
                         cause=e.__cause__ or e
                         # A dongle going offline briefly (restart, Wi-Fi) usually fails a couple of attempts, so only
                         # treat it as an error once it persists
-                        logger.log(logging.WARNING if connectErrors<=2 else logging.ERROR,
+                        logger.log(logging.DEBUG if connectErrors<=2 else logging.ERROR,
                             "Unable to connect to inverter on: "+str(GiV_Settings.invertorIP)+" ("+type(cause).__name__+": "+str(cause)+")")
                         if recovery.enabled:
                             # Wait a normal interval, write commands included, and pause if it fails again. Count each
