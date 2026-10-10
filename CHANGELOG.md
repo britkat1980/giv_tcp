@@ -16,6 +16,9 @@ All notable changes to GivTCP are documented in this file.
   - **Gateway:** flows were only published with more than one All-in-One, and the whole poll could fail if none reported a state of charge.
 - **Battery pause mode stopped updating after "Registers HR 318-318 could not be read"**. GivTCP reads a few settings the library doesn't (the pause mode, and on some models the pause slot, three-phase slots and Gateway rates) after each full refresh. One failed read, as happens now and then when the dongle is busy, stopped that read for the rest of the session, so Home Assistant kept showing the old pause mode, even on inverters that answer it normally. Now a failed read is tried again with the next full refresh (with a longer timeout), and is only given up after 3 failures in a row. The value read last time is kept meanwhile, and the warning is only logged when it's given up.
 
+### Changed
+- **"network_producer: writer drain stalled" is only logged at debug level.** It's routine when the dongle is busy or briefly offline, and GivTCP reconnects, logging that itself if it takes longer than a read cycle.
+
 ## [3.6.0-beta7] - 2026-10-09
 
 Changes since 3.6.0-beta6.

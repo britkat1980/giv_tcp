@@ -37,8 +37,17 @@ logging.getLogger("givenergy_modbus").setLevel(logging.ERROR)
 class _ConnectionWarnings(logging.Filter):
     # The modbus client's errors, plus its warnings about the connection itself (eg. "connection lost (reader at
     # EOF)"), which explain a dropped connection. Its other warnings (retries and the like) stay hidden
+    # Routine on a busy or briefly offline dongle, and GivTCP reconnects (logging that itself if it takes long),
+    # so only shown, as debug, when GivTCP's log level is Debug
+    DEBUG_ONLY=("writer drain stalled",)
     def filter(self, record):
-        return record.levelno>=logging.ERROR or "connect" in record.getMessage().lower()
+        message=record.getMessage()
+        if any(text in message for text in self.DEBUG_ONLY):
+            if not logging.getLogger('read_logger').isEnabledFor(logging.DEBUG):
+                return False
+            record.levelno, record.levelname = logging.DEBUG, "DEBUG"
+            return True
+        return record.levelno>=logging.ERROR or "connect" in message.lower()
 _clientLogger=logging.getLogger("givenergy_modbus.client.client")
 _clientLogger.setLevel(logging.WARNING)
 _clientLogger.addFilter(_ConnectionWarnings())
