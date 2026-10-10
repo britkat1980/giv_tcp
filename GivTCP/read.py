@@ -421,13 +421,14 @@ async def processWriteRequests(client):
     return False
 
 class ConnectionDrops:
-    """Logs each time the inverter closes the connection, with how long since the last traffic: the first time,
-    then a summary every 5 minutes. Drops ~10s after traffic, every poll, are a dongle closing idle connections
-    (#604); occasional drops at random times, followed by failed reconnects, are the dongle going offline briefly
-    (a restart or lost Wi-Fi). Also logs how long it took to reconnect when the first attempts fail, at info level
-    only if it took longer than a read cycle (refresh_period), as a quicker reconnect costs no data"""
+    """Logs each time the inverter closes the connection, with how long since the last traffic, and a summary every
+    5 minutes, at debug level. Drops ~10s after traffic, every poll, are a dongle closing idle connections (#604);
+    occasional drops at random times, followed by failed reconnects, are the dongle going offline briefly (a restart
+    or lost Wi-Fi). Most cost no data, as GivTCP reconnects in time for the next poll, so only a drop that delayed a
+    data update (Home Assistant not updated within DELAY_CYCLES read cycles) is logged at info, by polled()"""
     SUMMARY_SECONDS=300
     BUSY_SECONDS=2
+    DELAY_CYCLES=1.5        # polls a read cycle apart, plus time for the read itself
 
     def __init__(self, refresh_period=None):
         self.refresh_period=refresh_period
@@ -436,11 +437,15 @@ class ConnectionDrops:
         self.lastsummary=None
         self.lostat=None        # when the connection was lost (or the first reconnect failed), until it reconnects
         self.failures=0
+        self.lastpoll=None      # the last successful poll
+        self.dropped=False      # the connection dropped since then
+        self.attempts=0         # failed reconnects since then
 
     def note(self, plant: Plant):
         if self.noted:      # once per drop: the loop sees it again every pass until it reconnects
             return
         self.noted=True
+        self.dropped=True
         self.lostat=datetime.datetime.now()
         stamps=plant.register_block_updated_at.values()
         idle=(datetime.datetime.now(datetime.timezone.utc)-max(stamps)).total_seconds() if stamps else None
@@ -453,7 +458,7 @@ class ConnectionDrops:
         if (datetime.datetime.now()-self.lastsummary).total_seconds()>=self.SUMMARY_SECONDS:
             known=[i for i in self.idle if i is not None]
             busy=sum(1 for i in known if i<self.BUSY_SECONDS)
-            logger.info("Inverter closed the Modbus connection "+str(len(self.idle))+" times in the last "+str(round((datetime.datetime.now()-self.lastsummary).total_seconds()/60))+" minutes"
+            logger.debug("Inverter closed the Modbus connection "+str(len(self.idle))+" times in the last "+str(round((datetime.datetime.now()-self.lastsummary).total_seconds()/60))+" minutes"
                 +(", last traffic "+self.fmt(min(known))+" to "+self.fmt(max(known))+" before" if known else "")
                 +(" ("+str(busy)+" within "+str(self.BUSY_SECONDS)+"s of traffic)" if busy else "")+". GivTCP will reconnect when it next needs to")
             self.idle=[]
@@ -461,19 +466,31 @@ class ConnectionDrops:
 
     def failed(self):
         self.failures+=1
+        self.attempts+=1
+        self.dropped=True
         if self.lostat is None:
             self.lostat=datetime.datetime.now()
 
     def reconnected(self):
         if self.failures:
-            took=(datetime.datetime.now()-self.lostat).total_seconds()
-            slow=self.refresh_period is None or took>self.refresh_period
-            logger.log(logging.INFO if slow else logging.DEBUG,
-                "Reconnected to the inverter after "+str(self.failures)+" failed attempt"+("s" if self.failures>1 else "")
-                +" ("+self.fmt(took)+" after the connection was lost)")
+            logger.debug("Reconnected to the inverter after "+str(self.failures)+" failed attempt"+("s" if self.failures>1 else "")
+                +" ("+self.fmt((datetime.datetime.now()-self.lostat).total_seconds())+" after the connection was lost)")
         self.noted=False
         self.lostat=None
         self.failures=0
+
+    def polled(self):
+        """After each successful poll: log at info if a dropped connection delayed this data update, ie Home
+        Assistant wasn't updated in line with the usual timing"""
+        now=datetime.datetime.now()
+        if self.lastpoll is not None and self.dropped and self.refresh_period:
+            gap=(now-self.lastpoll).total_seconds()
+            if gap>self.refresh_period*self.DELAY_CYCLES:
+                logger.info("Home Assistant wasn't updated for "+self.fmt(gap)+" (usually every "+str(round(self.refresh_period))+"s), as the inverter "
+                    +"connection dropped"+(" and "+str(self.attempts)+" reconnect"+("s" if self.attempts>1 else "")+" failed" if self.attempts else ""))
+        self.lastpoll=now
+        self.dropped=False
+        self.attempts=0
 
     @staticmethod
     def fmt(seconds):
@@ -618,6 +635,7 @@ async def watch_plant(
         connectErrors=0
         partialPolls=0
         drops=ConnectionDrops(refresh_period)
+        drops.polled()      # the initial read above
         logger.info("Starting data refresh cycle")
         while True:
             try:
@@ -687,6 +705,7 @@ async def watch_plant(
                         logger.debug ("Running partial refresh")
                     try:
                         failures=await readPlant(client, fullRefresh)
+                        drops.polled()
                         timeoutErrors=0     # Reset timeouts if all is good this run
                         recovery.ok()
                         # A device that fails every poll (eg. a battery removed since the capabilities were

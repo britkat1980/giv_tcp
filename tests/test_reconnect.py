@@ -35,7 +35,7 @@ def test_new_client_recovers_a_stuck_connection(plants):
         if fresh is not None:
             session.loop.run(fresh.close())
 
-def test_connection_drops_logs_idle_time_once_then_summarises(caplog):
+def test_connection_drops_log_idle_time_then_summarise_at_debug(caplog):
     import datetime
     import logging
     from types import SimpleNamespace
@@ -52,40 +52,51 @@ def test_connection_drops_logs_idle_time_once_then_summarises(caplog):
         drops.reconnected()
         drops.lastsummary -= datetime.timedelta(minutes=5)
         drops.note(plant(9.8))
-    lines = [r.getMessage() for r in caplog.records if "closed the Modbus connection" in r.getMessage()]
-    infos = [r.getMessage() for r in caplog.records if r.levelno == logging.INFO and "closed the Modbus connection" in r.getMessage()]
-    assert len(lines) == 4            # once per drop: first, one debug, last debug plus its summary
-    assert infos[0].startswith("Inverter closed the Modbus connection (last traffic 10.2s before)")
-    assert "2 times in the last 5 minutes, last traffic 0.5s to 9.8s before (1 within 2s of traffic)" in infos[1]
+    lines = [r for r in caplog.records if "closed the Modbus connection" in r.getMessage()]
+    assert len(lines) == 4            # once per drop, plus the summary
+    assert all(r.levelno == logging.DEBUG for r in lines)
+    assert "2 times in the last 5 minutes, last traffic 0.5s to 9.8s before (1 within 2s of traffic)" in lines[-1].getMessage()
 
-def test_reconnect_after_failures_logs_how_long_it_took(caplog):
-    import logging
-    import read
-    drops = read.ConnectionDrops()
-    with caplog.at_level(logging.INFO, logger=read.logger.name):
-        drops.reconnected()                     # first time straight away: nothing to report
-        drops.failed()
-        drops.failed()
-        drops.reconnected()
-    lines = [r.getMessage() for r in caplog.records if "Reconnected" in r.getMessage()]
-    assert len(lines) == 1 and lines[0].startswith("Reconnected to the inverter after 2 failed attempts (")
-    assert drops.failures == 0 and drops.lostat is None
-
-def test_reconnect_within_a_read_cycle_logs_at_debug(caplog):
-    import datetime
+def test_reconnect_after_failures_logs_at_debug(caplog):
     import logging
     import read
     drops = read.ConnectionDrops(refresh_period=60)
     with caplog.at_level(logging.DEBUG, logger=read.logger.name):
+        drops.reconnected()                     # first time straight away: nothing to report
         drops.failed()
-        drops.lostat -= datetime.timedelta(seconds=8)        # back within one read cycle: no data missed
-        drops.reconnected()
         drops.failed()
-        drops.lostat -= datetime.timedelta(seconds=90)       # longer than a read cycle
         drops.reconnected()
-    lines = [(r.levelno, r.getMessage()) for r in caplog.records if "Reconnected" in r.getMessage()]
-    assert [level for level, _ in lines] == [logging.DEBUG, logging.INFO]
-    assert "(90." in lines[1][1]
+    lines = [r for r in caplog.records if "Reconnected" in r.getMessage()]
+    assert len(lines) == 1 and lines[0].levelno == logging.DEBUG
+    assert lines[0].getMessage().startswith("Reconnected to the inverter after 2 failed attempts (")
+    assert drops.failures == 0 and drops.lostat is None
+
+def test_info_only_when_a_drop_delayed_the_data_update(caplog):
+    """A drop is only logged at info when Home Assistant wasn't updated in line with the usual timing: a dongle
+    closing an idle connection between polls costs no data, as GivTCP reconnects for the next poll"""
+    import datetime
+    import logging
+    from types import SimpleNamespace
+    import read
+    plant = SimpleNamespace(register_block_updated_at={})
+    drops = read.ConnectionDrops(refresh_period=30)
+    def poll_after(seconds):
+        drops.lastpoll -= datetime.timedelta(seconds=seconds)
+        drops.polled()
+    with caplog.at_level(logging.DEBUG, logger=read.logger.name):
+        drops.polled()
+        drops.note(plant)                       # idle drop between polls, reconnected for the next one on time
+        drops.reconnected()
+        poll_after(31)
+        poll_after(95)                          # a slow poll, but no drop: not about the connection
+        drops.note(plant)                       # dropped, and two reconnects failed: the update came 95s later
+        drops.failed()
+        drops.failed()
+        drops.reconnected()
+        poll_after(95)
+        poll_after(30)                          # back to normal
+    infos = [r.getMessage() for r in caplog.records if r.levelno == logging.INFO]
+    assert infos == ["Home Assistant wasn't updated for 95.0s (usually every 30s), as the inverter connection dropped and 2 reconnects failed"]
 
 def test_closing_a_dead_client_leaves_no_unhandled_task_error():
     """#613: the library's close() stops at writer.wait_closed() on TimeoutError, leaving the reader task to fail
