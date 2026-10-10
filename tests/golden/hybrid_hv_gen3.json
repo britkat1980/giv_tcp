@@ -5274,7 +5274,7 @@
      "Battery_to_House": 0,
      "Grid_to_Battery": 0,
      "Grid_to_House": 0,
-     "Solar_to_Battery": 369,
+     "Solar_to_Battery": 0,
      "Solar_to_Grid": 4458,
      "Solar_to_House": 378
     },
@@ -5503,7 +5503,7 @@
      "Battery_to_House": 0,
      "Grid_to_Battery": 0,
      "Grid_to_House": 0,
-     "Solar_to_Battery": 369,
+     "Solar_to_Battery": 0,
      "Solar_to_Grid": 4458,
      "Solar_to_House": 378
     },

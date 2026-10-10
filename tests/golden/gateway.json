@@ -5417,7 +5417,7 @@
      "Battery_to_Grid": 0,
      "Battery_to_House": 797,
      "Grid_to_Battery": 0,
-     "Grid_to_House": 31,
+     "Grid_to_House": 20,
      "Solar_to_Battery": 0,
      "Solar_to_Grid": 0,
      "Solar_to_House": 0
@@ -5713,7 +5713,7 @@
      "Battery_to_Grid": 0,
      "Battery_to_House": 797,
      "Grid_to_Battery": 0,
-     "Grid_to_House": 31,
+     "Grid_to_House": 20,
      "Solar_to_Battery": 0,
      "Solar_to_Grid": 0,
      "Solar_to_House": 0

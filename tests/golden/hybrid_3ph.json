@@ -5687,6 +5687,15 @@
     }
    },
    "Power": {
+    "Flows": {
+     "Battery_to_Grid": 0,
+     "Battery_to_House": 1636.0,
+     "Grid_to_Battery": 0,
+     "Grid_to_House": 0.0,
+     "Solar_to_Battery": 0,
+     "Solar_to_Grid": 0,
+     "Solar_to_House": 0
+    },
     "Power": {
      "AC_Charge_Power": 0.0,
      "BMS_Voltage": 471.8,
@@ -6614,6 +6623,15 @@
     }
    },
    "Power": {
+    "Flows": {
+     "Battery_to_Grid": 0,
+     "Battery_to_House": 1636.0,
+     "Grid_to_Battery": 0,
+     "Grid_to_House": 0.0,
+     "Solar_to_Battery": 0,
+     "Solar_to_Grid": 0,
+     "Solar_to_House": 0
+    },
     "Power": {
      "AC_Charge_Power": 0.0,
      "BMS_Voltage": 471.8,
@@ -7276,6 +7294,8 @@
    "homeassistant/sensor/GivEnergy/TC2337G000_Battery_Type/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Battery_Value/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Battery_ppkwh/config",
+   "homeassistant/sensor/GivEnergy/TC2337G000_Battery_to_Grid/config",
+   "homeassistant/sensor/GivEnergy/TC2337G000_Battery_to_House/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Boost_Temperature/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Buck_Boost_Temperature/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Current_Rate/config",
@@ -7308,6 +7328,8 @@
    "homeassistant/sensor/GivEnergy/TC2337G000_Grid_Phase2_Voltage/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Grid_Phase3_Current/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Grid_Phase3_Voltage/config",
+   "homeassistant/sensor/GivEnergy/TC2337G000_Grid_to_Battery/config",
+   "homeassistant/sensor/GivEnergy/TC2337G000_Grid_to_House/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_HY2336G050_Battery_Cell_10_Temperature/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_HY2336G050_Battery_Cell_10_Voltage/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_HY2336G050_Battery_Cell_11_Temperature/config",
@@ -7610,6 +7632,9 @@
    "homeassistant/sensor/GivEnergy/TC2337G000_SOC/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_SOC_kWh/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Safe_Write_Count/config",
+   "homeassistant/sensor/GivEnergy/TC2337G000_Solar_to_Battery/config",
+   "homeassistant/sensor/GivEnergy/TC2337G000_Solar_to_Grid/config",
+   "homeassistant/sensor/GivEnergy/TC2337G000_Solar_to_House/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Start_Delay_Time/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_System_Mode/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Time_Since_Last_Update/config",
@@ -7999,6 +8024,13 @@
    "GivEnergy/TC2337G000/Meter_Details/Meter_ID2/Phase_3_Power",
    "GivEnergy/TC2337G000/Meter_Details/Meter_ID2/Phase_3_Power_Factor",
    "GivEnergy/TC2337G000/Meter_Details/Meter_ID2/Phase_3_Voltage",
+   "GivEnergy/TC2337G000/Power/Flows/Battery_to_Grid",
+   "GivEnergy/TC2337G000/Power/Flows/Battery_to_House",
+   "GivEnergy/TC2337G000/Power/Flows/Grid_to_Battery",
+   "GivEnergy/TC2337G000/Power/Flows/Grid_to_House",
+   "GivEnergy/TC2337G000/Power/Flows/Solar_to_Battery",
+   "GivEnergy/TC2337G000/Power/Flows/Solar_to_Grid",
+   "GivEnergy/TC2337G000/Power/Flows/Solar_to_House",
    "GivEnergy/TC2337G000/Power/Power/AC_Charge_Power",
    "GivEnergy/TC2337G000/Power/Power/BMS_Voltage",
    "GivEnergy/TC2337G000/Power/Power/Battery_Charge_Power",

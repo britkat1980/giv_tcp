@@ -107,6 +107,23 @@ def checkInverterClock(invTime, readAt=None):
                    " against "+now.strftime(shown)+"), so its Today energy counters reset at the wrong time. "
                    "Use the Sync Time button, or the GivEnergy portal, to correct it")
 
+def powerFlows(pv, load, import_power, export_power, charge_power, discharge_power):
+    """Split the power into the flows between solar, battery, house and grid. Each source is shared out in turn:
+    solar to the house first, then the battery, then the grid, and the battery and grid cover what the house still
+    needs. Each flow is limited by what's left at both ends, so the house flows never add up to more than the load,
+    and none is negative. Readings that don't quite balance (inverter losses, meter timing) are left unattributed
+    rather than counted twice"""
+    pv, load, imp, exp, chg, dis = (max(v or 0, 0) for v in (pv, load, import_power, export_power, charge_power, discharge_power))
+    s2h = min(pv, load)
+    b2h = min(dis, load-s2h)
+    g2h = min(imp, load-s2h-b2h)
+    s2b = min(pv-s2h, chg)
+    g2b = max(min(imp-g2h, chg-s2b), 0)
+    s2g = max(min(pv-s2h-s2b, exp), 0)
+    b2g = max(min(dis-b2h, exp-s2g), 0)
+    return {'Solar_to_House': s2h, 'Solar_to_Battery': s2b, 'Solar_to_Grid': s2g, 'Battery_to_House': b2h,
+            'Battery_to_Grid': b2g, 'Grid_to_House': g2h, 'Grid_to_Battery': g2b}
+
 def settingsReadAt(plant: Plant):
     # When the inverter's holding registers (its settings and clock) were last read, or None if not known
     addr=plant.capabilities.inverter_address if plant.capabilities else None
@@ -1441,16 +1458,11 @@ def processPVInfo(plant: Plant):
 
     ############  Power Flow Stats    ############
 
-        # Solar to H/B/G
-        logger.debug("Getting Solar to H/B/G Power Flows")
-        if PV_power > 0:
-            S2H = min(PV_power - export_power,0)
-            power_flow_output['Solar_to_House'] = S2H
-            power_flow_output['Solar_to_Grid'] = export_power
-
-        else:
-            power_flow_output['Solar_to_House'] = 0
-            power_flow_output['Solar_to_Grid'] = 0
+        # Solar to House/Grid: no battery, and the house is whatever the grid doesn't take
+        logger.debug("Getting Solar to H/G Power Flows")
+        flows=powerFlows(PV_power, max(PV_power-export_power,0), import_power, export_power, 0, 0)
+        power_flow_output['Solar_to_House'] = flows['Solar_to_House']
+        power_flow_output['Solar_to_Grid'] = flows['Solar_to_Grid']
 
         if GEInv.f_ac1>100:
             freq=GEInv.f_ac1/10
@@ -1698,26 +1710,6 @@ def processInverterInfo(plant: Plant):
         power_output['Self_Consumption_Power'] = max(Load_power - import_power, 0)
 
 
-    ############  Power Flow Stats    ############
-
-        # Solar to H/B/G
-        logger.debug("Getting Solar to H/B/G Power Flows")
-        if PV_power > 0:
-            S2H = min(PV_power, Load_power)
-            power_flow_output['Solar_to_House'] = S2H
-            power_flow_output['Solar_to_Grid'] = export_power
-
-        else:
-            power_flow_output['Solar_to_House'] = 0
-            power_flow_output['Solar_to_Grid'] = 0
-
-        # Grid to Battery/House Power
-        logger.debug("Getting Grid to Battery/House Power Flow")
-        if import_power > 0:
-            power_flow_output['Grid_to_House'] = import_power
-        else:
-            power_flow_output['Grid_to_House'] = 0
-
     ######## Get Control Data ########
 
         controlmode={}
@@ -1804,40 +1796,8 @@ def processInverterInfo(plant: Plant):
             power_output['Combined_Generation_Power'] = GEInv.p_combined_generation
 
         # Power flows
-        logger.debug("Getting Solar to H/B/G Power Flows")
-        if PV_power > 0:
-            S2H = min(PV_power, Load_power)
-            power_flow_output['Solar_to_House'] = S2H
-            S2B = max((PV_power-S2H)-export_power, 0)
-            power_flow_output['Solar_to_Battery'] = S2B
-            power_flow_output['Solar_to_Grid'] = max(PV_power - S2H - S2B, 0)
-
-        else:
-            power_flow_output['Solar_to_House'] = 0
-            power_flow_output['Solar_to_Battery'] = 0
-            power_flow_output['Solar_to_Grid'] = 0
-
-        # Battery to House
-        logger.debug("Getting Battery to House Power Flow")
-        B2H = max(discharge_power-export_power, 0)
-        power_flow_output['Battery_to_House'] = B2H
-
-        # Grid to Battery/House Power
-        logger.debug("Getting Grid to Battery/House Power Flow")
-        if import_power > 0:
-            power_flow_output['Grid_to_Battery'] = charge_power-max(PV_power-Load_power, 0)
-            power_flow_output['Grid_to_House'] = max(import_power-charge_power, 0)
-
-        else:
-            power_flow_output['Grid_to_Battery'] = 0
-            power_flow_output['Grid_to_House'] = 0
-
-        # Battery to Grid Power
-        logger.debug("Getting Battery to Grid Power Flow")
-        if export_power > 0:
-            power_flow_output['Battery_to_Grid'] = max(discharge_power-B2H, 0)
-        else:
-            power_flow_output['Battery_to_Grid'] = 0
+        logger.debug("Getting Power Flows")
+        power_flow_output.update(powerFlows(PV_power, Load_power, import_power, export_power, charge_power, discharge_power))
 
         # Check for all zeros
         checksum = 0
@@ -2149,54 +2109,12 @@ def processGatewayInfo(plant: Plant):
                     else:
                         power_output['Charge_Time_Remaining'] = 0
 
-                grid_power = GEInv.p_ac1
-                if grid_power < 0:
-                    import_power = abs(grid_power)
-                    export_power = 0
-                elif grid_power > 0:
-                    import_power = 0
-                    export_power = abs(grid_power)
-                else:
-                    import_power = 0
-                    export_power = 0
-
-                # Power flows
-                power_flow_output={}
-                logger.debug("Getting Solar to H/B/G Power Flows")
-                if GEInv.p_pv > 0:
-                    S2H = min(GEInv.p_pv, GEInv.p_load)
-                    power_flow_output['Solar_to_House'] = S2H
-                    S2B = max((GEInv.p_pv-S2H)-export_power, 0)
-                    power_flow_output['Solar_to_Battery'] = S2B
-                    power_flow_output['Solar_to_Grid'] = max(GEInv.p_pv - S2H - S2B, 0)
-
-                else:
-                    power_flow_output['Solar_to_House'] = 0
-                    power_flow_output['Solar_to_Battery'] = 0
-                    power_flow_output['Solar_to_Grid'] = 0
-
-                # Battery to House
-                logger.debug("Getting Battery to House Power Flow")
-                B2H = max(discharge_power-export_power, 0)
-                power_flow_output['Battery_to_House'] = B2H
-
-                # Grid to Battery/House Power
-                logger.debug("Getting Grid to Battery/House Power Flow")
-                if import_power > 0:
-                    power_flow_output['Grid_to_Battery'] = charge_power-max(GEInv.p_pv-GEInv.p_load, 0)
-                    power_flow_output['Grid_to_House'] = max(import_power-charge_power, 0)
-
-                else:
-                    power_flow_output['Grid_to_Battery'] = 0
-                    power_flow_output['Grid_to_House'] = 0
-
-                # Battery to Grid Power
-                logger.debug("Getting Battery to Grid Power Flow")
-                if export_power > 0:
-                    power_flow_output['Battery_to_Grid'] = max(discharge_power-B2H, 0)
-                else:
-                    power_flow_output['Battery_to_Grid'] = 0
-            power["Flows"] = power_flow_output
+        # Power flows, with one All-in-One or several. Grid power is negative for import; the All-in-Ones' total
+        # is positive for discharge
+        logger.debug("Getting Power Flows")
+        grid_power=GEInv.p_ac1 or 0
+        aio_power=GEInv.p_aio_total or 0
+        power["Flows"]=powerFlows(GEInv.p_pv, GEInv.p_load, max(-grid_power,0), max(grid_power,0), max(-aio_power,0), max(aio_power,0))
 
         inverters={}
         swv=int(GEInv.software_version[-2:])
@@ -2481,6 +2399,9 @@ def processThreePhaseInfo(plant: Plant):
         energy["Total"] = energy_total_output
         power = {}
         power["Power"] = power_output
+        # Power flows (none before 3.6), from the meter's import/export and the battery's charge/discharge power
+        power["Flows"] = powerFlows(power_output['PV_Power'], GEInv.p_load_all, GEInv.p_meter_import, GEInv.p_meter_export,
+                                    GEInv.p_battery_charge, GEInv.p_battery_discharge)
         multi_output["Battery_Details"]=batteries2
         multi_output["Power"] = power
         multi_output[GEInv.serial_number] = inverter

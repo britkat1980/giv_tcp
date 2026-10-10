@@ -5342,9 +5342,9 @@
    "Power": {
     "Flows": {
      "Battery_to_Grid": 0,
-     "Battery_to_House": 441,
+     "Battery_to_House": 376,
      "Grid_to_Battery": 0,
-     "Grid_to_House": 5,
+     "Grid_to_House": 0,
      "Solar_to_Battery": 0,
      "Solar_to_Grid": 0,
      "Solar_to_House": 0
@@ -5589,9 +5589,9 @@
    "Power": {
     "Flows": {
      "Battery_to_Grid": 0,
-     "Battery_to_House": 441,
+     "Battery_to_House": 376,
      "Grid_to_Battery": 0,
-     "Grid_to_House": 5,
+     "Grid_to_House": 0,
      "Solar_to_Battery": 0,
      "Solar_to_Grid": 0,
      "Solar_to_House": 0

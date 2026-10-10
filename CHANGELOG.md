@@ -4,7 +4,16 @@ All notable changes to GivTCP are documented in this file.
 
 ## [Unreleased]
 
+### Added
+- **Power flow entities on three-phase inverters**, from the meter's import and export and the battery's charge and discharge power.
+
 ### Fixed
+- **Power flow entities** (Solar to House, Battery to Grid and the rest) are now worked out the same way on every model, and fixed:
+  - **Solar to House was never above 0 on PV-only inverters.**
+  - **Grid to Battery could be negative**, or more than the import, when a little power was imported while solar covered the battery.
+  - **The house flows could add up to more than the load.** Each source is now shared out in turn (solar to the house first, then the battery, then the grid), and each flow is limited by what's left at both ends. Small imbalances from inverter losses are left out rather than counted twice.
+  - **Solar to Battery could show while the battery wasn't charging.**
+  - **Gateway:** flows were only published with more than one All-in-One, and the whole poll could fail if none reported a state of charge.
 - **Battery pause mode stopped updating after "Registers HR 318-318 could not be read"**. GivTCP reads a few settings the library doesn't (the pause mode, and on some models the pause slot, three-phase slots and Gateway rates) after each full refresh. One failed read, as happens now and then when the dongle is busy, stopped that read for the rest of the session, so Home Assistant kept showing the old pause mode, even on inverters that answer it normally. Now a failed read is tried again with the next full refresh (with a longer timeout), and is only given up after 3 failures in a row. The value read last time is kept meanwhile, and the warning is only logged when it's given up.
 
 ## [3.6.0-beta7] - 2026-10-09
