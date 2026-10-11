@@ -1462,12 +1462,15 @@ def processPVInfo(plant: Plant):
 
         energy_total_output['Export_Energy_Total_kWh'] = GEInv.e_grid_out_total
 
-        energy_total_output['Invertor_Energy_Total_kWh'] = GEInv.e_inverter_out_total
+        # givenergy-modbus v2 gives IR45/46 as e_pv_generation_total, and as e_inverter_out_total only on AC/AIO, so
+        # e_inverter_out_total alone was always None here and failed every poll (#618)
+        energy_total_output['Invertor_Energy_Total_kWh'] = GEInv.e_pv_generation_total if GEInv.e_pv_generation_total is not None else GEInv.e_inverter_out_total
         energy_total_output['PV_Energy_Total_kWh'] = GEInv.e_pv_total
 
         # Energy Today Figures
         logger.debug("Getting Today Energy Data")
-        energy_today_output['PV_Energy_Today_kWh'] = GEInv.e_pv1_day+GEInv.e_pv2_day
+        pv_days=[v for v in (GEInv.e_pv1_day, GEInv.e_pv2_day) if v is not None]
+        energy_today_output['PV_Energy_Today_kWh'] = sum(pv_days) if pv_days else None
         energy_today_output['Export_Energy_Today_kWh'] = GEInv.e_grid_out_day
         energy_today_output['Invertor_Energy_Today_kWh'] = GEInv.e_pv_generation_today
 
@@ -1534,7 +1537,8 @@ def processPVInfo(plant: Plant):
         # Check for all zeros
         checksum = 0
         for item in energy_total_output:
-            checksum = checksum+energy_total_output[item]
+            if energy_total_output[item] is not None:     # one missing total mustn't fail the whole poll (#618)
+                checksum = checksum+energy_total_output[item]
         if checksum == 0:
             raise ValueError("All zeros returned by inverter, skipping update")
 
