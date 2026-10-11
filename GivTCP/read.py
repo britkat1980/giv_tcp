@@ -20,6 +20,7 @@ import inspect
 import requests
 from GivLUT import GivLUT, maxvalues, InvType, GivClientAsync, closeClient
 import modbus_patches
+import capture
 from entity_lut import Entity_Type
 from settings import GiV_Settings
 from os.path import exists
@@ -117,6 +118,11 @@ def checkInverterClock(invTime, readAt=None):
                    " against "+now.strftime(shown)+"), so its Today energy counters reset at the wrong time. "
                    "Use the Sync Time button, or the GivEnergy portal, to correct it")
 
+def sumPresent(*values):
+    # The sum of the values that were read, or None if none were
+    present=[v for v in values if v is not None]
+    return sum(present) if present else None
+
 def powerFlows(pv, load, import_power, export_power, charge_power, discharge_power):
     """Split the power into the flows between solar, battery, house and grid. Each source is shared out in turn:
     solar to the house first, then the battery, then the grid, and the battery and grid cover what the house still
@@ -198,7 +204,8 @@ PV_STRING_VI_UNSUPPORTED=[Model.AC, Model.ALL_IN_ONE]
 
 # DC-coupled hybrids, whose PV goes through the inverter: Load = inverter output - AC charge - export + import.
 # AC-coupled models also add the PV, which comes from a separate inverter
-DC_HYBRID_MODELS=(Model.HYBRID_GEN1,Model.HYBRID_GEN2,Model.HYBRID_GEN3,Model.HYBRID_GEN4,Model.HYBRID_HV_GEN3)
+DC_HYBRID_MODELS=(Model.HYBRID_GEN1,Model.HYBRID_GEN2,Model.HYBRID_GEN3,Model.HYBRID_GEN4,Model.HYBRID_HV_GEN3,
+                  Model.ALL_IN_ONE_HYBRID)     # the All in One-HY (0x82xx) is the hybrid, DC-coupled All-in-One (#621)
 # Max battery current (A) by device type code for HV Gen 3 hybrids; unlisted models assume 25A
 HV_GEN3_BAT_CURRENT={"8102":25,"8103":30}
 # Rated capacity of a GIV-BAT-3.4-HV stackable module (GivEnergy datasheet: 3 modules 10.2kWh ... 6 modules 20.4kWh)
@@ -638,6 +645,7 @@ async def watch_plant(
         lastfulltime=datetime.datetime.now() if initialFull else datetime.datetime.min
         nextpoll=datetime.datetime.now()+timedelta(seconds=refresh_period if initialFull or recovery.enabled else min(FULL_REFRESH_RETRY_DELAY,refresh_period))
         fullRetries=0
+        captureTask=None
         timeoutErrors=0
         connectErrors=0
         partialPolls=0
@@ -687,6 +695,15 @@ async def watch_plant(
                             rebootaddon()
                         await asyncio.sleep(min(5*connectErrors,60))    #Back off rather than hammering the dongle
                         continue
+                # A device capture asked for on the Share Device page: run it on this connection, alongside polling
+                captureRequest=capture.pending()
+                if captureRequest is not None:
+                    if captureTask is None or captureTask.done():
+                        open(".fullrefresh","a").close()    # so the settings and energy totals are in the capture
+                        captureTask=asyncio.create_task(capture.run(client, int(captureRequest.get("seconds") or capture.default_seconds()),
+                                                                    lambda: capture.device_summary(client.plant), logger))
+                    else:
+                        logger.info("Device capture already running, ignoring another request")
                 # Write command and initiation to use the same client connection
                 if await processWriteRequests(client):
                     continue    #Loop straight back to process more write commands
@@ -1120,7 +1137,7 @@ def getTimeslots(plant: Plant, multi_output_old=None):
 
     try:
         model=resolvedModel(plant, GEInv)
-        if model in [Model.ALL_IN_ONE, Model.AC_3PH, Model.HYBRID_3PH, Model.GATEWAY, Model.HYBRID_GEN4, Model.HYBRID_HV_GEN3] or (model == Model.HYBRID_GEN3 and int(GEInv.arm_firmware_version)>302):   #10 slots don't apply to AC/Hybrid except new fw on Gen 3
+        if model in [Model.ALL_IN_ONE, Model.ALL_IN_ONE_HYBRID, Model.AC_3PH, Model.HYBRID_3PH, Model.GATEWAY, Model.HYBRID_GEN4, Model.HYBRID_HV_GEN3] or (model == Model.HYBRID_GEN3 and int(GEInv.arm_firmware_version)>302):   #10 slots don't apply to AC/Hybrid except new fw on Gen 3
             # Single-phase 10-slot firmware keeps charge slot 2 at HR 243/244, not HR 31/32 (#619). Three-phase has no _x
             charge_slot_2 = getattr(GEInv, 'charge_slot_2_x', GEInv.charge_slot_2)
             timeslots['Charge_start_time_slot_2'] = validateTimeslot(getattr(charge_slot_2,'start',None),"Charge_start_time_slot_2",multi_output_old)
@@ -2355,8 +2372,9 @@ def processThreePhaseInfo(plant: Plant):
         power_output['PV_Current_String_2']=GEInv.i_pv2
         power_output['PV_Power_String_1']=GEInv.p_pv1
         power_output['PV_Power_String_2']=GEInv.p_pv2
-        power_output['PV_Power']=GEInv.p_pv1+GEInv.p_pv2
-        power_output['PV_Current']=GEInv.i_pv1+GEInv.i_pv2
+        # A missing value (eg. a register block not read) mustn't fail the whole poll (#621)
+        power_output['PV_Power']=sumPresent(GEInv.p_pv1,GEInv.p_pv2)
+        power_output['PV_Current']=sumPresent(GEInv.i_pv1,GEInv.i_pv2)
         power_output['Grid_Phase1_Voltage']=GEInv.v_ac1
         power_output['Grid_Phase2_Voltage']=GEInv.v_ac2
         power_output['Grid_Phase3_Voltage']=GEInv.v_ac3

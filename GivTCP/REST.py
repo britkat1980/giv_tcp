@@ -220,6 +220,23 @@ def rdData():
         return output
 
 #Publish last cached Invertor Data
+@giv_api.route('/captureDevice', methods=['POST'])
+def captureDevice():
+    """Capture this inverter's (redacted) Modbus traffic for the test library, run by its read loop alongside
+    polling. Optional JSON payload: {"seconds": n} (30-600, default enough for a full refresh). Returns the status
+    """
+    import capture
+    payload=request.get_json(silent=True) or {}
+    return capture.request(payload.get('seconds'))
+
+@giv_api.route('/captureStatus', methods=['GET'])
+def captureStatus():
+    """GET the state of this inverter's device capture (idle, requested, running, done or error). When done it
+    includes the file name (downloadable at /captures/<file>), a device summary and a pre-filled GitHub issue link
+    """
+    import capture
+    return capture.status()
+
 @giv_api.route('/getCache', methods=['GET'])
 def gtCache():
     """GET Last known data from the pkl file cache

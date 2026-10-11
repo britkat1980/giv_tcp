@@ -230,3 +230,15 @@ There's no command that sets just `ENABLE_CHARGE_TARGET` (HR 20) to 1. `disable_
 - Use `(243, 244)` for charge slot 2 in `EXTENDED_SLOTS`, and make them write-safe on 10-slot models.
 
 **GivTCP workaround:** `GivTCP/modbus_patches.py` does both. `read.py` reads slot 2 from `charge_slot_2_x` on 10-slot models.
+
+## 18. The All in One-HY (DTC 0x82xx) is single-phase
+
+**Problem**
+
+`CAPABILITIES["is_three_phase"]` includes `Model.ALL_IN_ONE_HYBRID`, so `select_inverter()` decodes it with `ThreePhaseInverter`, and it's polled and configured with the 1000-range banks (HR 1000-1124, IR 1000-1413). A user's All in One-HY units behind a Gateway reject those reads with error responses (britkat1980/giv_tcp#621), as the comment on `is_three_phase` says the residential All-in-One does. The register map (v4.1.6, device type codes) lists the All in One-HY as 6-12 kW units (0x8201-0x8204), and givenergy_modbus_async read every 0x8xxx device with the single-phase model.
+
+**Request**
+
+- Remove `Model.ALL_IN_ONE_HYBRID` from `CAPABILITIES["is_three_phase"]`, so it's decoded and polled single-phase like the All-in-One and HV Gen 3.
+
+**GivTCP workaround:** `GivTCP/modbus_patches.py` removes it from that set.

@@ -119,6 +119,7 @@ REST_SKIP = {
     "/restart": "restarts the add-on through the Supervisor",
     "/setImportCap": "EVC", "/setCurrentLimit": "EVC", "/setChargeControl": "EVC", "/setChargeMode": "EVC",
     "/setChargingMode": "EVC", "/setMaxSessionEnergy": "EVC",
+    "/captureDevice": "asks the read loop for a device capture, tested in test_capture.py",
 }
 
 # --- MQTT: control topic (the last part of <MQTT_Topic>/control/<serial>/<topic>) -> message payload -------
