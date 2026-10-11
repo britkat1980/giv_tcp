@@ -6,9 +6,9 @@ The same data is available three ways:
 
 | Where | How it looks |
 |---|---|
-| **MQTT** | One topic per value, following the nesting below: `GivEnergy/<serial>/Power/Power/SOC` (the root is `MQTT_TOPIC` if set) |
-| **REST** | The whole tree as JSON from `GET /REST1/getCache` (`/REST2/`… for other inverters) |
-| **Home Assistant** | One entity per value when `HA_AUTO_D` is on, e.g. `sensor.givtcp_<serial>_soc` |
+| **MQTT** | One topic per value, following the nesting below: `GivEnergy/<serial>/Power/Power/SOC` (the root is the Topic on the config page's MQTT section, if set) |
+| **REST** | The whole tree as JSON from `GET /REST1/getCache` (`/REST2/`… for other inverters, numbered by their slot on the Inverter Config page) |
+| **Home Assistant** | One entity per value when Home Assistant Auto Discovery is on, e.g. `sensor.givtcp_<serial>_soc` |
 
 Controllable datapoints also have a command topic, `GivEnergy/control/<serial>/<command>`. The **Command** column gives the `<command>` for each one. Home Assistant sets this up automatically.
 
@@ -32,7 +32,7 @@ Controllable datapoints also have a command topic, `GivEnergy/control/<serial>/<
 
 | Name | Type | Unit | Description |
 |---|---|---|---|
-| `status` | sensor | | `online` while GivTCP is reading the inverter |
+| `status` | sensor | | `online` while GivTCP is reading the inverter, `paused` while it's sending the inverter nothing to let it recover (Pause When Inverter Stops Responding) |
 | `Last_Updated_Time` | sensor | timestamp | When this set of data was published |
 | `Time_Since_Last_Update` | sensor | s | Seconds since the last successful update |
 | `Data_Age` | sensor | s | Age of the newest live register data from the inverter; `-1` if none has been read yet. A large value means values are being held from the last good read |
@@ -82,7 +82,9 @@ Controllable datapoints also have a command topic, `GivEnergy/control/<serial>/<
 
 ### Power/Flows
 
-`GivEnergy/<serial>/Power/Flows/…`: where the power is going, derived from the values above. Single-phase inverters.
+`GivEnergy/<serial>/Power/Flows/…`: where the power is going, worked out from the PV, load, grid import/export and battery charge/discharge power. Published for single-phase and three-phase inverters and the Gateway; PV-only inverters publish just `Solar_to_House` and `Solar_to_Grid`.
+
+Each source is shared out in turn: solar goes to the house first, then the battery, then the grid, and the battery and grid then cover what the house still needs. Each flow is limited by what's left at both ends, so the flows into the house never add up to more than the load, and none is negative. Small differences between the readings (inverter losses, meter timing) are left out rather than counted twice.
 
 | Name | Type | Unit | Description |
 |---|---|---|---|
@@ -320,7 +322,7 @@ Each timeslot appears in Home Assistant twice: as a `select` (a drop-down of one
 | `Battery_Cell_N_Voltage` | sensor | V | Voltage of cell N |
 | `Battery_Cell_N_Temperature` | sensor | °C | Temperature of cell (group) N |
 
-High-voltage battery stacks (three-phase and All-in-One) also report stack-level values from the battery control unit (BCU), under `Battery_Stack_N`:
+High-voltage battery stacks (HV Gen 3, three-phase and All-in-One) report each module's serial number, cell voltages and cell temperatures (`Battery_Serial_Number`, `Battery_Cell_N_Voltage`, `Battery_Cell_N_Temperature`), which are updated on full refreshes. They also report stack-level values from the stack's battery control unit (BCU), updated every poll, under `Battery_Stack_N`:
 
 | Name | Type | Unit | Description |
 |---|---|---|---|
@@ -331,11 +333,11 @@ High-voltage battery stacks (three-phase and All-in-One) also report stack-level
 | `Stack_SOC_Difference` | sensor | % | Spread between highest and lowest module SOC |
 | `Stack_SOH` | sensor | % | Stack state of health |
 | `Stack_Cycles` | sensor | | Stack charge cycles |
-| `Stack_Design_Capacity` | sensor | Ah | Stack capacity when new |
+| `Stack_Design_Capacity` | sensor | kWh | Stack usable capacity when new |
 | `Stack_Charge_Energy_…` / `Stack_Discharge_Energy_…` | sensor | kWh | Stack charge / discharge energy (`Today_kWh` and `Total_kWh`) |
 | `Stack_Charge_MOS_State` / `Stack_Discharge_MOS_State` | sensor | | `Closed` when the stack's charge / discharge switch is closed and current can flow, `Open` when the BCU has opened it to stop charging / discharging (where the stack reports it) |
 | `Stack_Firmware` | sensor | | BCU firmware |
-| `BMS_Temperature` | sensor | °C | BCU temperature |
+| `BMS_Temperature` | sensor | °C | Stack temperature: the average of its modules' temperature sensors (HV Gen 3 and three-phase), or the BCU temperature |
 
 ---
 
@@ -422,7 +424,7 @@ A Gateway connects up to three All-in-Ones in parallel. On top of the Gateway po
 
 ## EV Charger (GivEVC)
 
-`GivEnergy/<charger serial>/Charger/…`: published when `EVC_ENABLE` is on. In Home Assistant these appear on a device named "GivEVC".
+`GivEnergy/<charger serial>/Charger/…`: published when EVC Enable is on (the config page's EVC section). In Home Assistant these appear on a device named "GivEVC".
 
 | Name | Type | Command | Unit | Description |
 |---|---|---|---|---|
@@ -446,3 +448,18 @@ A Gateway connects up to three All-in-Ones in parallel. On top of the Gateway po
 | `Charge_Limit` | number | `setCurrentLimit` | A | Charging current limit (6–32 A) |
 | `Import_Cap` | number | `setImportCap` | A | Reduce charging to keep grid import under this current; 0 = off |
 | `Max_Session_Energy` | number | `setMaxSessionEnergy` | kWh | Stop the session after this much energy; 0 = off |
+
+---
+
+## Raw registers
+
+`GivEnergy/<serial>/raw/…`: the register values as the givenergy-modbus library decodes them, published when **Print Raw** is on (the config page's Misc section; always on in the Home Assistant add-on). They're for troubleshooting and advanced use, and aren't created as Home Assistant entities.
+
+| Where | Contents |
+|---|---|
+| `raw/invertor/<name>` | Each of the inverter's values, one topic each, e.g. `raw/invertor/battery_soc`. Time slots are shown as text and settings by name, and the library's calculated values (such as `battery_capacity_kwh`) are included |
+| `raw/batteries/<battery serial>/<name>` | Each low-voltage battery's values, e.g. `raw/batteries/<serial>/v_cell_01` |
+| `raw/HV_Battery_Stacks/Stack_N/…` | Each high-voltage stack's BCU values, and each module's values under its serial number |
+| `raw/meters/Meter_ID_N/…` | Each meter's values |
+
+The names are the library's own, so they can change with a library update.
