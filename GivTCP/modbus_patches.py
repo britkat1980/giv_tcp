@@ -23,6 +23,7 @@ each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, it
   AC config block. This also reads HR 313-314 after each load_config() on the Gateway, so the current rates
   are known.
 - EMS car charge boost, HR 2073, 0-22000 W [10]. The library reads it but has no writer.
+- Charge slot 2 on 10-slot models is at HR 243/244, not the legacy HR 31/32 the library uses (#619) [17].
 - Battery pack current, IR 95 [13]. The library reports it on every model, but it only holds a real value
   from BMS firmware 3020/4009 on Gen 3 and AC inverters from ARM firmware 214, and reads 0 elsewhere. This
   clears it to None everywhere else.
@@ -36,12 +37,14 @@ each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, it
 
 Remove each one once the library supports it.
 """
+import dataclasses
 import logging
 
 from givenergy_modbus.client import client as client_module
 from givenergy_modbus.client.client import Client
 from givenergy_modbus.exceptions import RefreshPartiallySucceeded
-from givenergy_modbus.model import manifest
+from givenergy_modbus.model import inverter as inverter_module
+from givenergy_modbus.model import manifest, slot_map
 from givenergy_modbus.model.hv_bcu import Bmu, decode_cells_temps_serial
 from givenergy_modbus.model.inverter import Model
 from givenergy_modbus.model.plant import Plant
@@ -71,6 +74,8 @@ GATEWAY_AC_LIMIT = frozenset({313, 314})     # AC charge limit, AC discharge lim
 EMS_CAR_CHARGE_BOOST = 2073
 CAR_CHARGE_BOOST_MAX = 22000
 
+EXTENDED_CHARGE_SLOT_2 = (243, 244)
+
 def pause_registers(model, arm_fw):
     """The pause registers this model can write"""
     if model == Model.AC:
@@ -97,6 +102,8 @@ def _extra_write_registers(model, arm_fw):
     extra = set(pause_registers(model, arm_fw))
     if model is not None and (manifest.has_extended_slots(model, arm_fw) or manifest.has_capability("is_three_phase", model)):
         extra |= SLOT_TARGET_REGISTERS
+    if model is not None and manifest.has_extended_slots(model, arm_fw) and not manifest.has_capability("is_three_phase", model):
+        extra |= set(EXTENDED_CHARGE_SLOT_2)
     if manifest.has_capability("is_three_phase", model):
         extra |= set(THREE_PHASE_AC_LIMIT.values())
     if manifest.has_capability("is_gateway", model):
@@ -121,7 +128,12 @@ def _write_safe_registers(model, arm_fw=None):
 manifest.write_safe_registers = _write_safe_registers
 # ...and the PDU checks it against this global set. Adding to it doesn't allow anything on its own, as the
 # per-model set above still has to include the register
-write_registers.WRITE_SAFE_REGISTERS.update(SLOT_TARGET_REGISTERS, {EMS_CAR_CHARGE_BOOST})
+write_registers.WRITE_SAFE_REGISTERS.update(SLOT_TARGET_REGISTERS, {EMS_CAR_CHARGE_BOOST}, EXTENDED_CHARGE_SLOT_2)
+
+# SinglePhaseInverter.slot_map reads the inverter module's own copy, so replace both
+_charge_slots = slot_map.EXTENDED_SLOTS.charge_slots
+slot_map.EXTENDED_SLOTS = inverter_module.EXTENDED_SLOTS = dataclasses.replace(
+    slot_map.EXTENDED_SLOTS, charge_slots=(_charge_slots[0], EXTENDED_CHARGE_SLOT_2) + _charge_slots[2:])
 
 def slot_target_soc(kind, slot, target):
     """Write the target SOC for charge or discharge slot 1-10"""
