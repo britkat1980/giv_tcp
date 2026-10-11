@@ -24,7 +24,7 @@ each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, it
   are known.
 - EMS car charge boost, HR 2073, 0-22000 W [10]. The library reads it but has no writer.
 - Battery pack current, IR 95 [13]. The library reports it on every model, but it only holds a real value
-  from BMS firmware 3022/4009 on Gen 3 and AC inverters above ARM firmware 214, and reads 0 elsewhere. This
+  from BMS firmware 3020/4009 on Gen 3 and AC inverters from ARM firmware 214, and reads 0 elsewhere. This
   clears it to None everywhere else.
 - HV battery modules in the second and later stacks [14]. The library looks for them at the next device
   addresses after the first stack's (0x55+ after a 5-module stack), which don't hold their data
@@ -206,11 +206,13 @@ Client.load_config = _load_config
 
 # --- battery pack current ----------------------------------------------------------------------------------
 
-# IR 95 (Im_Avg, i_battery) only holds the pack's current from BMS firmware 3022 (3xxx) or 4009 (4xxx), and only
-# Gen 3 and AC inverters above ARM firmware 214 pass it on (GivEnergy, britkat1980/giv_tcp#605). Everywhere else
-# it reads 0 whatever the current, so it's cleared to None rather than report a misleading 0A
+# IR 95 (Im_Avg, i_battery, signed: negative while charging) only holds the pack's current from BMS firmware 3020
+# (3xxx) or 4009 (4xxx), and only Gen 3 and AC inverters from ARM firmware 214 pass it on. GivEnergy said BMS 3022
+# and ARM above 214 (britkat1980/giv_tcp#605), but an AC on ARM 214 with packs on BMS 3020 reports it (#616).
+# Everywhere else it reads 0 whatever the current, so it's cleared to None rather than report a misleading 0A
 BMS_CURRENT_MODELS = frozenset({Model.HYBRID_GEN3, Model.AC})
-BMS_CURRENT_MIN_ARM_FW = 215
+BMS_CURRENT_MIN_ARM_FW = 214
+BMS_CURRENT_MIN_BMS_FW = 3020
 
 def bms_current_inverter(model, arm_fw):
     """True if this inverter passes on each battery pack's current"""
@@ -218,7 +220,7 @@ def bms_current_inverter(model, arm_fw):
 
 def bms_current_firmware(bms_fw):
     """True if a pack's BMS firmware reports its current"""
-    return bms_fw is not None and (3022 <= bms_fw < 4000 or bms_fw >= 4009)
+    return bms_fw is not None and (BMS_CURRENT_MIN_BMS_FW <= bms_fw < 4000 or bms_fw >= 4009)
 
 _library_batteries = Plant.batteries
 

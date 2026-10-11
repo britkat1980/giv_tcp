@@ -5636,7 +5636,8 @@
   },
   "discovery removed": [
    "Battery_BMS_Current",
-   "Battery_Discharge_Current"
+   "Battery_Discharge_Current",
+   "Battery_Pack_Current"
   ],
   "discovery topics": [
    "homeassistant/button/GivEnergy/FG2444G000_Reboot_Addon/config",

@@ -241,9 +241,10 @@ def unsupportedEntities():
     if device_type in PV_STRING_VI_UNSUPPORTED:
         unsupported+=['PV_Voltage_String_1','PV_Voltage_String_2','PV_Current_String_1','PV_Current_String_2',
                       'PV_Power_String_1','PV_Power_String_2']
-    unsupported+=['Battery_BMS_Current']      # renamed Battery_Discharge_Current in 3.6 beta 5 (#605)
+    # Renamed Battery_Discharge_Current in 3.6 beta 5 (#605), then Battery_Pack_Current, as it's charge too (#616)
+    unsupported+=['Battery_BMS_Current','Battery_Discharge_Current']
     if not bms_current_inverter(device_type, caps.arm_firmware_version):
-        unsupported+=['Battery_Discharge_Current']      # this inverter never passes on pack current (#605)
+        unsupported+=['Battery_Pack_Current']      # this inverter never passes on pack current (#605)
     return unsupported
 
 def wrongInverter(client):
@@ -974,7 +975,7 @@ def getBatteries(plant: Plant, multi_output_old):
                     battery['Battery_Temperature'] = b.t_bms_mosfet
                     battery['Battery_Voltage'] = b.v_cells_sum
                     if b.i_battery is not None:     # None where the inverter or pack firmware doesn't report it (#605)
-                        battery['Battery_Discharge_Current'] = b.i_battery      # GivEnergy: discharge only, so not Battery_Current
+                        battery['Battery_Pack_Current'] = b.i_battery      # the pack's own current, negative while charging (#616)
                     # IR(91) high byte = Status 3 (protocol v4.4.1 s4.4.1.1): bit1=charge MOS, bit2=discharge MOS, 1=closed
                     if b.status_3 is not None:
                         battery['Battery_Charge_MOS_State'] = "Closed" if b.status_3 & 0x02 else "Open"
