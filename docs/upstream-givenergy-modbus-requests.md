@@ -218,3 +218,15 @@ There's no command that sets just `ENABLE_CHARGE_TARGET` (HR 20) to 1. `disable_
 - Catch `OSError` (which includes `TimeoutError` and `ConnectionResetError`) around `wait_closed()`, or move the task and reader cleanup into a `finally`, so `close()` always cancels both network tasks.
 
 **GivTCP workaround:** `closeClient()` in `GivTCP/GivLUT.py` cancels both tasks after `close()`, whether or not it succeeded, and collects their exceptions. Remove it once `close()` does this.
+
+## 17. Charge slot 2 on 10-slot models is at HR 243/244
+
+**Problem**
+
+`EXTENDED_SLOTS` maps charge slot 2 to the legacy HR 31/32. A Gen 3 on 10-slot firmware rejects writes there with an error response (britkat1980/giv_tcp#619). givenergy_modbus_async read and wrote slot 2 at HR 243/244, next to its target SOC at HR 245, as do other GivEnergy clients. The library already decodes HR 243/244 as `charge_slot_2_x`.
+
+**Request**
+
+- Use `(243, 244)` for charge slot 2 in `EXTENDED_SLOTS`, and make them write-safe on 10-slot models.
+
+**GivTCP workaround:** `GivTCP/modbus_patches.py` does both. `read.py` reads slot 2 from `charge_slot_2_x` on 10-slot models.
