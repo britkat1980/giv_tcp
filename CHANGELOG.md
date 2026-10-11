@@ -1,3 +1,11 @@
+# GivTCP 3.6.1
+
+Changes since 3.6.0.
+
+### Fixed
+- **PV-only (string) inverters: no data, with "unsupported operand type(s) for +: 'float' and 'NoneType'" every poll** (#618). The new Modbus library stores the PV inverter's Inverter Energy Total under a different name, and GivTCP was still reading the old, empty one, which made every poll fail. It now reads the right value, and one missing energy total can no longer stop the whole poll.
+- **Charge Slot 2 couldn't be set on inverters with 10 charge slots, and read back wrong** (#619, thanks @JRascagneres). On Gen 3 (newer firmware), Gen 4, HV Gen 3, All-in-One and Gateway, charge slot 2 is at HR 243/244, as in 3.5, but the new library used the older HR 31/32, which these inverters reject (`WriteHoldingRegisterResponse(ERROR 32 ...)`). Charge slot 2 is now read and written at HR 243/244.
+
 # GivTCP 3.6.0
 
 Release notes for anyone upgrading from **GivTCP 3.5**. Please report problems on [GitHub](https://github.com/britkat1980/giv_tcp/issues), with a debug log if you can.
