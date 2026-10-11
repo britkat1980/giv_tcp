@@ -1,3 +1,10 @@
+# GivTCP 3.6.2
+
+Changes since 3.6.1.
+
+### Fixed
+- **Home Assistant entities deleted and recreated, resetting their entity ID.** Before republishing discovery, GivTCP deleted any entity whose config had changed, so Home Assistant recreated it with GivTCP's default entity ID. Entities with an older ID (for example from GivTCP 2.x, such as `sensor.givtcp_<serial>_invertor_details_givtcp_invertor_temperature`) or one you'd renamed were reset, and lost any name, area or icon you'd given them. A comparison bug made every temperature sensor (anything in °C) count as changed, so they were deleted and recreated on every restart. GivTCP now leaves existing entities alone: Home Assistant updates them in place when their config changes. Old entities are still removed on a V3 upgrade, and entities your inverter doesn't support are still removed. If an entity ID was reset on 3.6 or 3.6.1, change it back in Settings → Entities.
+
 # GivTCP 3.6.1
 
 Changes since 3.6.0.

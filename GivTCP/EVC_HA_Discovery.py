@@ -360,9 +360,14 @@ class CheckDisco():
             client.disconnect()
     
     def removedisco(SN,messages):
-        # Clear the retained discovery messages for this inverter whose payload has changed (all of them on a V3
-        # upgrade), so HA picks up the new config. Collects the retained messages itself, as CheckDisco.msgs is
-        # otherwise only filled when removeunsupported() ran first (#609)
+        # On a V3 upgrade, clear all this inverter's retained discovery messages, so HA drops the old entities.
+        # Otherwise nothing is removed: HA updates an entity in place when a new config is published on its topic,
+        # keeping its entity ID, name, area and history. Deleting changed configs first made HA delete and recreate
+        # them, resetting legacy or renamed entity IDs and customisations, and every temperature sensor on every
+        # restart, as its °C made the comparison always fail. Collects the retained messages itself (#609)
+        if not exists('/config/GivTCP/.v3upgrade_'+str(GiV_Settings.givtcp_instance)):
+            logger.debug("removedisco: not a V3 upgrade, so nothing to remove (changed configs are updated in place)")
+            return
         client=None
         try:
             logger.debug("removedisco: SN: "+str(SN))
@@ -389,36 +394,21 @@ class CheckDisco():
                     break
                 foundmessages=moremessages
             #Loop through all msgs and remove if they are GivTCP ones
-            newmsg={}
-            for message in messages:
-                newmsg[message[0]]=message[1]
-            v3upgrade=exists('/config/GivTCP/.v3upgrade_'+str(GiV_Settings.givtcp_instance))
             count=0
             # The client's network thread keeps adding to CheckDisco.msgs (GivTCP's own state messages arrive under
             # GivEnergy/#), so work through a copy
             for topic,msg in list(CheckDisco.msgs.items()):
                 if SN in topic or SN in msg: # ("GivEnergy" in msg or GiV_Settings.MQTT_Topic in msg):
-                    if v3upgrade:
-                        client.publish(topic,None,0,True)     #delete regardless of if it has changed
-                        CheckDisco.msgs.pop(topic,None)
-                        count+=1
-                    elif topic in newmsg:
-                        old=newmsg[topic]
-                        new=msg[2:-1]     #.split('}')[:0]
-                        if not old == new:       #if payload is different delete old one
-                            client.publish(topic,None,0,True)
-                            # So checkdisco() doesn't take the old message as the new one having arrived
-                            CheckDisco.msgs.pop(topic,None)
-                            count+=1
-            if v3upgrade:
-                logger.debug("removedisco: V3 upgrade, so dropped "+str(count)+" old discovery messages")
-            else:
-                logger.debug("removedisco: "+str(count)+" discovery messages changed and removed")
+                    client.publish(topic,None,0,True)
+                    # So checkdisco() doesn't take the old message as the new one having arrived
+                    CheckDisco.msgs.pop(topic,None)
+                    count+=1
+            logger.debug("removedisco: V3 upgrade, so dropped "+str(count)+" old discovery messages")
             time.sleep(2)
         except gaierror:
             logger.error("removedisco: Error in to MQTT Address. Check config and update.")
         except:
-            logger.error("removedisco: Error removing changed discovery messages: " + errDetail())
+            logger.error("removedisco: Error removing old discovery messages: " + errDetail())
         finally:
             if client is not None:
                 client.loop_stop()

@@ -1,4 +1,5 @@
-"""removedisco clears changed discovery messages while the MQTT client's thread keeps adding to CheckDisco.msgs (#609)"""
+"""removedisco only clears discovery messages on a V3 upgrade, while the MQTT client's thread keeps adding to
+CheckDisco.msgs (#609). Otherwise changed configs are updated in place, keeping entity IDs and customisations"""
 import HA_Discovery
 from harness import fakes
 
@@ -30,27 +31,31 @@ class RetainedBroker:
         # GivTCP's own state messages keep arriving while removedisco works through the retained ones
         self.deliver("GivEnergy/" + SN + "/new_" + str(len(self.published)), "1")
 
-def run(monkeypatch, retained, sent):
+def run(monkeypatch, retained, sent, v3upgrade):
     broker = RetainedBroker(retained)
-    monkeypatch.setattr(HA_Discovery.paho_mqtt, "Client", lambda *a, **k: broker)
+    clients = []
+    monkeypatch.setattr(HA_Discovery.paho_mqtt, "Client", lambda *a, **k: clients.append(1) or broker)
+    monkeypatch.setattr(HA_Discovery, "exists", lambda path: v3upgrade and ".v3upgrade_" in path)
     logged = []
     monkeypatch.setattr(HA_Discovery.logger, "error", logged.append)
     HA_Discovery.CheckDisco.msgs = {}           # starts empty, as on a fresh start
     fakes.real["removedisco"](SN, sent)
-    return broker, logged
+    return broker, logged, clients
 
-def test_changed_message_removed_while_new_ones_arrive(monkeypatch):
-    retained = {TOPIC: '{"name": "old"}', "homeassistant/sensor/GivEnergy/" + SN + "_Other/config": '{"name": "same"}'}
-    broker, logged = run(monkeypatch, retained, [[TOPIC, '{"name": "new"}'],
-                                                 ["homeassistant/sensor/GivEnergy/" + SN + "_Other/config", '{"name": "same"}']])
+def test_changed_configs_not_deleted(monkeypatch):
+    # Deleting a changed config made HA delete and recreate the entity, resetting a legacy or renamed entity ID (and
+    # customisations). Every temperature sensor was hit on every restart, as its °C never compared equal
+    retained = {TOPIC: '{"name": "old", "unit_of_meas": "\u00b0C"}'}
+    broker, logged, clients = run(monkeypatch, retained, [[TOPIC, '{"name": "new", "unit_of_meas": "\u00b0C"}']], v3upgrade=False)
+    assert logged == [] and broker.published == [] and clients == []      # doesn't even connect
+
+def test_v3_upgrade_drops_old_messages_while_new_ones_arrive(monkeypatch):
+    other = "homeassistant/sensor/GivEnergy/" + SN + "_Other/config"
+    broker, logged, clients = run(monkeypatch, {TOPIC: '{"name": "old"}', other: '{"name": "same"}'}, [], v3upgrade=True)
     assert logged == []
-    assert broker.published == [TOPIC]
+    assert sorted(broker.published) == sorted([TOPIC, other])
     assert TOPIC not in HA_Discovery.CheckDisco.msgs      # so checkdisco waits for the new one
     assert broker.stopped
-
-def test_unchanged_messages_kept(monkeypatch):
-    broker, logged = run(monkeypatch, {TOPIC: '{"name": "same"}'}, [[TOPIC, '{"name": "same"}']])
-    assert logged == [] and broker.published == []
 
 def test_unsupported_log_names_only_what_was_removed(monkeypatch):
     # #612: the log listed every entity this model can't have, with a count of what was actually removed
