@@ -31,6 +31,7 @@ from mqtt import GivMQTT
 from modbus_patches import pause_registers, PAUSE_MODE_REGISTER, PAUSE_SLOT_REGISTERS, bms_current_inverter
 from givenergy_modbus.model.inverter import SinglePhaseInverterRegisterGetter
 import copy
+import enum
 
 logging.getLogger("givenergy_modbus").setLevel(logging.ERROR) 
 
@@ -845,6 +846,23 @@ def getInvModel(plant: Plant):
             inverterModel.ratecapacity=round(ratecap,2)
     return inverterModel
 
+def rawValues(model):
+    """A library device model's registers as plain values, so each is its own MQTT topic under raw rather than the
+    whole model as one string. Includes the library's computed values (eg. battery capacity in kWh)"""
+    values={}
+    fields=dict(model)
+    fields.update({name:getattr(model,name,None) for name in getattr(type(model),'model_computed_fields',{})})
+    for key,value in fields.items():
+        if isinstance(value,TimeSlot):
+            values[key]=str(value)
+        elif isinstance(value,(datetime.datetime,datetime.time)):
+            values[key]=value.isoformat()
+        elif hasattr(value,"name") and not isinstance(value,(str,int,float)) or isinstance(value,enum.Enum):
+            values[key]=value.name.capitalize()
+        else:
+            values[key]=value
+    return values
+
 def getRaw(plant: Plant):
     if plant.capabilities.is_ems:
         GEInv=plant.ems
@@ -863,7 +881,7 @@ def getRaw(plant: Plant):
     bat={}
     meters={}
 ###    inv=GEInv.getall()
-    raw['invertor']=GEInv
+    raw['invertor']=rawValues(GEInv)
     if isHV:
         stacks={}
         # givenergy-modbus v2: BCU values plus each valid BMU, as plain dicts so they serialise cleanly
@@ -877,7 +895,7 @@ def getRaw(plant: Plant):
     else:
         for b in GEBat:
             if b.is_valid():        # unconfirmed batteries (first poll after connecting) have no serial yet
-                bat[b.serial_number]=b
+                bat[b.serial_number]=rawValues(b)
         raw['batteries']=bat
     if Meters:
         for m in Meters:
