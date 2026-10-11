@@ -1121,8 +1121,10 @@ def getTimeslots(plant: Plant, multi_output_old=None):
     try:
         model=resolvedModel(plant, GEInv)
         if model in [Model.ALL_IN_ONE, Model.AC_3PH, Model.HYBRID_3PH, Model.GATEWAY, Model.HYBRID_GEN4, Model.HYBRID_HV_GEN3] or (model == Model.HYBRID_GEN3 and int(GEInv.arm_firmware_version)>302):   #10 slots don't apply to AC/Hybrid except new fw on Gen 3
-            timeslots['Charge_start_time_slot_2'] = validateTimeslot(getattr(GEInv.charge_slot_2,'start',None),"Charge_start_time_slot_2",multi_output_old)
-            timeslots['Charge_end_time_slot_2'] = validateTimeslot(getattr(GEInv.charge_slot_2,'end',None),"Charge_end_time_slot_2",multi_output_old)
+            # Single-phase 10-slot firmware keeps charge slot 2 at HR 243/244, not HR 31/32 (#619). Three-phase has no _x
+            charge_slot_2 = getattr(GEInv, 'charge_slot_2_x', GEInv.charge_slot_2)
+            timeslots['Charge_start_time_slot_2'] = validateTimeslot(getattr(charge_slot_2,'start',None),"Charge_start_time_slot_2",multi_output_old)
+            timeslots['Charge_end_time_slot_2'] = validateTimeslot(getattr(charge_slot_2,'end',None),"Charge_end_time_slot_2",multi_output_old)
             timeslots['Charge_start_time_slot_3'] = validateTimeslot(getattr(GEInv.charge_slot_3,'start',None),"Charge_start_time_slot_3",multi_output_old)
             timeslots['Charge_end_time_slot_3'] = validateTimeslot(getattr(GEInv.charge_slot_3,'end',None),"Charge_end_time_slot_3",multi_output_old)
             timeslots['Charge_start_time_slot_4'] = validateTimeslot(getattr(GEInv.charge_slot_4,'start',None),"Charge_start_time_slot_4",multi_output_old)
