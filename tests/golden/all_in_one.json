@@ -912,12 +912,12 @@
     "writes": [
      [
       17,
-      31,
+      243,
       130
      ],
      [
       17,
-      32,
+      244,
       430
      ]
     ]
@@ -949,7 +949,7 @@
     "writes": [
      [
       17,
-      32,
+      244,
       500
      ]
     ]
@@ -997,7 +997,7 @@
     "writes": [
      [
       17,
-      31,
+      243,
       200
      ]
     ]
@@ -5556,7 +5556,7 @@
    "Timeslots": {
     "Charge_end_time_slot_1": "05:30:00",
     "Charge_end_time_slot_10": "00:00:00",
-    "Charge_end_time_slot_2": "00:00:00",
+    "Charge_end_time_slot_2": "22:40:00",
     "Charge_end_time_slot_3": "00:00:00",
     "Charge_end_time_slot_4": "00:00:00",
     "Charge_end_time_slot_5": "00:00:00",
@@ -5566,7 +5566,7 @@
     "Charge_end_time_slot_9": "00:00:00",
     "Charge_start_time_slot_1": "00:00:00",
     "Charge_start_time_slot_10": "00:00:00",
-    "Charge_start_time_slot_2": "00:01:00",
+    "Charge_start_time_slot_2": "00:00:00",
     "Charge_start_time_slot_3": "00:00:00",
     "Charge_start_time_slot_4": "00:00:00",
     "Charge_start_time_slot_5": "00:00:00",
@@ -6536,7 +6536,7 @@
    "Timeslots": {
     "Charge_end_time_slot_1": "05:30:00",
     "Charge_end_time_slot_10": "00:00:00",
-    "Charge_end_time_slot_2": "00:00:00",
+    "Charge_end_time_slot_2": "22:40:00",
     "Charge_end_time_slot_3": "00:00:00",
     "Charge_end_time_slot_4": "00:00:00",
     "Charge_end_time_slot_5": "00:00:00",
@@ -6546,7 +6546,7 @@
     "Charge_end_time_slot_9": "00:00:00",
     "Charge_start_time_slot_1": "00:00:00",
     "Charge_start_time_slot_10": "00:00:00",
-    "Charge_start_time_slot_2": "00:01:00",
+    "Charge_start_time_slot_2": "00:00:00",
     "Charge_start_time_slot_3": "00:00:00",
     "Charge_start_time_slot_4": "00:00:00",
     "Charge_start_time_slot_5": "00:00:00",
@@ -9156,12 +9156,12 @@
     "writes": [
      [
       17,
-      31,
+      243,
       130
      ],
      [
       17,
-      32,
+      244,
       430
      ],
      [
