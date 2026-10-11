@@ -577,6 +577,7 @@ async def watch_plant(
             client = await GivClientAsync.get_connection(cold_start=True)
             usedCache=await detectPlant(client)
             initialFull=False
+            connectedAt=datetime.datetime.now(datetime.timezone.utc)
             try:
                 logger.debug ("Running full refresh")
                 await client.load_config()
@@ -588,9 +589,12 @@ async def watch_plant(
             try:
                 await readPlant(client, False)
             except CommunicationError:
-                if not usedCache or not client.connected:
+                # Only re-detect if the inverter answered something, so the cached capabilities may no longer match
+                # it. If nothing answered at all it isn't responding, and detect can't succeed (it only adds probes,
+                # and could save capabilities missing devices that didn't answer either), so retry instead (#615)
+                answered=any(ts>=connectedAt for ts in client.plant.register_block_updated_at.values())
+                if not usedCache or not client.connected or not answered:
                     raise
-                # Connected but nothing came back: the cached capabilities may not match this inverter any more
                 logger.warning("No data using cached capabilities, running full detect")
                 await detectPlant(client, force=True)
                 await readPlant(client, False)
@@ -753,7 +757,9 @@ async def watch_plant(
                             continue
                         if timeoutErrors>5:
                             logger.error("5 consecutive read errors in watch loop. Restarting modbus connection")
-                            await client.close()    # Reconnect happens at the top of the loop
+                            # A new client, not the same one reconnected, which can keep getting no answers (#615).
+                            # Reconnect happens at the top of the loop
+                            client=await GivClientAsync.new_client("5 consecutive read errors")
                             timeoutErrors=0
                         # Retry sooner than a full period, backing off on repeated failures
                         nextpoll=datetime.datetime.now()+timedelta(seconds=min(2**timeoutErrors, refresh_period))
@@ -2794,7 +2800,9 @@ async def self_run():
         try:
             logger.info("Starting watch_plant loop...")
             await watch_plant(handler=runAll2, refresh_period=GiV_Settings.self_run_timer,full_refresh_period=GiV_Settings.self_run_timer_full,recovery=recovery)
-            # watch_plant only returns if initial connect/detect failed, so pause before retrying
+            # watch_plant only returns if initial connect/detect failed, so pause before retrying, with a new client:
+            # the same one reconnected can keep getting no answers, where a restart connects first time (#615)
+            await GivClientAsync.new_client("the inverter didn't answer", quiet=True)
             if recovery.failed():
                 if commsFailure()>=10:      # watch_plant leaves the counting to here when the pause is on
                     logger.error("Lost communications with Inverter. Restarting container to detect IP change")

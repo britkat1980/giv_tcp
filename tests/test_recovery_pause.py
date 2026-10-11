@@ -56,7 +56,7 @@ class Sim:
                     raise CommunicationError("no response")
             self.client.connected = True
             return self.client
-        async def new_client():
+        async def new_client(*args, **kwargs):
             return self.client
         monkeypatch.setattr(read.GivClientAsync, "get_connection", get_connection)
         monkeypatch.setattr(read.GivClientAsync, "new_client", new_client)
@@ -176,3 +176,29 @@ def test_pause_happens_when_closing_the_dead_connection_fails(monkeypatch):
     sim.client.close = failing_close
     sim.run(pause=600)
     assert sim.read_times[:5] == [0, 60, 120, 180, 780]
+
+def _initial_detect(monkeypatch, answered):
+    """watch_plant's first read fails with cached capabilities: whether it falls back to a full detect"""
+    sim = Sim(monkeypatch, reads=[False, True, True], horizon=5)
+    forced = []
+    async def detect(client, force=False):
+        forced.append(force)
+        return True                         # cached capabilities used
+    monkeypatch.setattr(read, "detectPlant", detect)
+    if answered:
+        async def load_config():            # the inverter answers its settings, then the live data read fails
+            sim.client.plant.register_block_updated_at[(0x11, "HR", 0, 60)] = _dt.datetime.now(_dt.timezone.utc) + _dt.timedelta(days=3650)
+        sim.client.load_config = load_config
+    try:
+        asyncio.run(read.watch_plant(refresh_period=60, full_refresh_period=600, recovery=read.Recovery(0)))
+    except Stop:
+        pass
+    return forced
+
+def test_no_detect_when_nothing_answered(monkeypatch):
+    # #615: the inverter wasn't answering at all, and detect ran (and timed out) on every retry
+    assert _initial_detect(monkeypatch, answered=False) == [False]
+
+def test_detect_when_inverter_answered(monkeypatch):
+    # It answered, but not the cached devices: the capabilities may be out of date
+    assert _initial_detect(monkeypatch, answered=True) == [False, True]

@@ -110,16 +110,17 @@ class GivClientAsync:
             logger.exception("Unexpected error in get_connection: %s", err)
             raise CommunicationError(str(err)) from err
 
-    async def new_client():
+    async def new_client(reason="repeated failures to reconnect", quiet=False):
         """Replace the shared Client with a new one, keeping its Plant (detected capabilities and register data).
 
-        After a dropped connection the same Client can keep failing to reconnect straight away, while a new
-        process connects first time, so the read loop calls this after repeated failures rather than leave it
-        to the watchdog to restart the whole loop."""
+        After a dropped connection the same Client can keep failing to reconnect straight away, or keep getting no
+        answer once connected, while a new process (or an add-on restart) connects first time (#615). So the read
+        loop calls this when recovering, rather than leave it to the watchdog or a restart. quiet logs at debug,
+        for retries that happen every cycle while the inverter isn't answering"""
         global _client
         async with _connection_lock:
             old = _client
-            logger.warning("Replacing the modbus client after repeated failures to reconnect to %s", str(GiV_Settings.invertorIP))
+            logger.log(logging.DEBUG if quiet else logging.WARNING, "Replacing the modbus client after %s to %s", reason, str(GiV_Settings.invertorIP))
             try:
                 await closeClient(old)
             except Exception as exc:
