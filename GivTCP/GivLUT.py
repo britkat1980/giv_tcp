@@ -1,6 +1,8 @@
 """GivLUT: Various objects to interface to GivEnergy inverters """
-from givenergy_modbus_async.client.client import Client
-from givenergy_modbus_async.exceptions import CommunicationError
+from giverrors import errDetail
+from givenergy_modbus.client.client import Client
+import modbus_patches  # noqa: F401  (local givenergy-modbus extensions, applied on import)
+from givenergy_modbus.exceptions import CommunicationError
 from settings import GiV_Settings
 import logging
 import pickle
@@ -12,13 +14,36 @@ import sys
 
 from threading import Lock
 import asyncio
+import os
+import time
+from logging.handlers import TimedRotatingFileHandler
+
+from sharedlog import SharedTimedRotatingFileHandler   # noqa: F401  (imported from here by REST, write and influx)
 
 logger = logging.getLogger("GivLUT")
 _client = Client(GiV_Settings.invertorIP,8899)
 _connection_lock = asyncio.Lock()
 
+def _collect(task):
+    # Handle a finished network task's error, so asyncio doesn't report "Task exception was never retrieved"
+    if not task.cancelled() and task.exception() is not None:
+        logger.debug("Old modbus client's %s task ended with %s: %s", task.get_name(), type(task.exception()).__name__, task.exception())
+
+async def closeClient(client, timeout=5.0):
+    """Close a Client, and stop its network tasks even if close() fails part way. givenergy-modbus's close() stops
+    at writer.wait_closed() if that raises anything but ConnectionResetError, eg. TimeoutError on a dead socket,
+    leaving the reader task to fail on its own later with nothing to handle its error (#613). Raises what close() did"""
+    try:
+        await asyncio.wait_for(client.close(), timeout=timeout)
+    finally:
+        for name in ('network_consumer_task', 'network_producer_task'):
+            task = getattr(client, name, None)
+            if task is not None:
+                task.cancel()
+                task.add_done_callback(_collect)
+
 class GivClientAsync:
-    async def get_connection(cold_start=False):
+    async def get_connection(cold_start=False, reconnect=False):
         """Return a shared Client instance, creating or reconnecting as required.
 
         This function serialises connect/close activity using an asyncio.Lock so
@@ -39,7 +64,7 @@ class GivClientAsync:
                 if cold_start and getattr(_client, 'connected', False):
                     logger.info("Cold start requested: closing open modbus connection")
                     try:
-                        await asyncio.wait_for(_client.close(), timeout=5.0)
+                        await closeClient(_client)
                     except Exception:
                         logger.debug("Timed out or failed to close existing client during cold start")
 
@@ -47,7 +72,8 @@ class GivClientAsync:
                 if getattr(_client, 'connected', False):
                     return _client
 
-                logger.critical("Opening Modbus Connection to %s", str(GiV_Settings.invertorIP))
+                # Routine reconnects (eg. after the dongle closes an idle connection) aren't worth a log line each
+                logger.log(logging.DEBUG if reconnect else logging.CRITICAL, "Opening Modbus Connection to %s", str(GiV_Settings.invertorIP))
 
                 last_exc = None
                 for attempt in range(1, max(1, connect_retries) + 1):
@@ -59,9 +85,10 @@ class GivClientAsync:
                     except Exception as exc:
                         last_exc = exc
                         logger.warning(
-                            "Modbus connect attempt %d/%d failed: %s",
+                            "Modbus connect attempt %d/%d failed: %s: %s",
                             attempt,
                             connect_retries,
+                            type(exc).__name__,     # eg. TimeoutError has no message of its own
                             exc,
                         )
                         # If this was the last attempt, raise after logging
@@ -83,6 +110,24 @@ class GivClientAsync:
             logger.exception("Unexpected error in get_connection: %s", err)
             raise CommunicationError(str(err)) from err
 
+    async def new_client(reason="repeated failures to reconnect", quiet=False):
+        """Replace the shared Client with a new one, keeping its Plant (detected capabilities and register data).
+
+        After a dropped connection the same Client can keep failing to reconnect straight away, or keep getting no
+        answer once connected, while a new process (or an add-on restart) connects first time (#615). So the read
+        loop calls this when recovering, rather than leave it to the watchdog or a restart. quiet logs at debug,
+        for retries that happen every cycle while the inverter isn't answering"""
+        global _client
+        async with _connection_lock:
+            old = _client
+            logger.log(logging.DEBUG if quiet else logging.WARNING, "Replacing the modbus client after %s to %s", reason, str(GiV_Settings.invertorIP))
+            try:
+                await closeClient(old)
+            except Exception as exc:
+                logger.warning("Closing the old modbus client failed: %s: %s", type(exc).__name__, exc)
+            _client = Client(old.host, old.port, plant=old.plant)
+            return _client
+
 class GivQueue:
     from redis import Redis
     from rq import Queue
@@ -102,16 +147,16 @@ class maxvalues:
     single_phase={
         'maxInvPower':20000,
         'maxPower':20000,
-        'maxBatPower':13000,
+        'maxBatPower':20000,        # parallel AIOs behind a Gateway exceed 13kW (#543)
         '-maxInvPower':-20000,
         '-maxPower':-20000,
-        '-maxBatPower':-13000,
+        '-maxBatPower':-20000,
         'maxExport':20000,
         'maxTemp':100,
         '-maxTemp':-100,
         'maxCellVoltage':350,
         'maxTotalEnergy':10000000,
-        'maxTodayEnergy':100,
+        'maxTodayEnergy':1000,      # 100kWh/day is reachable with heat pumps and EVs (#473)
         'maxCost':100,
         'maxRate':2
         }
@@ -141,7 +186,7 @@ class GivLUT:
                         ' - %(module)-11s -  [%(levelname)-8s] - %(message)s')
     formatter = logging.Formatter(
         '%(asctime)s - %(module)s - [%(levelname)s] - %(message)s')
-    fh = TimedRotatingFileHandler(GiV_Settings.Debug_File_Location, when='midnight', backupCount=7)
+    fh = SharedTimedRotatingFileHandler(GiV_Settings.Debug_File_Location, when='midnight', backupCount=7)
     fh.setFormatter(formatter)
     logger = logging.getLogger('read_logger')
     logger.addHandler(fh)
@@ -162,6 +207,25 @@ class GivLUT:
 
     cachelock=Lock()
     restlock=Lock()
+
+    def load_pickle(path):
+        """Load a file GivTCP saved with pickle, or None if it can't be loaded.
+
+        A file saved by a different GivTCP version can hold objects from a modbus library that isn't installed
+        (eg. givenergy_modbus_async), and a damaged file can't be read at all. Rather than fail every time it's
+        read, move it aside so GivTCP rebuilds it"""
+        try:
+            with open(path, 'rb') as inp:
+                return pickle.load(inp)
+        except (ImportError, AttributeError, EOFError, pickle.UnpicklingError, ValueError) as e:
+            aside=path+".unreadable"
+            try:
+                os.replace(path, aside)
+            except OSError:
+                aside="(couldn't move it: delete it to clear this warning)"
+            logger.warning("Couldn't load %s, so it will be rebuilt - it was probably saved by a different version "
+                           "of GivTCP (%s: %s). Moved to %s", path, type(e).__name__, e, aside)
+            return None
 
     def get_regcache():
         try:
@@ -193,8 +257,7 @@ class GivLUT:
                 inp.write(datetime.datetime.now(datetime.timezone.utc).isoformat())
             if exists(GivLUT.regcache):
                 logger.debug("Opening regcache at: "+str(GivLUT.regcache))
-                with open(GivLUT.regcache, 'rb') as inp:
-                    regCacheStack = pickle.load(inp)
+                regCacheStack = GivLUT.load_pickle(GivLUT.regcache)
                 remove(GivLUT.cachelockfile)
                 return regCacheStack
             else:
@@ -202,12 +265,20 @@ class GivLUT:
                 logger.debug("regcache doesn't exist...")
                 return None
         except:
-            e=sys.exc_info()
+            e=errDetail()
             if exists(GivLUT.cachelockfile):
                 remove(GivLUT.cachelockfile)
             logger.error("Failed to get Cache: "+str(e))
             return None
         
+    def save_writerequests(requests):
+        """Replace the write request queue in one step, so the read loop never reads a partly written file"""
+        import threading
+        tmp=GivLUT.writerequests+"."+str(os.getpid())+"."+str(threading.get_ident())+".tmp"     # unique per writer (REST workers, MQTT, RQ)
+        with open(tmp,'wb') as outp:
+            pickle.dump(requests, outp, pickle.HIGHEST_PROTOCOL)
+        os.replace(tmp,GivLUT.writerequests)
+
     def put_regcache(regCacheStack):
 
         count=0
@@ -229,6 +300,8 @@ class GivLUT:
 
 
     # File paths for use
+    config_dir=os.environ.get("GIVTCP_CONFIG_DIR","/config/GivTCP")     # overridable so tests can run outside the container
+    allsettings=config_dir+"/allsettings.json"
     lockfile=".lockfile"
     cachelockfile=".regcache_lockfile_"+str(GiV_Settings.givtcp_instance)
     writerequests="writerequests.pkl"
@@ -271,6 +344,9 @@ class GivLUT:
     rates=["Day","Night"]
     battery_pause_mode=["Disabled","PauseCharge","PauseDischarge","PauseBoth",]
     car_charge_mode=["Stop","Eco","Eco+","Fast"]
+    # Three phase IR(1075)/IR(1120): givenergy-modbus v2 returns ints; names match the old library's enums
+    tph_system_mode={0:"Offline",1:"Grid_tied"}
+    tph_battery_priority={0:"Load",1:"Battery",2:"Grid"}
     local_control_mode=["Load","Battery","Grid"]
     pv_input_mode=["Independent","1x2"]
     charge_control=['Ready','Start','Stop']

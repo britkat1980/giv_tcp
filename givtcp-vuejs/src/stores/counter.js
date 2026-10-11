@@ -1,35 +1,54 @@
 import { defineStore } from 'pinia'
 import { useSessionStorage } from '@vueuse/core'
 
+// allsettings.json keeps inverters as flat per-slot keys (invertorIP_1, invertorIP_2, ...) plus number_of_inverters.
+export function emptyInverter() {
+  return { enable: false, ip: '', serial: '', name: '', batteryOnly: false, model: '', recoveryPause: 0 }
+}
+
+export function isEmptyInverter(inv) {
+  return !inv.ip && !inv.serial
+}
+
+export function invertersFromSettings(setts) {
+  const count = Number(setts.number_of_inverters) || 0
+  const list = []
+  for (let n = 1; n <= count; n++) {
+    list.push({
+      enable: setts['inverter_enable_' + n] === true,
+      ip: setts['invertorIP_' + n] ?? '',
+      serial: setts['serial_number_' + n] ?? '',
+      name: setts['inverterName_' + n] ?? '',
+      batteryOnly: setts['inverter_battery_only_' + n] === true,
+      model: setts['Model_' + n] ?? '',
+      recoveryPause: Number(setts['recovery_pause_' + n]) || 0
+    })
+  }
+  // Drop unused slots at the end (the template ships 5), but keep gaps so slot numbers never shift
+  while (list.length && isEmptyInverter(list[list.length - 1])) list.pop()
+  return list
+}
+
+export function invertersToSettings(list) {
+  const setts = { number_of_inverters: list.length }
+  list.forEach((inv, i) => {
+    const n = i + 1
+    setts['inverter_enable_' + n] = inv.enable
+    setts['invertorIP_' + n] = inv.ip
+    setts['serial_number_' + n] = inv.serial
+    setts['inverterName_' + n] = inv.name
+    setts['inverter_battery_only_' + n] = inv.batteryOnly
+    setts['Model_' + n] = inv.model
+    setts['recovery_pause_' + n] = Number(inv.recoveryPause) || 0
+  })
+  return setts
+}
+
 export const useTcpStore = defineStore('givtcp-form', {
   state: () => ({
-    inverters: useSessionStorage('inverters', {
-      inverter_enable_1: true,
-      invertorIP_1: "",
-      serial_number_1: "",
-      inverterName_1: "",
-      inverter_battery_only_1: false,
-      inverter_enable_2: false,
-      invertorIP_2: "",
-      serial_number_2: "",
-      inverterName_2: "",
-      inverter_battery_only_2: false,
-      inverter_enable_3: false,
-      invertorIP_3: "",
-      serial_number_3: "",
-      inverterName_3: "",
-      inverter_battery_only_3: false,
-      inverter_enable_4: false,
-      invertorIP_4: "",
-      serial_number_4: "",
-      inverterName_4: "",
-      inverter_battery_only_4: false,
-      inverter_enable_5: false,
-      invertorIP_5: "",
-      serial_number_5: "",
-      inverterName_5: "",
-      inverter_battery_only_5: false,
-    }),
+    // One entry per inverter slot; list position + 1 is the slot number GivTCP uses for ports, logs and
+    // folders, so entries are never renumbered. Converted to/from the flat allsettings.json keys on load/save.
+    inverters: useSessionStorage('inverters', { list: [] }),
     evc: useSessionStorage('evc', {
       evc_enable: false,
       evc_ip_address: "",
@@ -37,9 +56,11 @@ export const useTcpStore = defineStore('givtcp-form', {
       evc_import_max_current: 60
     }),
     selfrun: useSessionStorage('selfrun', {
+      auto_scan: true,
       self_run: false,
       self_run_timer: 30,
       self_run_timer_full: 120,
+      refresh_max_age: 0,
       HA_Auto_D: true,
     }),
     mqtt: useSessionStorage('mqtt', {
@@ -92,6 +113,7 @@ export const useTcpStore = defineStore('givtcp-form', {
       Log_Level: "Info",
       queue_retries: 2,
       data_smoother: "medium",
+      timeslot_entities: "both",
     })
   })
 })
@@ -107,212 +129,8 @@ export const useCard = defineStore('card', {
   state: () => ({
     inverters: {
       title: 'Inverter Config',
-      subtitle: 'Key Invertor details. Serial Number will be automatically added.',
-      fields: [
-        {
-          type: 'checkbox',
-          options: {
-            label: 'Inverter 1 Enable',
-            parent: 'inverters',
-            key: 'inverter_enable_1'
-          }
-        },
-        {
-          type: 'text',
-          options: {
-            label: 'Inverter 1 IP Address',
-            parent: 'inverters',
-            key: 'invertorIP_1'
-          }
-        },
-        {
-          type: 'text',
-          options: {
-            label: 'Inverter 1 Serial Number',
-            parent: 'inverters',
-            key: 'serial_number_1'
-          }
-        },
-        {
-          type: 'text',
-          options: {
-            label: 'Inverter 1 Friendly Name (HA Device Prefix)',
-            parent: 'inverters',
-            key: 'inverterName_1'
-          }
-        },
-        {
-          type: 'checkbox',
-          options: {
-            label: 'Inverter 1 only report battery data (for use when this inverter is connected to EMS or Gateway in parallel mode)',
-            parent: 'inverters',
-            key: 'inverter_battery_only_1'
-          }
-        },
-        {
-          type: 'checkbox',
-          options: {
-            label: 'Inverter 2 Enable',
-            parent: 'inverters',
-            key: 'inverter_enable_2'
-          }
-        },
-        {
-          type: 'text',
-          options: {
-            label: 'Inverter 2 IP Address',
-            parent: 'inverters',
-            key: 'invertorIP_2'
-          }
-        },
-        {
-          type: 'text',
-          options: {
-            label: 'Inverter 2 Serial Number',
-            parent: 'inverters',
-            key: 'serial_number_2'
-          }
-        },
-        {
-          type: 'text',
-          options: {
-            label: 'Inverter 2 Friendly Name (HA Device Prefix)',
-            parent: 'inverters',
-            key: 'inverterName_2'
-          }
-        },
-        {
-          type: 'checkbox',
-          options: {
-            label: 'Inverter 2 only report battery data (for use when this inverter is connected to EMS or Gateway in parallel mode)',
-            parent: 'inverters',
-            key: 'inverter_battery_only_2'
-          }
-        },
-
-        {
-          type: 'checkbox',
-          options: {
-            label: 'Inverter 3 Enable',
-            parent: 'inverters',
-            key: 'inverter_enable_3'
-          }
-        },
-        {
-          type: 'text',
-          options: {
-            label: 'Inverter 3 IP Address',
-            parent: 'inverters',
-            key: 'invertorIP_3'
-          }
-        },
-        {
-          type: 'text',
-          options: {
-            label: 'Inverter 3 Serial Number',
-            parent: 'inverters',
-            key: 'serial_number_3'
-          }
-        },
-        {
-          type: 'text',
-          options: {
-            label: 'Inverter 3 Friendly Name (HA Device Prefix)',
-            parent: 'inverters',
-            key: 'inverterName_3'
-          }
-        },
-        {
-          type: 'checkbox',
-          options: {
-            label: 'Inverter 3 only report battery data (for use when this inverter is connected to EMS or Gateway in parallel mode)',
-            parent: 'inverters',
-            key: 'inverter_battery_only_3'
-          }
-        },
-        {
-          type: 'checkbox',
-          options: {
-            label: 'Inverter 4 Enable',
-            parent: 'inverters',
-            key: 'inverter_enable_4'
-          }
-        },
-        {
-          type: 'text',
-          options: {
-            label: 'Inverter 4 IP Address',
-            parent: 'inverters',
-            key: 'invertorIP_4'
-          }
-        },
-        {
-          type: 'text',
-          options: {
-            label: 'Inverter 4 Serial Number',
-            parent: 'inverters',
-            key: 'serial_number_4'
-          }
-        },
-        {
-          type: 'text',
-          options: {
-            label: 'Inverter 4 Friendly Name (HA Device Prefix)',
-            parent: 'inverters',
-            key: 'inverterName_4'
-          }
-        },
-        {
-          type: 'checkbox',
-          options: {
-            label: 'Inverter 4 only report battery data (for use when this inverter is connected to EMS or Gateway in parallel mode)',
-            parent: 'inverters',
-            key: 'inverter_battery_only_4'
-          }
-        },
-
-        {
-          type: 'checkbox',
-          options: {
-            label: 'Inverter 5 Enable',
-            parent: 'inverters',
-            key: 'inverter_enable_5'
-          }
-        },
-        {
-          type: 'text',
-          options: {
-            label: 'Inverter 5 IP Address',
-            parent: 'inverters',
-            key: 'invertorIP_5'
-          }
-        },
-        {
-          type: 'text',
-          options: {
-            label: 'Inverter 5 Serial Number',
-            parent: 'inverters',
-            key: 'serial_number_5'
-          }
-        },
-        {
-          type: 'text',
-          options: {
-            label: 'Inverter 5 Friendly Name (HA Device Prefix)',
-            parent: 'inverters',
-            key: 'inverterName_5'
-          }
-        },
-        {
-          type: 'checkbox',
-          options: {
-            label: 'Inverter 5 only report battery data (for use when this inverter is connected to EMS or Gateway in parallel mode)',
-            parent: 'inverters',
-            key: 'inverter_battery_only_5'
-          }
-        },
-
-      ]
+      subtitle: 'Add as many inverters as you need. Serial Number and model are filled in automatically when GivTCP finds an inverter.',
+      fields: []
     },
     evc: {
       title: 'EVC',
@@ -359,6 +177,14 @@ export const useCard = defineStore('card', {
         {
           type: 'checkbox',
           options: {
+            label: 'Auto Scan',
+            parent: 'selfrun',
+            key: 'auto_scan'
+          }
+        },
+        {
+          type: 'checkbox',
+          options: {
             label: 'Self Run',
             parent: 'selfrun',
             key: 'self_run'
@@ -378,6 +204,14 @@ export const useCard = defineStore('card', {
             label: 'Self Run Loop Timer (Full)',
             parent: 'selfrun',
             key: 'self_run_timer_full'
+          }
+        },
+        {
+          type: 'text',
+          options: {
+            label: 'Skip Reads Fresher Than (s, 0=off)',
+            parent: 'selfrun',
+            key: 'refresh_max_age'
           }
         },
         {
@@ -728,6 +562,19 @@ export const useCard = defineStore('card', {
             parent: 'misc',
             items: ["high", "medium", "low","none"],
             key: 'data_smoother'
+          }
+        },
+        {
+          type: 'select',
+          options: {
+            label: 'Timeslot entities in Home Assistant',
+            parent: 'misc',
+            items: [
+              { title: 'Drop-down and time picker', value: 'both' },
+              { title: 'Time picker only', value: 'time' },
+              { title: 'Drop-down only', value: 'dropdown' }
+            ],
+            key: 'timeslot_entities'
           }
         },
         {

@@ -1,5 +1,6 @@
 """HA_Discovery: """
 # version 2022.01.21
+from giverrors import errDetail
 import sys
 import os
 import time
@@ -7,7 +8,6 @@ import json
 import paho.mqtt.client as paho_mqtt
 from socket import gaierror
 from settings import GiV_Settings
-from givenergy_modbus_async.model.register import Model
 from mqtt import GivMQTT
 from GivLUT import GivLUT
 from entity_lut import Entity_Type
@@ -49,7 +49,7 @@ class HAMQTT():
         else:
             logger.error("Bad connection Returned code= "+str(reason_code))
 
-    def publish_discovery2(array,SN):   #Recieve multiple payloads with Topics and publish in a single MQTT connection
+    def publish_discovery2(array,SN,unsupported=()):   #Recieve multiple payloads with Topics and publish in a single MQTT connection
         try:
             inv_type=finditem(array,"Invertor_Type")
             if inv_type=="":
@@ -57,6 +57,8 @@ class HAMQTT():
             rootTopic=str(GiV_Settings.MQTT_Topic+"/"+SN+"/")
             array['Stats/Timeout_Error']=0    # Set this always at start in case it doesn't exist
             publisher=[]
+            cleared=[]      # discovery topics of entities turned off, to remove from HA
+            slotEntities=str(getattr(GiV_Settings,'timeslot_entities','both') or 'both').lower()
             ### For each topic create a discovery message
             for p_load in array:
                 if p_load != "raw":
@@ -64,6 +66,8 @@ class HAMQTT():
                     logger.debug('Publishing: '+rootTopic+p_load)
                     output=GivMQTT.iterate_dict(payload,rootTopic+p_load)   #create LUT for MQTT publishing
                     for topic in output:
+                        if str(topic).split("/")[-1] in unsupported:
+                            continue        # removed by removeunsupported() below, so don't create it again (#612)
                         e_type= Entity_Type.entity_type[str(topic).split("/")[-1]]
                         #Determine Entitiy type (switch/sensor/number) and publish the right message
                         if e_type.devType=="sensor":
@@ -82,14 +86,32 @@ class HAMQTT():
                     #    elif e_type[0]=="binary_sensor":
                     #        client.publish("homeassistant2/binary_sensor/GivEnergy/"+str(topic).split("/")[-1]+"/config",HAMQTT.create_binary_sensor_payload(topic,SN),retain=True)
                         elif e_type.devType=="select":
-                            publisher.append(["homeassistant/select/GivEnergy/"+SN+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
+                            item=str(topic).split("/")[-1]
+                            selectTopic="homeassistant/select/GivEnergy/"+SN+"_"+item+"/config"
+                            # Timeslots can also have a native HA time picker (HA 2026.5+): the timeslot_entities
+                            # setting picks the drop-down, the time picker or both, and the other is removed from HA
+                            if "time_slot" in item.lower():
+                                timeTopic="homeassistant/time/GivEnergy/"+SN+"_"+item+"/config"
+                                if slotEntities=="time":
+                                    cleared.append(selectTopic)
+                                else:
+                                    publisher.append([selectTopic,HAMQTT.create_device_payload(topic,SN,inv_type)])
+                                if slotEntities=="dropdown":
+                                    cleared.append(timeTopic)
+                                else:
+                                    publisher.append([timeTopic,HAMQTT.create_time_payload(topic,SN,inv_type)])
+                            else:
+                                publisher.append([selectTopic,HAMQTT.create_device_payload(topic,SN,inv_type)])
                         elif e_type.devType=="button":
                             publisher.append(["homeassistant/button/GivEnergy/"+SN+"_"+str(topic).split("/")[-1]+"/config",HAMQTT.create_device_payload(topic,SN,inv_type)])
 
             # Loop round HA publishing 4 times in case its not all there
             i=0
             complete=False
+            if unsupported:
+                CheckDisco.removeunsupported(SN,unsupported)
             CheckDisco.removedisco(SN,publisher)
+            CheckDisco.cleartopics(cleared)
             time.sleep(3)
             while not complete:
                 publisher=HAMQTT.sendDiscoMsg(publisher,SN)     #send to broker and return any missing items after a check
@@ -102,7 +124,7 @@ class HAMQTT():
         except gaierror:
             logger.error("publish_discovery2: Error in to MQTT Address. Check config and update.")
         except:
-            e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+            e=errDetail()
             logger.error("publish_discovery2: Error connecting to MQTT Broker: " + str(e))
 
     def sendDiscoMsg(array,SN):
@@ -137,6 +159,18 @@ class HAMQTT():
         unpub=CheckDisco.checkdisco(array)  #Check what is in broker vs what was sent and return missing items
         return unpub
 
+    def create_time_payload(topic,SN,inv_type="EVC"):
+        # HA "time" entity for a timeslot. It shares the select's state topic (HH:MM:SS) and command topic:
+        # HA sends ISO HH:MM:SS, and the timeslot MQTT handlers already take the first 5 chars (HH:MM)
+        tempObj=json.loads(HAMQTT.create_device_payload(topic,SN,inv_type))
+        tempObj.pop('options',None)
+        item=str(topic).split("/")[-1]
+        tempObj['name']=item.replace("_time_slot","_slot").replace("_"," ")     # eg. "Charge start slot 1"
+        tempObj['unique_id']=tempObj['unique_id']+"_time"
+        tempObj['default_entity_id']="time."+tempObj['default_entity_id'].split(".",1)[1]
+        tempObj['icon']="mdi:clock-outline"
+        return json.dumps(tempObj)
+
     def create_device_payload(topic,SN,inv_type="EVC"):
         tempObj={}
         tempObj['stat_t']=str(topic).replace(" ","_")
@@ -158,7 +192,7 @@ class HAMQTT():
                 tempObj['default_entity_id']=e_type.devType+"."+GiV_Settings.ha_device_prefix+"_"+str(topic).split("/")[4]+"_"+item
                 tempObj['device']['identifiers']=GiV_Settings.ha_device_prefix+" "+str(topic).split("/")[4]
                 tempObj['device']['name']=GiV_Settings.ha_device_prefix+" "+str(topic).split("/")[4].replace("_"," ")
-                if "capacity" in item.lower():
+                if "capacity" in item.lower() and not "kwh" in item.lower():
                     tempObj['unit_of_meas']="Ah"
             else:
                 tempObj["name"]=item.replace("_"," ") #Just final bit past the last "/"
@@ -258,7 +292,10 @@ class HAMQTT():
             if e_type.sensorClass=="string":
                 del tempObj['unit_of_meas']
             if "capacity" in str(item).lower():
-                tempObj['unit_of_meas']="Ah"
+                if "kwh" in str(item).lower():      # eg. Battery_Capacity_kWh is energy, not charge
+                    tempObj['unit_of_meas']="kWh"
+                else:
+                    tempObj['unit_of_meas']="Ah"
                 tempObj['state_class']="measurement"
             if "cycles" in str(item).lower():
                 tempObj['unit_of_meas']=""
@@ -306,6 +343,11 @@ class HAMQTT():
                 tempObj['min']=4
                 tempObj['max']=100
                 tempObj['mode']="slider"
+            elif "export_power_limit" in str(item).lower():   #EMS plant export limit (checked before the EVC "limit" match below)
+                tempObj['unit_of_meas']="W"
+                tempObj['min']=0
+                tempObj['max']=65535
+                tempObj['mode']="box"
             elif "limit" in str(item).lower():   #if EVC current
                 tempObj['unit_of_meas']="A"
                 tempObj['min']=6
@@ -379,6 +421,7 @@ class CheckDisco():
 
             client.loop_start()
             time.sleep(5)
+            client.loop_stop()
             client.disconnect()
             temp={}
             logger.debug("Sent "+ str(len(array))+" discovery messages")
@@ -392,20 +435,83 @@ class CheckDisco():
             logger.error("checkdisco: Error in to MQTT Address. Check config and update.")
             client.disconnect()
         except:
-            e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+            e=errDetail()
             logger.error("checkdisco: Error connecting to MQTT Broker: " + str(e))
             client.disconnect()
 
+    def cleartopics(topics):
+        # Remove HA entities by their exact discovery topic (eg. the timeslot entity type turned off in settings).
+        # Clearing a topic that has no retained message does nothing, so this is safe to repeat
+        if not topics:
+            return
+        try:
+            client = paho_mqtt.Client(paho_mqtt.CallbackAPIVersion.VERSION2,"GivEnergy_GivTCP_cleartopics_"+str(GiV_Settings.givtcp_instance))
+            if HAMQTT.MQTTCredentials:
+                client.username_pw_set(HAMQTT.MQTT_Username,HAMQTT.MQTT_Password)
+            client.connect(GiV_Settings.MQTT_Address, GiV_Settings.MQTT_Port, 60)
+            client.loop_start()
+            for topic in topics:
+                client.publish(topic,None,0,True)
+            time.sleep(1)
+            client.loop_stop()
+            client.disconnect()
+            logger.debug("Cleared "+str(len(topics))+" discovery messages for entities that are turned off")
+        except:
+            e=errDetail()
+            logger.error("cleartopics: Error connecting to MQTT Broker: " + str(e))
+
+    def removeunsupported(SN,items):
+        # Clear the retained discovery and state messages for entities this inverter can't have, so HA drops
+        # entities left behind by older GivTCP versions. Matches by name so any older topic layout is caught too
+        try:
+            CheckDisco.msgs={}
+            client = paho_mqtt.Client(paho_mqtt.CallbackAPIVersion.VERSION2,"GivEnergy_GivTCP_removeunsupported_"+str(GiV_Settings.givtcp_instance))
+            client.on_connect = CheckDisco.on_connect
+            client.on_message = CheckDisco.on_message
+            if HAMQTT.MQTTCredentials:
+                client.username_pw_set(HAMQTT.MQTT_Username,HAMQTT.MQTT_Password)
+            client.connect(GiV_Settings.MQTT_Address, GiV_Settings.MQTT_Port, 60)
+            client.loop_start()
+            # Wait for the retained messages to stop arriving
+            found=-1
+            for _ in range(10):
+                time.sleep(1)
+                if len(CheckDisco.msgs)==found:
+                    break
+                found=len(CheckDisco.msgs)
+            stateRoot=(GiV_Settings.MQTT_Topic or "GivEnergy")+"/"+SN+"/"
+            count=0
+            removed=[]
+            for topic in list(CheckDisco.msgs):
+                for item in items:
+                    isDisco=topic.startswith("homeassistant/") and SN in topic and topic.endswith("_"+item+"/config")
+                    isState=topic.startswith(stateRoot) and topic.endswith("/"+item)
+                    if isDisco or isState:
+                        client.publish(topic,None,0,True)
+                        CheckDisco.msgs.pop(topic,None)
+                        count+=1
+                        if item not in removed:
+                            removed.append(item)
+                        break
+            # Name only what was there to remove, not every entity this model can't have (#612)
+            logger.debug("removeunsupported: checked for "+", ".join(items))
+            if count:
+                logger.info("Removed "+str(count)+" retained MQTT message"+("s" if count>1 else "")+" for entities not supported by this inverter: "+", ".join(removed))
+            time.sleep(1)
+            client.loop_stop()
+            client.disconnect()
+        except:
+            e=errDetail()
+            logger.error("removeunsupported: Error removing unsupported entities: " + str(e))
+
     def removedisco(SN,messages):
+        # Clear the retained discovery messages for this inverter whose payload has changed (all of them on a V3
+        # upgrade), so HA picks up the new config. Collects the retained messages itself, as CheckDisco.msgs is
+        # otherwise only filled when removeunsupported() ran first (#609)
+        client=None
         try:
             logger.debug("removedisco: SN: "+str(SN))
-            logger.debug("removedisco: CheckDisco.msgs: "+str(CheckDisco.msgs))
-            # if no msgs, just return otherwise will cause misleading exception in for loop below: 'for topic in CheckDisco.msgs:'
-            if not CheckDisco.msgs:
-                logger.debug("removedisco: nothing to do")
-                return None
-            foundmessages=0
-            moremessages=0
+            CheckDisco.msgs={}
             client = paho_mqtt.Client(paho_mqtt.CallbackAPIVersion.VERSION2,"GivEnergy_GivTCP_removedisco_"+str(GiV_Settings.givtcp_instance))
             client.on_connect = CheckDisco.on_connect
             client.on_message = CheckDisco.on_message
@@ -416,47 +522,49 @@ class CheckDisco():
 
             client.loop_start()
 
-            ## Can we check here to see when num of messages stops increasing?
-            loop=1
+            # Wait for the retained messages to stop arriving: 5s in a row with no new topics, or 10s at most
+            foundmessages=-1
             count=0
-            while True:
+            for _ in range(10):
                 time.sleep(1)
                 moremessages=len(CheckDisco.msgs)
-                logger.debug("Foundmessages= "+str(foundmessages))
-                logger.debug("Moremessages= "+str(moremessages))
-                if moremessages == foundmessages:
-                    count+=1
-                if count==5 or loop==10:
+                logger.debug("removedisco: found "+str(moremessages)+" messages")
+                count=count+1 if moremessages==foundmessages else 0
+                if count==5:
                     break
-                loop+=1
                 foundmessages=moremessages
             #Loop through all msgs and remove if they are GivTCP ones
             newmsg={}
             for message in messages:
                 newmsg[message[0]]=message[1]
+            v3upgrade=exists('/config/GivTCP/.v3upgrade_'+str(GiV_Settings.givtcp_instance))
             count=0
-            for topic in CheckDisco.msgs:
-                msg=CheckDisco.msgs[topic]
+            # The client's network thread keeps adding to CheckDisco.msgs (GivTCP's own state messages arrive under
+            # GivEnergy/#), so work through a copy
+            for topic,msg in list(CheckDisco.msgs.items()):
                 if SN in topic or SN in msg: # ("GivEnergy" in msg or GiV_Settings.MQTT_Topic in msg):
-                    if exists('/config/GivTCP/.v3upgrade_'+str(GiV_Settings.givtcp_instance)):
-                        logger.debug("V3 Upgrade so dropping old Discovery Messages")
+                    if v3upgrade:
                         client.publish(topic,None,0,True)     #delete regardless of if it has changed
-                    else:
-                        if topic in newmsg:
-                            old=newmsg[topic]
-                            new=msg[2:-1]     #.split('}')[:0]
-                            if not old == new:       #if payload is different delete old one
-                                client.publish(topic,None,0,True)
-                                count+=1
-            logger.debug(str(count)+" discovery messages changed and removed")
+                        CheckDisco.msgs.pop(topic,None)
+                        count+=1
+                    elif topic in newmsg:
+                        old=newmsg[topic]
+                        new=msg[2:-1]     #.split('}')[:0]
+                        if not old == new:       #if payload is different delete old one
+                            client.publish(topic,None,0,True)
+                            # So checkdisco() doesn't take the old message as the new one having arrived
+                            CheckDisco.msgs.pop(topic,None)
+                            count+=1
+            if v3upgrade:
+                logger.debug("removedisco: V3 upgrade, so dropped "+str(count)+" old discovery messages")
+            else:
+                logger.debug("removedisco: "+str(count)+" discovery messages changed and removed")
             time.sleep(2)
-            client.loop_stop()
-            client.disconnect()
         except gaierror:
             logger.error("removedisco: Error in to MQTT Address. Check config and update.")
-            client.disconnect()
         except:
-            e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
-            # catches any error, not just error connecting to MQTT Broker
-            logger.error("removedisco: Error connecting to MQTT Broker: " + str(e))
-            client.disconnect()
+            logger.error("removedisco: Error removing changed discovery messages: " + errDetail())
+        finally:
+            if client is not None:
+                client.loop_stop()
+                client.disconnect()

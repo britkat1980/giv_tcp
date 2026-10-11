@@ -1,17 +1,19 @@
+from GivTCP.giverrors import errDetail
 from datetime import datetime, timedelta, timezone, UTC
 from os.path import exists
-import os, pickle, subprocess, logging,shutil, shlex, schedule
-import traceback
+import os, pickle, subprocess, logging,shutil, shlex, schedule, signal
 from time import sleep
 import json
 import zoneinfo
 import sys
 import requests
 import asyncio
-from GivTCP.findInvertor import findInvertor
-from GivTCP.findEVC import findEVC
-from GivTCP.givenergy_modbus_async.client.client import Client
-from pymodbus.client.sync import ModbusTcpClient
+from GivTCP.netscan import scan, as_list, INVERTER_PORT, EVC_PORT
+from givenergy_modbus.client.client import Client
+from givenergy_modbus.exceptions import CommunicationError
+from givenergy_modbus.model.inverter import resolve_model
+from givenergy_modbus.model.register import HR
+from pymodbus.client import ModbusTcpClient
 
 selfRun={}
 mqttClient={}
@@ -19,11 +21,62 @@ gunicorn={}
 webDash={}
 rqWorker={}
 redis={}
+mqttBroker=None     # only set when GivTCP runs its own Mosquitto
 networks={}
 SuperTimezone=""
 
 
 # Check if config directory exists and creates it if not
+
+INVERTER_KEY_DEFAULTS={"inverter_enable_":False,"invertorIP_":"","serial_number_":"","Model_":"","inverter_battery_only_":False,"recovery_pause_":0}
+
+def startGunicorn(app, port, workers, logname):
+    # Gunicorn's own errors (eg. a worker failing to load the app, or the port being in use) go to a log in
+    # /config/GivTCP/logs, so they show in the log viewer. It runs in its own process group so a restart can
+    # stop its workers as well (a worker left behind would keep the port and stop the new one starting)
+    command=["/usr/local/bin/gunicorn","-w",str(workers),"-b",":"+str(port),"--log-level","warning",
+             "--error-logfile","/config/GivTCP/logs/"+logname+".log",app]
+    return subprocess.Popen(command, start_new_session=True)
+
+def stopGunicorn(proc):
+    # Stop the gunicorn master and any of its workers that are still running
+    try:
+        os.killpg(proc.pid, signal.SIGKILL)
+    except OSError:
+        pass
+    try:
+        proc.wait(timeout=5)
+    except Exception:
+        pass
+
+def exitReason(code):
+    # A negative code means it was killed (eg. -9 by the system when out of memory). Otherwise gunicorn exits
+    # with 1 for several reasons (a worker failing to load the app, the port being in use), so see its log
+    if code is not None and code<0:
+        return "killed by signal "+str(-code)
+    return "exit code "+str(code)
+
+def invPort(inv):
+    # REST API port for inverter slot N. Slots 1-5 keep their historic 6345-6349 (Predbat etc. point at them);
+    # 6350 is the settings API, so slot 6 onwards start at 6356
+    inv=int(inv)
+    return 6344+inv if inv<=5 else 6350+inv
+
+def ensureInverterSlots(setts):
+    # Give every slot 1..number_of_inverters its full set of keys, so slots added by the web UI or a scan work
+    for num in range(1,int(setts.get("number_of_inverters",0) or 0)+1):
+        for key,default in INVERTER_KEY_DEFAULTS.items():
+            setts.setdefault(key+str(num),default)
+        setts.setdefault("inverterName_"+str(num),"GivTCP" if num==1 else "GivTCP"+str(num))
+    return setts
+
+def writeRestRoutes(setts):
+    # nginx routes /RESTn/ to each inverter's REST API. Generated for however many slots are configured
+    # (ingress*.conf includes this folder; an empty folder is valid, so nginx still starts if this fails)
+    os.makedirs("/etc/nginx/givtcp_rest", exist_ok=True)
+    with open("/etc/nginx/givtcp_rest/rest.conf","w") as outp:
+        for num in range(1,int(setts.get("number_of_inverters",0) or 0)+1):
+            outp.write("location /REST"+str(num)+"/ {\n    proxy_pass http://127.0.0.1:"+str(invPort(num))+"/;\n}\n")
 
 def palm_job():
     subprocess.Popen(["/usr/local/bin/python3","/app/GivTCP_1/palm_soc.py"])
@@ -33,12 +86,12 @@ def validateEVC(HOST):
     SN=""
     try:
         client = ModbusTcpClient(HOST)
-        registers = client.read_holding_registers(97,6)
-        if hasattr(registers,"registers"):
+        registers = client.read_holding_registers(97,count=6)
+        if hasattr(registers,"registers") and len(registers.registers)>=6:     # other Modbus devices can answer with fewer (#604)
             regs=registers.registers
             systime=datetime(regs[0],regs[1],regs[2],regs[3],regs[4],regs[5]).replace(tzinfo=timezone.utc).isoformat()
             #get serial number here now and put in the settings file
-            sn_regs = client.read_holding_registers(38,31).registers
+            sn_regs = client.read_holding_registers(38,count=31).registers
             for num in sn_regs:
                 if not num==0:
                     SN=SN+chr(num)
@@ -46,34 +99,68 @@ def validateEVC(HOST):
         else:
             return False
     except:
-        e=sys.exc_info()
+        e=errDetail()
         logger.error(e)
         return False
 
+def capsFile(SN):
+    return "/config/GivTCP/"+str(SN)+"_caps.pkl"
+
+def loadCaps(SN):
+    # Return the saved capabilities for this serial, or None if there are none (or they can't be read)
+    if not exists(capsFile(SN)):
+        return None
+    try:
+        with open(capsFile(SN), 'rb') as inp:
+            return pickle.load(inp)
+    except Exception as e:
+        logger.warning("Unable to read cached capabilities for "+str(SN)+", will run a full detect: "+str(e))
+        return None
+
+class InverterNoResponse(Exception):
+    pass
+
 async def getInvDeets(HOST):
+    client=None
     try:
         Stats={}
         client=Client(HOST,8899,3)
         await client.connect()
-        await client.detect_plant(additional=False)
-        try:
-            await client.close()
-        except:
-            pass
 
-        if not client.plant.inverter ==None:
-            GEInv=client.plant.inverter
-        elif not client.plant.ems ==None:
-            GEInv=client.plant.ems
-        elif not client.plant.gateway ==None:
-            GEInv=client.plant.gateway
+        # Cheap identity read (HR 0-59) to get the serial number before deciding whether a full detect is needed.
+        # This serial is also used for settings.py, so read.py finds the same caps file
+        if not await client.probe_alive(timeout=3, retries=2):
+            raise InverterNoResponse("connected, but it didn't answer")
+        # The identity block (HR 0-59) holds the serial, model and firmware for every device type, so
+        # nothing more needs reading here - the read loop does the full reads straight after startup
+        ident=client.plant.inverter
+        SN=ident.serial_number
 
-        SN= GEInv.serial_number
-        #gen=GEInv.generation
-        model=GEInv.model
-        fw=GEInv.arm_firmware_version
-        numbats=client.plant.number_batteries
-        nummeters=len(client.plant.meter_list)
+        caps=loadCaps(SN)
+        if caps:
+            # Detect works the model out from HR0 and HR21, which the probe has just read, so check the cached
+            # model still matches. It won't after a firmware update that changes generation, or if the file was
+            # saved from another inverter (eg. while two inverters' IP addresses were swapped)
+            regs=client.plant.register_caches.get(0x11)
+            current=resolve_model(regs.get(HR(0)), regs.get(HR(21)) or 0) if regs and regs.get(HR(0)) is not None else None
+            if current is not None and current!=caps.device_type:
+                logger.warning("Cached capabilities for "+str(SN)+" are for a "+caps.device_type.name.capitalize()+
+                               " but it is a "+current.name.capitalize()+", running full detect")
+                caps=None
+        if caps:
+            logger.info("Using cached capabilities for "+str(SN)+", skipping detect")
+        else:
+            logger.info("No cached capabilities for "+str(SN)+", running full detect")
+            caps= await client.detect()
+            logger.info("Saving capabilities to cache: "+str(capsFile(SN)))
+            with open(capsFile(SN), 'wb') as outp:
+                pickle.dump(caps, outp, pickle.HIGHEST_PROTOCOL)
+
+        model=caps.device_type     # detect's resolved type; the raw device code maps HV Gen3 (81xx) to All-in-One (#565)
+        fw=ident.arm_firmware_version
+        # v2's number_batteries only counts LV batteries; HV/three-phase/AIO batteries are modules
+        numbats=max(len(caps.lv_battery_addresses), sum(n for _,n in caps.bcu_stacks), len(caps.aio_battery_module_addresses), len(caps.hv_bmu_addresses))
+        nummeters=len(caps.meter_addresses)
 
         Stats['Serial_Number']=SN
         Stats['Firmware']=fw
@@ -81,11 +168,28 @@ async def getInvDeets(HOST):
         #Stats['Generation']=gen
         Stats['Number_of_Batteries']=numbats
         Stats['IP_Address']=HOST
-        logger.info(f'Inverter {str(SN)} which is a {str(model.name.capitalize())} with {str(numbats)} batteries and {str(nummeters)} meters has been found at: {str(HOST)}')
+        logger.info(f'Inverter {str(SN)} which is a {str(model.name.capitalize())}({ident.device_type_code}) with {str(numbats)} batteries and {str(nummeters)} meters has been found at: {str(HOST)}')
+        # The library's own detect log is silenced, so log where it found each device, to diagnose missing batteries
+        addrs=lambda a: "["+", ".join(f"0x{x:02x}" for x in a)+"]"
+        logger.info("Inverter "+str(SN)+" devices: meters="+addrs(caps.meter_addresses)+", lv_batteries="+addrs(caps.lv_battery_addresses)
+                    +", bcu_stacks=["+", ".join(f"0x{a:02x}:{n}" for a,n in caps.bcu_stacks)+"]"
+                    +", aio_modules="+addrs(caps.aio_battery_module_addresses)+", hv_bmus="+addrs(caps.hv_bmu_addresses))
+
         return Stats
-    except Exception:
-        logger.error("Gathering inverter details for " + str(HOST) + " failed. Error: "+ str((traceback.format_exc())))
+    except (InverterNoResponse, CommunicationError, OSError, asyncio.TimeoutError) as e:
+        # Expected when the inverter or its dongle is busy, restarting or offline, so no traceback
+        cause=e.__cause__ or e
+        logger.warning("No response from inverter at "+str(HOST)+" ("+(type(cause).__name__+": " if not isinstance(cause,InverterNoResponse) else "")+str(cause)+")")
         return None
+    except Exception:
+        logger.error("Gathering inverter details for " + str(HOST) + " failed: "+errDetail())
+        return None
+    finally:
+        if client is not None:
+            try:
+                await client.close()
+            except Exception:
+                pass
 
 def createsettingsjson(inv):
     PATH= "/app/GivTCP_"+str(inv)
@@ -93,9 +197,20 @@ def createsettingsjson(inv):
     logger.debug("Recreating settings.py for invertor "+str(inv))
     with open(SFILE, 'r') as f1:
         setts=json.load(f1)
-    if setts["Model_"+str(inv)]=="":
+    # Take the model from this serial's saved capabilities when there are some: 3.5 saved each model under the
+    # slot of its position in the scan rather than its own slot, so a model can be in the wrong slot (#599)
+    caps=loadCaps(setts["serial_number_"+str(inv)]) if setts["serial_number_"+str(inv)] else None
+    model=caps.device_type.name.capitalize() if caps else setts["Model_"+str(inv)]
+    if model=="":
         inverter_type= asyncio.run(getInvDeets(str(setts["invertorIP_"+str(inv)])))
-        setts["Model_"+str(inv)]= inverter_type['Model'].name.capitalize()
+        if inverter_type:
+            model= inverter_type['Model'].name.capitalize()
+        else:
+            logger.error("Inverter "+str(inv)+" model unknown, as the inverter at "+str(setts["invertorIP_"+str(inv)])+" didn't respond. It will be set once the inverter responds at the next start")
+    if model!=setts["Model_"+str(inv)]:
+        if setts["Model_"+str(inv)]:
+            logger.info("Inverter "+str(inv)+" ("+str(setts["serial_number_"+str(inv)])+") model corrected: "+str(setts["Model_"+str(inv)])+" -> "+model)
+        setts["Model_"+str(inv)]=model
         with open(SFILE, 'w') as f:
             f.write(json.dumps(setts,indent=4))
 
@@ -104,7 +219,7 @@ def createsettingsjson(inv):
         outp.write("    invertorIP=\""+str(setts["invertorIP_"+str(inv)])+"\"\n")
         outp.write("    serial_number=\""+str(setts["serial_number_"+str(inv)])+"\"\n")
         outp.write("    inverter_type=\""+str(setts["Model_"+str(inv)])+"\"\n")
-        outp.write("    Battery_Only=\""+str(setts["inverter_battery_only_"+str(inv)])+"\"\n")
+        outp.write("    Battery_Only="+str(setts["inverter_battery_only_"+str(inv)]).capitalize()+"\n")
         outp.write("    MQTT_Address=\""+str(setts["MQTT_Address"])+"\"\n")
         outp.write("    MQTT_Username=\""+str(setts["MQTT_Username"])+"\"\n")
         outp.write("    MQTT_Password=\""+str(setts["MQTT_Password"])+"\"\n")
@@ -131,6 +246,8 @@ def createsettingsjson(inv):
         outp.write("    first_run_evc= True\n")
         outp.write("    self_run_timer="+str(setts["self_run_timer"])+"\n")
         outp.write("    self_run_timer_full="+str(setts["self_run_timer_full"])+"\n")
+        outp.write("    refresh_max_age="+str(float(setts.get("refresh_max_age") or 0))+"\n")
+        outp.write("    recovery_pause="+str(float(setts.get("recovery_pause_"+str(inv)) or 0))+"\n")
         outp.write("    queue_retries="+str(setts["queue_retries"])+"\n")    
         outp.write("    givtcp_instance="+str(inv)+"\n")
         outp.write("    default_path=\""+str(PATH)+"\"\n")
@@ -141,11 +258,13 @@ def createsettingsjson(inv):
         outp.write("    day_rate_start=\""+str(setts["day_rate_start"])+"\"\n")
         outp.write("    night_rate_start=\""+str(setts["night_rate_start"])+"\"\n")
         outp.write("    data_smoother=\""+str(setts["data_smoother"])+"\"\n")
+        outp.write("    timeslot_entities=\""+str(setts.get("timeslot_entities") or "both")+"\"\n")
         outp.write("    cache_location=\"/config/GivTCP\"\n")
         outp.write("    Debug_File_Location=\"/config/GivTCP/logs/log_inv_"+str(inv)+".log\"\n")
         outp.write("    Debug_File_Location_Write=\"/config/GivTCP/logs/write_log_inv_"+str(inv)+".log\"\n")
+        outp.write("    Debug_File_Location_REST=\"/config/GivTCP/logs/rest_log_inv_"+str(inv)+".log\"\n")
         outp.write("    inverter_num=\""+str(inv)+"\"\n")
-        outp.write("    Smart_Target="+str(setts["dynamic_tariff"]).capitalize()+"\n")
+        outp.write("    Smart_Target="+str(setts["Smart_Target"]).capitalize()+"\n")
         outp.write("    GE_API=\""+str(setts["GE_API"])+"\"\n")
         outp.write("    PALM_WINTER=\""+str(setts["PALM_WINTER"])+"\"\n")
         outp.write("    PALM_SHOULDER=\""+str(setts["PALM_SHOULDER"])+"\"\n")
@@ -221,27 +340,20 @@ def findinv(networks):
         list={}
         logger.info("Scanning network for GivEnergy Devices...")
         try:
+            invips=[]
+            evcips=[]
             for subnet in networks:
                 if networks[subnet]:
-                    count=0
-                    # Get EVC Details
-                    logger.info("Scanning network: "+str(networks[subnet]))
-                    while len(evclist)<=0:
-                        if count<2:  
-                            evclist=findEVC(networks[subnet])
-                            if len(evclist)>0: break
-                            count=count+1
-                        else:
+                    # Scan for inverters and EVCs in one pass, retry once if no inverter is found
+                    for attempt in range(2):
+                        logger.info("Scanning network: "+str(networks[subnet]))
+                        found=scan(networks[subnet], ports=(INVERTER_PORT, EVC_PORT))
+                        evcips+=[ip for ip in found[EVC_PORT] if ip not in evcips]
+                        if found[INVERTER_PORT]:
+                            invips+=[ip for ip in found[INVERTER_PORT] if ip not in invips]
                             break
-                    # Get Inverter Details
-                    count=0
-                    while len(list)<=0:
-                        if count<2:
-                            list=findInvertor(networks[subnet])
-                            if len(list)>0: break
-                            count=count+1
-                        else:
-                            break
+            list=as_list(invips)
+            evclist=as_list(evcips)
             if evclist:
                 poplist=[]
                 for evc in evclist:
@@ -255,7 +367,7 @@ def findinv(networks):
                 for pop in poplist:
                     evclist.pop(pop)    #remove the unknown modbus device(s)
             if list:
-                logger.debug(str(len(list))+" Inverters found on "+str(networks[subnet])+" - "+str(list))
+                logger.debug(str(len(list))+" Inverters found - "+str(list))
                 invList.update(list)
                 for inv in invList:
                     deets={}
@@ -269,6 +381,7 @@ def findinv(networks):
                                 break   #If we found the deets then don't try again
                             count=count+1
                         else:
+                            logger.error("Inverter at "+str(invList[inv])+" was found by the network scan but didn't respond after "+str(count)+" attempts, so it's been skipped")
                             break
             if len(invList)==0:
                 logger.info("No inverters found...")
@@ -276,8 +389,16 @@ def findinv(networks):
             # write data to pickle
                 with open('invippkl.pkl', 'wb') as outp:
                     pickle.dump(inverterStats, outp, pickle.HIGHEST_PROTOCOL)
+                # JSON copy for the web config page's "found on last scan" list
+                try:
+                    found=[{"Serial_Number":d['Serial_Number'],"IP_Address":d['IP_Address'],"Model":d['Model'].name.capitalize(),
+                            "Firmware":d['Firmware'],"Number_of_Batteries":d['Number_of_Batteries']} for d in inverterStats.values()]
+                    with open('/config/GivTCP/found_inverters.json','w') as outp:
+                        outp.write(json.dumps(found,indent=4))
+                except Exception:
+                    logger.error("Unable to save found inverters list: "+errDetail())
         except:
-            e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+            e=errDetail()
             logger.error("Error scanning for Inverters- "+str(e))
     else:
         logger.error("Unable to get host details from Supervisor / Container")
@@ -293,18 +414,18 @@ def findinv(networks):
 #os.makedirs(os.path.dirname("/config/GivTCP/"),exist_ok=True)
 os.makedirs(os.path.dirname("/config/GivTCP/logs/"),exist_ok=True)
 
-from logging.handlers import TimedRotatingFileHandler
+from GivTCP.sharedlog import SharedTimedRotatingFileHandler
 logging.basicConfig(format='%(asctime)s'+ \
                     ' - %(module)-11s -  [%(levelname)-8s] - %(message)s')
 formatter = logging.Formatter(
     '%(asctime)s - %(module)s - [%(levelname)s] - %(message)s')
-fh = TimedRotatingFileHandler("/config/GivTCP/logs/startup.log", when='midnight', backupCount=7)
+fh = SharedTimedRotatingFileHandler("/config/GivTCP/logs/startup.log", when='midnight', backupCount=7)   # rotated files keep .log (#606)
 fh.setFormatter(formatter)
 logger = logging.getLogger()
 logger.addHandler(fh)
 logger.setLevel(logging.INFO)
 
-logging.getLogger("givenergy_modbus_async").setLevel(logging.CRITICAL)
+logging.getLogger("givenergy_modbus").setLevel(logging.CRITICAL)
 
 
 SuperTimezone={}
@@ -351,6 +472,7 @@ if isAddon:
         headers={'Content-Type':'application/json',
                 'Authorization': 'Bearer {}'.format(access_token)})
     mqttDetails=result.json()
+    logger.debug("MQTT Service details found: "+str(mqttDetails))
     if mqttDetails['result']=="ok":
         logger.debug ("HA MQTT Service has been found at "+str(mqttDetails['data']['host']))
         mqtt_host=mqttDetails['data']['host']
@@ -413,7 +535,7 @@ else:
         hostIP=IP
         baseurl="/"
     except:
-        e=sys.exc_info()
+        e=errDetail()
         logger.error("Could not get network info: "+ str(e))
 logger.debug("Host IP Address is: "+str(hostIP))
 
@@ -459,6 +581,7 @@ logger.debug("Running Redis")
 if not exists("/ssl/fullchain.pem"):
     shutil.copy("/app/ingress_no_ssl.conf","/etc/nginx/http.d/ingress.conf")
 
+writeRestRoutes(setts)
 subprocess.Popen(["nginx","-g","daemon off;"])
 logger.debug("Running nginx")
 
@@ -480,30 +603,36 @@ if hasMQTT:
 if setts["MQTT_Address"]=="": setts['MQTT_Output']=False
 if setts["Host_IP"]=="": setts["Host_IP"]=hostIP
 
+ensureInverterSlots(setts)
+slotsBefore=setts["number_of_inverters"]
 for inv in inverterStats:
     logger.debug("Using found Inverter data to autosetup settings.json")
-    # Check if serial number is already here and only update if IP address has changed
-    if not inverterStats[inv]['Serial_Number'] in [setts["serial_number_1"],setts["serial_number_2"],setts["serial_number_3"],setts["serial_number_4"],setts["serial_number_5"]]:
-        # find next empty slot and populate with details
-        logger.info("Inverter "+ str(inverterStats[inv]['Serial_Number'])+ " not in settings file")
-        for num in range(1,6):
-            if setts["invertorIP_"+str(num)]=="":
-                logger.info("Adding Inverter "+ str(inverterStats[inv]['Serial_Number'])+ " to slot "+ str(num))
-                setts["invertorIP_"+str(num)]=inverterStats[inv]['IP_Address']
-                setts["serial_number_"+str(num)]=inverterStats[inv]['Serial_Number']
-                setts["inverter_enable_"+str(num)]=True             #If found for the first time, auto enable (but not if already there incase user has disabled)
-                break
+    SN=inverterStats[inv]['Serial_Number']
+    slots=range(1,setts["number_of_inverters"]+1)
+    slot=next((num for num in slots if setts["serial_number_"+str(num)]==SN),None)
+    if slot:
+        # Already configured: only update the IP address if it has changed
+        logger.debug("Inverter "+str(SN)+" already found in settings file (slot "+str(slot)+"), checking IP address is unchanged...")
+        if not setts["invertorIP_"+str(slot)] == inverterStats[inv]['IP_Address']:
+            logger.info("Inverter "+str(SN)+" IP Address is different, updating: "+str(setts["invertorIP_"+str(slot)])+" -> "+str(inverterStats[inv]['IP_Address']))
+            setts["invertorIP_"+str(slot)]=inverterStats[inv]['IP_Address']
     else:
-        for num in range(1,6):
-            if inverterStats[inv]['Serial_Number'] == setts["serial_number_"+str(num)]:
-                logger.debug("Inverter "+ str(inverterStats[inv]['Serial_Number'])+ " already found in settings file (slot "+str(num)+"), checking IP address is unchanged...")
-                if not setts["invertorIP_"+str(num)] == inverterStats[inv]['IP_Address']:
-                    #If IP has changed, update it
-                    logger.info("Inverter "+ str(inverterStats[inv]['Serial_Number'])+ " IP Address is different, updating: "+str(setts["invertorIP_"+str(num)])+" -> "+str(inverterStats[inv]['IP_Address']))
-                    setts["invertorIP_"+str(num)]=inverterStats[inv]['IP_Address']
-                break
-    setts['Model_'+str(inv)]=inverterStats[inv]['Model'].name.capitalize()
-        
+        # New inverter: use the first empty slot, or add a slot if they are all in use
+        logger.info("Inverter "+str(SN)+" not in settings file")
+        slot=next((num for num in slots if setts["invertorIP_"+str(num)]==""),None)
+        if slot is None:
+            setts["number_of_inverters"]+=1
+            slot=setts["number_of_inverters"]
+            ensureInverterSlots(setts)
+        logger.info("Adding Inverter "+str(SN)+" to slot "+str(slot))
+        setts["invertorIP_"+str(slot)]=inverterStats[inv]['IP_Address']
+        setts["serial_number_"+str(slot)]=SN
+        setts["inverter_enable_"+str(slot)]=True             #If found for the first time, auto enable (but not if already there incase user has disabled)
+    setts['Model_'+str(slot)]=inverterStats[inv]['Model'].name.capitalize()
+if setts["number_of_inverters"]>slotsBefore:
+    # The scan added slots after nginx started, so give them their /RESTn/ routes too
+    writeRestRoutes(setts)
+    subprocess.Popen(["nginx","-s","reload"])
 
 if len(evcList)>0:
     logger.debug("evcList: "+str(evcList))
@@ -561,7 +690,7 @@ if exists("/config/GivTCP/v2env.pkl") and v3upgrade:
         setts['evc_enable']=False
 
     ## Match HAPREFIX to inverterIP
-    for num in range(1,6):
+    for num in range(1,setts['number_of_inverters']+1):
         for inv in range(0, len(v2invertersettings)):
             if "IP_Address" in v2invertersettings[inv]:
                 if setts["invertorIP_"+str(num)]==v2invertersettings[inv]['IP_Address']:
@@ -585,15 +714,14 @@ else:
 
 os.chdir("/app/GivTCP")
 logger.debug ("Starting Settings Gunicorn on port 6350")
-command=shlex.split("/usr/local/bin/gunicorn -w 1 -b :6350 settings_rest:giv_api")
-setting_rest=subprocess.Popen(command)
+setting_rest=startGunicorn("settings_rest:giv_api",6350,1,"rest_gunicorn_settings")
 
 
 ## Run EVC first
 if setts['evc_enable']==True:
     ## Create settingsfile for EVC
     foundinv=0
-    for inv in range(1,6):
+    for inv in range(1,setts['number_of_inverters']+1):
         if setts['inverter_enable_'+str(inv)]==True:
             foundinv=inv
             break   #Stop on the first enabled inverter and pass it to evc settings
@@ -608,8 +736,9 @@ if setts['evc_enable']==True:
 
 runninginv=[]
 
+webConfigLogged=False      # the config page address is the same for every inverter, so only log it once
 # Change this to only use those inverters set to enabled in settings (INDENT)
-for inv in range(1,6):
+for inv in range(1,setts['number_of_inverters']+1):
     if setts['inverter_enable_'+str(inv)]==True:
         #Set up v3upgrade file
         if v3upgrade:
@@ -639,7 +768,7 @@ for inv in range(1,6):
         #  Always delete lockfiles and FCRunning etc... but only delete pkl if too old?
         for file in os.listdir(setts["cache_location"]):
             filename = os.fsdecode(file)
-            if not filename.__contains__("log") and not filename.startswith("rateData") and not filename.startswith("writecount") and not filename.startswith("safewritecount") and not filename.startswith(".dayRate") and not filename.startswith(".nightRate") and not filename.startswith("allsettings") and not filename.startswith("v2env") and not filename.startswith(".v3upgrade"):
+            if not filename.__contains__("log") and not filename.startswith("rateData") and not filename.startswith("writecount") and not filename.startswith("safewritecount") and not filename.startswith(".dayRate") and not filename.startswith(".nightRate") and not filename.startswith("allsettings") and not filename.startswith("v2env") and not filename.startswith(".v3upgrade") and not filename.startswith(".load_formula") and not filename.endswith("_caps.pkl"):     # keep capabilities so detect only runs once per inverter
                 os.remove(setts['cache_location']+"/"+file)
         if exists(setts["cache_location"]+"/rateData_"+str(inv)+".pkl"):
             timezone=zoneinfo.ZoneInfo(key=setts["timezone"])
@@ -656,13 +785,15 @@ for inv in range(1,6):
         # Still need to run the below process per inverter  #
         #####################################################
         
-        logger.info("==============================================================")
-        logger.info("====             Web Gui Config is at                     ====")
-        logger.info("====     http://"+str(hostIP)+":8099/config.html             ====")
-        if not setts['self_run']==True:
-            logger.info("====  Self Run is off, so no data collection is happening ====")
-            logger.info("====     Log into Web Gui and complete startup settings   ====")
-        logger.info("==============================================================")
+        if not webConfigLogged:
+            logger.info("==============================================================")
+            logger.info("====             Web Gui Config is at                     ====")
+            logger.info("====     http://"+str(hostIP)+":8099/config.html             ====")
+            if not setts['self_run']==True:
+                logger.info("====  Self Run is off, so no data collection is happening ====")
+                logger.info("====     Log into Web Gui and complete startup settings   ====")
+            logger.info("==============================================================")
+            webConfigLogged=True
 
         os.chdir(PATH)
 
@@ -675,13 +806,15 @@ for inv in range(1,6):
 
         if setts['self_run']==True: # Don't autorun if isAddon to prevent autostart creating rubbish before its checked by a user
             logger.info ("Running Invertor "+str(inv)+" ("+str(setts["serial_number_"+str(inv)])+") read loop every "+str(setts['self_run_timer'])+"/"+str(setts['self_run_timer_full'])+"s")
+            if str(setts.get("inverter_battery_only_"+str(inv))).lower()=="true":     # as settings.py gets it
+                # Ignored before 3.6 (it was written as a string), so make it obvious why inverter data isn't published
+                logger.info ("Invertor "+str(inv)+" only publishes battery data and controls, as \"Only report battery data and controls\" is ticked in its settings")
             selfRun[inv]=subprocess.Popen(["/usr/local/bin/python3",PATH+"/read.py", "start"])
 
         
-        GUPORT=6344+inv
+        GUPORT=invPort(inv)
         logger.debug ("Starting Gunicorn on port "+str(GUPORT))
-        command=shlex.split("/usr/local/bin/gunicorn -w 3 -b :"+str(GUPORT)+" REST:giv_api")
-        gunicorn[inv]=subprocess.Popen(command)
+        gunicorn[inv]=startGunicorn("REST:giv_api",GUPORT,3,"rest_gunicorn_inv_"+str(inv))
 
 
 if setts['Web_Dash']==True:
@@ -694,7 +827,7 @@ if setts['Web_Dash']==True:
         count=0
         for inv in runninginv:
             count += 1
-            GUPORT = 6344 + inv
+            GUPORT = invPort(inv)
             if count > 1:
                 outp.write("  ,{\n")
             else:
@@ -750,7 +883,8 @@ while True:
                     os.chdir(PATH)
                     logger.info ("Restarting Invertor read loop every "+str(setts['self_run_timer'])+"s")
                     selfRun[inv]=subprocess.Popen(["/usr/local/bin/python3",PATH+"/read.py", "start"])
-                elif timesince>(float(setts['self_run_timer'])*10):
+                elif timesince>(float(setts['self_run_timer'])*10)+float(setts.get('recovery_pause_'+str(inv)) or 0):
+                    # Allowing for a recovery pause, when the read loop deliberately sends nothing (#610)
                     logger.error("Self Run loop process stuck. Killing and restarting...")
                     os.chdir(PATH)
                     selfRun[inv].kill()
@@ -764,15 +898,16 @@ while True:
                     # Should I remove the cache here
 
             if not gunicorn[inv].poll()==None:
-                gunicorn[inv].kill()
-                logger.error("REST API process died. Restarting...")
+                code=gunicorn[inv].poll()
+                stopGunicorn(gunicorn[inv])
+                logger.error("REST API process died ("+exitReason(code)+"). Restarting... "
+                             "Its errors are in rest_gunicorn_inv_"+str(inv)+".log")
                 os.chdir(PATH)
-                GUPORT=6344+inv
+                GUPORT=invPort(inv)
                 logger.info ("Starting Gunicorn on port "+str(GUPORT))
-                command=shlex.split("/usr/local/bin/gunicorn -w 3 -b :"+str(GUPORT)+" REST:giv_api")
-                gunicorn[inv]=subprocess.Popen(command)
+                gunicorn[inv]=startGunicorn("REST:giv_api",GUPORT,3,"rest_gunicorn_inv_"+str(inv))
         
-        if setts['MQTT_Address']=="127.0.0.1":
+        if setts['MQTT_Address']=="127.0.0.1" and mqttBroker is not None:
             if not mqttBroker.poll()==None:
                 mqttBroker.kill()
                 logger.error("MQTT Broker process died. Restarting...")
@@ -796,7 +931,7 @@ while True:
 
         ## Could we run a periodic Time Sync check? Maybe a config item??
     except:
-        e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        e=errDetail()
         logger.error("Error in watchdog loop: "+str(e))
 
     #Run jobs for smart target

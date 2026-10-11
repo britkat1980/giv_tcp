@@ -47,7 +47,7 @@
             "url": "/setForceCharge",
             "method": "POST",
             "usage": "Enables Force Charge on Three Phase Inverters",
-            "payload": "{'state':'enabled' or \"disabled'}"
+            "payload": "{'state':'enabled' or 'disabled'}"
         },
         "forceCharge": {
             "url": "/forceCharge",
@@ -59,7 +59,7 @@
             "url": "/setForceDischarge",
             "method": "POST",
             "usage": "Enables Force Discharge on Three Phase Inverters",
-            "payload": "{'state':'enabled' or \"disabled'}"
+            "payload": "{'state':'enabled' or 'disabled'}"
         },
         "forceExport": {
             "url": "/forceExport",

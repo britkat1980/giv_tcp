@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GivTCP Datapoints</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="pages.css">
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+    <script>
+        $(function() {
+           $("#includeHead").load("header.html?_=" + Date.now());   // unique URL, so a cached (stale) header is never used
+        });
+    </script>
+</head>
+
+<body>
+    <div id="includeHead"></div>
+    <!-- docs/DATAPOINTS.md is copied here by the Dockerfile and rendered by mdpage.js -->
+    <div class="doc md" data-md="docs/DATAPOINTS.md"><div class="card"><p>Loading…</p></div></div>
+    <script src="mdpage.js"></script>
+</body>
+
+</html>

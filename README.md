@@ -1,195 +1,186 @@
-# GivTCP v3
- Version 3 of GivTCP will allow connection to the following GivEnergy Devices:
- - Hybrid inverter
- - AC Coupled inverter
- - Single and Three Phase inverters
- - Gateway (Single or Parallel mode)
- - EMS
- - EV Charger (EVC)
- - All-In-One
+# GivTCP
 
-This project uses a modbus connection to the GivEnergy devices through the native Wifi/Ethernet dongle and can be connected via either LAN or directly through the inbuilt SSID AP.
-GivTCP can auto-discover devices on the network for a (near) zero config setup
+GivTCP connects to GivEnergy devices over the local network and makes their data and controls available to Home Assistant, MQTT, REST and InfluxDB. It supports:
 
-Typically run through the Home Assistant Addon, it is also possible to run as a standalone docker container.
+- Hybrid inverters (Gen 1, Gen 2, Gen 3 and Gen 4)
+- HV Gen 3 hybrid inverters, with one or more HV battery stacks
+- AC-coupled inverters
+- Three-phase hybrid and AC-coupled inverters
+- All-in-One
+- Gateway (single All-in-One or parallel)
+- EMS
+- EV Charger (EVC)
+
+GivTCP talks Modbus to each device through its own WiFi/Ethernet dongle, over your LAN or the dongle's built-in access point. It can find devices on the network itself, for a (near) zero-config setup. It uses the [givenergy-modbus](https://github.com/dewet22/givenergy-modbus) library, and adds a few controls the library doesn't support yet.
+
+GivTCP usually runs as a Home Assistant add-on, but can also run as a standalone Docker container.
 
 <a href="https://www.buymeacoffee.com/givtcp" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
 
-## Quick Set-up
+## Quick set-up
 
 ### Install GivTCP
-#### Addon
- - Add https://github.com/britkat1980/ha-addons to the Addon Store repositories in HA
- - Refresh addon store and click on GivTCP and click install
+
+#### Home Assistant add-on
+- Add https://github.com/britkat1980/ha-addons to the add-on store repositories in Home Assistant.
+- Refresh the add-on store, click GivTCP and click Install.
+
+The add-on uses Home Assistant's Mosquitto broker add-on if it's installed, and connects to it automatically. Otherwise, install an MQTT broker and enter its details on the config page.
 
 #### Docker
-- Use Docker Compose file to create container
+- Use the [docker-compose.yml](https://github.com/britkat1980/giv_tcp/blob/main/docker-compose.yml) file to create the container. It runs in host network mode and keeps its settings and logs in `/config/GivTCP`.
 
-### Run Addon/Container
+### Start GivTCP
 
- - Start the addon/container
- - Check logs for any errors and note the web-config url
+- Start the add-on or container.
+- On first start GivTCP scans your network for GivEnergy inverters and EV chargers, then detects each inverter's model, batteries and meters. It saves what it finds, so later starts are quicker. It detects again by itself if an inverter stops matching what was saved.
 
 ### Configure GivTCP
 
- - Navigate to the web config address (which is typically: http://IPADDRESS:8099/config.html)
- - Step through the config stages, noting that GivTCP should have auto populated inverter and MQTT details
- - Check settings are as you want them
- - Turn on "self_run"
- - HA users - turn on "Home Assistant Auto Discovery"
- - If you are using an MQTT broker outside HA progress to MQTT page to configure MQTT
- - Click "Save and Restart" (if you are running docker you will need to manually restart the container
+- Open the config page:
+  - **Home Assistant:** from the GivTCP entry in the sidebar (or "Open Web UI" on the add-on page).
+  - **Docker:** http://IPADDRESS:8099/config.html
+- Step through the sections. The inverters found by the scan and your MQTT details should already be filled in.
+  - **Inverter Config:** add or remove inverters. There's no limit on the number, and inverters found by the last scan can be added in one click.
+  - **Self Run:** turn on **Self Run**, and **Home Assistant Auto Discovery** if you use Home Assistant.
+  - **MQTT:** only needed if you use an MQTT broker other than the Home Assistant add-on.
+- Click **Save and Restart**. With Docker, restart the container yourself.
 
 <img src="docs/images/config-1.png" width="400">
 <img src="docs/images/config-2.png" width="400">
 <img src="docs/images/config-3.png" width="400">
 
-GivTCP should be publishing data to your MQTT broker and Home Assistant should pick this up automatically.
+GivTCP should now be publishing data to your MQTT broker, and Home Assistant should pick it up automatically.
 
-### (optional) Check Home Assistant
+### Check Home Assistant (optional)
 
- Once GivTCP has restarted 
- - Go to HA -> Settings -> Integrations -> MQTT
- - Check GivTCP devices have been created
- 
-You should now have lots of data points and controls available in HA and you can begin to integrate into your smart home.
+Once GivTCP has restarted:
+- Go to Settings → Devices & services → MQTT.
+- Check the GivTCP devices have been created.
 
-See [Settings Guide](SETTINGS-GUIDE.md) for more detail on controls available and data points.
-  
-### Parallel AIO
+You should now have lots of data and controls in Home Assistant to build into your smart home. See the [Settings Guide](docs/SETTINGS-GUIDE.md) for more on the controls, and [Datapoints](docs/DATAPOINTS.md) for every value GivTCP publishes.
 
-Users with parallel AIO installations should have 3 (with dual AIO) inverters pre-populated in the "Inverters" page. If any are missing they should be added here. Static / fixed IP addresses should be set for all inverters. The Gateway inverter should be the only inverter that is controlled via GivTCP, the individual AIO inverter data treated for information only.
+### Parallel All-in-One
 
-## Home Assistant Add-on
-To install GivTCP as an add-on, add this repository (https://github.com/britkat1980/ha-addons) to the Add-on Store repository list.
+With parallel All-in-Ones, the Gateway and each All-in-One (three inverters for a dual All-in-One) should be listed on the Inverter Config page. Add any that are missing, and give them all static IP addresses. Control the system through the Gateway only, and treat each All-in-One's data as information.
 
-The addon assumes HA is running Mosquito as an addon, which also available to install from the Add-on store. GivTCP will automatically connect to it if installed. If not, then you will need to install your own MQTT broker and provide the connection details in the config page
+## Web UI
 
-### Home Assistant Usage
+The web UI (the config page, opened as above) has a menu with:
 
-GivTCP is designed to run continuously and has a self-run setting, which should be switched on once the settings have been reviewed.
-You can change the frequency of the data collection through the config , but its not recommended to drop the self_run loop time to below 30s.
+- **Config:** the settings, described in the [Settings Guide](docs/SETTINGS-GUIDE.md).
+- **Readme:** this page.
+- **Settings Guide** and **Datapoints:** what each setting does, and every value GivTCP publishes.
+- **Dashboard:** the web dashboard, if it's turned on (see below).
+- **Logs:** a log viewer for each inverter's main, write and REST logs, the startup log and the EV charger log. Tick one log to see it on its own, or several to merge them into one timeline. You can pick an earlier day, filter by level or text, follow new lines as they're written and download a log, for example to attach to a GitHub issue. The logs are kept for 7 days in `/config/GivTCP/logs`.
 
-GivTCP will automatically create multiple devices in Home Assistant and you can view them through the Integration page under MQTT.
+## Home Assistant
+
+GivTCP is designed to run all the time. Once the settings have been checked, turn on Self Run. You can change how often it reads the inverter on the config page (Self Run Loop Timer, and the Full timer for the settings and energy totals), but it's not recommended to go below 30 seconds.
+
+GivTCP creates a device in Home Assistant for each inverter, battery and meter. You can find them under the MQTT integration.
 
 <img src="docs/images/config-4.png" width="400">
- 
-## Other Usage methods:
 
-GivTCP data and control is also available through either MQTT or REST to allow integration into other systems and processes.
+Timeslots can be shown as drop-downs, as time pickers (Home Assistant 2026.5 or later) or both: see "Timeslot entities in Home Assistant" on the Misc page. Entities a model doesn't support are removed from Home Assistant automatically. Home Assistant keeps entities you've disabled, though, so delete those yourself in Settings → Entities.
+
+## Other ways to use GivTCP
+
+GivTCP's data and controls are also available over MQTT and REST, for other systems and your own scripts.
 
 ### MQTT
 
-By enabling MQTT in the config, GivTCP will publish directly to the nominated MQTT broker all inverter data. Data is published to "GivEnergy/<serial_number>/" by default or you can nominate a specific root topic by setting "MQTT_TOPIC" in the settings.
+With MQTT turned on, GivTCP publishes all the inverter's data to your MQTT broker, under `GivEnergy/<serial_number>/` by default, or under the topic set on the MQTT page.
 
 <img src="docs/images/config-5.png" width="400">
 
-Control is also available using MQTT. By publishing data to the same MQTT broker as above you can trigger the control methods as per the above table.
+With **Print Raw** on (the Misc page; always on in the add-on), the inverter's raw register values are also published under `<topic>/<serial_number>/raw/`, one topic per register, for example `raw/invertor/battery_soc`.
 
-Root topic for control is:
+You can also control the inverter over MQTT by publishing to:
 
-"GivEnergy/control/<serial_number>/" - Default (note lower case "control")
+- `GivEnergy/control/<serial_number>/` by default (note the lower-case "control")
+- `<topic>/control/<serial_number>/` if you've set a topic
 
-"<MQTT_TOPIC>/control/<serial_number>/" - If MQTT_TOPIC is set
+### REST
 
-  
+GivTCP has a REST API for data and control. In the add-on, each inverter's API is at http://IPADDRESS:8099/REST1/, /REST2/ and so on, numbered by its slot on the Inverter Config page. Call `REST1/api` to list the calls available.
 
-### RESTful Service
-
-GivTCP provides a REST API for data output and control. REST service is available at: http://IPADDRESS:8099
-Each available inverter exposes its REST interface on the following endpoints:
-
- - /REST1/
- - /REST2/
- - /REST3/
- - /REST4/
- - /REST5/
- You can call REST1/api to discover what api calls are available to you.
-  
-
-If Docker is running in Host mode then the REST service is available on port 6345
-
-  
-
+Each inverter's API also has its own port, which is what you use with Docker in host mode: slots 1–5 use ports 6345–6349 (as in earlier versions, so existing Predbat and Home Assistant setups keep working), and slot 6 onwards use port 6356 onwards.
 
 ## Web Dashboard
 
-  
+You can turn on the built-in web dashboard to see your inverters' data at a glance. Turn it on in the Dashboard section of the config page. It runs on port 3000 by default.
 
-You can enable the built-in web dashboard if you'd like a way to visualise data for your inverter(s). This is enabled in the settings page and is found on port 3000.
-
-For more details please see the [ReadMe file in the separate repository](https://github.com/DanielGallo/GivEnergy-Smart-Home-Display/).
+For more details see the [ReadMe in its own repository](https://github.com/DanielGallo/GivEnergy-Smart-Home-Display/).
 
 <img src="https://github.com/DanielGallo/GivEnergy-Smart-Home-Display/blob/master/graphics/ReadMe-Landscape.png" width="400">
 
-The web dashboard is able to summarise data for a single inverter, or multiple inverters in either a single-phase or three-phase environment. If you have any issues or feedback regarding the web dashboard, please post a question or issue [here](https://github.com/DanielGallo/GivEnergy-Smart-Home-Display/issues).
+The dashboard can show a single inverter, or several in a single-phase or three-phase system. If you have any issues or feedback about it, please post them [here](https://github.com/DanielGallo/GivEnergy-Smart-Home-Display/issues).
 
-  
+## GivEnergy EV Charger (GivEVC)
 
-## GivEnergy Electric Vehicle Charger (GivEVC)
+GivTCP can monitor and control the GivEnergy EV charger over local Modbus: live stats, plus simple controls. The charger's cloud control doesn't use Modbus, so changes made through GivTCP may not show in the GivEnergy app or portal. In particular, the charging modes are only imitated by GivTCP.
 
-GivTCP incorporates control and monitoring of the GE charger. Connecting via local modbus it can monitor real-time stats and provide simple control features. With the EVC cloud conrol does not use the modbus protocol, so there is minimal opportunity for changes to reflect in the official app/cloud portal. Particularly the Charging modes, which are merely mimiced in GivEVC.
-
-NOTE - there is currently a firmware bug (<= v1.12) with the GivEVC where the Modbus port is only available on WiFi. Therefore if your EVC is connected via ethernet it will be necessary to disconnect and re-connect via WiFi to recieve data via GivTCP. You can submit a request to GivEnergy to update the firmware to v1.13 and then enable local control in the GivEnergy portal: Expand the "My EV Charger" card -> Settings -> Other -> "Enable Local Control".
+Note: charger firmware up to v1.12 only offers Modbus over WiFi. If your charger is connected by Ethernet, connect it by WiFi instead to get data in GivTCP. Or ask GivEnergy to update the firmware to v1.13, then enable local control in the GivEnergy portal: expand the "My EV Charger" card → Settings → Other → "Enable Local Control".
 
 ### Configuration
 
-  
+Set the charger's IP address and the timer on the config page's EVC section, and turn on EVC Enable.
 
-All that is required for config are the IP address and the self run timer. Setting EVC_ENABLE to True will turn on the function.
+### Controls
 
-  
+Most controls are self-explanatory, but some need explaining:
 
-### Control
+#### Plug and Go
 
-  
+When on, the vehicle starts charging as soon as it's plugged in. When off, charging starts when triggered by an RFID card or by Charge Control.
 
-Most controls are self explanatory but some require clarification on their function:
+#### Charge Control
 
-  
+Starts and stops charging when Plug and Go is on.
 
-#### Plug and Go:
+#### Charging Mode
 
-When turned on the vehicle will start to charge as soon as it is plugged in. When off charging will commence when triggered by RFID card or "Charge Control"
+Imitates the cloud's charging modes:
 
-  
-
-#### Charge Control:
-
-This starts and stops vehicle charging, when "Plug and Go" is on.
-
-  
-
-#### Charging Mode:
-
-Mimcs the cloud based "modes" of charging.
-
-  
-
-##### Grid
-
-Charges at current set by "Charge Limit", regardless of what energy is available (typically will pull from Grid)
-
-  
-
-##### Solar
-
-Modulates the Charge Limit based on the amount of "excess solar" available after serving the current house Load. This requires minimum of 1.4kW (6A) excess as required by the EVSE spec.
-
-  
-
-##### Hybrid
-
-This will modulate Charge Limit to top up a base 6A grid charge with any excess solar energy. Similar to Solar but uses a constant 6A from Grid plus additional solar energy on top.
-
-  
+- **Grid:** charges at the Charge Limit, whatever energy is available (typically drawing from the grid).
+- **Solar:** adjusts the Charge Limit to the solar left over after the house load. The EVSE spec needs at least 1.4 kW (6 A) of excess.
+- **Hybrid:** a constant 6 A from the grid, topped up with any excess solar.
 
 #### Max Session Energy
 
-This will cap the maximum energy delivered to the vehicle in a single charge session. Setting this to 0kWh disables this setting.
-
-  
+Caps the energy delivered to the vehicle in one charging session. 0 kWh turns it off.
 
 #### Import Cap
 
-This will monitor the Grid current from the first GivTCP inverter and if it is within 5% of the Import Cap setting it will reduce EVC Charge current to stay 10% under the import Cap. Setting this to 0A disables this setting.
+Watches the grid current from the first GivTCP inverter. If it comes within 5% of the Import Cap, the charging current is reduced to stay 10% below it. 0 A turns it off.
+
+## Upgrading from 3.5
+
+3.6 uses the new [givenergy-modbus](https://github.com/dewet22/givenergy-modbus) library, so some things change on upgrade:
+
+- **HV Gen 3 hybrids** are read as single-phase inverters, which is what they are, so their Home Assistant entities change to the single-phase set.
+- **AC and All-in-One:** the PV string voltage, current and power entities are removed, as these models can't measure individual strings. PV Power (the total) remains.
+- **Battery BMS Current** is now **Battery Pack Current**, and only shown where the inverter and battery firmware report it.
+- **"Only report battery data and controls"** now takes effect: 3.5 ignored it.
+- Data cached by 3.5 can't be read by the new library. It's set aside automatically and GivTCP starts afresh.
+
+The full list of changes is in the [change log](https://github.com/britkat1980/giv_tcp/blob/main/CHANGELOG.md).
+
+## Advanced
+
+Some tips for troubleshooting your inverter or GivTCP.
+
+### Finding devices
+
+GivTCP scans your network for inverters and EV chargers when it starts, the host's own /24 first. A large network such as a /16 takes a few minutes, and networks larger than a /16 are limited to the /16 around the host.
+
+To skip the scan, turn off **Auto Scan** (Self Run section of the config page) and make sure each inverter's IP address is set on the Inverter Config page. Give your inverters static IP addresses, so they're found at the same address each time.
+
+### Timeouts and an unresponsive inverter
+
+If you see many timeouts in the log, or large jumps in the Time Since Last Update or Data Age entities, the inverter or its dongle may be overloaded. Three-phase inverters with several batteries are the most affected. GivTCP recovers from dropped connections by itself, but you can reduce the load on the inverter:
+
+- **Read less often:** set a longer Self Run Loop Timer, e.g. 60 seconds or more, with the Full timer a multiple of it (e.g. 90 and 270).
+- **Pause When Inverter Stops Responding** (each inverter, on the Inverter Config page): if the inverter stops answering, GivTCP sends it nothing at all for this many seconds, then reconnects, giving it time to recover. Stats/status shows `paused` meanwhile. Some dongles crash if they're sent more requests while they're struggling, and this has prevented that. Write commands sent over REST during the pause get an immediate "not sent" reply, and other commands (such as the end of a force charge) are sent once it's over.
+- **Skip Reads Fresher Than** (Self Run section): skips reads the dongle has just answered for another app polling it, such as the GivEnergy app.

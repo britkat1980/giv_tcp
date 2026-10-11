@@ -12,17 +12,13 @@ RUN npm install && \
     mv dist/index.html dist/config.html
 
 # set base image (host OS)
-#FROM python:3.11-rc-alpine
-FROM python:alpine3.19
+FROM python:3.14.5-alpine
 
 RUN apk add --no-cache \
-    git \
     mosquitto \
-    musl \
     nginx \
     redis \
-    tzdata \
-    xsel
+    tzdata
 
 RUN mkdir -p /run/nginx
 
@@ -40,14 +36,17 @@ RUN rm /etc/nginx/http.d/default.conf
 # copy the content of the local src directory to the working directory
 COPY GivTCP/ ./GivTCP
 COPY WebDashboard ./WebDashboard
-# COPY givenergy_modbus/ /usr/local/lib/python3.11/site-packages/givenergy_modbus
-COPY GivTCP/givenergy_modbus_async/ /usr/local/lib/python3.12/site-packages/givenergy_modbus_async
 
 COPY api.json ./GivTCP/api.json
 COPY startup.py startup.py
 COPY redis.conf redis.conf
 COPY settings.json ./settings.json
 COPY ingress/ ./ingress
+# Docs rendered by ingress/readme.html, settings.html and datapoints.html (via mdpage.js).
+# Kept in the same layout as the repo so their relative links and images resolve the same way.
+COPY README.md ./ingress/README.md
+COPY docs/SETTINGS-GUIDE.md docs/DATAPOINTS.md ./ingress/docs/
+COPY docs/images ./ingress/docs/images
 
 # Copy static site files
 COPY --from=givtcp_vuejs_tmp /app/dist /app/ingress/

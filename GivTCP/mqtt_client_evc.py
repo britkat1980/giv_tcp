@@ -1,11 +1,10 @@
+from giverrors import errDetail
 import paho.mqtt.client as mqtt
 import time, sys, importlib, time
-from os.path import exists
 from settings import GiV_Settings
 import evc as evc
-import pickle, settings
+import settings
 from GivLUT import GivLUT
-from pickletools import read_uint1
 
 sys.path.append(GiV_Settings.default_path)
 
@@ -46,7 +45,7 @@ def on_message(client, userdata, message):
             writecommand=message.payload.decode("utf-8")
             evc.setDateTime(writecommand)
     except:
-        e = sys.exc_info()
+        e=errDetail()
         logger.error("MQTT.OnMessage Exception: "+str(e))
         return
     
@@ -78,7 +77,7 @@ if GiV_Settings.MQTT_Topic=='':
 else:
     MQTT_Topic=GiV_Settings.MQTT_Topic
 
-logger.critical("Connecting to MQTT broker for EVC control- "+str(GiV_Settings.MQTT_Address))
+logger.info("Connecting to MQTT broker for EVC control- "+str(GiV_Settings.MQTT_Address))
 #loop till serial number has been found
 count=0          # 09-July-2023  set start point
 

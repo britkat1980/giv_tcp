@@ -2,8 +2,11 @@ from GivLUT import GivLUT
 from settings import GiV_Settings
 import pandas as pd
 import numpy as np
+import os
+import datetime
+from entity_lut import Entity_Type
 logger = GivLUT.logger
-
+givLUT = Entity_Type.entity_type
 outliercount=0
 
 def outlier_smoother(x, m=3, win=3, plots=True):
@@ -42,11 +45,19 @@ def impute_outliers_IQR(df: np.array, item, nancount: int):
     IQR=q3-q1
     upper = df[~(df>(q3+1.5*IQR))].max()
     lower = df[~(df<(q1-1.5*IQR))].min()
+    
+    # Expand bounds by 20% of the range to allow values up to 20% outside
+    upper_val = upper[0]
+    lower_val = lower[0]
+    range_val = upper_val - lower_val
+    upper_val += 0.2 * range_val
+    lower_val -= 0.2 * range_val
+    
     # replace outliers with NaN then interpolate
-    clean = np.where(df > upper,
+    clean = np.where(df > upper_val,
         np.nan,
         np.where(
-            df < lower,
+            df < lower_val,
             np.nan,
             df
             )
@@ -54,7 +65,7 @@ def impute_outliers_IQR(df: np.array, item, nancount: int):
     # iterate clean stack find the dodgy data and log it
     for idx,num in enumerate(clean):
         if np.isnan(num[0]):
-            logger.info(str(item)+" has Outliers: "+str(df.to_dict(orient='list')[0][idx])+" outside bounds: "+str(upper[0])+" - "+str(lower[0]))
+            logger.debug(str(item)+" has Outliers: "+str(df.to_dict(orient='list')[0][idx])+" outside bounds: "+str(upper_val)+" - "+str(lower_val))
             nancount+=1
     return [clean,nancount]
 
@@ -62,14 +73,55 @@ def iterate_dict(array):        # Create a publish safe version of the output (c
     safeoutput = {}
     #dump
     for p_load in array:
-        output = array[p_load]
-        if isinstance(output, dict):
-            temp = iterate_dict(output)
-            safeoutput.update(temp)
-            #safeoutput[p_load] = output
-        else:
-            safeoutput[p_load] = output
+        if not p_load=="raw":
+            output = array[p_load]
+            if isinstance(output, dict):
+                temp = iterate_dict(output)
+                safeoutput.update(temp)
+                #safeoutput[p_load] = output
+            else:
+                safeoutput[p_load] = output
     return(safeoutput)
+
+def get_outlier_capture_path():
+    capture_dir = getattr(GiV_Settings, 'cache_location', '.')
+    try:
+        os.makedirs(capture_dir, exist_ok=True)
+    except OSError:
+        pass
+    return os.path.join(capture_dir, 'outlier_capture.csv')
+
+
+def capture_outlier_analysis(flatstack, cleanFlatStack, smoothed_items=None):
+    capture_path = get_outlier_capture_path()
+    rows = []
+    run_ts = datetime.datetime.now().isoformat()
+    smoothed_items = smoothed_items or []
+    for item, raw_values in flatstack.items():
+        if item not in cleanFlatStack or item not in smoothed_items:
+            continue
+        clean_values = cleanFlatStack[item]
+        if len(raw_values) != len(clean_values):
+            continue
+        for idx, (raw, clean) in enumerate(zip(raw_values, clean_values)):
+            try:
+                is_outlier = 1 if raw != clean else 0
+            except Exception:
+                is_outlier = 0
+            if is_outlier:  # only capture actual outliers
+                rows.append({
+                    'timestamp': run_ts,
+                    'item': item,
+                    'index': idx,
+                    'raw': raw,
+                    'cleaned': clean,
+                    'is_outlier': is_outlier
+                })
+    if rows:
+        df = pd.DataFrame(rows)
+        header = not os.path.exists(capture_path)
+        df.to_csv(capture_path, mode='a', index=False, header=header)
+
 
 def makeFlatStack(CacheStack):
     data=[]
@@ -96,24 +148,39 @@ def outlierRemoval(latest_data,CacheStack):
     # get all keys from the stack
     flatstack=makeFlatStack(CacheStack)
     # iterate through a remove outliers
+    smoothed_items = []
     for item in flatstack:
         test=flatstack[item][0]
-        if isinstance(test,(int, float)) and not isinstance(test,bool):
+        if givLUT[item].smooth and isinstance(test,(int, float)) and not isinstance(test,bool):
+        #if isinstance(test,(int, float)) and not isinstance(test,bool) and not item=="Time_Since_Last_Update":
             df = pd.DataFrame(flatstack[item])
             clean,outliercount=impute_outliers_IQR(df, item,outliercount)
-            newdf=pd.DataFrame(clean,dtype=float).interpolate(method='linear',limit_direction='both')
+            newdf=pd.DataFrame(clean,dtype=float).interpolate(method='linear',limit_direction='both', limit=10)
+            # Fill any remaining NaNs with forward fill to avoid stuck values
+            newdf = newdf.ffill()
+            # If still NaNs at the beginning, backward fill
+            newdf = newdf.bfill()
 #            newnewdf=outlier_smoother(df)
             cleanFlatStack[item]=newdf.to_dict(orient='list')[0]
+            smoothed_items.append(item)
         else:
             cleanFlatStack[item]=flatstack[item]
-    logger.info(str(outliercount)+" - outliers found, fixing with interpolated good data")
+    if outliercount > 0:
+        logger.info(str(outliercount)+" - outliers found, fixing with interpolated good data")
+
+    # capture the raw vs cleaned values for all smoothed items so plotting can be built later
+    try:
+        capture_outlier_analysis(flatstack, cleanFlatStack, smoothed_items)
+    except Exception as e:
+        logger.debug("Failed to write outlier capture: %s" % e)
+
 ### NOW put back in the right place...
     for item in cleanFlatStack:
         #find its location in regCache
         outp=list(find(item,CacheStack[0]))
         if not outp == []:
             path=outp[0][1:].split('.')
-            for i in range (0, len(CacheStack)-1):  
+            for i in range (0, len(CacheStack)):    # include the newest entry - it's the one that gets published
                 try:
                     newdata=cleanFlatStack[item][i]
                     if len(path)==0:
@@ -128,6 +195,8 @@ def outlierRemoval(latest_data,CacheStack):
                         CacheStack[i][path[0]][path[1]][path[2]][item]=cleanFlatStack[item][i]
                 except:
                     logger.debug(str(item)+" not in cleanFlat Stack")
+    # Put Raw back in
+
     return CacheStack[-1],CacheStack[:-1]
 
 def find(field_name, d, current_path=''):

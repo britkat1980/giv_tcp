@@ -1,4 +1,5 @@
 # version 2022.01.21
+from giverrors import errDetail
 import paho.mqtt.client as mqtt
 import time
 from os.path import exists, basename
@@ -11,7 +12,7 @@ import sys
 
 logger = GivLUT.logger
 
-with open("/config/GivTCP/allsettings.json", "r") as inp:
+with open(GivLUT.allsettings, "r") as inp:
     setts=json.load(inp)
 if setts["evc_enable"]==True:
     import evc
@@ -58,7 +59,7 @@ class GivMQTT():
                 _mqttclient.loop_start()
             return _mqttclient
         except:
-            e=sys.exc_info()[0].__name__, basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+            e=errDetail()
             logger.error("Error getting connection to MQTT Broker: " + str(e))
 
     def isfloat(num):
@@ -82,16 +83,26 @@ class GivMQTT():
         else:
             logger.error("Bad connection Returned code= "+str(reason_code))
 
+    def wait_for_connection(timeout=5):
+        # Wait for the broker connection, but never block forever (the read loop calls this)
+        deadline=time.monotonic()+timeout
+        while not _mqttclient.connected_flag:
+            if time.monotonic()>deadline:
+                logger.error("MQTT broker "+str(GivMQTT.MQTT_Address)+" not connected after "+str(timeout)+"s, skipping publish")
+                return False
+            time.sleep(0.2)
+        return True
+
     def single_MQTT_publish(Topic,value):   #Recieve multiple payloads with Topics and publish in a single MQTT connection
+        if not GiV_Settings.MQTT_Output:
+            return
         client=GivMQTT.get_connection()
         try:
-            while not _mqttclient.connected_flag:        			#wait in loop
-                #GivMQTT.connect()
-                logger.debug ("In wait loop (single_MQTT_publish)")
-                time.sleep(0.2)
+            if not GivMQTT.wait_for_connection():
+                return
             client.publish(Topic,value)
         except:
-            e=sys.exc_info()[0].__name__, basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+            e=errDetail()
             logger.error("Error connecting to MQTT Broker: " + str(e))
             GivMQTT.client.disconnect()
 #            GivMQTT.client.loop_stop()                      			    #Stop loop
@@ -99,9 +110,8 @@ class GivMQTT():
     def multi_MQTT_publish(rootTopic,array):                    #Recieve multiple payloads with Topics and publish in a single MQTT connection
         client=GivMQTT.get_connection()
         try:
-            while not _mqttclient.connected_flag:        			#wait in loop
-                logger.debug ("In wait loop (multi_MQTT_publish)")
-                time.sleep(0.2)
+            if not GivMQTT.wait_for_connection():
+                return
             for p_load in array:
                 payload=array[p_load]
                 logger.debug('Publishing: '+rootTopic+p_load)
@@ -110,7 +120,7 @@ class GivMQTT():
                     if isinstance(output[value],(int, str, float, bytearray)):      #Only publish typesafe data
                         client.publish(value,output[value], retain=GivMQTT.MQTT_Retain)
         except:
-            e=sys.exc_info()[0].__name__, basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+            e=errDetail()
             logger.error("Error connecting to MQTT Broker: " + str(e))
             client.disconnect()
             client.loop_stop()                      			    #Stop loop
@@ -181,7 +191,7 @@ class GivMQTT():
                 requestcommand(command,payload)
             elif command=="rebootInverter":
                 #wr.rebootinverter()
-                requestcommand(command,payload)
+                requestcommand("rebootinverter",payload)    # write function is lower case
             elif command=="rebootAddon":
                 #wr.rebootAddon()
                 requestcommand(command,payload)
@@ -218,7 +228,7 @@ class GivMQTT():
                 #wr.setPVInputMode(payload)
                 requestcommand(command,payload)
             elif command=="setCarChargeBoost":
-                payload['state']=str(message.payload.decode("utf-8"))
+                payload['boost']=str(message.payload.decode("utf-8"))   # write.setCarChargeBoost reads 'boost'
                 #wr.setCarChargeBoost(payload)
                 requestcommand(command,payload)
             elif command=="setBatteryCalibration":
@@ -635,6 +645,11 @@ class GivMQTT():
                 payload['slot']=3
             #wr.setExportTarget(payload)
                 requestcommand("setExportTarget",payload)
+            elif command in ("setEMSDischargeTarget1","setEMSDischargeTarget2","setEMSDischargeTarget3"):
+                # setDischargeTarget is EMS aware, so EMS slots use the same writer
+                payload['dischargeToPercent']=str(message.payload.decode("utf-8"))
+                payload['slot']=int(command[-1])
+                requestcommand("setDischargeTarget",payload)
             elif command=="setDischargeTarget1":
                 payload['dischargeToPercent']=str(message.payload.decode("utf-8"))
                 payload['slot']=1
@@ -699,9 +714,9 @@ class GivMQTT():
                     if exists(".tpdRunning_"+str(GiV_Settings.givtcp_instance)):
                         jobid= str(open(".tpdRunning_"+str(GiV_Settings.givtcp_instance),"r").readline().strip('\n'))
                         logger.debug("Retrieved jobID to cancel Temp Pause Discharge: "+ str(jobid))
-                        result=wr.cancelJob(jobid)
+                        requestcommand("cancelJob",jobid)
                     else:
-                        logger.error("Temp Pause Charge is not currently running")
+                        logger.error("Temp Pause Discharge is not currently running")
                 elif isfloat(message.payload.decode("utf-8")):
                     duration=float(message.payload.decode("utf-8"))
                 #wr.tempPauseDischarge(payload)
@@ -712,7 +727,7 @@ class GivMQTT():
                     if exists(".tpcRunning_"+str(GiV_Settings.givtcp_instance)):
                         jobid= str(open(".tpcRunning_"+str(GiV_Settings.givtcp_instance),"r").readline().strip('\n'))
                         logger.debug("Retrieved jobID to cancel Temp Pause Charge: "+ str(jobid))
-                        result=wr.cancelJob(jobid)
+                        requestcommand("cancelJob",jobid)
                     else:
                         logger.error("Temp Pause Charge is not currently running")
                 elif isfloat(message.payload.decode("utf-8")):
@@ -758,7 +773,7 @@ class GivMQTT():
                 evc.setChargeControl(payload)
                 requestcommand("setChargeControl",payload)
         except:
-            e=sys.exc_info()[0].__name__, basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+            e=errDetail()
             logger.error("MQTT.OnMessage Exception: "+str(e))
             return
     
@@ -776,5 +791,4 @@ def requestcommand(command,payload):
         with open(GivLUT.writerequests,'rb') as inp:
             requests=pickle.load(inp)
     requests.append([command,payload,False])
-    with open(GivLUT.writerequests,'wb') as outp:
-        pickle.dump(requests, outp, pickle.HIGHEST_PROTOCOL)
+    GivLUT.save_writerequests(requests)

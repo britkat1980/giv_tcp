@@ -6,7 +6,7 @@ This file gives targeted, actionable pointers so an AI coding agent can be produ
 - Purpose: a daemon that polls GivEnergy inverters (via Modbus over TCP), publishes data via MQTT/REST and exposes control APIs. See `README.md` and `startup.py` for the run-time flow.
 - Major components:
   - device comms / polling: `GivTCP/read.py` (watch loop, reconnection, full vs partial refresh)
-  - control/write: `GivTCP/write.py` (builds Modbus write commands via `givenergy_modbus_async.client.commands`)
+  - control/write: `GivTCP/write.py` (builds Modbus write commands from the `givenergy_modbus` (v2) device models and `givenergy_modbus.client.commands`; writes the library doesn't support yet are added in `GivTCP/modbus_patches.py`)
   - runtime wiring / globals: `GivTCP/GivLUT.py` (file paths, locks, `GivClientAsync` helper, `GivQueue` for RQ)
   - REST/API surface: `GivTCP/REST.py` (many POST endpoints that push write requests and read responses)
   - startup/packaging: `startup.py` constructs `/config/GivTCP/allsettings.json` and detects Home Assistant Supervisor environment.
@@ -29,7 +29,7 @@ This file gives targeted, actionable pointers so an AI coding agent can be produ
   - The REST API is implemented in `GivTCP/REST.py`; it is normally started by the runtime — for quick tests, run `python startup.py` which wires everything together.
 
 4) Integration points & external deps
-- Uses `givenergy_modbus_async` heavily for Modbus read/write commands. Look at `read.py` and `write.py` for how `commands.refresh_plant_data()` and `commands.*` are used.
+- Uses the published `givenergy-modbus` library (v2, pinned in `requirements.txt`) for Modbus. `read.py` detects the plant (`Client.detect()`, capabilities cached per serial), then polls with `Client.refresh()` / `Client.load_config()`; `write.py` sends writes with `Client.one_shot_command()`. `GivTCP/modbus_patches.py` extends the library where it doesn't yet support something (see `docs/upstream-givenergy-modbus-requests.md`).
 - MQTT: see `GivTCP/mqtt.py` (broker publishes and control topics). The project assumes Home Assistant add-on environment if `SUPERVISOR_TOKEN` exists (checked in `startup.py`).
 - Redis + RQ: `GivLUT.GivQueue` and `GivTCP/worker.py` expect Redis at `127.0.0.1:6379`.
 
@@ -41,7 +41,7 @@ This file gives targeted, actionable pointers so an AI coding agent can be produ
 
 6) Where to look first when editing or extending
 - New device register logic / telemetry mapping: `GivTCP/read.py` and `GivTCP/GivLUT.py` (look for `raw_to_pub`, `entity lookup`, and `get_regcache` usage).
-- New control endpoints: add to `GivTCP/REST.py` and implement command in `GivTCP/write.py` using `givenergy_modbus_async.client.commands`.
+- New control endpoints: add to `GivTCP/REST.py` and implement command in `GivTCP/write.py` using the `givenergy_modbus` device model's `set_*` methods or `givenergy_modbus.client.commands`.
 - Tests / quick smoke: there are no unit tests—use a local run with mock inverter IP (or on-device integration) and verify that `regCache_*.pkl`, `writerequests.pkl` and `restresponse.json` get created as expected.
 
 7) Small concrete examples

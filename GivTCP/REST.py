@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # version 2021.12.22
+from giverrors import errDetail
 from os.path import exists
 import sys
 from flask import Flask, request, render_template, Response, send_file
@@ -14,14 +15,70 @@ import datetime
 import json
 from settings import GiV_Settings
 from inspect import getmembers, isfunction, getsource
-from givenergy_modbus_async.model import TimeSlot
 
 logger = GivLUT.logger
 #set-up Flask details
 giv_api = Flask(__name__)
 CORS(giv_api)
 
-with open("/config/GivTCP/allsettings.json", "r") as inp:
+######## REST request log: every request and its result, in its own file next to the other logs ########
+import logging
+from flask import g
+from GivLUT import SharedTimedRotatingFileHandler
+REST_LOG_MAX_BODY=500      # truncate long request/response bodies
+# Routes whose response is the full data dump: log its size rather than the start of the JSON
+REST_LOG_NO_RESPONSE={'/readData','/getCache','/runAll','/fullCache','/getEVCCache','/showdata','/api'}
+# Settings can hold credentials (eg. MQTT password), so never log their request or response bodies
+REST_LOG_NO_BODIES={'/settings'}
+# settings.py from before this change has no Debug_File_Location_REST, so fall back to the main log's folder
+restLogFile=getattr(GiV_Settings,'Debug_File_Location_REST',None) or \
+    os.path.join(os.path.dirname(GiV_Settings.Debug_File_Location),"rest_log_inv_"+str(GiV_Settings.givtcp_instance)+".log")
+restlogger = logging.getLogger('rest_logger')
+restlogger.setLevel(logging.INFO)
+restlogger.propagate = False        # keep REST traffic out of the main log
+if not restlogger.handlers:
+    try:
+        rfh = SharedTimedRotatingFileHandler(restLogFile, when='midnight', backupCount=7)      # safe with several gunicorn workers
+        rfh.setFormatter(logging.Formatter('%(asctime)s - [%(levelname)s] - %(message)s'))
+        restlogger.addHandler(rfh)
+    except Exception:
+        logger.error("Unable to open REST log file "+str(restLogFile)+": "+errDetail())
+
+def _shorten(text):
+    text=" ".join(str(text).split())      # one line per request
+    return text if len(text)<=REST_LOG_MAX_BODY else text[:REST_LOG_MAX_BODY]+"...[+"+str(len(text)-REST_LOG_MAX_BODY)+" chars]"
+
+@giv_api.before_request
+def _restLogStart():
+    g.restStart=time.monotonic()
+
+@giv_api.after_request
+def _restLogResult(resp):
+    try:
+        took=int((time.monotonic()-g.get('restStart',time.monotonic()))*1000)
+        line=str(request.remote_addr)+" "+request.method+" "+request.full_path.rstrip("?")+" -> "+str(resp.status_code)+" ("+str(took)+"ms)"
+        private=request.path in REST_LOG_NO_BODIES
+        body=request.get_data(as_text=True)
+        if body:
+            line+=" | request: "+("<"+str(len(body))+" chars>" if private else _shorten(body))
+        if resp.direct_passthrough:     # files (eg. send_file) - don't read the stream
+            line+=" | response: <"+str(resp.mimetype)+">"
+        elif private or request.path in REST_LOG_NO_RESPONSE:
+            line+=" | response: <"+str(resp.mimetype)+", "+str(resp.calculate_content_length() or 0)+" bytes>"
+        else:
+            line+=" | response: "+_shorten(resp.get_data(as_text=True))
+        restlogger.log(logging.INFO if resp.status_code<400 else logging.WARNING, line)
+    except Exception:
+        logger.error("REST log failed: "+errDetail())
+    return resp
+
+def _restLogException(sender, exception, **extra):
+    # Unhandled exception in a route: log what it was (the 500 result is logged by _restLogResult)
+    restlogger.error(str(request.remote_addr)+" "+request.method+" "+request.full_path.rstrip("?")+" raised "+errDetail())
+from flask import got_request_exception
+got_request_exception.connect(_restLogException, giv_api)
+
+with open(GivLUT.allsettings, "r") as inp:
     setts=json.load(inp)
 if setts["evc_enable"]==True:
     import evc
@@ -34,11 +91,13 @@ def requestcommand(command,payload):
             with open(GivLUT.writerequests,'rb') as inp:
                 requests=pickle.load(inp)
         requests.append([command,payload,True])
-        with open(GivLUT.writerequests,'wb') as outp:
-            pickle.dump(requests, outp, pickle.HIGHEST_PROTOCOL)
+        GivLUT.save_writerequests(requests)
     except:
-        e=sys.exc_info()[0].__name__, os.path.basename(sys.exc_info()[2].tb_frame.f_code.co_filename), sys.exc_info()[2].tb_lineno
+        e=errDetail()
         logger.error ("Error in requesting control command: "+str(e))
+
+# How long a control request waits for the read loop to run it before giving up
+RESPONSE_TIMEOUT=15
 
 def response(id: str):
     responses=[]
@@ -59,7 +118,7 @@ def response(id: str):
                             outp.write(json.dumps(responses))
                         return response['result']            
         waittime=datetime.datetime.now()-starttime
-        if waittime.total_seconds()>15:
+        if waittime.total_seconds()>RESPONSE_TIMEOUT:
             return "{'result':'Error: REST response timeout. Unknown success'}"
 
 
@@ -80,8 +139,8 @@ def savesetts():
     Payload: json object conforming to the settings_template
     """
     
-    if exists("/config/GivTCP/allsettings.json"):
-        SFILE="/config/GivTCP/allsettings.json"
+    if exists(GivLUT.allsettings):
+        SFILE=GivLUT.allsettings
     else:
         SFILE="/app/allsettings.json"
     setts = request.get_json()
@@ -93,8 +152,8 @@ def savesetts():
 def returnsetts():
     """Return settings from json file
     """
-    if exists("/config/GivTCP/allsettings.json"):
-        SFILE="/config/GivTCP/allsettings.json"
+    if exists(GivLUT.allsettings):
+        SFILE=GivLUT.allsettings
     else:
         SFILE="/app/allsettings.json"
     with open(SFILE, 'r') as f1:
@@ -131,7 +190,7 @@ def getAll():
 def reboot():
     """Restart the Inverter
     """
-    requestcommand("rebootinverter")
+    requestcommand("rebootinverter",{})
     return response("rebootinverter")
 
 @giv_api.route('/restart', methods=['GET','POST'])
@@ -246,7 +305,7 @@ def setExpTarget():
 def setDischrgTarget():
     """Set Discharge target SOC by defining which target slot and SOC.
 
-    Payload: {'exportToPercent':'45', 'slot':'1'}
+    Payload: {'dischargeToPercent':'45', 'slot':'1'}
     """
     payload = request.get_json(silent=True, force=True)
     requestcommand("setDischargeTarget",payload)
@@ -309,6 +368,10 @@ def setCarBoost():
 
 @giv_api.route('/setExportLimit', methods=['POST'])
 def setExpLim():
+    """Set the EMS plant export power limit in watts
+
+    Payload: {'state':'3600'}
+    """
     payload = request.get_json(silent=True, force=True)
     requestcommand("setExportLimit",payload)
     return response("setExportLimit")
@@ -341,6 +404,11 @@ def setPausSlot():
     Payload: {'start':'16:00','finish':'19:00'}
     """
     payload = request.get_json(silent=True, force=True)
+    if not rd.pauseSlotAvailable():
+        # Refuse it here rather than queue a write the inverter rejects (eg. Predbat on a Gen 1, which has
+        # pause mode but no pause slot)
+        logger.info("Refused setPauseSlot: this inverter has no battery pause slot")
+        return json.dumps({"result":"Setting Battery Pause Slot failed: this inverter has no battery pause slot"})
     requestcommand("setPauseSlot",payload)
     return response("setPauseSlot")
 
@@ -398,7 +466,7 @@ def setChrgSlot3():
 def setDischrgSlot():
     """Set Discharge schedule timeslots
 
-    Payload: {'start':'16:00','finish':'19:00','slot':'1", 'dischargeToPercent':'25' (optional)}
+    Payload: {'start':'16:00','finish':'19:00','slot':'1', 'dischargeToPercent':'25' (optional)}
     """
     payload = request.get_json(silent=True, force=True)
     requestcommand("setDischargeSlot",payload)
@@ -408,7 +476,7 @@ def setDischrgSlot():
 def setDischrgSlot1():
     """Set Discharge schedule timeslot 1
 
-    Payload: {'start':'16:00','finish':'19:00", 'dischargeToPercent':'25' (optional)}
+    Payload: {'start':'16:00','finish':'19:00', 'dischargeToPercent':'25' (optional)}
     """
     payload = request.get_json(silent=True, force=True)
     payload['slot']=1
@@ -420,7 +488,7 @@ def setDischrgSlot1():
 def setDischrgSlot2():
     """Set Discharge schedule timeslot 2
 
-    Payload: {'start':'16:00','finish':'19:00", 'dischargeToPercent':'25' (optional)}
+    Payload: {'start':'16:00','finish':'19:00', 'dischargeToPercent':'25' (optional)}
     """
     payload = request.get_json(silent=True, force=True)
     payload['slot']=2
@@ -430,9 +498,9 @@ def setDischrgSlot2():
 
 @giv_api.route('/setDischargeSlot3', methods=['POST'])
 def setDischrgSlot3():
-    """Set Discharge schedule timeslot 1
+    """Set Discharge schedule timeslot 3
 
-    Payload: {'start':'16:00','finish':'19:00", 'dischargeToPercent':'25' (optional)}
+    Payload: {'start':'16:00','finish':'19:00', 'dischargeToPercent':'25' (optional)}
     """
 
     payload = request.get_json(silent=True, force=True)
@@ -484,7 +552,7 @@ def tmpPauseDischrg():
     payload = request.get_json(silent=True, force=True)
     if payload['duration'] == "Cancel" or payload['duration'] == "0":
         if exists(".tpdRunning_"+str(GiV_Settings.givtcp_instance)):
-            jobid= str(open(".tpdRunning','r").readline().strip('\n'))
+            jobid= str(open(".tpdRunning_"+str(GiV_Settings.givtcp_instance),'r').readline().strip('\n'))
             logger.debug("Retrieved jobID to cancel Temp Pause Discharge: "+ str(jobid))
             requestcommand("cancelJob",jobid)
             return response("cancelJob")
@@ -505,7 +573,7 @@ def tmpPauseChrg():
     payload = request.get_json(silent=True, force=True)
     if payload['duration'] == "Cancel" or payload['duration'] == "0":
         if exists(".tpcRunning_"+str(GiV_Settings.givtcp_instance)):
-            jobid= str(open(".tpcRunning','r").readline().strip('\n'))
+            jobid= str(open(".tpcRunning_"+str(GiV_Settings.givtcp_instance),'r').readline().strip('\n'))
             logger.info("Retrieved jobID to cancel Temp Pause Charge: "+ str(jobid))
             requestcommand("cancelJob",jobid)
             return response("cancelJob")
@@ -565,7 +633,7 @@ def frceExprt():
 def setBattMode():
     """Sets the inverter operation mode 
 
-    Payload: {'mode':'Eco' or 'Eco (Paused)' or 'Timed Demand' or 'Timed Export'}
+    Payload: {'mode':'Eco' or 'Eco (Paused)' or 'Timed Demand' or 'Timed Export' or 'Export (Paused)'}
     """
     payload = request.get_json(silent=True, force=True)
     requestcommand("setBatteryMode",payload)
@@ -587,7 +655,7 @@ def stEcoMde():
 def setBattPausMode():
     """Sets the battery pause mode setting, (requires pauseslot to be set)
 
-    Payload: {'state':'enable' or 'disable'}
+    Payload: {'state':'Disabled' or 'PauseCharge' or 'PauseDischarge' or 'PauseBoth'}
     """
     payload = request.get_json(silent=True, force=True)
     requestcommand("setBatteryPauseMode",payload)
@@ -609,7 +677,7 @@ def setDate():
 def syncDate():
     """Syncs the inverter system time and date with Container time
 
-    Payload: {'dateTime':'%d/%m/%Y %H:%M:%S'}
+    Payload: none needed
     """
     payload = request.get_json(silent=True, force=True)
     requestcommand("syncDateTime",payload)
@@ -620,7 +688,7 @@ def syncDate():
 def swRates():
     """Sets dynamic tariff rate
 
-    Payload: {'rate':'day' or "night'}
+    Payload: {'rate':'day' or 'night'}
     """
     payload = request.get_json(silent=True, force=True)
     requestcommand("switchRate",payload['rate'])
@@ -629,7 +697,7 @@ def swRates():
 
 @giv_api.route('/setImportCap', methods=['POST'])
 def impCap():
-    """Sets gird import cap for EVC charging in [A]
+    """Sets grid import cap for EVC charging in [A]
 
     Payload: {'current':'60'}
     """
@@ -649,27 +717,27 @@ def currLimit():
 def frceDischarge():
     """Enables Force Discharge on Three Phase Inverters
 
-    Payload: {'state':'enabled' or "disabled'}
+    Payload: {'state':'enable' or 'disable'}
     """
     payload = request.get_json(silent=True, force=True)
-    requestcommand("setForceDischarge",payload['state'])
+    requestcommand("setForceDischarge",payload)
     return response("setForceDischarge")
 
 @giv_api.route('/setForceCharge', methods=['POST'])
 def frceCharge():
     """Enables Force Charge on Three Phase Inverters
 
-    Payload: {'state':'enabled' or "disabled'}
+    Payload: {'state':'enable' or 'disable'}
     """
     payload = request.get_json(silent=True, force=True)
-    requestcommand("setForceCharge",payload['state'])
+    requestcommand("setForceCharge",payload)
     return response("setForceCharge")
 
 @giv_api.route('/setBatteryCalibration', methods=['POST'])
 def setCalib():
     """Trigger or stop a Battery Calibration
 
-    Payload: {'state':'off' or 'start'}
+    Payload: {'state':'Off' or 'Start' or 'Charge Only'}
     """
     payload = request.get_json(silent=True, force=True)
     requestcommand("setBatteryCalibration",payload)
@@ -679,33 +747,37 @@ def setCalib():
 def setSCChrg():
     """Enables AC Charge on Three Phase Inverters
 
-    Payload: {'state':'enabled' or "disabled'}
+    Payload: {'state':'enable' or 'disable'}
     """
     payload = request.get_json(silent=True, force=True)
-    requestcommand("setACCharge",payload['state'])
+    requestcommand("setACCharge",payload)
     return response("setACCharge")
 
 @giv_api.route('/setEmsPlant', methods=['POST'])
 def setEMSPlnt():
-    """Enables AC Charge on Three Phase Inverters
+    """Enables or disables EMS control of the plant
 
-    Payload: {'state':'enabled' or "disabled'}
+    Payload: {'state':'enable' or 'disable'}
     """
     payload = request.get_json(silent=True, force=True)
-    requestcommand("setEmsPlant",payload['state'])
+    requestcommand("setEmsPlant",payload)
     return response("setEmsPlant")
 
 @giv_api.route('/setChargeControl', methods=['POST'])
 def chrgeControl():
-    """starts or stops the EVC charger
+    """Starts or stops the EVC charger
 
-    Payload: {'mode':'start' or "stop'}
+    Payload: {'mode':'Start' or 'Stop'}
     """
     payload = request.get_json(silent=True, force=True)
     return evc.setChargeControl(payload['mode'])
 
 @giv_api.route('/setChargeMode', methods=['POST'])
 def chrgMode():
+    """Turns EVC Plug and Go on or off
+
+    Payload: "enable" or "disable"
+    """
     payload = request.get_json(silent=True, force=True)
     return evc.setChargeMode(payload)
 
@@ -713,7 +785,7 @@ def chrgMode():
 def chrgingMode():
     """Sets the Charging Mode for EVC
 
-    Payload: {'state':'enable' or 'disable'}
+    Payload: {'state':'Grid' or 'Hybrid' or 'Solar'}
     """
     payload = request.get_json(silent=True, force=True)
     return evc.setChargingMode(payload['state'])
