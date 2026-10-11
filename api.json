@@ -82,6 +82,17 @@
             "method": "GET",
             "usage": "GET Last known data from the pkl file cache"
         },
+        "captureDevice": {
+            "url": "/captureDevice",
+            "method": "POST",
+            "payload": "{'seconds': 30-600 (optional)}",
+            "usage": "Capture this inverter's Modbus traffic (serials and IPs removed) to share for GivTCP's test library"
+        },
+        "captureStatus": {
+            "url": "/captureStatus",
+            "method": "GET",
+            "usage": "State of the device capture; when done, the file (at /captures/<file>), a device summary and a GitHub issue link"
+        },
         "getEVCCache": {
             "url": "/getEVCCache",
             "method": "GET",

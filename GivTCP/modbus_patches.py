@@ -32,6 +32,10 @@ each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, it
   (britkat1980/giv_tcp#611 on HV Gen 3, #614 on three-phase, where detect still lists those addresses). As in the
   old library, every stack's module k is at 0x50 + k and the stack is picked by register offset, 120 per stack,
   so this reads and decodes them from there instead.
+- The All in One-HY (DTC 0x82xx) is read as single-phase [18]. The library lists it as three-phase, so it was
+  read with the three-phase registers (HR/IR 1000+), which it rejects (britkat1980/giv_tcp#621). GivTCP 3.5's
+  library read every 0x8xxx device single-phase, and the library's own notes say the residential All-in-One
+  rejects the 1000-range reads.
 - HV battery module cell data is only re-read on full refreshes (read.py sets skip_banks between them), as each
   module is a read of its own and cell voltages and temperatures don't need updating every poll (#614).
 
@@ -117,6 +121,10 @@ def _extra_write_registers(model, arm_fw):
 # has_extended_slots() reads this set on every call, so this one change gives the Gateway the 10-slot reads,
 # slot map and slot writes (and, below, the target SOC writes) (#577)
 manifest._EXTENDED_SLOT_MODELS = manifest._EXTENDED_SLOT_MODELS | {Model.GATEWAY}
+
+# The All in One-HY (0x82xx) is single-phase (#621). CAPABILITIES["is_three_phase"] chooses the inverter class
+# (select_inverter), the register banks polled and the settings read, and is looked up on every call
+manifest.CAPABILITIES["is_three_phase"] = manifest.CAPABILITIES["is_three_phase"] - {Model.ALL_IN_ONE_HYBRID}
 
 _library_write_safe_registers = manifest.write_safe_registers
 

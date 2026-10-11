@@ -1,3 +1,13 @@
+# GivTCP 3.6.3
+
+Changes since 3.6.2.
+
+### Added
+- **Share Device page** in the web UI. It captures a few minutes of an inverter's Modbus data, with serial numbers and IP addresses removed by the givenergy-modbus library, so it can be shared to help GivTCP support more devices. GivTCP keeps working as normal while it runs. When it's done you can download the file and open a GitHub issue with your device's model, firmware and batteries filled in, to attach it to. Nothing is sent anywhere unless you attach the file yourself. The capture is also available over REST (`/RESTn/captureDevice` and `/RESTn/captureStatus`).
+
+### Fixed
+- **All in One-HY (device type 0x82xx): no data, with "Error processing Three Phase data"** (#621). The new Modbus library treats the All in One-HY as a three-phase inverter, so it was read with three-phase registers, which it rejects, and every poll failed. It's now read as single-phase, as in 3.5, with 10 charge/discharge slots and the hybrid Load calculation. On three-phase inverters, a missing PV reading also no longer fails the whole poll.
+
 # GivTCP 3.6.2
 
 Changes since 3.6.1.

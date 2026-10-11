@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GivTCP Share Device</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="pages.css">
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script>
+        $(function() {
+           $("#includeHead").load("header.html?_=" + Date.now());   // unique URL, so a cached (stale) header is never used
+        });
+    </script>
+    <style>
+        .share-inv { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; justify-content: space-between; }
+        .share-inv h3 { margin: 0; }
+        .share-inv .share-meta { color: rgba(0,0,0,.6); font-size: .9rem; }
+        .share-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+        .share-btn { display: inline-block; padding: 8px 16px; border: 0; border-radius: 4px; background: #4fbba9;
+                     color: #fff; font-weight: 500; font-size: .95rem; text-decoration: none; cursor: pointer; }
+        .share-btn[disabled] { opacity: .5; cursor: default; }
+        .share-btn.secondary { background: #fff; color: #2b7f72; box-shadow: inset 0 0 0 1px #4fbba9; }
+        .share-status { margin-top: 10px; font-size: .95rem; }
+        .share-status.error { color: #b00020; }
+        progress { width: 100%; max-width: 360px; height: 10px; }
+    </style>
+</head>
+
+<body>
+    <div id="includeHead"></div>
+    <div class="doc">
+        <div class="card">
+            <h2>Share your device</h2>
+            <p>Help make GivTCP work with more GivEnergy devices. A capture records the Modbus data your inverter sends
+                GivTCP for a few minutes, which can be added to GivTCP's library of real devices that every change is
+                tested against.</p>
+            <ol>
+                <li>Click <b>Capture</b> for an inverter. It takes a few minutes, and GivTCP carries on as normal.</li>
+                <li>When it's finished, click <b>Download capture</b> to save the file.</li>
+                <li>Click <b>Open GitHub issue</b>. Your device details are filled in: drag the downloaded file into the
+                    issue and submit it. You'll need a free GitHub account.</li>
+            </ol>
+            <p><b>Privacy:</b> serial numbers and IP addresses are removed from the capture before it's saved, by the
+                givenergy-modbus library GivTCP uses. Nothing is sent anywhere unless you attach the file to the issue
+                yourself.</p>
+        </div>
+        <div id="share-list"><div class="card"><p>Loading inverters…</p></div></div>
+    </div>
+
+    <script>
+    (function () {
+        var list = document.getElementById("share-list");
+        var timers = {};
+
+        function el(tag, attrs, text) {
+            var e = document.createElement(tag);
+            for (var k in (attrs || {})) e.setAttribute(k, attrs[k]);
+            if (text !== undefined) e.textContent = text;
+            return e;
+        }
+
+        function show(slot, st) {
+            var box = document.getElementById("share-status-" + slot);
+            var btn = document.getElementById("share-btn-" + slot);
+            var actions = document.getElementById("share-actions-" + slot);
+            box.className = "share-status";
+            box.textContent = "";
+            actions.querySelectorAll(".share-result").forEach(function (a) { a.remove(); });
+            var busy = st.state === "requested" || st.state === "running";
+            btn.disabled = busy;
+            if (st.state === "requested") {
+                box.textContent = "Waiting for the inverter's next poll to start the capture…";
+            } else if (st.state === "running") {
+                var elapsed = (Date.now() - Date.parse(st.started)) / 1000;
+                var seconds = st.seconds || 1;
+                box.appendChild(el("div", {}, "Capturing… " + Math.max(0, Math.round(seconds - elapsed)) + "s left"));
+                var bar = el("progress", { max: seconds });
+                bar.value = Math.min(elapsed, seconds);
+                box.appendChild(bar);
+            } else if (st.state === "done") {
+                box.textContent = "Capture saved: " + st.file + " (" + st.frames + " frames).";
+                var dl = el("a", { "class": "share-btn secondary share-result", href: "captures/" + encodeURIComponent(st.file), download: st.file }, "Download capture");
+                var gh = el("a", { "class": "share-btn secondary share-result", href: st.issue_url, target: "_blank", rel: "noopener" }, "Open GitHub issue");
+                actions.appendChild(dl);
+                actions.appendChild(gh);
+            } else if (st.state === "error") {
+                box.className = "share-status error";
+                box.textContent = "The capture failed: " + st.error;
+            }
+            clearTimeout(timers[slot]);
+            if (busy) timers[slot] = setTimeout(function () { poll(slot); }, 3000);
+        }
+
+        function poll(slot) {
+            fetch("REST" + slot + "/captureStatus", { cache: "no-store" })
+                .then(function (r) { return r.json(); })
+                .then(function (st) { show(slot, st); })
+                .catch(function () { timers[slot] = setTimeout(function () { poll(slot); }, 5000); });
+        }
+
+        function start(slot) {
+            document.getElementById("share-btn-" + slot).disabled = true;
+            fetch("REST" + slot + "/captureDevice", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })
+                .then(function (r) { return r.json(); })
+                .then(function (st) { show(slot, st); })
+                .catch(function (e) {
+                    var box = document.getElementById("share-status-" + slot);
+                    box.className = "share-status error";
+                    box.textContent = "Couldn't start the capture: " + e;
+                    document.getElementById("share-btn-" + slot).disabled = false;
+                });
+        }
+
+        fetch("settings", { cache: "no-store" })
+            .then(function (r) { return r.json(); })
+            .then(function (setts) {
+                list.textContent = "";
+                var count = parseInt(setts.number_of_inverters || 0, 10);
+                var shown = 0;
+                for (var slot = 1; slot <= count; slot++) {
+                    if (!setts["inverter_enable_" + slot]) continue;
+                    shown++;
+                    var card = el("div", { "class": "card" });
+                    var head = el("div", { "class": "share-inv" });
+                    var title = el("div");
+                    title.appendChild(el("h3", {}, setts["inverterName_" + slot] || ("Inverter " + slot)));
+                    title.appendChild(el("div", { "class": "share-meta" }, (setts["Model_" + slot] || "Model not detected yet") + " · slot " + slot));
+                    head.appendChild(title);
+                    var actions = el("div", { "class": "share-actions", id: "share-actions-" + slot });
+                    var btn = el("button", { "class": "share-btn", id: "share-btn-" + slot, type: "button" }, "Capture");
+                    btn.addEventListener("click", start.bind(null, slot));
+                    actions.appendChild(btn);
+                    head.appendChild(actions);
+                    card.appendChild(head);
+                    card.appendChild(el("div", { "class": "share-status", id: "share-status-" + slot }));
+                    list.appendChild(card);
+                    poll(slot);
+                }
+                if (!shown) list.appendChild(el("div", { "class": "card" }, "No inverters are set up yet. Add one on the Config page first."));
+            })
+            .catch(function (e) { list.textContent = "Couldn't load the inverters: " + e; });
+    })();
+    </script>
+</body>
+
+</html>

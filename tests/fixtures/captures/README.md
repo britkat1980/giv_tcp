@@ -18,3 +18,8 @@ Copyright (c) 2021 Dewet Diener, used under the Apache License 2.0. They are unc
 
 To add a device, capture it with `givenergy-cli capture` (which redacts serials), save it here as `<name>.capture` and an
 entry to `DEVICES` in `tests/harness/devices.py`, then run the tests with `--update-golden`.
+
+Users can also share captures from GivTCP's **Share Device** page (`GivTCP/capture.py`). It uses the library's
+`Client.capture_frames()`, the same redaction as `givenergy-cli capture`, and writes the same format, covering a full
+refresh and a few polls. They're attached to GitHub issues titled "Device capture: <model> (ARM <firmware>)", with the
+model, firmware and devices found in the issue. Add one the same way.

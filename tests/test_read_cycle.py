@@ -7,7 +7,7 @@ from harness import golden
 from harness.devices import DEVICES
 
 # Output values that depend on the real clock rather than the plant
-VARIES = {"Data_Age"}
+VARIES = {"Data_Age", "GivTCP_Version"}     # the version changes with every release
 
 @pytest.fixture(params=list(DEVICES), scope="module")
 def session(request, plants):

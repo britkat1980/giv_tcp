@@ -2812,7 +2812,7 @@
     "writes": [
      [
       17,
-      32,
+      244,
       500
      ]
     ]
@@ -3074,7 +3074,7 @@
     "writes": [
      [
       17,
-      31,
+      243,
       200
      ]
     ]
@@ -4263,7 +4263,7 @@
     "writes": [
      [
       17,
-      32,
+      244,
       500
      ]
     ]
@@ -4332,7 +4332,7 @@
     "writes": [
      [
       17,
-      31,
+      243,
       200
      ]
     ]
@@ -5445,7 +5445,7 @@
    },
    "Stats": {
     "Data_Age": "<varies>",
-    "GivTCP_Version": "3.5",
+    "GivTCP_Version": "<varies>",
     "Last_Updated_Time": "2026-06-15T12:00:00+01:00",
     "Safe_Write_Count": 0,
     "Time_Since_Last_Update": 0,
@@ -5800,7 +5800,7 @@
    },
    "Stats": {
     "Data_Age": "<varies>",
-    "GivTCP_Version": "3.5",
+    "GivTCP_Version": "<varies>",
     "Last_Updated_Time": "2026-06-15T12:00:00+01:00",
     "Safe_Write_Count": 0,
     "Time_Since_Last_Update": 0.0,

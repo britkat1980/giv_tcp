@@ -71,6 +71,7 @@ The web UI (the config page, opened as above) has a menu with:
 - **Config:** the settings, described in the [Settings Guide](docs/SETTINGS-GUIDE.md).
 - **Readme:** this page.
 - **Settings Guide** and **Datapoints:** what each setting does, and every value GivTCP publishes.
+- **Share Device:** helps GivTCP support more devices. It captures a few minutes of your inverter's Modbus data (with serial numbers and IP addresses removed), which you can download and attach to a pre-filled GitHub issue, to be added to the library of real devices GivTCP is tested against.
 - **Dashboard:** the web dashboard, if it's turned on (see below).
 - **Logs:** a log viewer for each inverter's main, write and REST logs, the startup log and the EV charger log. Tick one log to see it on its own, or several to merge them into one timeline. You can pick an earlier day, filter by level or text, follow new lines as they're written and download a log, for example to attach to a GitHub issue. The logs are kept for 7 days in `/config/GivTCP/logs`.
 
