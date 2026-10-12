@@ -1,3 +1,10 @@
+# GivTCP 3.6.4
+
+Changes since 3.6.3.
+
+### Fixed
+- **EMS: energy totals and today values not updating, and Generation Energy Total showing solar power.** Since 3.6, the new Modbus library doesn't read the EMS's energy registers, so GivTCP stopped publishing its Generation, Inverter In/Out, Import and Export energy (total and today) and Total Power. Home Assistant kept showing the last values from 3.5, and today values didn't reset at midnight. Generation Energy Total was also read from the wrong register, which holds a power in W. GivTCP now reads them again, as in 3.5. Generation Energy Total jumps back to the real total, so its statistics in the Energy dashboard may show one large step on the day you update.
+
 # GivTCP 3.6.3
 
 Changes since 3.6.2.

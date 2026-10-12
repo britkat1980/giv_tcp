@@ -36,6 +36,8 @@ each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, it
   read with the three-phase registers (HR/IR 1000+), which it rejects (britkat1980/giv_tcp#621). GivTCP 3.5's
   library read every 0x8xxx device single-phase, and the library's own notes say the residential All-in-One
   rejects the 1000-range reads.
+- The EMS's IR 0-59 is polled [19]. It holds the EMS's energy totals and today values and its Total Power, which
+  GivTCP 3.5 published, but the library doesn't poll it on an EMS, so they stopped updating in 3.6.
 - HV battery module cell data is only re-read on full refreshes (read.py sets skip_banks between them), as each
   module is a read of its own and cell voltages and temperatures don't need updating every poll (#614).
 
@@ -125,6 +127,10 @@ manifest._EXTENDED_SLOT_MODELS = manifest._EXTENDED_SLOT_MODELS | {Model.GATEWAY
 # The All in One-HY (0x82xx) is single-phase (#621). CAPABILITIES["is_three_phase"] chooses the inverter class
 # (select_inverter), the register banks polled and the settings read, and is looked up on every call
 manifest.CAPABILITIES["is_three_phase"] = manifest.CAPABILITIES["is_three_phase"] - {Model.ALL_IN_ONE_HYBRID}
+
+# The EMS's IR 0-59 (energy totals and Total Power, read.py EMS_IR_VALUES). The library polls only IR 2040+ on an
+# EMS (_refresh_banks); REFRESH_IR_RANGES is looked up on every refresh
+manifest.REFRESH_IR_RANGES["is_ems"] = [manifest.RegisterRange("IR", 0, 60)] + manifest.REFRESH_IR_RANGES["is_ems"]
 
 _library_write_safe_registers = manifest.write_safe_registers
 
