@@ -22,4 +22,4 @@ entry to `DEVICES` in `tests/harness/devices.py`, then run the tests with `--upd
 Users can also share captures from GivTCP's **Share Device** page (`GivTCP/capture.py`). It uses the library's
 `Client.capture_frames()`, the same redaction as `givenergy-cli capture`, and writes the same format, covering a full
 refresh and a few polls. They're attached to GitHub issues titled "Device capture: <model> (ARM <firmware>)", with the
-model, firmware and devices found in the issue. Add one the same way.
+model, firmware and devices found in the issue. Add one the same way. The ones shared so far are kept in `shared/`, with an index in `shared/README.md`.
