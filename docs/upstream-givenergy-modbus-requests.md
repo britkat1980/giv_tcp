@@ -255,3 +255,15 @@ There's no command that sets just `ENABLE_CHARGE_TARGET` (HR 20) to 1. `disable_
 - Check `e_active_generation_total` (IR 18).
 
 **GivTCP workaround:** `GivTCP/modbus_patches.py` adds IR 0-59 to `REFRESH_IR_RANGES["is_ems"]`, and `read.py` decodes the values from the register cache (`EMS_IR_VALUES`).
+
+## 20. Allow the AC charge/discharge limit (HR 313/314) on Hybrid Gen 3
+
+**Problem**
+
+`set_battery_charge_limit_ac` / `set_battery_discharge_limit_ac` write HR 313/314, which are only write-safe on models with the AC config block (AC and All-in-One). The old library wrote them on every single-phase model, and Hybrid Gen 3 owners used them to set the AC charge and discharge rate (britkat1980/giv_tcp#630).
+
+**Request**
+
+- Allow HR 313/314 writes on `Model.HYBRID_GEN3`, without reading HR 300-359 (which DC hybrids time out on).
+
+**GivTCP workaround:** `GivTCP/modbus_patches.py` adds HR 313/314 to the Hybrid Gen 3's write-safe registers (`AC_LIMIT_HYBRIDS`), and `write.acLimit()` sends Hybrid Gen 3 rate changes to them.

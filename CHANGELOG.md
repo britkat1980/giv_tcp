@@ -4,6 +4,12 @@ Changes since 3.6.3.
 
 ### Fixed
 - **EMS: energy totals and today values not updating, and Generation Energy Total showing solar power.** Since 3.6, the new Modbus library doesn't read the EMS's energy registers, so GivTCP stopped publishing its Generation, Inverter In/Out, Import and Export energy (total and today) and Total Power. Home Assistant kept showing the last values from 3.5, and today values didn't reset at midnight. Generation Energy Total was also read from the wrong register, which holds a power in W. GivTCP now reads them again, as in 3.5. Generation Energy Total jumps back to the real total, so its statistics in the Energy dashboard may show one large step on the day you update.
+- **All in One-HY: "Error processing Inverter data: TypeError: '<' not supported between instances of 'NoneType' and 'float'" every poll** (#628). The Modbus library has no battery power rating for the All in One-HY, which every poll needed. GivTCP now estimates it from the battery stack, as for the HV Gen 3, within the inverter's rating, and a missing rating on any model no longer stops the poll.
+- **Gen 1 (and others): battery module entities never created in Home Assistant** (#629, thanks @bigchriselmer-ui). Home Assistant discovery was only sent for the first data GivTCP read, and the Modbus library only gives battery modules once a second read confirms them. GivTCP now sends discovery for any new data as it appears, so the modules' devices and entities are created after the second poll.
+- **Hybrid Gen 3: Battery Charge Rate AC and Battery Discharge Rate AC couldn't be set** ("NotImplementedError: Setting the AC charge rate is not yet supported", #630, thanks @JRascagneres). They're written to HR 313/314 again, as in 3.5.
+
+### Documentation
+- Timeslot drop-downs take the time as `HH:MM:SS` in automations, and the time pickers as `HH:MM` (#633).
 
 # GivTCP 3.6.3
 

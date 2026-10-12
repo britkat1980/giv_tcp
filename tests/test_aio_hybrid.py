@@ -34,3 +34,18 @@ def test_three_phase_still_three_phase():
 def test_missing_pv_values():
     assert read.sumPresent(None, None) is None
     assert read.sumPresent(1200.0, None) == 1200.0
+
+def _plant(dtc, stacks):
+    from types import SimpleNamespace
+    caps = PlantCapabilities(device_type=Model.ALL_IN_ONE_HYBRID, bcu_stacks=stacks)
+    inv = SimpleNamespace(inverter_max_power=12000, battery_max_power=None, battery_capacity_kwh=16.48,
+                          device_type_code=dtc)
+    return SimpleNamespace(capabilities=caps, inverter=inv)
+
+def test_battery_rate():
+    # The library has no battery rating for the All in One-HY, which failed every poll (#628): estimate it from the
+    # HV stack, within the inverter's rating
+    assert read.getInvModel(_plant("8204", [(0, 4)])).batmaxrate == 25 * 80 * 4
+    assert read.getInvModel(_plant("8204", [(0, 8)])).batmaxrate == 12000
+    # no stack detected: the inverter's rating
+    assert read.getInvModel(_plant("8204", [])).batmaxrate == 12000
