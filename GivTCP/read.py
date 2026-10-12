@@ -2571,7 +2571,7 @@ def processData(plant: Plant):
         givtcpdata['Last_Updated_Time'] = datetime.datetime.now(GivLUT.timezone).isoformat()
         givtcpdata['status'] = "online"
         givtcpdata['Time_Since_Last_Update'] = 0
-        givtcpdata['GivTCP_Version']= "3.6.3"
+        givtcpdata['GivTCP_Version']= "3.6.4"
         age=dataAge(plant)
         givtcpdata['Data_Age']= round(age,1) if age is not None else -1
         if age is None or age > max(3*GiV_Settings.self_run_timer, 60):
