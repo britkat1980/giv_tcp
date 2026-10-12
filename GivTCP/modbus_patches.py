@@ -22,6 +22,9 @@ each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, it
   are its rate controls (givenergy-modbus#373), but the library only reads and allows them on models with the
   AC config block. This also reads HR 313-314 after each load_config() on the Gateway, so the current rates
   are known.
+- Hybrid Gen 3 AC charge/discharge rate, HR 313 / 314 [20]. GivTCP 3.5 wrote them on every single-phase model, and
+  Gen 3 owners used them (britkat1980/giv_tcp#630), but the library only allows them on models with the AC config
+  block. They aren't read back (DC hybrids don't answer reads of HR 300-359), so GivTCP publishes the value written.
 - EMS car charge boost, HR 2073, 0-22000 W [10]. The library reads it but has no writer.
 - Charge slot 2 on 10-slot models is at HR 243/244, not the legacy HR 31/32 the library uses (#619) [17].
 - Battery pack current, IR 95 [13]. The library reports it on every model, but it only holds a real value
@@ -36,6 +39,8 @@ each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, it
   read with the three-phase registers (HR/IR 1000+), which it rejects (britkat1980/giv_tcp#621). GivTCP 3.5's
   library read every 0x8xxx device single-phase, and the library's own notes say the residential All-in-One
   rejects the 1000-range reads.
+- The EMS's IR 0-59 is polled [19]. It holds the EMS's energy totals and today values and its Total Power, which
+  GivTCP 3.5 published, but the library doesn't poll it on an EMS, so they stopped updating in 3.6.
 - HV battery module cell data is only re-read on full refreshes (read.py sets skip_banks between them), as each
   module is a read of its own and cell voltages and temperatures don't need updating every poll (#614).
 
@@ -75,6 +80,7 @@ SLOT_TARGET_REGISTERS = frozenset(base + 3 * i for base in SLOT_TARGET_BASE.valu
 
 THREE_PHASE_AC_LIMIT = {"charge": 1110, "discharge": 1108}
 GATEWAY_AC_LIMIT = frozenset({313, 314})     # AC charge limit, AC discharge limit
+AC_LIMIT_HYBRIDS = frozenset({Model.HYBRID_GEN3})      # DC hybrids that take the AC limit writes (#630)
 EMS_CAR_CHARGE_BOOST = 2073
 CAR_CHARGE_BOOST_MAX = 22000
 
@@ -110,7 +116,7 @@ def _extra_write_registers(model, arm_fw):
         extra |= set(EXTENDED_CHARGE_SLOT_2)
     if manifest.has_capability("is_three_phase", model):
         extra |= set(THREE_PHASE_AC_LIMIT.values())
-    if manifest.has_capability("is_gateway", model):
+    if manifest.has_capability("is_gateway", model) or model in AC_LIMIT_HYBRIDS:
         extra |= GATEWAY_AC_LIMIT
     if manifest.has_capability("is_ems", model):
         extra.add(EMS_CAR_CHARGE_BOOST)
@@ -125,6 +131,10 @@ manifest._EXTENDED_SLOT_MODELS = manifest._EXTENDED_SLOT_MODELS | {Model.GATEWAY
 # The All in One-HY (0x82xx) is single-phase (#621). CAPABILITIES["is_three_phase"] chooses the inverter class
 # (select_inverter), the register banks polled and the settings read, and is looked up on every call
 manifest.CAPABILITIES["is_three_phase"] = manifest.CAPABILITIES["is_three_phase"] - {Model.ALL_IN_ONE_HYBRID}
+
+# The EMS's IR 0-59 (energy totals and Total Power, read.py EMS_IR_VALUES). The library polls only IR 2040+ on an
+# EMS (_refresh_banks); REFRESH_IR_RANGES is looked up on every refresh
+manifest.REFRESH_IR_RANGES["is_ems"] = [manifest.RegisterRange("IR", 0, 60)] + manifest.REFRESH_IR_RANGES["is_ems"]
 
 _library_write_safe_registers = manifest.write_safe_registers
 

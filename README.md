@@ -83,7 +83,7 @@ GivTCP creates a device in Home Assistant for each inverter, battery and meter. 
 
 <img src="docs/images/config-4.png" width="400">
 
-Timeslots can be shown as drop-downs, as time pickers (Home Assistant 2026.5 or later) or both: see "Timeslot entities in Home Assistant" on the Misc page. Entities a model doesn't support are removed from Home Assistant automatically. Home Assistant keeps entities you've disabled, though, so delete those yourself in Settings → Entities.
+Timeslots can be shown as drop-downs, as time pickers (Home Assistant 2026.5 or later) or both: see "Timeslot entities in Home Assistant" on the Misc page. If you switch, update any automations that set them: a drop-down takes the time as `HH:MM:SS` and a time picker as `HH:MM`. Entities a model doesn't support are removed from Home Assistant automatically. Home Assistant keeps entities you've disabled, though, so delete those yourself in Settings → Entities.
 
 ## Other ways to use GivTCP
 

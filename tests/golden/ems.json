@@ -4756,8 +4756,20 @@
     "status": "Normal"
    },
    "Energy": {
-    "Today": {},
-    "Total": {}
+    "Today": {
+     "Export_Energy_Today_kWh": 31.0,
+     "Generation_Energy_Today_kWh": 7.5,
+     "Import_Energy_Today_kWh": 32.7,
+     "Inverter_In_Energy_Today_kWh": 0.3,
+     "Inverter_Out_Energy_Today_kWh": 7.5
+    },
+    "Total": {
+     "Export_Energy_Total_kWh": 12090.1,
+     "Generation_Energy_Total_kWh": 24138.1,
+     "Import_Energy_Total_kWh": 28587.2,
+     "Inverter_In_Energy_Total_kWh": 13217.4,
+     "Inverter_Out_Energy_Total_kWh": 24138.1
+    }
    },
    "Inverters": {
     "CE2231G001": {
@@ -4799,7 +4811,8 @@
      "Meter_8_Power": 0,
      "Meter_8_Status": "Disabled"
     },
-    "Other_Battery_Power": 0
+    "Other_Battery_Power": 0,
+    "Total_Power": 2511
    },
    "Stats": {
     "Data_Age": "<varies>",
@@ -4848,7 +4861,7 @@
      "discharge_target_1": 4,
      "discharge_target_2": 4,
      "discharge_target_3": 4,
-     "e_active_generation_total": null,
+     "e_active_generation_total": 0,
      "ems_status": 1,
      "expected_car_charger_count": 0,
      "expected_inverter_count": 0,
@@ -5014,8 +5027,20 @@
     "status": "Normal"
    },
    "Energy": {
-    "Today": {},
-    "Total": {}
+    "Today": {
+     "Export_Energy_Today_kWh": 31.0,
+     "Generation_Energy_Today_kWh": 7.5,
+     "Import_Energy_Today_kWh": 32.7,
+     "Inverter_In_Energy_Today_kWh": 0.3,
+     "Inverter_Out_Energy_Today_kWh": 7.5
+    },
+    "Total": {
+     "Export_Energy_Total_kWh": 12090.1,
+     "Generation_Energy_Total_kWh": 24138.1,
+     "Import_Energy_Total_kWh": 28587.2,
+     "Inverter_In_Energy_Total_kWh": 13217.4,
+     "Inverter_Out_Energy_Total_kWh": 24138.1
+    }
    },
    "Inverters": {
     "CE2231G001": {
@@ -5057,7 +5082,8 @@
      "Meter_8_Power": 0,
      "Meter_8_Status": "Disabled"
     },
-    "Other_Battery_Power": 0
+    "Other_Battery_Power": 0,
+    "Total_Power": 2511
    },
    "Stats": {
     "Data_Age": "<varies>",
@@ -5106,7 +5132,7 @@
      "discharge_target_1": 4,
      "discharge_target_2": 4,
      "discharge_target_3": 4,
-     "e_active_generation_total": null,
+     "e_active_generation_total": 0,
      "ems_status": 1,
      "expected_car_charger_count": 0,
      "expected_inverter_count": 0,
@@ -5293,11 +5319,21 @@
    "homeassistant/sensor/GivEnergy/EMS2522000_CE2231G002_status/config",
    "homeassistant/sensor/GivEnergy/EMS2522000_Calculated_Load_Power/config",
    "homeassistant/sensor/GivEnergy/EMS2522000_Data_Age/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Export_Energy_Today_kWh/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Export_Energy_Total_kWh/config",
    "homeassistant/sensor/GivEnergy/EMS2522000_Export_Limit/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Generation_Energy_Today_kWh/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Generation_Energy_Total_kWh/config",
    "homeassistant/sensor/GivEnergy/EMS2522000_Generation_Load_Power/config",
    "homeassistant/sensor/GivEnergy/EMS2522000_GivTCP_Version/config",
    "homeassistant/sensor/GivEnergy/EMS2522000_Grid_Power/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Import_Energy_Today_kWh/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Import_Energy_Total_kWh/config",
    "homeassistant/sensor/GivEnergy/EMS2522000_Inverter_Count/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Inverter_In_Energy_Today_kWh/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Inverter_In_Energy_Total_kWh/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Inverter_Out_Energy_Today_kWh/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Inverter_Out_Energy_Total_kWh/config",
    "homeassistant/sensor/GivEnergy/EMS2522000_Invertor_Firmware/config",
    "homeassistant/sensor/GivEnergy/EMS2522000_Invertor_Serial_Number/config",
    "homeassistant/sensor/GivEnergy/EMS2522000_Invertor_Time/config",
@@ -5328,6 +5364,7 @@
    "homeassistant/sensor/GivEnergy/EMS2522000_Serial_Number/config",
    "homeassistant/sensor/GivEnergy/EMS2522000_Time_Since_Last_Update/config",
    "homeassistant/sensor/GivEnergy/EMS2522000_Timeout_Error/config",
+   "homeassistant/sensor/GivEnergy/EMS2522000_Total_Power/config",
    "homeassistant/sensor/GivEnergy/EMS2522000_Write_Count/config",
    "homeassistant/sensor/GivEnergy/EMS2522000_status/config",
    "homeassistant/sensor/GivEnergy/EMS2522000_status/config",
@@ -5379,6 +5416,16 @@
    "GivEnergy/EMS2522000/EMS2522000/Remaining_Battery_Wh",
    "GivEnergy/EMS2522000/EMS2522000/Serial_Number",
    "GivEnergy/EMS2522000/EMS2522000/status",
+   "GivEnergy/EMS2522000/Energy/Today/Export_Energy_Today_kWh",
+   "GivEnergy/EMS2522000/Energy/Today/Generation_Energy_Today_kWh",
+   "GivEnergy/EMS2522000/Energy/Today/Import_Energy_Today_kWh",
+   "GivEnergy/EMS2522000/Energy/Today/Inverter_In_Energy_Today_kWh",
+   "GivEnergy/EMS2522000/Energy/Today/Inverter_Out_Energy_Today_kWh",
+   "GivEnergy/EMS2522000/Energy/Total/Export_Energy_Total_kWh",
+   "GivEnergy/EMS2522000/Energy/Total/Generation_Energy_Total_kWh",
+   "GivEnergy/EMS2522000/Energy/Total/Import_Energy_Total_kWh",
+   "GivEnergy/EMS2522000/Energy/Total/Inverter_In_Energy_Total_kWh",
+   "GivEnergy/EMS2522000/Energy/Total/Inverter_Out_Energy_Total_kWh",
    "GivEnergy/EMS2522000/Inverters/CE2231G001/Power",
    "GivEnergy/EMS2522000/Inverters/CE2231G001/SOC",
    "GivEnergy/EMS2522000/Inverters/CE2231G001/Serial_Number",
@@ -5411,6 +5458,7 @@
    "GivEnergy/EMS2522000/Power/Meters/Meter_8_Power",
    "GivEnergy/EMS2522000/Power/Meters/Meter_8_Status",
    "GivEnergy/EMS2522000/Power/Other_Battery_Power",
+   "GivEnergy/EMS2522000/Power/Total_Power",
    "GivEnergy/EMS2522000/Stats/Data_Age",
    "GivEnergy/EMS2522000/Stats/GivTCP_Version",
    "GivEnergy/EMS2522000/Stats/Last_Updated_Time",
@@ -5451,6 +5499,7 @@
    "GivEnergy/EMS2522000/raw/invertor/discharge_target_1",
    "GivEnergy/EMS2522000/raw/invertor/discharge_target_2",
    "GivEnergy/EMS2522000/raw/invertor/discharge_target_3",
+   "GivEnergy/EMS2522000/raw/invertor/e_active_generation_total",
    "GivEnergy/EMS2522000/raw/invertor/ems_status",
    "GivEnergy/EMS2522000/raw/invertor/expected_car_charger_count",
    "GivEnergy/EMS2522000/raw/invertor/expected_inverter_count",

@@ -867,6 +867,16 @@ def getInvModel(plant: Plant):
             ratecap+=(ah or 0)*HV_MODULE_VOLTS*(n or 0)/1000
         if ratecap:
             inverterModel.ratecapacity=round(ratecap,2)
+    elif inverterModel.model==Model.ALL_IN_ONE_HYBRID and plant.capabilities.bcu_stacks:
+        # The library has no battery rating for the All in One-HY (#628). Its battery is an HV stack, so estimate the
+        # rate as for HV Gen 3 (battery current at ~80V a module), within the inverter's rating
+        modules=max(n for _,n in plant.capabilities.bcu_stacks)
+        if modules:
+            stackrate=HV_GEN3_BAT_CURRENT.get(str(GEInv.device_type_code),25) * HV_MODULE_VOLTS * modules
+            inverterModel.batmaxrate=min(stackrate, inverterModel.invmaxrate or stackrate)
+    if inverterModel.batmaxrate is None and not plant.capabilities.is_ems:
+        # A model the library has no battery rating for: the inverter's rating is the most it can be (#628)
+        inverterModel.batmaxrate=inverterModel.invmaxrate
     return inverterModel
 
 def rawValues(model):
@@ -1305,13 +1315,14 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
         ratecapacity=getattr(inverterModel,'ratecapacity',None) or inverterModel.batterycapacity
         for key, limit in (('Battery_Discharge_Rate', GEInv.battery_discharge_limit), ('Battery_Charge_Rate', GEInv.battery_charge_limit)):
             if limit is not None and ratecapacity:
-                controlmode[key]=int(min((limit/100)*ratecapacity*1000, inverterModel.batmaxrate))
+                rate=(limit/100)*ratecapacity*1000
+                controlmode[key]=int(min(rate, inverterModel.batmaxrate) if inverterModel.batmaxrate else rate)
             elif multi_output_old and key in multi_output_old.get('Control',{}):
                 controlmode[key]=multi_output_old['Control'][key]
     else:
         # HR313/314 can be unread (None), e.g. on Gateway - fall back to the previous values
         for key, limit in (('Battery_Discharge_Rate', GEInv.battery_discharge_limit_ac), ('Battery_Charge_Rate', GEInv.battery_charge_limit_ac)):
-            if limit is not None:
+            if limit is not None and inverterModel.batmaxrate:
                 controlmode[key]=int(inverterModel.batmaxrate*(limit/100))
             elif multi_output_old and key in multi_output_old.get('Control',{}):
                 controlmode[key]=multi_output_old['Control'][key]
@@ -1951,10 +1962,37 @@ def processInverterInfo(plant: Plant):
         return None
     return multi_output
 
+# The EMS's own energy totals and Total Power in IR 0-59, which givenergy-modbus v2 polls but doesn't model (its
+# e_active_generation_total is IR 18, a power in W). key: (section, registers (high word first), scale), as in 3.5
+EMS_IR_VALUES={
+    'Generation_Energy_Total_kWh':('Total',(45,46),0.1),
+    'Inverter_Out_Energy_Total_kWh':('Total',(6,7),0.1),
+    'Inverter_In_Energy_Total_kWh':('Total',(27,28),0.1),
+    'Export_Energy_Total_kWh':('Total',(21,22),0.1),
+    'Import_Energy_Total_kWh':('Total',(32,33),0.1),
+    'Export_Energy_Today_kWh':('Today',(25,),0.1),
+    'Import_Energy_Today_kWh':('Today',(26,),0.1),
+    'Inverter_In_Energy_Today_kWh':('Today',(35,),0.1),
+    'Inverter_Out_Energy_Today_kWh':('Today',(37,),0.1),
+    'Generation_Energy_Today_kWh':('Today',(44,),0.1),
+    'Total_Power':('Power',(52,),None),     # signed W
+}
+
+def emsIRValue(cache, regs, scale):
+    words=[cache.get(IR(r)) for r in regs]
+    if None in words:
+        return None
+    if scale is None:
+        return words[0]-0x10000 if words[0]>=0x8000 else words[0]
+    value=0
+    for w in words:
+        value=value<<16 | w
+    return round(value*scale,1)
+
 def processEMSInfo(plant: Plant):
     # givenergy-modbus v2: plant.ems holds the EMS block (HR/IR 2040+). Identity values (serial, firmware,
     # time, export limit) come from the HR(0-60) bank, which v2 polls for EMS, via the inverter view over
-    # the same register cache. IR(0-60) is not polled for EMS, so there are no inverter-style energy totals
+    # the same register cache. The energy totals and Total Power are decoded from IR 0-59 (EMS_IR_VALUES)
     try:
         multi_output={}
         GEInv=plant.ems
@@ -2014,8 +2052,13 @@ def processEMSInfo(plant: Plant):
         energy={}
         energy_total_output = {}
         energy_today_output = {}
-        if GEInv.e_active_generation_total is not None:
-            energy_total_output['Generation_Energy_Total_kWh']=GEInv.e_active_generation_total
+        # 3.6.0-3.6.3 published only Generation Energy Total, from IR 18 (a power), so the others stopped updating
+        cache=plant.register_caches.get(plant.capabilities.inverter_address,{})
+        sections={'Total':energy_total_output,'Today':energy_today_output,'Power':power_output}
+        for key,(section,regs,scale) in EMS_IR_VALUES.items():
+            value=emsIRValue(cache,regs,scale)
+            if value is not None:
+                sections[section][key]=value
 
         meter={}
         for i in range(1,9):
@@ -2528,7 +2571,7 @@ def processData(plant: Plant):
         givtcpdata['Last_Updated_Time'] = datetime.datetime.now(GivLUT.timezone).isoformat()
         givtcpdata['status'] = "online"
         givtcpdata['Time_Since_Last_Update'] = 0
-        givtcpdata['GivTCP_Version']= "3.6.3"
+        givtcpdata['GivTCP_Version']= "3.6.4"
         age=dataAge(plant)
         givtcpdata['Data_Age']= round(age,1) if age is not None else -1
         if age is None or age > max(3*GiV_Settings.self_run_timer, 60):
@@ -2843,6 +2886,27 @@ def start():
     asyncio.run(self_run())
 
 
+# Every value Home Assistant discovery has been published for since this read loop started, by serial (publishOutput)
+discoveredPaths={}
+
+def leafPaths(output, path=()):
+    for key,value in output.items():
+        if isinstance(value,dict):
+            yield from leafPaths(value, path+(key,))
+        else:
+            yield path+(key,)
+
+def pathSubset(output, paths):
+    # The part of a nested output with just these leaf paths
+    subset={}
+    for path in paths:
+        source,target=output,subset
+        for key in path[:-1]:
+            source=source[key]
+            target=target.setdefault(key,{})
+        target[path[-1]]=source[path[-1]]
+    return subset
+
 def publishOutput(array, SN):
 
     # Additional Publish options can be added here.
@@ -2860,15 +2924,29 @@ def publishOutput(array, SN):
         if not exists(GivLUT.firstrun):
             logger.debug("Running updateFirstRun with SN= "+str(SN))
             updateFirstRun(SN)
-            if GiV_Settings.HA_Auto_D:               
+            if GiV_Settings.HA_Auto_D:
                 logger.info("Publishing Home Assistant Discovery messages")
                 from HA_Discovery import HAMQTT
                 HAMQTT.publish_discovery2(tempoutput, SN, unsupportedEntities())
+            discoveredPaths[SN]=set(leafPaths(tempoutput))
             open(GivLUT.firstrun, 'w').close()
             if exists(GivLUT.config_dir+'/.v3upgrade_'+str(GiV_Settings.givtcp_instance)):
                 os.remove(GivLUT.config_dir+'/.v3upgrade_'+str(GiV_Settings.givtcp_instance))
         else:
             logger.debug("firstrun exists, so this should already have been run")
+            if SN not in discoveredPaths:
+                discoveredPaths[SN]=set(leafPaths(tempoutput))
+            elif GiV_Settings.HA_Auto_D:
+                # Data that wasn't in the first output, eg. LV battery modules, which the library only gives once a
+                # second read confirms them (its splice guard), after discovery has run (#629)
+                new=[p for p in leafPaths(tempoutput) if p not in discoveredPaths[SN] and p[0]!="raw"]
+                if new:
+                    logger.info("Publishing Home Assistant Discovery messages for "+str(len(new))+" new entities")
+                    from HA_Discovery import HAMQTT
+                    # With the Invertor_Type value, which names the device as the first discovery did
+                    typePath=[p for p in leafPaths(tempoutput) if p[-1]=="Invertor_Type"][:1]
+                    HAMQTT.publish_discovery2(pathSubset(tempoutput,new+typePath), SN, unsupportedEntities())
+                discoveredPaths[SN].update(new)
         logger.debug("Publish all to MQTT")
         if GiV_Settings.MQTT_Topic == "":
             GiV_Settings.MQTT_Topic = "GivEnergy"
