@@ -11,3 +11,5 @@ and IP addresses are removed). They're stored here as received, renamed to `.cap
 | `all_in_one_8003_arm620_issue627.capture` | #627 | All-in-One (DTC 8003) | ARM/DSP 620 | 4 battery modules, 1 BCU stack | |
 | `all_in_one_8001_arm620_issue631.capture` | #631 | All-in-One (DTC 8001) | ARM/DSP 620 | 4 battery modules, 1 BCU stack | |
 | `ems_arm1036_issue632.capture` | #632 | EMS (DTC 5001) | ARM 1036 | 2 meters | Captured on 3.6.3, which doesn't poll IR 0-59: the IR 0-59 replies in it are the cloud's polls, relayed by the dongle (#635) |
+| `ac_3001_arm282_issue638.capture` | #638 | AC (DTC 3001) behind an EMS | ARM 282, DSP 291 | 1 LV battery (BMS 4009) | Also reads LV battery addresses 0x30-0x37 once (detect) |
+| `ems_arm1036_issue638.capture` | #638 | EMS (DTC 5001) with 2 AC inverters | ARM 1036 | 2 meters | Same plant as the AC above. As #632, its IR 0-59 replies are the cloud's polls |
