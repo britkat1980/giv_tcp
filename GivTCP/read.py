@@ -75,7 +75,7 @@ def commsFailure():
 # The inverter resets its Today counters by its own clock, on some firmware a little after midnight
 TODAY_RESET_GRACE_MINUTES=5
 
-def newInverterDay(invTime, multi_output_old, grace=True):
+def newInverterDay(invTime, multi_output_old, grace=True, readAt=None):
     # True when the inverter's date has moved on since the previous output, so yesterday's Today values mustn't be
     # carried over. Comparing dates (rather than looking for a poll in the 00:00 minute) still works after a missed
     # poll, a restart over midnight or a container clock that differs from the inverter's.
@@ -87,6 +87,9 @@ def newInverterDay(invTime, multi_output_old, grace=True):
         old=datetime.datetime.fromisoformat(str(oldTime))
     except (TypeError, ValueError):
         return False
+    if readAt:
+        # The clock is only read on full refreshes, so it can lag the Today counters by minutes (#639)
+        new+=max(datetime.timedelta(0), datetime.datetime.now(datetime.timezone.utc)-readAt)
     if new.date()!=old.date():
         logger.debug("New inverter day ("+str(old.date())+" -> "+str(new.date())+"), Today stats reset")
         return True
@@ -1721,7 +1724,7 @@ def processInverterInfo(plant: Plant):
             
         # Load and Self Consumption are calculated, so hold them rather than let rounding make them go down -
         # except on a new inverter day, when the counters have reset and holding would keep yesterday's totals
-        if multi_output_old and not newInverterDay(inverter['Invertor_Time'],multi_output_old):
+        if multi_output_old and not newInverterDay(inverter['Invertor_Time'],multi_output_old,readAt=settingsReadAt(plant)):
             if today_self < multi_output_old["Energy"]["Today"]['Self_Consumption_Energy_Today_kWh']:
                 energy_today_output['Self_Consumption_Energy_Today_kWh']=multi_output_old["Energy"]["Today"]['Self_Consumption_Energy_Today_kWh']
             else:
