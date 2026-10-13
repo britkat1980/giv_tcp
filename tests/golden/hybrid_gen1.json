@@ -844,17 +844,17 @@
   "setChargeRateAC({'chargeRate': '75'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Hybrid_gen1 inverters (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Hybrid_gen1 inverters (write.py:N)"
+     "result": "Setting battery charge rate AC to 75% was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      313,
+      75
+     ]
+    ]
    }
   ],
   "setChargeSlot({'start': '01:30', 'finish': '04:30', 'slot': '1', 'chargeToPercent': '90'})": [
@@ -1124,17 +1124,17 @@
   "setDischargeRateAC({'dischargeRate': '75'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Hybrid_gen1 inverters (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Hybrid_gen1 inverters (write.py:N)"
+     "result": "Setting battery discharge rate AC to 75% was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      314,
+      75
+     ]
+    ]
    }
   ],
   "setDischargeSlot({'start': '16:00', 'finish': '19:00', 'slot': '1', 'dischargeToPercent': '20'})": [
@@ -2914,13 +2914,7 @@
   "setChargeRateAC(75)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Hybrid_gen1 inverters (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setChargeRateAC",
@@ -2929,7 +2923,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      313,
+      75
+     ]
+    ]
    }
   ],
   "setChargeStart1(02:00:00)": [
@@ -3683,13 +3683,7 @@
   "setDischargeRateAC(75)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Hybrid_gen1 inverters (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeRateAC",
@@ -3698,7 +3692,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      314,
+      75
+     ]
+    ]
    }
   ],
   "setDischargeStart1(16:00:00)": [
@@ -8005,18 +8005,18 @@
   "/setChargeRateAC({'chargeRate': '75'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Hybrid_gen1 inverters (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting battery charge rate 75 failed: NotImplementedError: Setting the AC charge rate is not yet supported by givenergy-modbus for Hybrid_gen1 inverters (write.py:N)"
+     "result": "Setting battery charge rate AC to 75% was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      313,
+      75
+     ]
+    ]
    }
   ],
   "/setChargeSlot({'start': '01:30', 'finish': '04:30', 'slot': '1', 'chargeToPercent': '90'})": [
@@ -8196,18 +8196,18 @@
   "/setDischargeRateAC({'dischargeRate': '75'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Hybrid_gen1 inverters (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting battery discharge rate 75 failed: NotImplementedError: Setting the AC discharge rate is not yet supported by givenergy-modbus for Hybrid_gen1 inverters (write.py:N)"
+     "result": "Setting battery discharge rate AC to 75% was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      314,
+      75
+     ]
+    ]
    }
   ],
   "/setDischargeSlot({'start': '16:00', 'finish': '19:00', 'slot': '1', 'dischargeToPercent': '20'})": [

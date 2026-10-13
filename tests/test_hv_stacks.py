@@ -106,6 +106,8 @@ def test_extra_read_not_dropped_after_one_failure(caplog):
     calls = []
     outcomes = iter([TimeoutError("busy"), None, TimeoutError("busy"), TimeoutError("busy"), TimeoutError("busy"), None])
     async def execute_reads(reqs, **kwargs):
+        if reqs[0].base_register != 318:
+            return          # the Gen 1's other extra reads (eg. the AC rates at HR 313) succeed
         calls.append(reqs[0].base_register)
         outcome = next(outcomes)
         if outcome:

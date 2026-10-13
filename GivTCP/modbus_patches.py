@@ -22,9 +22,11 @@ each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, it
   are its rate controls (givenergy-modbus#373), but the library only reads and allows them on models with the
   AC config block. This also reads HR 313-314 after each load_config() on the Gateway, so the current rates
   are known.
-- Hybrid Gen 3 AC charge/discharge rate, HR 313 / 314 [20]. GivTCP 3.5 wrote them on every single-phase model, and
-  Gen 3 owners used them (britkat1980/giv_tcp#630), but the library only allows them on models with the AC config
-  block. They aren't read back (DC hybrids don't answer reads of HR 300-359), so GivTCP publishes the value written.
+- Hybrid Gen 1, Gen 3 and All in One-HY AC charge/discharge rate, HR 313 / 314 [20]. GivTCP 3.5 read and wrote them
+  on every hybrid that answered HR 300-359, and owners used them (britkat1980/giv_tcp#630, #645), but the library
+  only reads and allows them on models with the AC config block. This also reads HR 313-314 after each
+  load_config() on these models (as on the Gateway), so the rates are shown again, and stops trying if they don't
+  answer.
 - EMS car charge boost, HR 2073, 0-22000 W [10]. The library reads it but has no writer.
 - Charge slot 2 on 10-slot models is at HR 243/244, not the legacy HR 31/32 the library uses (#619) [17].
 - Battery pack current, IR 95 [13]. The library reports it on every model, but it only holds a real value
@@ -80,7 +82,8 @@ SLOT_TARGET_REGISTERS = frozenset(base + 3 * i for base in SLOT_TARGET_BASE.valu
 
 THREE_PHASE_AC_LIMIT = {"charge": 1110, "discharge": 1108}
 GATEWAY_AC_LIMIT = frozenset({313, 314})     # AC charge limit, AC discharge limit
-AC_LIMIT_HYBRIDS = frozenset({Model.HYBRID_GEN3})      # DC hybrids that take the AC limit writes (#630)
+# Hybrids that take the AC limit (HR 313/314), as they did in 3.5 (#630, #645)
+AC_LIMIT_HYBRIDS = frozenset({Model.HYBRID_GEN1, Model.HYBRID_GEN3, Model.ALL_IN_ONE_HYBRID})
 EMS_CAR_CHARGE_BOOST = 2073
 CAR_CHARGE_BOOST_MAX = 22000
 
@@ -193,6 +196,8 @@ EXTRA_READS = [
      240, 60, "charge/discharge slots 3-10 and their target SOCs won't be shown (they can still be set)"),
     ("Gateway rates", lambda caps: caps.is_gateway, 313, 2,
      "the current charge/discharge rates won't be shown (they can still be set)"),
+    ("AC rates", lambda caps: caps.device_type in AC_LIMIT_HYBRIDS, 313, 2,
+     "the current AC charge/discharge rates won't be shown (they can still be set)"),
 ]
 
 # An extra read that fails this many times in a row isn't tried again until GivTCP restarts, as the inverter doesn't

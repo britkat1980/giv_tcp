@@ -257,14 +257,14 @@ There's no command that sets just `ENABLE_CHARGE_TARGET` (HR 20) to 1. `disable_
 
 **GivTCP workaround:** `GivTCP/modbus_patches.py` adds IR 0-59 to `REFRESH_IR_RANGES["is_ems"]`, and `read.py` decodes the values from the register cache (`EMS_IR_VALUES`), keeping the previous values when the block reads all zeros (`emsIRValues`).
 
-## 20. Allow the AC charge/discharge limit (HR 313/314) on Hybrid Gen 3
+## 20. Read and allow the AC charge/discharge limit (HR 313/314) on Hybrid Gen 1, Gen 3 and All in One-HY
 
 **Problem**
 
-`set_battery_charge_limit_ac` / `set_battery_discharge_limit_ac` write HR 313/314, which are only write-safe on models with the AC config block (AC and All-in-One). The old library wrote them on every single-phase model, and Hybrid Gen 3 owners used them to set the AC charge and discharge rate (britkat1980/giv_tcp#630).
+`set_battery_charge_limit_ac` / `set_battery_discharge_limit_ac` write HR 313/314, which are only write-safe on models with the AC config block (AC and All-in-One). The old library read HR 300-359 on every hybrid that answered it and wrote HR 313/314 on every single-phase model, and Hybrid Gen 1, Gen 3 and All in One-HY owners used them to set the AC charge and discharge rate (britkat1980/giv_tcp#630, #645). With the library, they aren't read on these models, so the AC rate entities aren't created.
 
 **Request**
 
-- Allow HR 313/314 writes on `Model.HYBRID_GEN3`, without reading HR 300-359 (which DC hybrids time out on).
+- Allow HR 313/314 writes on `Model.HYBRID_GEN1`, `Model.HYBRID_GEN3` and `Model.ALL_IN_ONE_HYBRID`, and read HR 313-314 there (a 2-register read, not the HR 300-359 block some DC hybrids time out on).
 
-**GivTCP workaround:** `GivTCP/modbus_patches.py` adds HR 313/314 to the Hybrid Gen 3's write-safe registers (`AC_LIMIT_HYBRIDS`), and `write.acLimit()` sends Hybrid Gen 3 rate changes to them.
+**GivTCP workaround:** `GivTCP/modbus_patches.py` adds HR 313/314 to these models' write-safe registers (`AC_LIMIT_HYBRIDS`) and reads them after each `load_config()` (`EXTRA_READS`), and `write.acLimit()` sends their rate changes to them.
