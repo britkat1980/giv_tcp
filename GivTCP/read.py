@@ -75,25 +75,69 @@ def commsFailure():
 # The inverter resets its Today counters by its own clock, on some firmware a little after midnight
 TODAY_RESET_GRACE_MINUTES=5
 
+def inverterNow(invTime, readAt=None):
+    # The inverter's time now, or None: its clock is only read on full refreshes, so add the time since it was read
+    # (#639). readAt is when it was read (settingsReadAt)
+    try:
+        now=datetime.datetime.fromisoformat(str(invTime))
+    except (TypeError, ValueError):
+        return None
+    if readAt:
+        now+=max(datetime.timedelta(0), datetime.datetime.now(datetime.timezone.utc)-readAt)
+    return now
+
 def newInverterDay(invTime, multi_output_old, grace=True, readAt=None):
     # True when the inverter's date has moved on since the previous output, so yesterday's Today values mustn't be
     # carried over. Comparing dates (rather than looking for a poll in the 00:00 minute) still works after a missed
     # poll, a restart over midnight or a container clock that differs from the inverter's.
     # With grace, it also stays True while the previous poll was within the grace period after midnight, in case
     # that poll still carried yesterday's counters.
-    oldTime=finditem(multi_output_old,"Invertor_Time") if multi_output_old else None
-    try:
-        new=datetime.datetime.fromisoformat(str(invTime))
-        old=datetime.datetime.fromisoformat(str(oldTime))
-    except (TypeError, ValueError):
+    new=inverterNow(invTime, readAt)
+    old=inverterNow(finditem(multi_output_old,"Invertor_Time") if multi_output_old else None)
+    if new is None or old is None:
         return False
-    if readAt:
-        # The clock is only read on full refreshes, so it can lag the Today counters by minutes (#639)
-        new+=max(datetime.timedelta(0), datetime.datetime.now(datetime.timezone.utc)-readAt)
     if new.date()!=old.date():
         logger.debug("New inverter day ("+str(old.date())+" -> "+str(new.date())+"), Today stats reset")
         return True
     return grace and old.hour==0 and old.minute<TODAY_RESET_GRACE_MINUTES
+
+# Calculated energy (Load and Self Consumption) combines counters that tick over at slightly different moments, so it
+# can dip by a tick or two. A dip that small is held; anything bigger is real, eg. the Today counters resetting. Holding
+# every drop latched yesterday's Today values for the day whenever a reset was missed, and any spurious high (#639)
+ROUNDING_DIP_KWH=0.3
+
+def holdRoundingDip(new, old, hold=True):
+    if hold and new is not None and old is not None and 0 < old-new < ROUNDING_DIP_KWH:
+        return old
+    return new
+
+# After the Today counters reset, a reply still carrying yesterday's figures (stale, or relayed from another poller)
+# would put them back, and Home Assistant would count yesterday's totals again. For this long after a reset, a return
+# to the value before it is ignored. Resets are only looked for this close to the inverter's midnight
+TODAY_BOUNCE_MINUTES=15
+TODAY_RESET_WINDOW_MINUTES=30
+_todayResets={}     # Today key: (inverter time it reset, value before)
+
+def guardTodayResets(output, previous, invNow):
+    today=output.get('Energy',{}).get('Today') if isinstance(output,dict) else None
+    old=previous.get('Energy',{}).get('Today',{}) if isinstance(previous,dict) else {}
+    if not isinstance(today,dict) or not isinstance(old,dict) or invNow is None:
+        return output
+    nearMidnight=invNow.hour==0 and invNow.minute<TODAY_RESET_WINDOW_MINUTES or invNow.hour==23 and invNow.minute>=45
+    for key,new in today.items():
+        last=old.get(key)
+        if isinstance(new,bool) or not isinstance(new,(int,float)) or not isinstance(last,(int,float)):
+            continue
+        reset=_todayResets.get(key)
+        if reset and not timedelta(0)<=invNow-reset[0]<=timedelta(minutes=TODAY_BOUNCE_MINUTES):
+            del _todayResets[key]
+            reset=None
+        if nearMidnight and last>=0.2 and new<last*0.5:
+            _todayResets[key]=(invNow,last)
+        elif reset and new>last and abs(new-reset[1])<=0.1:
+            logger.info(key+" went back to "+str(new)+", the value before it reset, so keeping "+str(last))
+            today[key]=last
+    return output
 
 # How far the inverter's clock can be from GivTCP's before it is worth a warning, and the day it was last given
 CLOCK_DRIFT_MINUTES=5
@@ -1683,24 +1727,14 @@ def processInverterInfo(plant: Plant):
             total_load= max(0,round((energy_total_output['Invertor_Energy_Total_kWh']-energy_total_output['AC_Charge_Energy_Total_kWh']) -
                                                                     (energy_total_output['Export_Energy_Total_kWh']-energy_total_output['Import_Energy_Total_kWh'])+energy_total_output['PV_Energy_Total_kWh'], 2))
         
-        if multi_output_old and not formulaChanged:     # once, after the formula fix, let it drop to the right value
-            if total_load < multi_output_old["Energy"]["Total"]['Load_Energy_Total_kWh']:       #Stop any rounding calculation from making load reduce in Today stats
-                energy_total_output['Load_Energy_Total_kWh']=multi_output_old["Energy"]["Total"]['Load_Energy_Total_kWh']
-            else:
-                energy_total_output['Load_Energy_Total_kWh']=total_load
-        else:
-            energy_total_output['Load_Energy_Total_kWh']=total_load
+        oldTotals=multi_output_old.get("Energy",{}).get("Total",{}) if multi_output_old else {}
+        # once, after the formula fix, let it drop to the right value
+        energy_total_output['Load_Energy_Total_kWh']=holdRoundingDip(total_load, oldTotals.get('Load_Energy_Total_kWh'), not formulaChanged)
             
 
         # Calculate Self Consumption total to avoid rounding errors
         self_total = max(0,round(energy_total_output['PV_Energy_Total_kWh']-energy_total_output['Export_Energy_Total_kWh'], 2))
-        if multi_output_old:
-            if self_total< multi_output_old["Energy"]["Total"]['Self_Consumption_Energy_Total_kWh']:       #Stop any rounding calculation from making load reduce in Today stats
-                energy_total_output['Self_Consumption_Energy_Total_kWh']=multi_output_old["Energy"]["Total"]['Self_Consumption_Energy_Total_kWh']
-            else:
-                energy_total_output['Self_Consumption_Energy_Total_kWh']=self_total        
-        else:
-            energy_total_output['Self_Consumption_Energy_Total_kWh']=self_total
+        energy_total_output['Self_Consumption_Energy_Total_kWh']=holdRoundingDip(self_total, oldTotals.get('Self_Consumption_Energy_Total_kWh'))
 
         # Energy Today Figures
         logger.debug("Getting Today Energy Data")
@@ -1722,20 +1756,12 @@ def processInverterInfo(plant: Plant):
             today_load= max(0,round((energy_today_output['Invertor_Energy_Today_kWh']-energy_today_output['AC_Charge_Energy_Today_kWh']) -
                         (energy_today_output['Export_Energy_Today_kWh']-energy_today_output['Import_Energy_Today_kWh'])+energy_today_output['PV_Energy_Today_kWh'], 2))
             
-        # Load and Self Consumption are calculated, so hold them rather than let rounding make them go down -
-        # except on a new inverter day, when the counters have reset and holding would keep yesterday's totals
-        if multi_output_old and not newInverterDay(inverter['Invertor_Time'],multi_output_old,readAt=settingsReadAt(plant)):
-            if today_self < multi_output_old["Energy"]["Today"]['Self_Consumption_Energy_Today_kWh']:
-                energy_today_output['Self_Consumption_Energy_Today_kWh']=multi_output_old["Energy"]["Today"]['Self_Consumption_Energy_Today_kWh']
-            else:
-                energy_today_output['Self_Consumption_Energy_Today_kWh']=today_self
-            if today_load < multi_output_old["Energy"]["Today"]['Load_Energy_Today_kWh'] and not formulaChanged:
-                energy_today_output['Load_Energy_Today_kWh']=multi_output_old["Energy"]["Today"]['Load_Energy_Today_kWh']
-            else:
-                energy_today_output['Load_Energy_Today_kWh']=today_load
-        else:
-            energy_today_output['Load_Energy_Today_kWh']=today_load
-            energy_today_output['Self_Consumption_Energy_Today_kWh']=today_self
+        # Load and Self Consumption are calculated, so hold back rounding dips - except on a new inverter day, when the
+        # counters have reset (and a small day's whole total could look like a dip)
+        oldToday=multi_output_old.get("Energy",{}).get("Today",{}) if multi_output_old else {}
+        sameDay=bool(multi_output_old) and not newInverterDay(inverter['Invertor_Time'],multi_output_old,readAt=settingsReadAt(plant))
+        energy_today_output['Self_Consumption_Energy_Today_kWh']=holdRoundingDip(today_self, oldToday.get('Self_Consumption_Energy_Today_kWh'), sameDay)
+        energy_today_output['Load_Energy_Today_kWh']=holdRoundingDip(today_load, oldToday.get('Load_Energy_Today_kWh'), sameDay and not formulaChanged)
 
     ############  Core Power Stats    ############
 
@@ -2633,11 +2659,14 @@ def processData(plant: Plant):
 #            logger.debug("outlier removal not carried out: cache too small")
 
         # run ppkwh stats on firstrun and every half hour
+        if regCacheStack:
+            multi_output=guardTodayResets(multi_output, regCacheStack[-1], inverterNow(finditem(multi_output,"Invertor_Time"),settingsReadAt(plant)))
+
         if batteryCount(plant)>0:    #Don't run ratecalcs if no batteries
             if len(regCacheStack)>1:
-                multi_output = ratecalcs(multi_output, regCacheStack[-1])
+                multi_output = ratecalcs(multi_output, regCacheStack[-1], settingsReadAt(plant))
             else:
-                multi_output = ratecalcs(multi_output, multi_output)
+                multi_output = ratecalcs(multi_output, multi_output, settingsReadAt(plant))
             multi_output = calcBatteryValue(multi_output)
             logger.debug("Battery rate calcs complete")
 
@@ -3054,7 +3083,7 @@ def iterate_dict(array):        # Create a publish safe version of the output (c
     return(safeoutput)
 
 
-def ratecalcs(multi_output, multi_output_old):
+def ratecalcs(multi_output, multi_output_old, readAt=None):
     rate_data = {}
     logger.debug("Starting ratecalcs...")
     dayRateStart = datetime.datetime.strptime(GiV_Settings.day_rate_start, '%H:%M')
@@ -3101,7 +3130,7 @@ def ratecalcs(multi_output, multi_output_old):
     rate_data['Night_Rate'] = GiV_Settings.night_rate
 
     # New inverter day, so reset costs. No grace period needed: this is based on the import total, which doesn't reset
-    if newInverterDay(finditem(multi_output,"Invertor_Time"), multi_output_old, grace=False):
+    if newInverterDay(finditem(multi_output,"Invertor_Time"), multi_output_old, grace=False, readAt=readAt):
         logger.debug("New inverter day, so resetting Day/Night stats...")
         rate_data['Night_Cost'] = 0.00
         rate_data['Day_Cost'] = 0.00
