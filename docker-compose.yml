@@ -1,15 +1,35 @@
-version: "3.9"
+# GivTCP in Docker, outside Home Assistant.
+#
+#   docker compose up -d
+#   then open http://<this machine's IP>:8099/config.html, set it up and click Save, then: docker compose restart
+#
+# Settings, captures and logs are kept in ./config next to this file (mounted at /config/GivTCP).
+
 services:
-  GivTCP:
-    image: britkat/giv_tcp-dev:latest
-    ports:
-      - "1883:1883"                   # MQTT
-      - "8098:8099"                   # REST and Config web server (https on 8098)
-      - "3000:3000"                   # WEB Dashboard
-    volumes:
-      - c:\config\GivTCP:/config/GivTCP
-    network_mode: "host"
-    restart: always
-    privileged: true
+  givtcp:
+    image: britkat/giv_tcp-ma:latest      # or pin a release, eg. britkat/giv_tcp-ma:3.6.6
+    container_name: givtcp
+    restart: unless-stopped
     environment:
-      - TZ = "Europe/London"
+      - TZ=Europe/London                  # your timezone: the inverters' Today stats reset at midnight
+    volumes:
+      - ./config:/config/GivTCP
+
+    # Host networking (Linux): GivTCP sees your LAN, so it can find your inverters and EV chargers itself, and the
+    # addresses it shows are right. Every port below is then on this machine's IP, with no mapping needed:
+    #   8099        web UI: config page, Share Device, Logs, the dashboard (/dashboard/), the settings API (/settings)
+    #               and each inverter's REST API (/RESTn/)
+    #   6345-6349   REST API for inverters 1-5 on their own ports (6356 onwards for 6+), as Predbat uses
+    #   6350        settings API on its own port
+    #   3000        web dashboard on its own port (Web_Dash_Port in the settings)
+    #   1883        MQTT broker, only if the MQTT address on the config page is 127.0.0.1 (GivTCP then runs its own)
+    network_mode: host
+
+    # Docker Desktop (Windows/macOS) or a bridge network: remove "network_mode: host" above and uncomment these.
+    # GivTCP can't scan your LAN from a bridge network, so add each inverter by its IP address on the config page.
+    # 8099 is all the web UI needs; map an inverter's own REST port if something uses it (eg. Predbat), and 1883 if
+    # other devices use GivTCP's own MQTT broker.
+    # ports:
+    #   - "8099:8099"
+    #   - "6345:6345"       # inverter 1's REST API; add 6346 for inverter 2, and so on
+    #   - "1883:1883"
