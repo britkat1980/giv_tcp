@@ -1963,31 +1963,49 @@ def processInverterInfo(plant: Plant):
     return multi_output
 
 # The EMS's own energy totals and Total Power in IR 0-59, which givenergy-modbus v2 polls but doesn't model (its
-# e_active_generation_total is IR 18, a power in W). key: (section, registers (high word first), scale), as in 3.5
+# e_active_generation_total is IR 18, a power in W). key: (section, kind, registers). Energies are 0.1 kWh: u32 is
+# high word first, sum adds the registers (one a generation meter). 3.5 read Generation from IR 44 and 45/46, which
+# hold the same as Inverter Out (IR 37 and 6/7); the generation meters are at IR 17/19 and 11/12 (#637)
 EMS_IR_VALUES={
-    'Generation_Energy_Total_kWh':('Total',(45,46),0.1),
-    'Inverter_Out_Energy_Total_kWh':('Total',(6,7),0.1),
-    'Inverter_In_Energy_Total_kWh':('Total',(27,28),0.1),
-    'Export_Energy_Total_kWh':('Total',(21,22),0.1),
-    'Import_Energy_Total_kWh':('Total',(32,33),0.1),
-    'Export_Energy_Today_kWh':('Today',(25,),0.1),
-    'Import_Energy_Today_kWh':('Today',(26,),0.1),
-    'Inverter_In_Energy_Today_kWh':('Today',(35,),0.1),
-    'Inverter_Out_Energy_Today_kWh':('Today',(37,),0.1),
-    'Generation_Energy_Today_kWh':('Today',(44,),0.1),
-    'Total_Power':('Power',(52,),None),     # signed W
+    'Generation_Energy_Total_kWh':('Total','u32',(11,12)),
+    'Inverter_Out_Energy_Total_kWh':('Total','u32',(6,7)),
+    'Inverter_In_Energy_Total_kWh':('Total','u32',(27,28)),
+    'Export_Energy_Total_kWh':('Total','u32',(21,22)),
+    'Import_Energy_Total_kWh':('Total','u32',(32,33)),
+    'Export_Energy_Today_kWh':('Today','sum',(25,)),
+    'Import_Energy_Today_kWh':('Today','sum',(26,)),
+    'Inverter_In_Energy_Today_kWh':('Today','sum',(35,)),
+    'Inverter_Out_Energy_Today_kWh':('Today','sum',(37,)),
+    'Generation_Energy_Today_kWh':('Today','sum',(17,19)),
+    'Total_Power':('Power','s16',(52,)),        # W
 }
 
-def emsIRValue(cache, regs, scale):
+def emsIRValue(cache, kind, regs):
     words=[cache.get(IR(r)) for r in regs]
     if None in words:
         return None
-    if scale is None:
+    if kind=='s16':
         return words[0]-0x10000 if words[0]>=0x8000 else words[0]
-    value=0
-    for w in words:
-        value=value<<16 | w
-    return round(value*scale,1)
+    if kind=='u32':
+        return round((words[0]<<16 | words[1])*0.1,1)
+    return round(sum(words)*0.1,1)
+
+def emsIRValues(cache, previous):
+    """The EMS_IR_VALUES, by section. The dongle relays the cloud's polls of IR 0-59, which are sometimes all zeros
+    (#637), and every total reading 0 means one of those, as an EMS's lifetime totals are never all 0: then the
+    previous values are kept, rather than published as zeros that Home Assistant takes for a meter reset"""
+    values={'Total':{},'Today':{},'Power':{}}
+    for key,(section,kind,regs) in EMS_IR_VALUES.items():
+        value=emsIRValue(cache,kind,regs)
+        if value is not None:
+            values[section][key]=value
+    totals=values['Total']
+    if totals and not any(totals.values()):
+        logger.debug("EMS energy registers all read 0, keeping the previous values")
+        old={'Total':previous.get('Energy',{}).get('Total',{}),'Today':previous.get('Energy',{}).get('Today',{}),
+             'Power':previous.get('Power',{})}
+        values={section:{key:old[section][key] for key in keys if key in old[section]} for section,keys in values.items()}
+    return values
 
 def processEMSInfo(plant: Plant):
     # givenergy-modbus v2: plant.ems holds the EMS block (HR/IR 2040+). Identity values (serial, firmware,
@@ -2053,12 +2071,10 @@ def processEMSInfo(plant: Plant):
         energy_total_output = {}
         energy_today_output = {}
         # 3.6.0-3.6.3 published only Generation Energy Total, from IR 18 (a power), so the others stopped updating
-        cache=plant.register_caches.get(plant.capabilities.inverter_address,{})
-        sections={'Total':energy_total_output,'Today':energy_today_output,'Power':power_output}
-        for key,(section,regs,scale) in EMS_IR_VALUES.items():
-            value=emsIRValue(cache,regs,scale)
-            if value is not None:
-                sections[section][key]=value
+        values=emsIRValues(plant.register_caches.get(plant.capabilities.inverter_address,{}),multi_output_old)
+        energy_total_output.update(values['Total'])
+        energy_today_output.update(values['Today'])
+        power_output.update(values['Power'])
 
         meter={}
         for i in range(1,9):

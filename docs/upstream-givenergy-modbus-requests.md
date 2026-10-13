@@ -247,14 +247,15 @@ There's no command that sets just `ENABLE_CHARGE_TARGET` (HR 20) to 1. `disable_
 
 **Problem**
 
-`_refresh_banks()` skips IR 0-59 (and 180-239) on an EMS, so nothing in that range is read. It holds the EMS's plant energy counters, which GivTCP 3.5 published from the old library's EMS model: inverter out/in totals (IR 6-7, 27-28), export/import totals (IR 21-22, 32-33) and today values (IR 25, 26), inverter in/out today (IR 35, 37), generation today/total (IR 44, 45-46) and Total Power (IR 52, signed W). The EMS model's one field there, `e_active_generation_total`, is IR 18 as a raw uint16, which reads like a power in W rather than an energy total.
+`_refresh_banks()` skips IR 0-59 (and 180-239) on an EMS, so nothing in that range is read. It holds the EMS's plant energy counters, which GivTCP 3.5 published from the old library's EMS model: inverter out/in totals (IR 6-7, 27-28), export/import totals (IR 21-22, 32-33) and today values (IR 25, 26), inverter in/out today (IR 35, 37), the generation meters' today (IR 17, 19) and total (IR 11-12), and Total Power (IR 52, signed W). IR 44 and 45-46, which the old library called generation, hold the same as inverter out (IR 37 and 6-7) on every EMS capture (britkat1980/giv_tcp#637). The dongle also relays the cloud's polls of this block, which are sometimes all zeros, and `Plant` caches them. The EMS model's one field there, `e_active_generation_total`, is IR 18 as a raw uint16, which reads like a power in W rather than an energy total.
 
 **Request**
 
 - Poll IR 0-59 on the EMS, and model the values above on `Ems` (all 0.1 kWh, the totals as uint32 high word first).
+- Don't commit an all-zero IR 0-59 reply on an EMS (its lifetime totals are never all 0).
 - Check `e_active_generation_total` (IR 18).
 
-**GivTCP workaround:** `GivTCP/modbus_patches.py` adds IR 0-59 to `REFRESH_IR_RANGES["is_ems"]`, and `read.py` decodes the values from the register cache (`EMS_IR_VALUES`).
+**GivTCP workaround:** `GivTCP/modbus_patches.py` adds IR 0-59 to `REFRESH_IR_RANGES["is_ems"]`, and `read.py` decodes the values from the register cache (`EMS_IR_VALUES`), keeping the previous values when the block reads all zeros (`emsIRValues`).
 
 ## 20. Allow the AC charge/discharge limit (HR 313/314) on Hybrid Gen 3
 
