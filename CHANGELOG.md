@@ -1,3 +1,10 @@
+# GivTCP 3.6.5
+
+Changes since 3.6.4.
+
+### Changed
+- **Battery Only now also publishes the inverter's own details and status** (#634). Battery Only (on an inverter's settings, for All-in-Ones behind a Gateway or inverters behind an EMS) didn't take effect before 3.6, and since 3.6 it left out everything but the batteries, controls and timeslots, including Invertor Time, firmware and temperature. Home Assistant kept showing the last values from before the update, so the time looked frozen. Those details, and the Stats (status, last updated), are published again. The inverter's power and energy, which the Gateway or EMS also reports, are still left out.
+
 # GivTCP 3.6.4
 
 Changes since 3.6.3.
