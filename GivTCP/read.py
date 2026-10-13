@@ -2991,7 +2991,9 @@ def publishOutput(array, SN):
                 # second read confirms them (its splice guard), after discovery has run (#629)
                 new=[p for p in leafPaths(tempoutput) if p not in discoveredPaths[SN] and p[0]!="raw"]
                 if new:
-                    logger.info("Publishing Home Assistant Discovery messages for "+str(len(new))+" new entities")
+                    # Debug: it happens on every restart where the battery modules come with the second poll, and
+                    # entities Home Assistant already has are just updated in place
+                    logger.debug("Publishing Home Assistant Discovery for "+str(len(new))+" entities that weren't in the first data read (eg. battery modules)")
                     from HA_Discovery import HAMQTT
                     # With the Invertor_Type value, which names the device as the first discovery did
                     typePath=[p for p in leafPaths(tempoutput) if p[-1]=="Invertor_Type"][:1]
