@@ -3,6 +3,7 @@
 Changes since 3.6.6.
 
 ### Changed
+- **Much less written to disk.** GivTCP's register cache (`regCache_N.pkl`) kept the last 31 outputs, for outlier detection that was removed in 3.6, but everything only uses the latest. It now keeps just that, so each poll writes about 18 KB per inverter instead of about 570 KB (around 1.6 GB a day at a 30s poll, which matters on an SD card). The battery value stats (`battery_N.pkl`) are only saved when they change, and two files nothing read (`rawdata_N.pkl` and `invippkl.pkl`) are gone.
 - **Docker: a new docker-compose.yml for running GivTCP outside Home Assistant.** It uses the released image (`britkat/giv_tcp-ma`, not the dev build), sets the timezone properly, keeps settings, captures and logs in a `config` folder next to the file, and uses host networking so GivTCP can find your inverters. It explains every port, and how to use Docker Desktop (Windows/macOS) or a bridge network instead. If you already run GivTCP in Docker, point the volume at your existing settings folder. The README's Docker instructions are updated to match.
 - The "Publishing Home Assistant Discovery messages for N new entities" message on every restart is now only logged at Debug level, and says what it is: discovery for data that wasn't in GivTCP's first read, usually the battery modules (which the Modbus library only gives once a second read confirms them). The entities aren't new to Home Assistant: it just updates the ones it has.
 

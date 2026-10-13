@@ -2663,7 +2663,7 @@ def processData(plant: Plant):
             multi_output=guardTodayResets(multi_output, regCacheStack[-1], inverterNow(finditem(multi_output,"Invertor_Time"),settingsReadAt(plant)))
 
         if batteryCount(plant)>0:    #Don't run ratecalcs if no batteries
-            if len(regCacheStack)>1:
+            if regCacheStack:
                 multi_output = ratecalcs(multi_output, regCacheStack[-1], settingsReadAt(plant))
             else:
                 multi_output = ratecalcs(multi_output, multi_output, settingsReadAt(plant))
@@ -2683,16 +2683,10 @@ def processData(plant: Plant):
             pickle.dump(multi_output['Stats']['Last_Updated_Time'], outp, pickle.HIGHEST_PROTOCOL)
 
         
-        # Add new data to the stack (cap at 1hr history) and save
-        #if len(regCacheStack)>1000:
-        if len(regCacheStack)>0:
-            #earliest_cache_age=(datetime.datetime.now(GivLUT.timezone)-datetime.datetime.strptime(finditem(regCacheStack[0],"Invertor_Time"), '%Y-%m-%dT%H:%M:%S%z'))
-            #if earliest_cache_age.seconds>3600:
-            if len(regCacheStack)>30:  # keep ~10 hours of history for outlier detection
-                regCacheStack.pop(0)
+        # Cache just this output: everything that reads the cache only uses the latest. It kept 31 for outlier
+        # detection (now removed), which rewrote ~570KB every poll rather than ~18KB. Still a list, as readers expect
         multi_output=noneKeys(multi_output)     # clean before caching, so every later dump of the cache works too
-        regCacheStack.append(multi_output)
-        GivLUT.put_regcache(regCacheStack)
+        GivLUT.put_regcache([multi_output])
             
         logger.debug("Successfully processed data from: " + GiV_Settings.invertorIP)
 
@@ -2801,8 +2795,6 @@ def consecFails(e):
             logger.error("10 failed inverter reads in a row so removing Cache (pkl) files to force update...")
             if exists(GivLUT.regcache):
                 os.remove(GivLUT.regcache)
-            if exists(GivLUT.rawpkl):
-                os.remove(GivLUT.rawpkl)
             if exists(GivLUT.batterypkl):
                 os.remove(GivLUT.batterypkl)
             if exists(GivLUT.oldDataCount):
@@ -3345,12 +3337,9 @@ def dataSmoother2(dataNew, dataOld, lastUpdate, invtype,inv_time):
                 if lookup.smooth and not GiV_Settings.data_smoother.lower() == "none":     # apply smoothing if required
                     if newData != oldData:  # Only if its not the same
                         if any(word in name.lower() for word in ["power","_to_"]):
-                            if abs(newData-oldData)>abssmooth:                                
-                                if checkRawcache(newData,name,abssmooth): #If new data is persistently outside bounds then use new value
-                                    return(newData)
-                                else:
-                                    logger.debug(str(name)+" jumped too far in a single read: "+str(oldData)+"->"+str(newData)+" so using previous value")
-                                    return (oldData)
+                            if abs(newData-oldData)>abssmooth:
+                                logger.debug(str(name)+" jumped too far in a single read: "+str(oldData)+"->"+str(newData)+" so using previous value")
+                                return (oldData)
                         else:
                             ## Only smooth data if its not already Zero (avoid div by Zero)
                             if oldData != 0:
@@ -3368,22 +3357,12 @@ def dataSmoother2(dataNew, dataOld, lastUpdate, invtype,inv_time):
         return(newData)    
     return(newData)
 
-def checkRawcache(newData,name,abssmooth):
-    #Get rawdata cache to check if unallowed changes are persistent and should be allowed
-    bigjump=False
-    rawCacheStack = GivLUT.load_pickle(GivLUT.rawpkl) if exists(GivLUT.rawpkl) else None
-    if rawCacheStack:
-        oldData=rawCacheStack[1]['invertor'][GivLUT.raw_to_pub[name]]
-        if abs(newData-oldData)>abssmooth:
-            bigjump=True
-        logger.debug("NewData is: "+str(newData)+" and cached raw value was: "+str(oldData))
-    return bigjump
-
 
 def calcBatteryValue(multi_output):
     # get current data from read pickle
     batterystats = {}
-    if exists(GivLUT.batterypkl):
+    changed = not exists(GivLUT.batterypkl)     # only saved when it changes: on the first run, then twice an hour
+    if not changed:
         with open(GivLUT.batterypkl, 'rb') as inp:
             batterystats = pickle.load(inp)
     else:       # if no old AC charge, then set it to now and zero out value and ppkwh
@@ -3416,14 +3395,15 @@ def calcBatteryValue(multi_output):
             logger.debug("Updating battery_kWh_old to: "+str(battery_kwh))
             batterystats['Battery_kWh_old'] = battery_kwh
             open(GivLUT.ppkwhtouch, 'w').close()       # set touch file  to stop repeated triggers in the single minute
+            changed = True
 
     else:       # remove the touchfile if it exists
         if exists(GivLUT.ppkwhtouch):
             os.remove(GivLUT.ppkwhtouch)
 
-    # write data to pickle
-    with open(GivLUT.batterypkl, 'wb') as outp:
-        pickle.dump(batterystats, outp, pickle.HIGHEST_PROTOCOL)
+    if changed:
+        with open(GivLUT.batterypkl, 'wb') as outp:
+            pickle.dump(batterystats, outp, pickle.HIGHEST_PROTOCOL)
 
     # remove non publishable stats
     del batterystats['AC Charge last']

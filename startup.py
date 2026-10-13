@@ -386,10 +386,7 @@ def findinv(networks):
             if len(invList)==0:
                 logger.info("No inverters found...")
             else:
-            # write data to pickle
-                with open('invippkl.pkl', 'wb') as outp:
-                    pickle.dump(inverterStats, outp, pickle.HIGHEST_PROTOCOL)
-                # JSON copy for the web config page's "found on last scan" list
+                # For the web config page's "found on last scan" list
                 try:
                     found=[{"Serial_Number":d['Serial_Number'],"IP_Address":d['IP_Address'],"Model":d['Model'].name.capitalize(),
                             "Firmware":d['Firmware'],"Number_of_Batteries":d['Number_of_Batteries']} for d in inverterStats.values()]

@@ -312,7 +312,6 @@ class GivLUT:
     forcefullrefresh=GiV_Settings.cache_location+"/.forceFullRefresh_"+str(GiV_Settings.givtcp_instance)
     batterypkl=GiV_Settings.cache_location+"/battery_"+str(GiV_Settings.givtcp_instance)+".pkl"
     reservepkl=GiV_Settings.cache_location+"/reserve_"+str(GiV_Settings.givtcp_instance)+".pkl"
-    rawpkl=GiV_Settings.cache_location+"/rawdata_"+str(GiV_Settings.givtcp_instance)+".pkl"
     rtc_enabled=".rtcenabled"
     writecountpkl=GiV_Settings.cache_location+"/writecount_"+str(GiV_Settings.givtcp_instance)+".pkl"
     safewritecountpkl=GiV_Settings.cache_location+"/safewritecount_"+str(GiV_Settings.givtcp_instance)+".pkl"
@@ -323,7 +322,6 @@ class GivLUT:
     dayRate=GiV_Settings.cache_location+"/.dayRate_"+str(GiV_Settings.givtcp_instance)
     nightRateRequest=GiV_Settings.cache_location+"/.nightRateRequest_"+str(GiV_Settings.givtcp_instance)
     dayRateRequest=GiV_Settings.cache_location+"/.dayRateRequest_"+str(GiV_Settings.givtcp_instance)
-    invippkl=GiV_Settings.cache_location+"/invIPList.pkl"
     firstrun=GiV_Settings.cache_location+"/.firstrun_"+str(GiV_Settings.givtcp_instance)
 
     if hasattr(GiV_Settings,'timezone'):                        # If in Addon, use the HA Supervisor timezone
@@ -333,11 +331,6 @@ class GivLUT:
     else:
         timezone=zoneinfo.ZoneInfo(key="Europe/London")         # Otherwise Assume everyone is in UK!
 
-    raw_to_pub={
-        "Grid_Power":"p_grid_out",
-        "Import_Power":"p_grid_out",
-        "Export_Power":"p_grid_out"
-    }
     safe_regs=[20,27,50,56,57,59,94,95,96,110,111,112,116,318,319,320,1002,1108,1110,1111,1112,1114,1118,1119,1122,1123,1141]
     delay_times=["Normal","Running","Cancel","2","5","10","15","30","45","60","75","90","105","120","135","150","165","180"]
     modes=["Eco","Eco (Paused)","Timed Demand","Timed Export","Unknown","Export (Paused)"]
