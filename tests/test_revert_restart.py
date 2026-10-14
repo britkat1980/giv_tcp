@@ -71,3 +71,10 @@ def test_second_force_export_after_restart_keeps_original_settings(plants):
     outcome = session.run_case("direct", [("forceExport", 20)])[0]
     assert "successfully" in outcome["result"]["result"]
     assert write.loadPendingReverts()["FEResume"]["payload"] == first["payload"]
+
+def test_startup_keeps_pending_reverts():
+    # Startup clears the cache folder, which is also where the pending reverts are kept
+    from startfiles import keptOnStart
+    assert keptOnStart(os.path.basename(write.pendingRevertsFile()))
+    assert keptOnStart("CH2309G018_caps.pkl") and keptOnStart("allsettings.json") and keptOnStart("rateData_1.pkl")
+    assert not keptOnStart("regCache_1.pkl") and not keptOnStart("lastUpdate_1.pkl") and not keptOnStart("battery_1.pkl")
