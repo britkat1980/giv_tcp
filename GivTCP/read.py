@@ -21,6 +21,7 @@ import requests
 from GivLUT import GivLUT, maxvalues, InvType, GivClientAsync, closeClient
 import modbus_patches
 import capture
+import ipchange
 from entity_lut import Entity_Type
 from settings import GiV_Settings
 from os.path import exists
@@ -214,6 +215,30 @@ def rebootaddon():
     else:
         result="Please restart GivTCP Manually..."
         logger.info(result)
+
+async def lostInverter():
+    """The inverter hasn't answered for 10 attempts. Only this read loop uses its address, so look for it at a new IP
+    address here, rather than restart GivTCP: that restarts every other inverter's read loop, and loses their timed
+    reverts and connections too"""
+    old=GiV_Settings.invertorIP
+    logger.error("Lost communications with inverter "+str(GiV_Settings.serial_number)+" at "+str(old)+", checking whether its IP address has changed")
+    try:
+        ip=await ipchange.findInverter()
+    except Exception as e:
+        logger.error("Unable to scan for the inverter: "+str(e))
+        ip=None
+    if exists("commsfailure_"+str(GiV_Settings.givtcp_instance)+".pkl"):
+        os.remove("commsfailure_"+str(GiV_Settings.givtcp_instance)+".pkl")     # look again after another 10
+    if not ip:
+        logger.error("Inverter "+str(GiV_Settings.serial_number)+" not found elsewhere on the network, so it is probably offline. Will keep retrying at "+str(old))
+        return
+    logger.warning("Inverter "+str(GiV_Settings.serial_number)+" has moved from "+str(old)+" to "+str(ip)+", reconnecting there")
+    GiV_Settings.invertorIP=ip
+    try:
+        ipchange.saveInverterIP(ip)
+    except Exception as e:
+        logger.warning("Unable to save the new IP address, so it will be found again at the next start: "+str(e))
+    await GivClientAsync.new_client("its IP address changing", host=ip)
 
 def capsFile():
     return GivLUT.config_dir+"/"+GiV_Settings.serial_number+"_caps.pkl"
@@ -672,8 +697,7 @@ async def watch_plant(
             if not recovery.enabled:        # with a recovery pause, self_run counts each pause instead
                 failcount=commsFailure()
                 if failcount>=10:
-                    logger.error("Lost communications with Inverter. Restarting container to detect IP change")
-                    rebootaddon()
+                    await lostInverter()
             try:
                 await client.close()
             except:
@@ -727,19 +751,17 @@ async def watch_plant(
                             "Unable to connect to inverter on: "+str(GiV_Settings.invertorIP)+" ("+type(cause).__name__+": "+str(cause)+")")
                         if recovery.enabled:
                             # Wait a normal interval, write commands included, and pause if it fails again. Count each
-                            # pause, not each attempt, towards the restart for an IP change, so it isn't after 5 pauses
+                            # pause, not each attempt, towards the check for an IP address change, so it isn't after 5 pauses
                             if recovery.failed():
                                 if commsFailure()>=10:
-                                    logger.error("Lost communications with Inverter. Restarting container to detect IP change")
-                                    rebootaddon()
+                                    await lostInverter()
                                 await recovery.wait()
                             else:
                                 await asyncio.sleep(refresh_period)
                             continue
                         failcount=commsFailure()
                         if failcount>=10:
-                            logger.error("Lost communications with Inverter. Restarting container to detect IP change")
-                            rebootaddon()
+                            await lostInverter()
                         await asyncio.sleep(min(5*connectErrors,60))    #Back off rather than hammering the dongle
                         continue
                 # A device capture asked for on the Share Device page: run it on this connection, alongside polling
@@ -2912,8 +2934,7 @@ async def self_run():
             await GivClientAsync.new_client("the inverter didn't answer", quiet=True)
             if recovery.failed():
                 if commsFailure()>=10:      # watch_plant leaves the counting to here when the pause is on
-                    logger.error("Lost communications with Inverter. Restarting container to detect IP change")
-                    rebootaddon()
+                    await lostInverter()
                 await recovery.wait()
             else:
                 await asyncio.sleep(GiV_Settings.self_run_timer if recovery.enabled else 10)
