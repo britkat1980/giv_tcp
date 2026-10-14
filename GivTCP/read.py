@@ -616,6 +616,9 @@ class Recovery:
             holdWrites((self.until-datetime.datetime.now()).total_seconds())
             await asyncio.sleep(1)
 
+# Set once timed reverts from before a restart have been recovered, so it's done once per process
+revertsRecovered=False
+
 async def watch_plant(
         handler: Optional[Callable] = None,
         refresh_period: float = 15.0,
@@ -623,6 +626,7 @@ async def watch_plant(
         passive: bool = False,
         recovery: Optional[Recovery] = None,
     ):
+        global revertsRecovered
         totalTimeoutErrors=0
         recovery=recovery or Recovery()
 
@@ -665,6 +669,13 @@ async def watch_plant(
                 except Exception as err:
                     e=errDetail()
                     logger.error ("Error in calling handler: "+str(err))
+            if not revertsRecovered:
+                # Timed reverts (Force Export/Charge, Temp Pause) scheduled before a restart were lost with Redis
+                revertsRecovered=True
+                try:
+                    write.recoverReverts()
+                except Exception as e:
+                    logger.error("Unable to recover timed reverts from before the restart: "+str(e))
 
         except CommunicationError as e:
             cause=e.__cause__ or e

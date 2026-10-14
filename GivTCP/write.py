@@ -1182,6 +1182,7 @@ async def FEResume(device,revert, readloop=False):
         temp['result']="Force Export Revert failed: " + str(e)
         if exists(".FERunning"+str(GiV_Settings.givtcp_instance)): os.remove(".FERunning"+str(GiV_Settings.givtcp_instance))
         logger.error (temp['result'])
+    revertDone("FEResume")
     return json.dumps(temp)
 
 async def forceExport(device, exportTime,readloop=False):
@@ -1238,9 +1239,7 @@ async def forceExport(device, exportTime,readloop=False):
             logger.info("Force Export already running, changing end time")
             revert=getFEArgs()[0]   # set new revert object and cancel old revert job
             logger.debug("new revert= "+ str(revert))
-        fejob=GivQueue.q.enqueue_in(timedelta(minutes=exportTime),queueWrite,"FEResume",revert)
-        with open(".FERunning"+str(GiV_Settings.givtcp_instance), 'w') as f:
-            f.write('\n'.join([str(fejob.id),str(finish)]))
+        fejob=scheduleRevert("FEResume",revert,timedelta(minutes=exportTime),".FERunning"+str(GiV_Settings.givtcp_instance))
         logger.debug("Force Export revert jobid is: "+fejob.id)
         temp['result']="Export successfully forced for "+str(exportTime)+" minutes"
         updateControlCache("Force_Export","Running")
@@ -1305,7 +1304,69 @@ async def FCResume(device,revert,readloop=False):
         temp['result']="Force Charge revert failed: "+str(e)
         if exists(".FCRunning"+str(GiV_Settings.givtcp_instance)): os.remove(".FCRunning"+str(GiV_Settings.givtcp_instance))
         logger.error(temp['result'])
+    revertDone("FCResume")
     return json.dumps(temp)
+
+def pendingRevertsFile():
+    return GivLUT.config_dir+"/pendingReverts_"+str(GiV_Settings.givtcp_instance)+".pkl"
+
+def loadPendingReverts():
+    try:
+        with open(pendingRevertsFile(),'rb') as inp:
+            return pickle.load(inp)
+    except Exception:
+        return {}
+
+def savePendingReverts(pending):
+    tmp=pendingRevertsFile()+".tmp"
+    with open(tmp,'wb') as outp:
+        pickle.dump(pending, outp, pickle.HIGHEST_PROTOCOL)
+    os.replace(tmp, pendingRevertsFile())
+
+def scheduleRevert(command, payload, delay: timedelta, marker):
+    """Schedule a timed revert (eg. FEResume) and write its marker file (job id and finish time). The scheduled job
+    only lives in Redis, which a restart clears, so also keep a copy for recoverReverts() to run or reschedule."""
+    job=GivQueue.q.enqueue_in(delay,queueWrite,command,payload)
+    due=datetime.now()+delay
+    with open(marker, 'w') as f:
+        f.write('\n'.join([str(job.id),GivLUT.getTime(due)]))
+    pending=loadPendingReverts()
+    pending[command]={"payload":payload,"due":due,"job":job.id,"marker":marker}
+    try:
+        savePendingReverts(pending)
+    except Exception as e:
+        logger.warning("Unable to save the "+command+" revert, so it won't run if GivTCP restarts first: "+str(e))
+    return job
+
+def revertDone(command):
+    # The revert has run (or failed), so there's nothing left to recover after a restart
+    pending=loadPendingReverts()
+    if pending.pop(command, None) is not None:
+        try:
+            savePendingReverts(pending)
+        except Exception as e:
+            logger.warning("Unable to update the pending reverts: "+str(e))
+
+def recoverReverts():
+    """Run once the read loop starts. Reverts scheduled before a restart were lost with Redis, so run any that came
+    due while GivTCP was down and reschedule the rest"""
+    pending=loadPendingReverts()
+    for command,revert in list(pending.items()):
+        try:
+            if revert["job"] in GivQueue.q.scheduled_job_registry:
+                continue        # Redis kept it, so it still runs as scheduled
+            remaining=revert["due"]-datetime.now()
+            if remaining.total_seconds()<=0:
+                logger.warning(command+" was due at "+revert["due"].strftime("%H:%M")+" but GivTCP restarted before it ran, so running it now")
+                with open(revert["marker"], 'w') as f:      # the revert removes it when done
+                    f.write('\n'.join(["",GivLUT.getTime(revert["due"])]))
+                queueWrite(command, revert["payload"])
+            else:
+                logger.warning("GivTCP restarted before "+command+" was due, so rescheduling it for "+revert["due"].strftime("%H:%M"))
+                scheduleRevert(command, revert["payload"], remaining, revert["marker"])
+        except Exception as e:
+            logger.error("Unable to recover the "+command+" revert, so check the inverter settings: "+str(e))
+            revertDone(command)
 
 def queueWrite(command, payload):
     """Run by the RQ worker when a timed revert is due. The worker has no inverter connection, so hand the
@@ -1336,7 +1397,14 @@ def getFCArgs():
     jobid=f.readline().strip('\n')
     f.close()
     # get the revert details from the old job
-    job=Job.fetch(jobid,GivQueue.redis_connection)
+    try:
+        job=Job.fetch(jobid,GivQueue.redis_connection)
+    except Exception:
+        # Not in Redis (eg. GivTCP restarted since), so use the copy kept for recoverReverts()
+        saved=loadPendingReverts().get("FCResume")
+        if saved is None:
+            raise
+        return (saved["payload"],)
     details=job.args[1:] if job.args and isinstance(job.args[0],str) else job.args    # args are (command, revert)
     logger.debug("Previous args= "+str(details))
     GivQueue.q.scheduled_job_registry.remove(jobid) # Remove the job from the schedule
@@ -1349,7 +1417,14 @@ def getFEArgs():
     jobid=f.readline().strip('\n')
     f.close()
     # get the revert details from the old job
-    job=Job.fetch(jobid,GivQueue.redis_connection)
+    try:
+        job=Job.fetch(jobid,GivQueue.redis_connection)
+    except Exception:
+        # Not in Redis (eg. GivTCP restarted since), so use the copy kept for recoverReverts()
+        saved=loadPendingReverts().get("FEResume")
+        if saved is None:
+            raise
+        return (saved["payload"],)
     details=job.args[1:] if job.args and isinstance(job.args[0],str) else job.args    # args are (command, revert)
     logger.debug("Previous args= "+str(details))
     GivQueue.q.scheduled_job_registry.remove(jobid) # Remove the job from the schedule
@@ -1417,9 +1492,7 @@ async def forceCharge(device, chargeTime, readloop=False):
             logger.info("Force Charge already running, changing end time")
             revert=getFCArgs()[0]   # set new revert object and cancel old revert job
             logger.info("new revert= "+ str(revert))
-        fcjob=GivQueue.q.enqueue_in(timedelta(minutes=chargeTime),queueWrite,"FCResume",revert)
-        with open(".FCRunning"+str(GiV_Settings.givtcp_instance), 'w') as f:
-            f.write('\n'.join([str(fcjob.id),str(finish)]))
+        fcjob=scheduleRevert("FCResume",revert,timedelta(minutes=chargeTime),".FCRunning"+str(GiV_Settings.givtcp_instance))
         logger.debug("Force Charge revert jobid is: "+fcjob.id)
         temp['result']="Charge successfully forced for "+str(chargeTime)+" minutes"
         updateControlCache("Force_Charge","Running")
@@ -1446,6 +1519,7 @@ async def tmpPDResume(device, payload, readloop=False):
         e=controlError()
         temp['result']="Temp Pause Discharge Resume failed: " + str(e)
         logger.error (temp['result'])
+    revertDone("tmpPDResume")
     return json.dumps(temp)
 
 async def tempPauseDischarge(device, pauseTime, readloop=False):
@@ -1470,10 +1544,7 @@ async def tempPauseDischarge(device, pauseTime, readloop=False):
             raise Exception(json.loads(result)['result'])
         payload['dischargeRate']=revertRate
         delay=float(pauseTime*60)
-        tpdjob=GivQueue.q.enqueue_in(timedelta(seconds=delay),queueWrite,"tmpPDResume",payload)
-        finishtime=GivLUT.getTime(datetime.now()+timedelta(minutes=pauseTime))
-        with open(".tpdRunning_"+str(GiV_Settings.givtcp_instance), 'w') as f:
-            f.write('\n'.join([str(tpdjob.id),str(finishtime)]))
+        tpdjob=scheduleRevert("tmpPDResume",payload,timedelta(seconds=delay),".tpdRunning_"+str(GiV_Settings.givtcp_instance))
         
         logger.debug("Temp Pause Discharge revert jobid is: "+tpdjob.id)
         temp['result']="Discharge paused for "+str(delay)+" seconds"
@@ -1505,6 +1576,7 @@ async def tmpPCResume(device, payload, readloop=False):
         e=controlError()
         temp['result']="Temp Pause Charge Resume failed: " + str(e)
         logger.error (temp['result'])
+    revertDone("tmpPCResume")
     return json.dumps(temp)
 
 async def tempPauseCharge(device, pauseTime, readloop=False):
@@ -1527,10 +1599,7 @@ async def tempPauseCharge(device, pauseTime, readloop=False):
             raise Exception(json.loads(result)['result'])
         payload['chargeRate']=revertRate
         delay=float(pauseTime*60)
-        finishtime=GivLUT.getTime(datetime.now()+timedelta(minutes=pauseTime))
-        tpcjob=GivQueue.q.enqueue_in(timedelta(seconds=delay),queueWrite,"tmpPCResume",payload)
-        with open(".tpcRunning_"+str(GiV_Settings.givtcp_instance), 'w') as f:
-            f.write('\n'.join([str(tpcjob.id),str(finishtime)]))
+        tpcjob=scheduleRevert("tmpPCResume",payload,timedelta(seconds=delay),".tpcRunning_"+str(GiV_Settings.givtcp_instance))
         logger.debug("Temp Pause Charge revert jobid is: "+tpcjob.id)
         temp['result']="Charge paused for "+str(delay)+" seconds"
         updateControlCache("Temp_Pause_Charge","Running")
