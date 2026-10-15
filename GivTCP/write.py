@@ -1210,7 +1210,7 @@ async def forceExport(device, exportTime,readloop=False):
         revert={k:v for k,v in revert.items() if v is not None}     # only revert what was read
         reqs=device.set_battery_soc_reserve(4)      # the device model picks the single/three-phase register itself
         finish=datetime.now()+timedelta(minutes=exportTime)
-        slot=TimeSlot(datetime.strptime(GivLUT.getTime(datetime.now()),"%H:%M"),datetime.strptime(finish,"%H:%M"))
+        slot=TimeSlot(datetime.strptime(GivLUT.getTime(datetime.now()),"%H:%M"),datetime.strptime(GivLUT.getTime(finish),"%H:%M"))
 
         if "3ph" in GiV_Settings.inverter_type.lower():
             reqs.extend(device.set_force_discharge(True))  # turn on Force Export in 3PH
@@ -1371,7 +1371,7 @@ async def forceCharge(device, chargeTime, readloop=False):
                 reqs.extend(slotTargetSOC(device,"charge",1,100))
             except NotImplementedError:
                 del revert["slot1TargetSOC"]    # read but can't be written here yet (eg. Gateway), so leave it
-        slot=TimeSlot(datetime.strptime(GivLUT.getTime(datetime.now()),"%H:%M"),datetime.strptime(finish,"%H:%M"))
+        slot=TimeSlot(datetime.strptime(GivLUT.getTime(datetime.now()),"%H:%M"),datetime.strptime(GivLUT.getTime(finish),"%H:%M"))
         reqs.extend(device.set_charge_slot(1,slot))
         if "3ph" in GiV_Settings.inverter_type.lower():
             reqs.extend(optionalAcLimit("charge",100))
