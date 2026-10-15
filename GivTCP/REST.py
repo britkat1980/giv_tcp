@@ -560,6 +560,19 @@ def setExpSlot3():
     return response("setExportSlot")
 
 
+def startOrCancelJob(kind, label, duration):
+    """Start Force Charge/Export or a temporary pause for duration minutes, or cancel the running one ("Cancel" or 0)"""
+    if duration == "Cancel" or duration == "0":
+        job=GivLUT.runningJob(kind)
+        if job:
+            logger.debug("Retrieved jobID to cancel "+label+": "+str(job[0]))
+            requestcommand("cancelJob",job[0])
+            return response("cancelJob")
+        logger.error(label+" is not currently running")
+        return "{'result':'Error: "+label+" is not currently running'}"
+    requestcommand(kind,int(duration))
+    return response(kind)
+
 @giv_api.route('/tempPauseDischarge', methods=['POST'])
 def tmpPauseDischrg():
     """Pauses discharge from battery for the defined duration in Minutes or send Cancel command
@@ -567,18 +580,7 @@ def tmpPauseDischrg():
     Payload: {'duration':'30' or 'Cancel'}
     """
     payload = request.get_json(silent=True, force=True)
-    if payload['duration'] == "Cancel" or payload['duration'] == "0":
-        if exists(".tpdRunning_"+str(GiV_Settings.givtcp_instance)):
-            jobid= str(open(".tpdRunning_"+str(GiV_Settings.givtcp_instance),'r').readline().strip('\n'))
-            logger.debug("Retrieved jobID to cancel Temp Pause Discharge: "+ str(jobid))
-            requestcommand("cancelJob",jobid)
-            return response("cancelJob")
-        else:
-            logger.error("Temp Pause Discharge is not currently running")
-            return "{'result':'Error: Temp Pause Discharge is not currently running'}"
-    else:
-        requestcommand("tempPauseDischarge",int(payload['duration']))
-        return response("tempPauseDischarge")
+    return startOrCancelJob("tempPauseDischarge","Temp Pause Discharge",payload['duration'])
 
 
 @giv_api.route('/tempPauseCharge', methods=['POST'])
@@ -588,18 +590,7 @@ def tmpPauseChrg():
     Payload: {'duration':'30' or 'Cancel'}
     """
     payload = request.get_json(silent=True, force=True)
-    if payload['duration'] == "Cancel" or payload['duration'] == "0":
-        if exists(".tpcRunning_"+str(GiV_Settings.givtcp_instance)):
-            jobid= str(open(".tpcRunning_"+str(GiV_Settings.givtcp_instance),'r').readline().strip('\n'))
-            logger.info("Retrieved jobID to cancel Temp Pause Charge: "+ str(jobid))
-            requestcommand("cancelJob",jobid)
-            return response("cancelJob")
-        else:
-            logger.error("Temp Pause Charge is not currently running")
-            return "{'result':'Error: Temp Pause Charge is not currently running'}"
-    else:
-        requestcommand("tempPauseCharge",int(payload['duration']))
-        return response("tempPauseCharge")
+    return startOrCancelJob("tempPauseCharge","Temp Pause Charge",payload['duration'])
 
 
 @giv_api.route('/forceCharge', methods=['POST'])
@@ -609,19 +600,7 @@ def frceChrg():
     Payload: {'duration':'30' or 'Cancel'}
     """
     payload = request.get_json(silent=True, force=True)
-    #Check if Cancel then return the right function
-    if payload['duration'] == "Cancel" or payload['duration'] == "0":
-        if exists(".FCRunning"+str(GiV_Settings.givtcp_instance)):
-            jobid= str(open(".FCRunning"+str(GiV_Settings.givtcp_instance),"r").readline()).strip('\n')
-            logger.debug("Retrieved jobID to cancel Force Charge: "+ str(jobid))
-            requestcommand("cancelJob",jobid)
-            return response("cancelJob")
-        else:
-            logger.error("Force Charge is not currently running")
-            return "{'result':'Error: Force Charge is not currently running'}"
-    else:
-        requestcommand("forceCharge",int(payload['duration']))
-        return response("forceCharge")
+    return startOrCancelJob("forceCharge","Force Charge",payload['duration'])
 
 
 @giv_api.route('/forceExport', methods=['POST'])
@@ -632,18 +611,7 @@ def frceExprt():
     """
 
     payload = request.get_json(silent=True, force=True)
-    if payload['duration'] == "Cancel" or payload['duration'] == "0":
-        if exists(".FERunning"+str(GiV_Settings.givtcp_instance)):
-            jobid= str(open(".FERunning"+str(GiV_Settings.givtcp_instance),"r").readline()).strip('\n')
-            logger.debug("Retrieved jobID to cancel Force Export: "+ str(jobid))
-            requestcommand("cancelJob",jobid)
-            return response("cancelJob")
-        else:
-            logger.error("Force Export is not currently running")
-            return "{'result':'Error: Force Export is not currently running'}"
-    else:
-        requestcommand("forceExport",int(payload['duration']))
-        return response("forceExport")
+    return startOrCancelJob("forceExport","Force Export",payload['duration'])
 
 
 @giv_api.route('/setBatteryMode', methods=['POST'])
