@@ -10,6 +10,7 @@ import requests
 import asyncio
 from GivTCP.netscan import scan, as_list, INVERTER_PORT, EVC_PORT
 from GivTCP.capscheck import missingBatteries, capsBatteryCount
+from GivTCP.startfiles import keptOnStart
 from givenergy_modbus.client.client import Client
 from givenergy_modbus.exceptions import CommunicationError
 from givenergy_modbus.model.inverter import resolve_model
@@ -777,7 +778,7 @@ for inv in range(1,setts['number_of_inverters']+1):
             filename = os.fsdecode(file)
             if os.path.isdir(setts['cache_location']+"/"+file):
                 continue        # only files: folders such as logs and captures are kept
-            if not filename.__contains__("log") and not filename.startswith("rateData") and not filename.startswith("writecount") and not filename.startswith("safewritecount") and not filename.startswith(".dayRate") and not filename.startswith(".nightRate") and not filename.startswith("allsettings") and not filename.startswith("v2env") and not filename.startswith(".v3upgrade") and not filename.startswith(".load_formula") and not filename.endswith("_caps.pkl"):     # keep capabilities so detect only runs once per inverter
+            if not keptOnStart(filename):
                 os.remove(setts['cache_location']+"/"+file)
         if exists(setts["cache_location"]+"/rateData_"+str(inv)+".pkl"):
             timezone=zoneinfo.ZoneInfo(key=setts["timezone"])
