@@ -121,5 +121,7 @@ def test_extra_read_not_dropped_after_one_failure(caplog):
     assert calls == [318, 318, 318, 318, 318]       # fail, ok, then 3 fails in a row: given up
     asyncio.run(modbus_patches._extra_reads(client))
     assert len(calls) == 5
-    warnings = [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING]
-    assert len(warnings) == 1 and "3 times in a row" in warnings[0]
+    # Logged once when it gives up, at info: it's optional, and some firmware never answers it (#655)
+    given_up = [r for r in caplog.records if "3 times in a row" in r.getMessage()]
+    assert len(given_up) == 1 and given_up[0].levelno == logging.INFO
+    assert not [r for r in caplog.records if r.levelno >= logging.WARNING]

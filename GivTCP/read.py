@@ -21,6 +21,7 @@ import requests
 from GivLUT import GivLUT, maxvalues, InvType, GivClientAsync, closeClient
 import modbus_patches
 import capture
+import ipchange
 from entity_lut import Entity_Type
 from settings import GiV_Settings
 from os.path import exists
@@ -30,6 +31,7 @@ import asyncio
 from typing import Callable, Optional
 from mqtt import GivMQTT
 from modbus_patches import pause_registers, PAUSE_MODE_REGISTER, PAUSE_SLOT_REGISTERS, bms_current_inverter
+from capscheck import missingBatteries, maybeMissingBatteries, lostBatteries, capsBatteryCount
 from givenergy_modbus.model.inverter import SinglePhaseInverterRegisterGetter
 import copy
 import enum
@@ -198,6 +200,10 @@ def batteryTotals(GEInv, battery):
     # the first battery's BMS (IR105/106: Gen 2, AC and most Gen 1) or the inverter (IR180/181: some Gen 1, eg. fw 449,
     # where the BMS reads 0). Battery first, as 3.5 did, so the HA statistics carry on from the same counter
     charge,discharge=battery.e_battery_charge_total, battery.e_battery_discharge_total
+    if charge is None and discharge is None:
+        # Not read yet (eg. just after a restart, until a second read confirms the battery): a placeholder, not 0. The
+        # inverter's counters are a different total, so publishing them meanwhile made the total jump (#652)
+        return None,None
     if not charge and not discharge:
         charge=GEInv.e_battery_charge_total if GEInv.e_battery_charge_total is not None else GEInv.e_battery_charge_total_alt1
         discharge=GEInv.e_battery_discharge_total if GEInv.e_battery_discharge_total is not None else GEInv.e_battery_discharge_total_alt1
@@ -214,6 +220,30 @@ def rebootaddon():
     else:
         result="Please restart GivTCP Manually..."
         logger.info(result)
+
+async def lostInverter():
+    """The inverter hasn't answered for 10 attempts. Only this read loop uses its address, so look for it at a new IP
+    address here, rather than restart GivTCP: that restarts every other inverter's read loop, and loses their timed
+    reverts and connections too"""
+    old=GiV_Settings.invertorIP
+    logger.error("Lost communications with inverter "+str(GiV_Settings.serial_number)+" at "+str(old)+", checking whether its IP address has changed")
+    try:
+        ip=await ipchange.findInverter()
+    except Exception as e:
+        logger.error("Unable to scan for the inverter: "+str(e))
+        ip=None
+    if exists("commsfailure_"+str(GiV_Settings.givtcp_instance)+".pkl"):
+        os.remove("commsfailure_"+str(GiV_Settings.givtcp_instance)+".pkl")     # look again after another 10
+    if not ip:
+        logger.error("Inverter "+str(GiV_Settings.serial_number)+" not found elsewhere on the network, so it is probably offline. Will keep retrying at "+str(old))
+        return
+    logger.warning("Inverter "+str(GiV_Settings.serial_number)+" has moved from "+str(old)+" to "+str(ip)+", reconnecting there")
+    GiV_Settings.invertorIP=ip
+    try:
+        ipchange.saveInverterIP(ip)
+    except Exception as e:
+        logger.warning("Unable to save the new IP address, so it will be found again at the next start: "+str(e))
+    await GivClientAsync.new_client("its IP address changing", host=ip)
 
 def capsFile():
     return GivLUT.config_dir+"/"+GiV_Settings.serial_number+"_caps.pkl"
@@ -313,15 +343,42 @@ def wrongInverter(client):
         return found
     return None
 
+def savedCaps():
+    # This inverter's saved capabilities, or None if there are none, they can't be read, or they're missing batteries
+    try:
+        with open(capsFile(), 'rb') as inp:
+            caps=pickle.load(inp)
+    except Exception:
+        return None
+    return None if missingBatteries(caps) else caps
+
+# True while the capabilities in use may be missing batteries, so the read loop keeps re-detecting until they're found
+capsSuspect=False
+# Polls between re-detects: after failed polls, and (doubling each time, up to REDETECT_MAX_SECONDS) while the
+# capabilities may be missing batteries
+REDETECT_POLLS=10
+REDETECT_MAX_SECONDS=3600
+# Detects in a row that found fewer batteries than the saved capabilities
+lostBatteryDetects=0
+
 async def detectPlant(client, force=False):
     # Detect only when there is no capabilities file for this inverter (startup normally creates one).
     # Returns True if cached capabilities were used, so callers can re-detect if they turn out to be stale
+    global capsSuspect, lostBatteryDetects
     if not force and exists(capsFile()):
         try:
             with open(capsFile(), 'rb') as inp:
-                client.plant.capabilities=pickle.load(inp)
-            logger.info("Using cached capabilities from "+str(capsFile())+", skipping detect")
-            return True
+                caps=pickle.load(inp)
+            if missingBatteries(caps):
+                logger.warning("Cached capabilities have a "+caps.device_type.name.capitalize()+" with no batteries, which it always has, so running full detect")
+            else:
+                client.plant.capabilities=caps
+                logger.info("Using cached capabilities from "+str(capsFile())+", skipping detect")
+                if maybeMissingBatteries(caps):
+                    # Re-detected from time to time (backing off to hourly), in case its battery didn't answer
+                    capsSuspect=True
+                    logger.info("Cached capabilities have no batteries on this "+caps.device_type.name.capitalize()+", so it will be checked again for them")
+                return True
         except Exception as e:
             logger.warning("Unable to load cached capabilities, running full detect: "+str(e))
     logger.info("Detecting inverter characteristics...")
@@ -332,6 +389,30 @@ async def detectPlant(client, force=False):
         logger.error("Inverter at "+str(GiV_Settings.invertorIP)+" is "+str(found)+", not "+str(GiV_Settings.serial_number)+
                      " as in settings, so its capabilities are not being saved. Check the IP address in the settings")
         return False
+    # Detect only finds batteries that answer while it runs, so don't save a result missing some (eg. after a timeout),
+    # or they're never polled again
+    caps=client.plant.capabilities
+    saved=savedCaps()
+    if missingBatteries(caps):
+        capsSuspect=True
+        if saved:
+            client.plant.capabilities=saved
+            logger.warning("Detect found no batteries on this "+caps.device_type.name.capitalize()+", which always has them, so keeping the saved capabilities")
+        else:
+            logger.warning("Detect found no batteries on this "+caps.device_type.name.capitalize()+", which always has them, so not saving the capabilities and will detect again")
+        return False
+    if lostBatteries(caps, saved):
+        # Accept fewer batteries only when a second detect in a row agrees, so a battery that was removed is dropped
+        lostBatteryDetects+=1
+        if lostBatteryDetects<2:
+            capsSuspect=True
+            client.plant.capabilities=saved
+            logger.warning("Detect found "+str(capsBatteryCount(caps))+" batteries but "+str(capsBatteryCount(saved))+" were saved, so keeping the saved capabilities until another detect agrees")
+            return False
+        logger.warning("Two detects in a row found "+str(capsBatteryCount(caps))+" batteries rather than "+str(capsBatteryCount(saved))+", so saving the new capabilities")
+    # A hybrid with no batteries is saved (it may have none), but checked again, in case they didn't answer
+    capsSuspect=maybeMissingBatteries(client.plant.capabilities)
+    lostBatteryDetects=0
     try:
         with open(capsFile(), 'wb') as outp:
             pickle.dump(client.plant.capabilities, outp, pickle.HIGHEST_PROTOCOL)
@@ -413,12 +494,10 @@ def holdWrites(seconds_left):
 def publishStatus(status):
     # Set Stats/status in the REST cache and on MQTT straight away (eg. "paused"); the next good poll sets it back to "online"
     try:
-        with GivLUT.cachelock:
-            regCacheStack=GivLUT.get_regcache()
-            if regCacheStack and isinstance(regCacheStack[-1].get('Stats'),dict):
-                regCacheStack[-1]['Stats']['status']=status
-                with open(GivLUT.regcache,'wb') as outp:
-                    pickle.dump(regCacheStack, outp, pickle.HIGHEST_PROTOCOL)
+        def change(output):
+            if isinstance(output.get('Stats'),dict):
+                output['Stats']['status']=status
+        GivLUT.update_regcache(change)
         if GiV_Settings.MQTT_Output:
             GivMQTT.single_MQTT_publish((GiV_Settings.MQTT_Topic or "GivEnergy")+"/"+str(GiV_Settings.serial_number)+"/Stats/status",status)
     except Exception as e:
@@ -616,6 +695,9 @@ class Recovery:
             holdWrites((self.until-datetime.datetime.now()).total_seconds())
             await asyncio.sleep(1)
 
+# Set once timed reverts from before a restart have been recovered, so it's done once per process
+revertsRecovered=False
+
 async def watch_plant(
         handler: Optional[Callable] = None,
         refresh_period: float = 15.0,
@@ -623,6 +705,7 @@ async def watch_plant(
         passive: bool = False,
         recovery: Optional[Recovery] = None,
     ):
+        global revertsRecovered
         totalTimeoutErrors=0
         recovery=recovery or Recovery()
 
@@ -665,6 +748,13 @@ async def watch_plant(
                 except Exception as err:
                     e=errDetail()
                     logger.error ("Error in calling handler: "+str(err))
+            if not revertsRecovered:
+                # Timed reverts (Force Export/Charge, Temp Pause) scheduled before a restart were lost with Redis
+                revertsRecovered=True
+                try:
+                    write.recoverReverts()
+                except Exception as e:
+                    logger.error("Unable to recover timed reverts from before the restart: "+str(e))
 
         except CommunicationError as e:
             cause=e.__cause__ or e
@@ -672,8 +762,7 @@ async def watch_plant(
             if not recovery.enabled:        # with a recovery pause, self_run counts each pause instead
                 failcount=commsFailure()
                 if failcount>=10:
-                    logger.error("Lost communications with Inverter. Restarting container to detect IP change")
-                    rebootaddon()
+                    await lostInverter()
             try:
                 await client.close()
             except:
@@ -696,6 +785,7 @@ async def watch_plant(
         timeoutErrors=0
         connectErrors=0
         partialPolls=0
+        suspectRedetectPolls=REDETECT_POLLS     # polls between re-detects for capabilities that may be missing batteries
         drops=ConnectionDrops(refresh_period)
         drops.polled()      # the initial read above
         logger.info("Starting data refresh cycle")
@@ -727,26 +817,24 @@ async def watch_plant(
                             "Unable to connect to inverter on: "+str(GiV_Settings.invertorIP)+" ("+type(cause).__name__+": "+str(cause)+")")
                         if recovery.enabled:
                             # Wait a normal interval, write commands included, and pause if it fails again. Count each
-                            # pause, not each attempt, towards the restart for an IP change, so it isn't after 5 pauses
+                            # pause, not each attempt, towards the check for an IP address change, so it isn't after 5 pauses
                             if recovery.failed():
                                 if commsFailure()>=10:
-                                    logger.error("Lost communications with Inverter. Restarting container to detect IP change")
-                                    rebootaddon()
+                                    await lostInverter()
                                 await recovery.wait()
                             else:
                                 await asyncio.sleep(refresh_period)
                             continue
                         failcount=commsFailure()
                         if failcount>=10:
-                            logger.error("Lost communications with Inverter. Restarting container to detect IP change")
-                            rebootaddon()
+                            await lostInverter()
                         await asyncio.sleep(min(5*connectErrors,60))    #Back off rather than hammering the dongle
                         continue
                 # A device capture asked for on the Share Device page: run it on this connection, alongside polling
                 captureRequest=capture.pending()
                 if captureRequest is not None:
                     if captureTask is None or captureTask.done():
-                        open(".fullrefresh","a").close()    # so the settings and energy totals are in the capture
+                        open(GivLUT.forcefullrefresh,"a").close()    # so the settings and energy totals are in the capture
                         captureTask=asyncio.create_task(capture.run(client, int(captureRequest.get("seconds") or capture.default_seconds()),
                                                                     lambda: capture.device_summary(client.plant), logger))
                     else:
@@ -765,7 +853,7 @@ async def watch_plant(
                 if not passive:
                     #Check time since last full_refresh
                     timesincefull=datetime.datetime.now()-lastfulltime
-                    if timesincefull.total_seconds() > full_refresh_period or exists(".fullrefresh") or GiV_Settings.inverter_type.lower()=="gateway":      #always run full refresh for Gateway
+                    if timesincefull.total_seconds() > full_refresh_period or exists(GivLUT.forcefullrefresh) or GiV_Settings.inverter_type.lower()=="gateway":      #always run full refresh for Gateway
                         fullRefresh=True
                         logger.debug ("Running full refresh")
                     elif now.hour == 0 and now.minute == 0:
@@ -780,10 +868,14 @@ async def watch_plant(
                         timeoutErrors=0     # Reset timeouts if all is good this run
                         recovery.ok()
                         # A device that fails every poll (eg. a battery removed since the capabilities were
-                        # cached) means they are stale, so re-detect once it has persisted for a while
-                        partialPolls=partialPolls+1 if failures else 0
-                        if partialPolls>=10:
-                            logger.warning("Some devices have not responded for 10 polls, re-detecting inverter characteristics")
+                        # cached) means they are stale, so re-detect once it has persisted for a while. So do
+                        # capabilities that may be missing batteries, which are never polled so never fail
+                        partialPolls=partialPolls+1 if failures or capsSuspect else 0
+                        if partialPolls>=(REDETECT_POLLS if failures else suspectRedetectPolls):
+                            if failures:
+                                logger.warning("Some devices have not responded for 10 polls, re-detecting inverter characteristics")
+                            else:
+                                logger.warning("Capabilities may be missing batteries, re-detecting inverter characteristics")
                             partialPolls=0
                             previousCaps=client.plant.capabilities
                             try:
@@ -792,6 +884,12 @@ async def watch_plant(
                                 # detect() clears capabilities on failure, which would stop every later poll
                                 client.plant.capabilities=previousCaps
                                 logger.error("Re-detect failed, keeping current capabilities: "+str(e))
+                            if capsSuspect and not failures:
+                                # Batteries that still didn't answer may never do (eg. a fault), so wait twice as long
+                                # before the next full detect, up to an hour, rather than detect every few minutes
+                                suspectRedetectPolls=min(suspectRedetectPolls*2, max(REDETECT_POLLS, int(REDETECT_MAX_SECONDS/refresh_period)))
+                            else:
+                                suspectRedetectPolls=REDETECT_POLLS
                         logger.debug("Data get was successful, now running handler if needed: ")
                         retry=False
                         if fullRefresh:
@@ -799,8 +897,8 @@ async def watch_plant(
                         if fullRefresh and not retry:
                             # Only mark full refresh done once it succeeds, so a post-write readback isn't lost
                             lastfulltime=datetime.datetime.now()
-                            if exists(".fullrefresh"):
-                                os.remove(".fullrefresh")
+                            if exists(GivLUT.forcefullrefresh):
+                                os.remove(GivLUT.forcefullrefresh)
                         if exists("commsfailure_"+str(GiV_Settings.givtcp_instance)+".pkl"):
                             # Remove any failed counts if connection runs OK
                             os.remove("commsfailure_"+str(GiV_Settings.givtcp_instance)+".pkl")
@@ -1452,44 +1550,16 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
     controlmode['Temp_Pause_Discharge'] = oldControl.get("Temp_Pause_Discharge","Normal")
     controlmode['Temp_Pause_Charge'] = oldControl.get("Temp_Pause_Charge","Normal")
 
-    if exists(".FCRunning"+str(GiV_Settings.givtcp_instance)):
-        logger.debug("Force Charge is Running")
-        controlmode['Force_Charge'] = "Running"
-        #Get time left to run in mins and publish to number
-        minsremain=getJobFinish(".FCRunning"+str(GiV_Settings.givtcp_instance))
-        logger.debug("Time remaining is" + str(minsremain))
-        controlmode['Force_Charge_Num']=max(0,int(minsremain))
-    else:
-        controlmode['Force_Charge'] = "Normal"
-        controlmode['Force_Charge_Num']=0
-    if exists(".FERunning"+str(GiV_Settings.givtcp_instance)):
-        logger.debug("Force_Export is Running")
-        controlmode['Force_Export'] = "Running"
-        minsremain=getJobFinish(".FERunning"+str(GiV_Settings.givtcp_instance))
-        logger.debug("Time remaining is" + str(minsremain))
-        controlmode['Force_Export_Num']=max(0,int(minsremain))
-    else:
-        logger.debug("Force Export is not Running")
-        controlmode['Force_Export'] = "Normal"
-        controlmode['Force_Export_Num']=0
-    if exists(".tpcRunning_"+str(GiV_Settings.givtcp_instance)):
-        logger.debug("Temp Pause Charge is Running")
-        controlmode['Temp_Pause_Charge'] = "Running"
-        minsremain=getJobFinish(".tpcRunning_"+str(GiV_Settings.givtcp_instance))
-        logger.debug("Time remaining is" + str(minsremain))
-        controlmode['Temp_Pause_Charge_Num']=max(0,int(minsremain))
-    else:
-        controlmode['Temp_Pause_Charge'] = "Normal"
-        controlmode['Temp_Pause_Charge_Num']=0
-    if exists(".tpdRunning_"+str(GiV_Settings.givtcp_instance)):
-        logger.debug("Temp_Pause_Discharge is Running")
-        controlmode['Temp_Pause_Discharge'] = "Running"
-        minsremain=getJobFinish(".tpdRunning_"+str(GiV_Settings.givtcp_instance))
-        logger.debug("Time remaining is" + str(minsremain))
-        controlmode['Temp_Pause_Discharge_Num']=max(0,int(minsremain))
-    else:
-        controlmode['Temp_Pause_Discharge'] = "Normal"
-        controlmode['Temp_Pause_Discharge_Num']=0
+    # Force Charge/Export and the temporary pauses are running while their revert job is (GivLUT.runningJob)
+    for kind,key in (("forceCharge","Force_Charge"),("forceExport","Force_Export"),
+                     ("tempPauseCharge","Temp_Pause_Charge"),("tempPauseDischarge","Temp_Pause_Discharge")):
+        if GivLUT.runningJob(kind):
+            controlmode[key]="Running"
+            controlmode[key+'_Num']=GivLUT.jobMinutesLeft(kind)
+            logger.debug(key+" is running, "+str(controlmode[key+'_Num'])+" minutes left")
+        else:
+            controlmode[key]="Normal"
+            controlmode[key+'_Num']=0
     return controlmode
 
 
@@ -1756,12 +1826,14 @@ def processInverterInfo(plant: Plant):
             today_load= max(0,round((energy_today_output['Invertor_Energy_Today_kWh']-energy_today_output['AC_Charge_Energy_Today_kWh']) -
                         (energy_today_output['Export_Energy_Today_kWh']-energy_today_output['Import_Energy_Today_kWh'])+energy_today_output['PV_Energy_Today_kWh'], 2))
             
-        # Load and Self Consumption are calculated, so hold back rounding dips - except on a new inverter day, when the
-        # counters have reset (and a small day's whole total could look like a dip)
+        # Load and Self Consumption are calculated, so hold back rounding dips. Self Consumption not on a new inverter
+        # day, when the counters have reset, as a dark day's whole total can be smaller than a dip. Load always: a day's
+        # Load is always more than a dip, so its reset still gets through, and the grace period after midnight let
+        # tiny dips through, which HA counts as resets at those values (#654)
         oldToday=multi_output_old.get("Energy",{}).get("Today",{}) if multi_output_old else {}
         sameDay=bool(multi_output_old) and not newInverterDay(inverter['Invertor_Time'],multi_output_old,readAt=settingsReadAt(plant))
         energy_today_output['Self_Consumption_Energy_Today_kWh']=holdRoundingDip(today_self, oldToday.get('Self_Consumption_Energy_Today_kWh'), sameDay)
-        energy_today_output['Load_Energy_Today_kWh']=holdRoundingDip(today_load, oldToday.get('Load_Energy_Today_kWh'), sameDay and not formulaChanged)
+        energy_today_output['Load_Energy_Today_kWh']=holdRoundingDip(today_load, oldToday.get('Load_Energy_Today_kWh'), not formulaChanged)
 
     ############  Core Power Stats    ############
 
@@ -2616,7 +2688,7 @@ def processData(plant: Plant):
         givtcpdata['Last_Updated_Time'] = datetime.datetime.now(GivLUT.timezone).isoformat()
         givtcpdata['status'] = "online"
         givtcpdata['Time_Since_Last_Update'] = 0
-        givtcpdata['GivTCP_Version']= "3.6.6"
+        givtcpdata['GivTCP_Version']= "3.6.7"
         age=dataAge(plant)
         givtcpdata['Data_Age']= round(age,1) if age is not None else -1
         if age is None or age > max(3*GiV_Settings.self_run_timer, 60):
@@ -2663,7 +2735,7 @@ def processData(plant: Plant):
             multi_output=guardTodayResets(multi_output, regCacheStack[-1], inverterNow(finditem(multi_output,"Invertor_Time"),settingsReadAt(plant)))
 
         if batteryCount(plant)>0:    #Don't run ratecalcs if no batteries
-            if len(regCacheStack)>1:
+            if regCacheStack:
                 multi_output = ratecalcs(multi_output, regCacheStack[-1], settingsReadAt(plant))
             else:
                 multi_output = ratecalcs(multi_output, multi_output, settingsReadAt(plant))
@@ -2683,16 +2755,10 @@ def processData(plant: Plant):
             pickle.dump(multi_output['Stats']['Last_Updated_Time'], outp, pickle.HIGHEST_PROTOCOL)
 
         
-        # Add new data to the stack (cap at 1hr history) and save
-        #if len(regCacheStack)>1000:
-        if len(regCacheStack)>0:
-            #earliest_cache_age=(datetime.datetime.now(GivLUT.timezone)-datetime.datetime.strptime(finditem(regCacheStack[0],"Invertor_Time"), '%Y-%m-%dT%H:%M:%S%z'))
-            #if earliest_cache_age.seconds>3600:
-            if len(regCacheStack)>30:  # keep ~10 hours of history for outlier detection
-                regCacheStack.pop(0)
+        # Cache just this output: everything that reads the cache only uses the latest. It kept 31 for outlier
+        # detection (now removed), which rewrote ~570KB every poll rather than ~18KB. Still a list, as readers expect
         multi_output=noneKeys(multi_output)     # clean before caching, so every later dump of the cache works too
-        regCacheStack.append(multi_output)
-        GivLUT.put_regcache(regCacheStack)
+        GivLUT.put_regcache([multi_output])
             
         logger.debug("Successfully processed data from: " + GiV_Settings.invertorIP)
 
@@ -2801,8 +2867,6 @@ def consecFails(e):
             logger.error("10 failed inverter reads in a row so removing Cache (pkl) files to force update...")
             if exists(GivLUT.regcache):
                 os.remove(GivLUT.regcache)
-            if exists(GivLUT.rawpkl):
-                os.remove(GivLUT.rawpkl)
             if exists(GivLUT.batterypkl):
                 os.remove(GivLUT.batterypkl)
             if exists(GivLUT.oldDataCount):
@@ -2920,8 +2984,7 @@ async def self_run():
             await GivClientAsync.new_client("the inverter didn't answer", quiet=True)
             if recovery.failed():
                 if commsFailure()>=10:      # watch_plant leaves the counting to here when the pause is on
-                    logger.error("Lost communications with Inverter. Restarting container to detect IP change")
-                    rebootaddon()
+                    await lostInverter()
                 await recovery.wait()
             else:
                 await asyncio.sleep(GiV_Settings.self_run_timer if recovery.enabled else 10)
@@ -2991,7 +3054,9 @@ def publishOutput(array, SN):
                 # second read confirms them (its splice guard), after discovery has run (#629)
                 new=[p for p in leafPaths(tempoutput) if p not in discoveredPaths[SN] and p[0]!="raw"]
                 if new:
-                    logger.info("Publishing Home Assistant Discovery messages for "+str(len(new))+" new entities")
+                    # Debug: it happens on every restart where the battery modules come with the second poll, and
+                    # entities Home Assistant already has are just updated in place
+                    logger.debug("Publishing Home Assistant Discovery for "+str(len(new))+" entities that weren't in the first data read (eg. battery modules)")
                     from HA_Discovery import HAMQTT
                     # With the Invertor_Type value, which names the device as the first discovery did
                     typePath=[p for p in leafPaths(tempoutput) if p[-1]=="Invertor_Type"][:1]
@@ -3011,41 +3076,23 @@ def updateFirstRun(SN):
     script_dir = os.path.dirname(__file__)
     rel_path = "settings.py"
     abs_file_path = os.path.join(script_dir, rel_path)
-    #check for settings lockfile before
-    count=0
-    while True:
-        logger.debug("Opening settings for first run")
-        if exists('.settings_lockfile'):
-            logger.debug("Waiting for settings to be available")
-            time.sleep(1)
-            count=count+1
-            if count==50:
-                logger.error("Could not access settings file to update EVC Serial Number")
-                break
-        else:
-            logger.debug("Settings available")
-            #Create setting lockfile
-            open(".settings_lockfile",'a').close()
+    # The settings file is shared by GivTCP's processes, so hold the settings lock while changing it
+    with GivLUT.fileLock(os.path.join(script_dir, ".settings_lockfile")):
+        with open(abs_file_path, "r") as f:
+            lines = f.readlines()
+        with open(abs_file_path, "w") as f:
+            for line in lines:
+                if line.strip("\n") == "    first_run= True":
+                    f.write("    first_run= False\n")
+                else:
+                    f.write(line)
+                if "serial_number=" in line:
+                    logger.debug("serial number aready exists: \""+line+"\"")
+                    isSN = True
 
-            with open(abs_file_path, "r") as f:
-                lines = f.readlines()
-            with open(abs_file_path, "w") as f:
-                for line in lines:
-                    if line.strip("\n") == "    first_run= True":
-                        f.write("    first_run= False\n")
-                    else:
-                        f.write(line)
-                    if "serial_number=" in line:
-                        logger.debug("serial number aready exists: \""+line+"\"")
-                        isSN = True
-
-                if not isSN:
-                    logger.debug("serial number not in file, adding now")
-                    f.writelines("    serial_number= \""+SN+"\"\n")  # only add SN if its not there
-            # Delete settings_lockfile
-            os.remove('.settings_lockfile')
-            logger.debug("removing lockfile")
-            break
+            if not isSN:
+                logger.debug("serial number not in file, adding now")
+                f.writelines("    serial_number= \""+SN+"\"\n")  # only add SN if its not there
 
 
 def iterate_dict(array):        # Create a publish safe version of the output (convert non string or int datapoints)
@@ -3343,12 +3390,9 @@ def dataSmoother2(dataNew, dataOld, lastUpdate, invtype,inv_time):
                 if lookup.smooth and not GiV_Settings.data_smoother.lower() == "none":     # apply smoothing if required
                     if newData != oldData:  # Only if its not the same
                         if any(word in name.lower() for word in ["power","_to_"]):
-                            if abs(newData-oldData)>abssmooth:                                
-                                if checkRawcache(newData,name,abssmooth): #If new data is persistently outside bounds then use new value
-                                    return(newData)
-                                else:
-                                    logger.debug(str(name)+" jumped too far in a single read: "+str(oldData)+"->"+str(newData)+" so using previous value")
-                                    return (oldData)
+                            if abs(newData-oldData)>abssmooth:
+                                logger.debug(str(name)+" jumped too far in a single read: "+str(oldData)+"->"+str(newData)+" so using previous value")
+                                return (oldData)
                         else:
                             ## Only smooth data if its not already Zero (avoid div by Zero)
                             if oldData != 0:
@@ -3366,22 +3410,12 @@ def dataSmoother2(dataNew, dataOld, lastUpdate, invtype,inv_time):
         return(newData)    
     return(newData)
 
-def checkRawcache(newData,name,abssmooth):
-    #Get rawdata cache to check if unallowed changes are persistent and should be allowed
-    bigjump=False
-    rawCacheStack = GivLUT.load_pickle(GivLUT.rawpkl) if exists(GivLUT.rawpkl) else None
-    if rawCacheStack:
-        oldData=rawCacheStack[1]['invertor'][GivLUT.raw_to_pub[name]]
-        if abs(newData-oldData)>abssmooth:
-            bigjump=True
-        logger.debug("NewData is: "+str(newData)+" and cached raw value was: "+str(oldData))
-    return bigjump
-
 
 def calcBatteryValue(multi_output):
     # get current data from read pickle
     batterystats = {}
-    if exists(GivLUT.batterypkl):
+    changed = not exists(GivLUT.batterypkl)     # only saved when it changes: on the first run, then twice an hour
+    if not changed:
         with open(GivLUT.batterypkl, 'rb') as inp:
             batterystats = pickle.load(inp)
     else:       # if no old AC charge, then set it to now and zero out value and ppkwh
@@ -3391,8 +3425,11 @@ def calcBatteryValue(multi_output):
         batterystats['Battery_ppkwh'] = 0
         batterystats['Battery_kWh_old'] = multi_output['Power']['Power']['SOC_kWh']
 
-    if not exists(GivLUT.firstrun) or datetime.datetime.now(GivLUT.timezone).minute == 59 or datetime.datetime.now(GivLUT.timezone).minute == 29:
-        if not exists(GivLUT.ppkwhtouch) and exists(GivLUT.batterypkl):      # only run this if there is no touchfile but there is a battery stat
+    now=datetime.datetime.now(GivLUT.timezone)
+    if not exists(GivLUT.firstrun) or now.minute in (29, 59):
+        # Once in the minute, as polls can be closer together than that, and only once there are battery stats
+        stamp=now.strftime('%Y-%m-%d %H:%M')
+        if batterystats.get('Last_Calculated')!=stamp and exists(GivLUT.batterypkl):
             battery_kwh = multi_output['Power']['Power']['SOC_kWh']
             ac_charge = float(multi_output['Energy']['Total']['AC_Charge_Energy_Total_kWh'])-float(batterystats['AC Charge last'])
             logger.debug("Battery_kWh has gone from: "+str(batterystats['Battery_kWh_old'])+" -> "+str(battery_kwh))
@@ -3413,15 +3450,12 @@ def calcBatteryValue(multi_output):
             batterystats['AC Charge last'] = float(multi_output['Energy']['Total']['AC_Charge_Energy_Total_kWh'])
             logger.debug("Updating battery_kWh_old to: "+str(battery_kwh))
             batterystats['Battery_kWh_old'] = battery_kwh
-            open(GivLUT.ppkwhtouch, 'w').close()       # set touch file  to stop repeated triggers in the single minute
+            batterystats['Last_Calculated'] = stamp
+            changed = True
 
-    else:       # remove the touchfile if it exists
-        if exists(GivLUT.ppkwhtouch):
-            os.remove(GivLUT.ppkwhtouch)
-
-    # write data to pickle
-    with open(GivLUT.batterypkl, 'wb') as outp:
-        pickle.dump(batterystats, outp, pickle.HIGHEST_PROTOCOL)
+    if changed:
+        with open(GivLUT.batterypkl, 'wb') as outp:
+            pickle.dump(batterystats, outp, pickle.HIGHEST_PROTOCOL)
 
     # remove non publishable stats
     del batterystats['AC Charge last']
@@ -3429,18 +3463,6 @@ def calcBatteryValue(multi_output):
     multi_output['Energy']['Rates']['Battery_Value'] = batterystats['Battery_Value']
     multi_output['Energy']['Rates']['Battery_ppkwh'] = batterystats['Battery_ppkwh']
     return (multi_output)
-
-def getJobFinish(type: str):
-    with open(type, 'r') as f:
-        lines=f.readlines()
-    endtime=lines[1]
-    logger.debug("Finish hour= "+str(endtime[:2]))
-    logger.debug("Finish minute= "+str(endtime[-2:]))
-    finishdate= datetime.datetime.now().replace(hour=int(endtime[:2]),minute=int(endtime[-2:]))
-    logger.debug("Finishtime is: "+str(finishdate))
-    timeleft=int((finishdate - datetime.datetime.now()).total_seconds()/60)+1
-    logger.debug("Time remaining is" + str(timeleft))
-    return (timeleft)
 
 def finditem(obj, key):
     if key in obj: return obj[key]

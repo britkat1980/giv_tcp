@@ -28,7 +28,9 @@ GivTCP usually runs as a Home Assistant add-on, but can also run as a standalone
 The add-on uses Home Assistant's Mosquitto broker add-on if it's installed, and connects to it automatically. Otherwise, install an MQTT broker and enter its details on the config page.
 
 #### Docker
-- Use the [docker-compose.yml](https://github.com/britkat1980/giv_tcp/blob/main/docker-compose.yml) file to create the container. It runs in host network mode and keeps its settings and logs in `/config/GivTCP`.
+- Download [docker-compose.yml](https://github.com/britkat1980/giv_tcp/blob/main/docker-compose.yml) into a folder of its own, set your timezone (`TZ`) in it, and run `docker compose up -d` there. GivTCP keeps its settings, captures and logs in a `config` folder next to the file.
+- It uses host networking, so GivTCP can scan your network for inverters (Linux). On Docker Desktop (Windows/macOS), or to use a bridge network, follow the comments in the file to map the ports instead, and add your inverters by their IP address on the config page, as GivTCP can't scan your network from there.
+- Without Home Assistant, MQTT is off until you enter a broker on the config page. To use GivTCP's own broker, enter `127.0.0.1`.
 
 ### Start GivTCP
 
@@ -44,7 +46,7 @@ The add-on uses Home Assistant's Mosquitto broker add-on if it's installed, and 
   - **Inverter Config:** add or remove inverters. There's no limit on the number, and inverters found by the last scan can be added in one click.
   - **Self Run:** turn on **Self Run**, and **Home Assistant Auto Discovery** if you use Home Assistant.
   - **MQTT:** only needed if you use an MQTT broker other than the Home Assistant add-on.
-- Click **Save and Restart**. With Docker, restart the container yourself.
+- Click **Save and Restart**. With Docker, restart the container yourself (`docker compose restart`).
 
 <img src="docs/images/config-1.png" width="400">
 <img src="docs/images/config-2.png" width="400">

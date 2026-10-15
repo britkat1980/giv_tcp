@@ -25,3 +25,8 @@ def test_inverter_unrouted_model():
 def test_nothing_anywhere():
     charge, discharge = read.batteryTotals(inv(routed=None, alt1=0.0), bat(0.0))
     assert not charge and not discharge      # processInverterInfo then leaves them out rather than publish 0
+
+def test_battery_not_read_yet():
+    # Just after a restart the battery is an empty placeholder until it's read: falling back to the inverter's counters
+    # (a different total) made the total jump, so leave them out for that poll (#652)
+    assert read.batteryTotals(inv(routed=1843.0, alt1=1843.0), bat(None)) == (None, None)

@@ -1519,15 +1519,9 @@
   "setExportTarget({'exportToPercent': '30', 'slot': '1'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Export Target 1 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Export Target 1 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
+     "result": "Setting Export Target 1 skipped: Export target SOC is only available on the EMS"
     },
     "writes": []
    }
@@ -4836,13 +4830,7 @@
   "setExportTarget1(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Export Target 1 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setExportTarget",
@@ -4858,13 +4846,7 @@
   "setExportTarget2(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Export Target 2 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setExportTarget",
@@ -4880,13 +4862,7 @@
   "setExportTarget3(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Export Target 3 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setExportTarget",
@@ -11198,15 +11174,9 @@
   "/setExportTarget({'exportToPercent': '30', 'slot': '1'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Export Target 1 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Export Target 1 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
+     "result": "Setting Export Target 1 skipped: Export target SOC is only available on the EMS"
     },
     "status": 200,
     "writes": []

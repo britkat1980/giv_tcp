@@ -710,52 +710,28 @@ class GivMQTT():
                 requestcommand(command,payload)
             elif command=="tempPauseDischarge":
                 if message.payload.decode("utf-8") == "Cancel" or message.payload.decode("utf-8") == "Normal" or float(message.payload.decode("utf-8"))==0:
-                    # Get the Job ID from the touchfile
-                    if exists(".tpdRunning_"+str(GiV_Settings.givtcp_instance)):
-                        jobid= str(open(".tpdRunning_"+str(GiV_Settings.givtcp_instance),"r").readline().strip('\n'))
-                        logger.debug("Retrieved jobID to cancel Temp Pause Discharge: "+ str(jobid))
-                        requestcommand("cancelJob",jobid)
-                    else:
-                        logger.error("Temp Pause Discharge is not currently running")
+                    cancelRunningJob("tempPauseDischarge","Temp Pause Discharge")
                 elif isfloat(message.payload.decode("utf-8")):
                     duration=float(message.payload.decode("utf-8"))
                 #wr.tempPauseDischarge(payload)
                     requestcommand(command,duration)
             elif command=="tempPauseCharge":
                 if message.payload.decode("utf-8") == "Cancel" or message.payload.decode("utf-8") == "Normal" or float(message.payload.decode("utf-8"))==0:
-                    # Get the Job ID from the touchfile
-                    if exists(".tpcRunning_"+str(GiV_Settings.givtcp_instance)):
-                        jobid= str(open(".tpcRunning_"+str(GiV_Settings.givtcp_instance),"r").readline().strip('\n'))
-                        logger.debug("Retrieved jobID to cancel Temp Pause Charge: "+ str(jobid))
-                        requestcommand("cancelJob",jobid)
-                    else:
-                        logger.error("Temp Pause Charge is not currently running")
+                    cancelRunningJob("tempPauseCharge","Temp Pause Charge")
                 elif isfloat(message.payload.decode("utf-8")):
                     duration=float(message.payload.decode("utf-8"))
                 #wr.tempPauseCharge(payload)
                     requestcommand(command,duration)
             elif command=="forceCharge":
                 if message.payload.decode("utf-8") == "Cancel" or message.payload.decode("utf-8") == "Normal" or float(message.payload.decode("utf-8"))==0:
-                    # Get the Job ID from the touchfile
-                    if exists(".FCRunning"+str(GiV_Settings.givtcp_instance)):
-                        jobid= str(open(".FCRunning"+str(GiV_Settings.givtcp_instance),"r").readline().strip('\n'))
-                        logger.debug("Retrieved jobID to cancel Force Charge: "+ str(jobid))
-                        requestcommand("cancelJob",jobid)
-                    else:
-                        logger.error("Force Charge is not currently running")
+                    cancelRunningJob("forceCharge","Force Charge")
                 elif isfloat(message.payload.decode("utf-8")):
                     duration=float(message.payload.decode("utf-8"))
                 #wr.forceCharge(payload)
                     requestcommand(command,duration)
             elif command=="forceExport":
                 if message.payload.decode("utf-8") == "Cancel" or message.payload.decode("utf-8") == "Normal" or float(message.payload.decode("utf-8"))==0:
-                    # Get the Job ID from the touchfile
-                    if exists(".FERunning"+str(GiV_Settings.givtcp_instance)):
-                        jobid= str(open(".FERunning"+str(GiV_Settings.givtcp_instance),"r").readline().strip('\n'))
-                        logger.debug("Retrieved jobID to cancel Force Export: "+ str(jobid))
-                        requestcommand("cancelJob",jobid)
-                    else:
-                        logger.error("Force Export is not currently running")
+                    cancelRunningJob("forceExport","Force Export")
                 elif isfloat(message.payload.decode("utf-8")):
                     duration=float(message.payload.decode("utf-8"))
                 #wr.forceExport(payload)
@@ -783,6 +759,15 @@ def isfloat(num):
         return True
     except ValueError:
         return False
+
+def cancelRunningJob(kind, label):
+    """Cancel a running Force Charge/Export or temporary pause (kind as GivLUT.running_jobs)"""
+    job=GivLUT.runningJob(kind)
+    if job:
+        logger.debug("Retrieved jobID to cancel "+label+": "+str(job[0]))
+        requestcommand("cancelJob",job[0])
+    else:
+        logger.error(label+" is not currently running")
 
 def requestcommand(command,payload):
     requests=[]

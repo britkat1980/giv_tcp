@@ -74,7 +74,7 @@ GEN1_PAUSE_MIN_ARM_FW = 187
 AC_PAUSE_MIN_ARM_FW = 200
 
 PAUSE_MODELS = frozenset({Model.ALL_IN_ONE, Model.GATEWAY, Model.HYBRID_GEN2, Model.HYBRID_GEN3,
-                          Model.HYBRID_HV_GEN3})
+                          Model.HYBRID_HV_GEN3, Model.ALL_IN_ONE_HYBRID})     # All in One-HY: used in 3.5 (#647)
 
 # Per-slot target SOC: slot N at base + 3*(N-1), matching the library's charge/discharge_target_soc_N reads
 SLOT_TARGET_BASE = {"charge": 242, "discharge": 272}
@@ -224,7 +224,9 @@ async def _extra_reads(client):
         except Exception as e:
             fails = failures[name] = failures.get(name, 0) + 1
             if fails >= EXTRA_READ_MAX_FAILURES:
-                logger.warning("Registers " + regs + " could not be read " + str(fails) + " times in a row, so " + lost +
+                # Info, not a warning: these are optional, and some firmware doesn't answer them (eg. HR 313-314 on Gen 1
+                # ARM 451, #655), so it would warn on every restart about something that needs no action
+                logger.info("Registers " + regs + " could not be read " + str(fails) + " times in a row, so " + lost +
                                ". Not trying again until GivTCP restarts: " + str(e))
             else:
                 # The value read last time is kept, and it's read again with the next full refresh

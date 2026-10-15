@@ -13,6 +13,11 @@ from time import sleep
 import sys
 
 from threading import Lock
+import contextlib
+try:
+    import fcntl
+except ImportError:     # Windows, where the tests run (in a single process)
+    fcntl = None
 import asyncio
 import os
 import time
@@ -110,13 +115,13 @@ class GivClientAsync:
             logger.exception("Unexpected error in get_connection: %s", err)
             raise CommunicationError(str(err)) from err
 
-    async def new_client(reason="repeated failures to reconnect", quiet=False):
+    async def new_client(reason="repeated failures to reconnect", quiet=False, host=None):
         """Replace the shared Client with a new one, keeping its Plant (detected capabilities and register data).
 
         After a dropped connection the same Client can keep failing to reconnect straight away, or keep getting no
         answer once connected, while a new process (or an add-on restart) connects first time (#615). So the read
         loop calls this when recovering, rather than leave it to the watchdog or a restart. quiet logs at debug,
-        for retries that happen every cycle while the inverter isn't answering"""
+        for retries that happen every cycle while the inverter isn't answering. host moves it to a new address"""
         global _client
         async with _connection_lock:
             old = _client
@@ -125,7 +130,7 @@ class GivClientAsync:
                 await closeClient(old)
             except Exception as exc:
                 logger.warning("Closing the old modbus client failed: %s: %s", type(exc).__name__, exc)
-            _client = Client(old.host, old.port, plant=old.plant)
+            _client = Client(host or old.host, old.port, plant=old.plant)
             return _client
 
 class GivQueue:
@@ -227,83 +232,111 @@ class GivLUT:
                            "of GivTCP (%s: %s). Moved to %s", path, type(e).__name__, e, aside)
             return None
 
+    @contextlib.contextmanager
+    def fileLock(path):
+        """Hold an exclusive lock, shared by all of GivTCP's processes, while doing something that can't overlap (eg.
+        read, change and save the register cache). The OS releases it if a process dies, so it can't be left behind,
+        and waiting doesn't poll. The file itself is only a handle: it can exist without being locked"""
+        with open(path,'a') as handle:
+            if fcntl:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            try:
+                yield
+            finally:
+                if fcntl:
+                    fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+    def save_pickle(path, data):
+        """Save in one step (a temporary file, then renamed over the old one), so another process reading it never sees
+        a partly written file and needs no lock"""
+        import threading
+        tmp=path+"."+str(os.getpid())+"."+str(threading.get_ident())+".tmp"     # unique per writer (REST workers, MQTT, RQ)
+        with open(tmp,'wb') as outp:
+            pickle.dump(data, outp, pickle.HIGHEST_PROTOCOL)
+        os.replace(tmp,path)
+
     def get_regcache():
+        """The register cache (a list with the latest output last), or None if there isn't one yet. It's always saved in
+        one step, so reading it needs no lock"""
+        if not exists(GivLUT.regcache):
+            logger.debug("regcache doesn't exist...")
+            return None
         try:
-            count=0
-            if exists(GivLUT.cachelockfile):
-                logger.debug("regcache in use, waiting...")
-                with open(GivLUT.cachelockfile) as inp:
-                    lock_age=inp.read()
-                try:
-                    file_age=datetime.datetime.strptime(lock_age, '%Y-%m-%dT%H:%M:%S%z')
-                except:
-                    file_age=datetime.datetime.now(datetime.timezone.utc)
-                timesince=datetime.datetime.now(datetime.timezone.utc) - file_age
-                if timesince.total_seconds()>10:
-                    logger.error("regCache Lockfile is too old, forcibly removing...")
-                    remove(GivLUT.cachelockfile)
-                while True:
-                    count +=1
-                    sleep(0.5)
-                    if not exists(GivLUT.cachelockfile):
-                        logger.debug("regcache now available")
-                        break
-                    if count==10:
-                        # loop round for 5s waiting for it to become available
-                        logger.error("Timed out waiting for regcache")
-                        remove(GivLUT.cachelockfile)
-                        return None
-            with open(GivLUT.cachelockfile, 'w') as inp: #create lock file
-                inp.write(datetime.datetime.now(datetime.timezone.utc).isoformat())
-            if exists(GivLUT.regcache):
-                logger.debug("Opening regcache at: "+str(GivLUT.regcache))
-                regCacheStack = GivLUT.load_pickle(GivLUT.regcache)
-                remove(GivLUT.cachelockfile)
-                return regCacheStack
-            else:
-                remove(GivLUT.cachelockfile)
-                logger.debug("regcache doesn't exist...")
-                return None
-        except:
-            e=errDetail()
-            if exists(GivLUT.cachelockfile):
-                remove(GivLUT.cachelockfile)
+            return GivLUT.load_pickle(GivLUT.regcache)
+        except OSError as e:
             logger.error("Failed to get Cache: "+str(e))
             return None
-        
+
     def save_writerequests(requests):
         """Replace the write request queue in one step, so the read loop never reads a partly written file"""
-        import threading
-        tmp=GivLUT.writerequests+"."+str(os.getpid())+"."+str(threading.get_ident())+".tmp"     # unique per writer (REST workers, MQTT, RQ)
-        with open(tmp,'wb') as outp:
-            pickle.dump(requests, outp, pickle.HIGHEST_PROTOCOL)
-        os.replace(tmp,GivLUT.writerequests)
+        GivLUT.save_pickle(GivLUT.writerequests, requests)
 
     def put_regcache(regCacheStack):
+        with GivLUT.fileLock(GivLUT.cachelockfile):     # so it can't land in the middle of an update_regcache()
+            GivLUT.save_pickle(GivLUT.regcache, regCacheStack)
 
-        count=0
-        if exists(GivLUT.cachelockfile):
-            while True:
-                count +=1
-                sleep(0.5)
-                if not exists(GivLUT.cachelockfile):
-                    break
-                if count==10:
-                    logger.error("Cannot save regCache: File Lock Timeout")
-                    return
-## Remove Raw from regCache??
-        with open(GivLUT.cachelockfile, 'w') as inp: #create lock file
-            inp.write(datetime.datetime.now(datetime.timezone.utc).isoformat())
-        with open(GivLUT.regcache, 'wb') as outp:
-            pickle.dump(regCacheStack, outp, pickle.HIGHEST_PROTOCOL)
-        remove(GivLUT.cachelockfile)
+    def update_regcache(change):
+        """Change the latest cached output in place (change(output)) and save it. The lock stops another process saving
+        in between, which would lose its update. Returns the cache, or None if there isn't one"""
+        with GivLUT.fileLock(GivLUT.cachelockfile):
+            regCacheStack=GivLUT.get_regcache()
+            if regCacheStack:
+                change(regCacheStack[-1])
+                GivLUT.save_pickle(GivLUT.regcache, regCacheStack)
+            return regCacheStack
+
+    # Revert jobs for Force Charge/Export and the temporary pauses: the RQ job id and when it finishes, in a file per
+    # kind that the REST, MQTT, read loop and write processes all use
+    running_jobs={"forceCharge":".FCRunning","forceExport":".FERunning","tempPauseCharge":".tpcRunning_","tempPauseDischarge":".tpdRunning_"}
+
+    def jobFile(kind):
+        return GivLUT.running_jobs[kind]+str(GiV_Settings.givtcp_instance)
+
+    def saveRunningJob(kind, jobid, finish):
+        with open(GivLUT.jobFile(kind),'w') as f:
+            f.write(str(jobid)+"\n"+finish.isoformat(timespec='seconds'))
+
+    def runningJob(kind):
+        """(job id, finish datetime) if this kind of job is running, or None. finish is None if it can't be read"""
+        try:
+            with open(GivLUT.jobFile(kind)) as f:
+                lines=f.read().splitlines()
+        except OSError:
+            return None
+        finish=None
+        if len(lines)>1:
+            text=lines[1].strip()
+            try:
+                finish=datetime.datetime.fromisoformat(text)
+            except ValueError:
+                try:
+                    # HH:MM, as saved by 3.6.6 and earlier: the next time it comes round, so a job running past midnight
+                    # still counts down
+                    now=datetime.datetime.now()
+                    finish=datetime.datetime.combine(now.date(), datetime.datetime.strptime(text,"%H:%M").time())
+                    if finish<now-datetime.timedelta(minutes=1):
+                        finish+=datetime.timedelta(days=1)
+                except ValueError:
+                    pass
+        return (lines[0].strip() if lines else ""), finish
+
+    def clearRunningJob(kind):
+        try:
+            os.remove(GivLUT.jobFile(kind))
+        except FileNotFoundError:
+            pass
+
+    def jobMinutesLeft(kind):
+        job=GivLUT.runningJob(kind)
+        if not job or job[1] is None:
+            return 0
+        return max(0, int((job[1]-datetime.datetime.now()).total_seconds()/60)+1)
 
 
     # File paths for use
     config_dir=os.environ.get("GIVTCP_CONFIG_DIR","/config/GivTCP")     # overridable so tests can run outside the container
     allsettings=config_dir+"/allsettings.json"
-    lockfile=".lockfile"
-    cachelockfile=".regcache_lockfile_"+str(GiV_Settings.givtcp_instance)
+    cachelockfile=GiV_Settings.cache_location+"/.regcache_lockfile_"+str(GiV_Settings.givtcp_instance)     # absolute: every process must lock the same file
     writerequests="writerequests.pkl"
     restresponse="restresponse.json"
     regcache=GiV_Settings.cache_location+"/regCache_"+str(GiV_Settings.givtcp_instance)+".pkl"
@@ -312,18 +345,14 @@ class GivLUT:
     forcefullrefresh=GiV_Settings.cache_location+"/.forceFullRefresh_"+str(GiV_Settings.givtcp_instance)
     batterypkl=GiV_Settings.cache_location+"/battery_"+str(GiV_Settings.givtcp_instance)+".pkl"
     reservepkl=GiV_Settings.cache_location+"/reserve_"+str(GiV_Settings.givtcp_instance)+".pkl"
-    rawpkl=GiV_Settings.cache_location+"/rawdata_"+str(GiV_Settings.givtcp_instance)+".pkl"
     rtc_enabled=".rtcenabled"
     writecountpkl=GiV_Settings.cache_location+"/writecount_"+str(GiV_Settings.givtcp_instance)+".pkl"
     safewritecountpkl=GiV_Settings.cache_location+"/safewritecount_"+str(GiV_Settings.givtcp_instance)+".pkl"
-    ppkwhtouch=".ppkwhtouch"
-    schedule=".schedule"
     oldDataCount=GiV_Settings.cache_location+"/oldDataCount_"+str(GiV_Settings.givtcp_instance)+".pkl"
     nightRate=GiV_Settings.cache_location+"/.nightRate_"+str(GiV_Settings.givtcp_instance)
     dayRate=GiV_Settings.cache_location+"/.dayRate_"+str(GiV_Settings.givtcp_instance)
     nightRateRequest=GiV_Settings.cache_location+"/.nightRateRequest_"+str(GiV_Settings.givtcp_instance)
     dayRateRequest=GiV_Settings.cache_location+"/.dayRateRequest_"+str(GiV_Settings.givtcp_instance)
-    invippkl=GiV_Settings.cache_location+"/invIPList.pkl"
     firstrun=GiV_Settings.cache_location+"/.firstrun_"+str(GiV_Settings.givtcp_instance)
 
     if hasattr(GiV_Settings,'timezone'):                        # If in Addon, use the HA Supervisor timezone
@@ -333,11 +362,6 @@ class GivLUT:
     else:
         timezone=zoneinfo.ZoneInfo(key="Europe/London")         # Otherwise Assume everyone is in UK!
 
-    raw_to_pub={
-        "Grid_Power":"p_grid_out",
-        "Import_Power":"p_grid_out",
-        "Export_Power":"p_grid_out"
-    }
     safe_regs=[20,27,50,56,57,59,94,95,96,110,111,112,116,318,319,320,1002,1108,1110,1111,1112,1114,1118,1119,1122,1123,1141]
     delay_times=["Normal","Running","Cancel","2","5","10","15","30","45","60","75","90","105","120","135","150","165","180"]
     modes=["Eco","Eco (Paused)","Timed Demand","Timed Export","Unknown","Export (Paused)"]

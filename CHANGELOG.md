@@ -1,3 +1,26 @@
+# GivTCP 3.6.7
+
+Changes since 3.6.6.
+
+### Fixed
+- **AC inverters and hybrids with batteries missing** (#655, #660). As for the All in One (#650), a battery that didn't answer while GivTCP detected the inverter was left out and never polled. An AC inverter (which always has a battery) with none detected isn't saved, and a Gen 1-4 hybrid with none is checked again from time to time, waiting longer each time (up to an hour), in case its battery didn't answer. To fix it straight away, delete `/config/GivTCP/<serial>_caps.pkl` and restart.
+- **Battery Charge/Discharge Energy Total jumping after a restart** (#652, thanks @gcoan). Until a battery has been read after a restart, GivTCP used the inverter's own totals, which are a different figure, then went back to the battery's. They're now left out until the battery has been read.
+- **Load Energy Today still dipping just after midnight** (#654, thanks @m47een). Rounding dips in the first 5 minutes after midnight got through, which Home Assistant counts as meter resets at those small values. Load's dips are now held back at midnight too.
+- **All in One-HY: battery pause controls removed** (#647, thanks @mimikm). They're available again, as in 3.5.
+- **Gen 2 (and other models): Predbat's export or discharge target "failing" and retrying** (#658). A per-slot discharge target only exists on models with 10 time slots (not AC 3.0 or Gen 1/2), and an export target only on the EMS. GivTCP now reports these as skipped rather than failed, so they aren't retried every poll.
+- Registers some firmware doesn't answer (eg. the AC charge/discharge rates on a Gen 1 at ARM 451) are now logged at info, not as a warning on every restart (#655).
+- **All in One batteries missing until the capabilities were deleted** (#650, thanks @plandregan). If a battery didn't answer while GivTCP detected the inverter, it saved the inverter without it and never polled it again. GivTCP no longer saves an All-in-One or All in One-HY with no batteries, needs two detects in a row before accepting fewer batteries, and keeps re-detecting while some may be missing (waiting longer each time, up to an hour).
+- **Force Charge, Force Export and the temporary pauses not reverting after a restart** (#656, thanks @plandregan). Their revert was only scheduled in Redis, which is cleared when GivTCP restarts, so the forced settings stayed. GivTCP now keeps a copy and, when it starts, runs any revert that came due while it was down and reschedules the rest.
+- **One inverter going offline restarted GivTCP for every inverter** (#657, thanks @plandregan). After 10 failed connections GivTCP restarted the whole add-on to look for the inverter at a new IP address. Now only that inverter looks: it scans its network for its serial number, moves to the new address if it finds it (and saves it), and otherwise keeps retrying, while the other inverters carry on.
+- **Force Charge, Force Export and the temporary pauses showed 0 minutes left when they ran past midnight.** Their end time was saved without a date. It's now saved in full (and an end time saved by an earlier version is still read).
+- **EV charger: reading the inverter's data could fail** while the inverter was saving it, so the EVC's solar and grid-limit modes missed that update.
+
+### Changed
+- **GivTCP's processes share their data more safely.** The register cache is now saved in one step, so it can always be read without waiting, and the few places that change it in place use a proper lock rather than a lock file, which two processes could both take, could be left behind, and made REST calls wait in half-second steps. The settings file uses the same lock. Force Charge/Export and the pauses keep their running jobs through one set of helpers, and the battery value calculation no longer needs a touch file to run once a half hour.
+- **Much less written to disk.** GivTCP's register cache (`regCache_N.pkl`) kept the last 31 outputs, for outlier detection that was removed in 3.6, but everything only uses the latest. It now keeps just that, so each poll writes about 18 KB per inverter instead of about 570 KB (around 1.6 GB a day at a 30s poll, which matters on an SD card). The battery value stats (`battery_N.pkl`) are only saved when they change, and two files nothing read (`rawdata_N.pkl` and `invippkl.pkl`) are gone.
+- **Docker: a new docker-compose.yml for running GivTCP outside Home Assistant.** It uses the released image (`britkat/giv_tcp-ma`, not the dev build), sets the timezone properly, keeps settings, captures and logs in a `config` folder next to the file, and uses host networking so GivTCP can find your inverters. It explains every port, and how to use Docker Desktop (Windows/macOS) or a bridge network instead. If you already run GivTCP in Docker, point the volume at your existing settings folder. The README's Docker instructions are updated to match.
+- The "Publishing Home Assistant Discovery messages for N new entities" message on every restart is now only logged at Debug level, and says what it is: discovery for data that wasn't in GivTCP's first read, usually the battery modules (which the Modbus library only gives once a second read confirms them). The entities aren't new to Home Assistant: it just updates the ones it has.
+
 # GivTCP 3.6.6
 
 Changes since 3.6.5.

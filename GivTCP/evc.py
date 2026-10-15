@@ -10,6 +10,10 @@ import pickle
 from os.path import exists, basename
 import os
 from threading import Lock
+try:
+    import fcntl
+except ImportError:     # Windows, where the tests run
+    fcntl = None
 import json
 import settings
 from settings import GiV_Settings
@@ -75,7 +79,6 @@ class EVCType:
 class EVCLut:
     regcache=GiV_Settings.cache_location+"/evc_regCache.pkl"
     invregcache=GiV_Settings.cache_location+"/regCache_"+str(GiV_Settings.givtcp_instance)+".pkl"
-    cachelockfile=GiV_Settings.cache_location+"/.regcache_lockfile_"+str(GiV_Settings.givtcp_instance)
     charge_control=['Ready','Start','Stop']
     charging_mode=['Grid','Hybrid','Solar']
     status=[
@@ -138,48 +141,16 @@ class EVCLut:
         113: 'Voltage_L3'}
     
     def get_regcache():
+        # The inverter's register cache. GivTCP saves it in one step (GivLUT.save_pickle), so it can be read without a
+        # lock. The lock-file check this used crashed whenever the lock existed (total_seconds without brackets)
+        if not exists(EVCLut.invregcache):
+            logger.debug("regcache doesn't exist...")
+            return None
         try:
-            count=0
-            if exists(EVCLut.cachelockfile):
-                logger.debug("regcache in use, waiting...")
-                with open(EVCLut.cachelockfile) as inp:
-                    lock_age=inp.read()
-                try:
-                    file_age=datetime.datetime.strptime(lock_age, '%Y-%m-%dT%H:%M:%S%z')
-                except:
-                    file_age=datetime.datetime.now(datetime.timezone.utc)
-                timesince=datetime.datetime.now(datetime.timezone.utc) - file_age
-                if timesince.total_seconds>10:
-                    logger.error("regCache Lockfile is too old, forcibly removing...")
-                    os.remove(EVCLut.cachelockfile)
-                while True:
-                    count +=1
-                    time.sleep(0.5)
-                    if not exists(EVCLut.cachelockfile):
-                        logger.debug("regcache now available")
-                        break
-                    if count==10:
-                        # loop round for 5s waiting for it to become available
-                        logger.error("Timed out waiting for regcache")
-                        os.remove(EVCLut.cachelockfile)
-                        return None
-            with open(EVCLut.cachelockfile, 'w') as inp: #create lock file
-                inp.write(datetime.datetime.now(datetime.timezone.utc).isoformat())
-            if exists(EVCLut.invregcache):
-                logger.debug("Opening regcache at: "+str(EVCLut.invregcache))
-                with open(EVCLut.invregcache, 'rb') as inp:
-                    regCacheStack = pickle.load(inp)
-                os.remove(EVCLut.cachelockfile)
-                return regCacheStack
-            else:
-                os.remove(EVCLut.cachelockfile)
-                logger.debug("regcache doesn't exist...")
-                return None
-        except:
-            e=errDetail()
-            if exists(EVCLut.cachelockfile):
-                os.remove(EVCLut.cachelockfile)
-            logger.error("Failed to get Cache: "+str(e))
+            with open(EVCLut.invregcache, 'rb') as inp:
+                return pickle.load(inp)
+        except Exception:
+            logger.error("Failed to get Cache: "+errDetail())
             return None
 
 def getEVC(client:ModbusTcpClient):
@@ -366,41 +337,26 @@ def updateFirstRun(SN):
     script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
     rel_path = "settings.py"
     abs_file_path = os.path.join(script_dir, rel_path)
-    #check for settings lockfile before
-    count=0
-    while True:
-        logger.debug("Opening settings for first run evc")
-        if exists('.settings_lockfile'):
-            logger.debug("Waiting for settings to be availble")
-            time.sleep(1)
-            count=count+1
-            if count==50:
-                logger.error("Could not access settings file to update EVC Serial Number")
-                break
-        else:
-            logger.debug("Settings available evc")
-            #Create setting lockfile
-            open(".settings_lockfile",'a').close()
+    # The settings file is shared by GivTCP's processes, so hold the settings lock while changing it (an OS lock, as
+    # GivLUT.fileLock: released if the process dies, so it can't be left behind)
+    with open(os.path.join(script_dir, ".settings_lockfile"),'a') as lock:
+        if fcntl:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        with open(abs_file_path, "r") as f:
+            lines = f.readlines()
+        with open(abs_file_path, "w") as f:
+            for line in lines:
+                if line.strip("\n") == "    first_run_evc= True":
+                    f.write("    first_run_evc= False\n")
+                else:
+                    f.write(line)
+                if "serial_number_evc" in line:
+                    logger.debug("serial number aready exists: \""+line+"\"")
+                    isSN = True
 
-            with open(abs_file_path, "r") as f:
-                lines = f.readlines()
-            with open(abs_file_path, "w") as f:
-                for line in lines:
-                    if line.strip("\n") == "    first_run_evc= True":
-                        f.write("    first_run_evc= False\n")
-                    else:
-                        f.write(line)
-                    if "serial_number_evc" in line:
-                        logger.debug("serial number aready exists: \""+line+"\"")
-                        isSN = True
-
-                if not isSN:
-                    logger.debug("serial number not in file, adding now")
-                    f.writelines("    serial_number_evc = \""+SN+"\"\n")  # only add SN if its not there
-            # Delete settings_lockfile
-            os.remove('.settings_lockfile')
-            logger.debug("removing lockfile")
-            break
+            if not isSN:
+                logger.debug("serial number not in file, adding now")
+                f.writelines("    serial_number_evc = \""+SN+"\"\n")  # only add SN if its not there
 
 def on_connect(_client, userdata, flags, reason_code, properties):
     if reason_code==0:
