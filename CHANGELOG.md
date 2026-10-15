@@ -3,6 +3,9 @@
 Changes since 3.6.6.
 
 ### Fixed
+- **All in One batteries missing until the capabilities were deleted** (#650, thanks @plandregan). If a battery didn't answer while GivTCP detected the inverter, it saved the inverter without it and never polled it again. GivTCP no longer saves an All-in-One or All in One-HY with no batteries, needs two detects in a row before accepting fewer batteries, and keeps re-detecting while some may be missing (waiting longer each time, up to an hour).
+- **Force Charge, Force Export and the temporary pauses not reverting after a restart** (#656, thanks @plandregan). Their revert was only scheduled in Redis, which is cleared when GivTCP restarts, so the forced settings stayed. GivTCP now keeps a copy and, when it starts, runs any revert that came due while it was down and reschedules the rest.
+- **One inverter going offline restarted GivTCP for every inverter** (#657, thanks @plandregan). After 10 failed connections GivTCP restarted the whole add-on to look for the inverter at a new IP address. Now only that inverter looks: it scans its network for its serial number, moves to the new address if it finds it (and saves it), and otherwise keeps retrying, while the other inverters carry on.
 - **Force Charge, Force Export and the temporary pauses showed 0 minutes left when they ran past midnight.** Their end time was saved without a date. It's now saved in full (and an end time saved by an earlier version is still read).
 - **EV charger: reading the inverter's data could fail** while the inverter was saving it, so the EVC's solar and grid-limit modes missed that update.
 
