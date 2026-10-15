@@ -30,6 +30,7 @@ import asyncio
 from typing import Callable, Optional
 from mqtt import GivMQTT
 from modbus_patches import pause_registers, PAUSE_MODE_REGISTER, PAUSE_SLOT_REGISTERS, bms_current_inverter
+from capscheck import missingBatteries, lostBatteries, capsBatteryCount
 from givenergy_modbus.model.inverter import SinglePhaseInverterRegisterGetter
 import copy
 import enum
@@ -313,15 +314,34 @@ def wrongInverter(client):
         return found
     return None
 
+def savedCaps():
+    # This inverter's saved capabilities, or None if there are none, they can't be read, or they're missing batteries
+    try:
+        with open(capsFile(), 'rb') as inp:
+            caps=pickle.load(inp)
+    except Exception:
+        return None
+    return None if missingBatteries(caps) else caps
+
+# True while the capabilities in use may be missing batteries, so the read loop keeps re-detecting until they're found
+capsSuspect=False
+# Detects in a row that found fewer batteries than the saved capabilities
+lostBatteryDetects=0
+
 async def detectPlant(client, force=False):
     # Detect only when there is no capabilities file for this inverter (startup normally creates one).
     # Returns True if cached capabilities were used, so callers can re-detect if they turn out to be stale
+    global capsSuspect, lostBatteryDetects
     if not force and exists(capsFile()):
         try:
             with open(capsFile(), 'rb') as inp:
-                client.plant.capabilities=pickle.load(inp)
-            logger.info("Using cached capabilities from "+str(capsFile())+", skipping detect")
-            return True
+                caps=pickle.load(inp)
+            if missingBatteries(caps):
+                logger.warning("Cached capabilities have a "+caps.device_type.name.capitalize()+" with no batteries, which it always has, so running full detect")
+            else:
+                client.plant.capabilities=caps
+                logger.info("Using cached capabilities from "+str(capsFile())+", skipping detect")
+                return True
         except Exception as e:
             logger.warning("Unable to load cached capabilities, running full detect: "+str(e))
     logger.info("Detecting inverter characteristics...")
@@ -332,6 +352,29 @@ async def detectPlant(client, force=False):
         logger.error("Inverter at "+str(GiV_Settings.invertorIP)+" is "+str(found)+", not "+str(GiV_Settings.serial_number)+
                      " as in settings, so its capabilities are not being saved. Check the IP address in the settings")
         return False
+    # Detect only finds batteries that answer while it runs, so don't save a result missing some (eg. after a timeout),
+    # or they're never polled again
+    caps=client.plant.capabilities
+    saved=savedCaps()
+    if missingBatteries(caps):
+        capsSuspect=True
+        if saved:
+            client.plant.capabilities=saved
+            logger.warning("Detect found no batteries on this "+caps.device_type.name.capitalize()+", which always has them, so keeping the saved capabilities")
+        else:
+            logger.warning("Detect found no batteries on this "+caps.device_type.name.capitalize()+", which always has them, so not saving the capabilities and will detect again")
+        return False
+    if lostBatteries(caps, saved):
+        # Accept fewer batteries only when a second detect in a row agrees, so a battery that was removed is dropped
+        lostBatteryDetects+=1
+        if lostBatteryDetects<2:
+            capsSuspect=True
+            client.plant.capabilities=saved
+            logger.warning("Detect found "+str(capsBatteryCount(caps))+" batteries but "+str(capsBatteryCount(saved))+" were saved, so keeping the saved capabilities until another detect agrees")
+            return False
+        logger.warning("Two detects in a row found "+str(capsBatteryCount(caps))+" batteries rather than "+str(capsBatteryCount(saved))+", so saving the new capabilities")
+    capsSuspect=False
+    lostBatteryDetects=0
     try:
         with open(capsFile(), 'wb') as outp:
             pickle.dump(client.plant.capabilities, outp, pickle.HIGHEST_PROTOCOL)
@@ -778,10 +821,14 @@ async def watch_plant(
                         timeoutErrors=0     # Reset timeouts if all is good this run
                         recovery.ok()
                         # A device that fails every poll (eg. a battery removed since the capabilities were
-                        # cached) means they are stale, so re-detect once it has persisted for a while
-                        partialPolls=partialPolls+1 if failures else 0
+                        # cached) means they are stale, so re-detect once it has persisted for a while. So do
+                        # capabilities that may be missing batteries, which are never polled so never fail
+                        partialPolls=partialPolls+1 if failures or capsSuspect else 0
                         if partialPolls>=10:
-                            logger.warning("Some devices have not responded for 10 polls, re-detecting inverter characteristics")
+                            if failures:
+                                logger.warning("Some devices have not responded for 10 polls, re-detecting inverter characteristics")
+                            else:
+                                logger.warning("Capabilities may be missing batteries, re-detecting inverter characteristics")
                             partialPolls=0
                             previousCaps=client.plant.capabilities
                             try:

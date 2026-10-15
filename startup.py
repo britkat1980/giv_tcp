@@ -9,6 +9,7 @@ import sys
 import requests
 import asyncio
 from GivTCP.netscan import scan, as_list, INVERTER_PORT, EVC_PORT
+from GivTCP.capscheck import missingBatteries, capsBatteryCount
 from givenergy_modbus.client.client import Client
 from givenergy_modbus.exceptions import CommunicationError
 from givenergy_modbus.model.inverter import resolve_model
@@ -147,19 +148,28 @@ async def getInvDeets(HOST):
                 logger.warning("Cached capabilities for "+str(SN)+" are for a "+caps.device_type.name.capitalize()+
                                " but it is a "+current.name.capitalize()+", running full detect")
                 caps=None
+            elif missingBatteries(caps):
+                logger.warning("Cached capabilities for "+str(SN)+" have a "+caps.device_type.name.capitalize()+
+                               " with no batteries, which it always has, so running full detect")
+                caps=None
         if caps:
             logger.info("Using cached capabilities for "+str(SN)+", skipping detect")
         else:
             logger.info("No cached capabilities for "+str(SN)+", running full detect")
             caps= await client.detect()
-            logger.info("Saving capabilities to cache: "+str(capsFile(SN)))
-            with open(capsFile(SN), 'wb') as outp:
-                pickle.dump(caps, outp, pickle.HIGHEST_PROTOCOL)
+            if missingBatteries(caps):
+                # Its batteries didn't answer (eg. a timeout), so leave the read loop to detect again rather than
+                # save capabilities without them, which would never poll them
+                logger.warning("Detect found no batteries on "+str(SN)+", a "+caps.device_type.name.capitalize()+
+                               " which always has them, so not saving the capabilities")
+            else:
+                logger.info("Saving capabilities to cache: "+str(capsFile(SN)))
+                with open(capsFile(SN), 'wb') as outp:
+                    pickle.dump(caps, outp, pickle.HIGHEST_PROTOCOL)
 
         model=caps.device_type     # detect's resolved type; the raw device code maps HV Gen3 (81xx) to All-in-One (#565)
         fw=ident.arm_firmware_version
-        # v2's number_batteries only counts LV batteries; HV/three-phase/AIO batteries are modules
-        numbats=max(len(caps.lv_battery_addresses), sum(n for _,n in caps.bcu_stacks), len(caps.aio_battery_module_addresses), len(caps.hv_bmu_addresses))
+        numbats=capsBatteryCount(caps)
         nummeters=len(caps.meter_addresses)
 
         Stats['Serial_Number']=SN
