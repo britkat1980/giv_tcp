@@ -350,6 +350,10 @@ def savedCaps():
 
 # True while the capabilities in use may be missing batteries, so the read loop keeps re-detecting until they're found
 capsSuspect=False
+# Polls between re-detects: after failed polls, and (doubling each time, up to REDETECT_MAX_SECONDS) while the
+# capabilities may be missing batteries
+REDETECT_POLLS=10
+REDETECT_MAX_SECONDS=3600
 # Detects in a row that found fewer batteries than the saved capabilities
 lostBatteryDetects=0
 
@@ -761,6 +765,7 @@ async def watch_plant(
         timeoutErrors=0
         connectErrors=0
         partialPolls=0
+        suspectRedetectPolls=REDETECT_POLLS     # polls between re-detects for capabilities that may be missing batteries
         drops=ConnectionDrops(refresh_period)
         drops.polled()      # the initial read above
         logger.info("Starting data refresh cycle")
@@ -846,7 +851,7 @@ async def watch_plant(
                         # cached) means they are stale, so re-detect once it has persisted for a while. So do
                         # capabilities that may be missing batteries, which are never polled so never fail
                         partialPolls=partialPolls+1 if failures or capsSuspect else 0
-                        if partialPolls>=10:
+                        if partialPolls>=(REDETECT_POLLS if failures else suspectRedetectPolls):
                             if failures:
                                 logger.warning("Some devices have not responded for 10 polls, re-detecting inverter characteristics")
                             else:
@@ -859,6 +864,12 @@ async def watch_plant(
                                 # detect() clears capabilities on failure, which would stop every later poll
                                 client.plant.capabilities=previousCaps
                                 logger.error("Re-detect failed, keeping current capabilities: "+str(e))
+                            if capsSuspect and not failures:
+                                # Batteries that still didn't answer may never do (eg. a fault), so wait twice as long
+                                # before the next full detect, up to an hour, rather than detect every few minutes
+                                suspectRedetectPolls=min(suspectRedetectPolls*2, max(REDETECT_POLLS, int(REDETECT_MAX_SECONDS/refresh_period)))
+                            else:
+                                suspectRedetectPolls=REDETECT_POLLS
                         logger.debug("Data get was successful, now running handler if needed: ")
                         retry=False
                         if fullRefresh:
