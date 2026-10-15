@@ -127,3 +127,29 @@ def test_hv_gen3_lost_bcu_or_pack_needs_two_detects():
         assert client.plant.capabilities == hv_gen3([6, 6, 6, 6]) and saved() == hv_gen3([6, 6, 6, 6])
         asyncio.run(read.detectPlant(client, force=True))
         assert saved() == partial
+
+def lv(model, batteries):
+    # A single-phase inverter with its LV batteries, as detect saves it
+    return PlantCapabilities(device_type=model, inverter_address=0x11, arm_firmware_version=449,
+                             lv_battery_addresses=[0x32+i for i in range(batteries)])
+
+def test_ac_without_batteries_not_saved():
+    # An AC-coupled inverter is only there for its battery (#660)
+    save(lv(Model.AC, 1))
+    client = fake_client(lv(Model.AC, 0))
+    asyncio.run(read.detectPlant(client, force=True))
+    assert client.plant.capabilities == lv(Model.AC, 1) and saved() == lv(Model.AC, 1)
+    assert read.capsSuspect
+
+def test_hybrid_without_batteries_saved_but_checked_again():
+    # A hybrid can run without a battery, so it's saved, but detected again later in case it didn't answer (#655)
+    asyncio.run(read.detectPlant(fake_client(lv(Model.HYBRID_GEN1, 0)), force=True))
+    assert saved() == lv(Model.HYBRID_GEN1, 0) and read.capsSuspect
+    asyncio.run(read.detectPlant(fake_client(lv(Model.HYBRID_GEN1, 1)), force=True))
+    assert saved() == lv(Model.HYBRID_GEN1, 1) and not read.capsSuspect
+
+def test_cached_hybrid_without_batteries_checked_again():
+    save(lv(Model.HYBRID_GEN2, 0))
+    client = fake_client(lv(Model.HYBRID_GEN2, 1))
+    assert asyncio.run(read.detectPlant(client)) is True       # uses the cache...
+    assert read.capsSuspect                                      # ...but the read loop will detect again

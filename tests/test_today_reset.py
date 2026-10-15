@@ -76,3 +76,12 @@ def test_not_triggered_by_real_energy_or_midday_glitches(monkeypatch):
                             (at(0, 1), {"Load_Energy_Today_kWh": 0.1}),
                             (at(0, 20), {"Load_Energy_Today_kWh": 20.4})])
     assert out[-1]["Load_Energy_Today_kWh"] == 20.4
+
+def test_load_dips_after_midnight_held():
+    # #654: the reporter's Load Energy Today just after midnight. Load's hold stays on through the grace period, and
+    # yesterday's total still resets, as it's always more than a dip
+    published, old = [], None
+    for value in (50.0, 0, 0.1, 0.2, 0.3, 0.4, 0.3, 0.4, 0.5, 0.4, 0.5, 0.6, 0.7, 0.6, 0.7):
+        old = read.holdRoundingDip(value, old)
+        published.append(old)
+    assert published == [50.0, 0, 0.1, 0.2, 0.3, 0.4, 0.4, 0.4, 0.5, 0.5, 0.5, 0.6, 0.7, 0.7, 0.7]

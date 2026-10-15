@@ -31,7 +31,7 @@ import asyncio
 from typing import Callable, Optional
 from mqtt import GivMQTT
 from modbus_patches import pause_registers, PAUSE_MODE_REGISTER, PAUSE_SLOT_REGISTERS, bms_current_inverter
-from capscheck import missingBatteries, lostBatteries, capsBatteryCount
+from capscheck import missingBatteries, maybeMissingBatteries, lostBatteries, capsBatteryCount
 from givenergy_modbus.model.inverter import SinglePhaseInverterRegisterGetter
 import copy
 import enum
@@ -200,6 +200,10 @@ def batteryTotals(GEInv, battery):
     # the first battery's BMS (IR105/106: Gen 2, AC and most Gen 1) or the inverter (IR180/181: some Gen 1, eg. fw 449,
     # where the BMS reads 0). Battery first, as 3.5 did, so the HA statistics carry on from the same counter
     charge,discharge=battery.e_battery_charge_total, battery.e_battery_discharge_total
+    if charge is None and discharge is None:
+        # Not read yet (eg. just after a restart, until a second read confirms the battery): a placeholder, not 0. The
+        # inverter's counters are a different total, so publishing them meanwhile made the total jump (#652)
+        return None,None
     if not charge and not discharge:
         charge=GEInv.e_battery_charge_total if GEInv.e_battery_charge_total is not None else GEInv.e_battery_charge_total_alt1
         discharge=GEInv.e_battery_discharge_total if GEInv.e_battery_discharge_total is not None else GEInv.e_battery_discharge_total_alt1
@@ -370,6 +374,10 @@ async def detectPlant(client, force=False):
             else:
                 client.plant.capabilities=caps
                 logger.info("Using cached capabilities from "+str(capsFile())+", skipping detect")
+                if maybeMissingBatteries(caps):
+                    # Re-detected from time to time (backing off to hourly), in case its battery didn't answer
+                    capsSuspect=True
+                    logger.info("Cached capabilities have no batteries on this "+caps.device_type.name.capitalize()+", so it will be checked again for them")
                 return True
         except Exception as e:
             logger.warning("Unable to load cached capabilities, running full detect: "+str(e))
@@ -402,7 +410,8 @@ async def detectPlant(client, force=False):
             logger.warning("Detect found "+str(capsBatteryCount(caps))+" batteries but "+str(capsBatteryCount(saved))+" were saved, so keeping the saved capabilities until another detect agrees")
             return False
         logger.warning("Two detects in a row found "+str(capsBatteryCount(caps))+" batteries rather than "+str(capsBatteryCount(saved))+", so saving the new capabilities")
-    capsSuspect=False
+    # A hybrid with no batteries is saved (it may have none), but checked again, in case they didn't answer
+    capsSuspect=maybeMissingBatteries(client.plant.capabilities)
     lostBatteryDetects=0
     try:
         with open(capsFile(), 'wb') as outp:
@@ -1817,12 +1826,14 @@ def processInverterInfo(plant: Plant):
             today_load= max(0,round((energy_today_output['Invertor_Energy_Today_kWh']-energy_today_output['AC_Charge_Energy_Today_kWh']) -
                         (energy_today_output['Export_Energy_Today_kWh']-energy_today_output['Import_Energy_Today_kWh'])+energy_today_output['PV_Energy_Today_kWh'], 2))
             
-        # Load and Self Consumption are calculated, so hold back rounding dips - except on a new inverter day, when the
-        # counters have reset (and a small day's whole total could look like a dip)
+        # Load and Self Consumption are calculated, so hold back rounding dips. Self Consumption not on a new inverter
+        # day, when the counters have reset, as a dark day's whole total can be smaller than a dip. Load always: a day's
+        # Load is always more than a dip, so its reset still gets through, and the grace period after midnight let
+        # tiny dips through, which HA counts as resets at those values (#654)
         oldToday=multi_output_old.get("Energy",{}).get("Today",{}) if multi_output_old else {}
         sameDay=bool(multi_output_old) and not newInverterDay(inverter['Invertor_Time'],multi_output_old,readAt=settingsReadAt(plant))
         energy_today_output['Self_Consumption_Energy_Today_kWh']=holdRoundingDip(today_self, oldToday.get('Self_Consumption_Energy_Today_kWh'), sameDay)
-        energy_today_output['Load_Energy_Today_kWh']=holdRoundingDip(today_load, oldToday.get('Load_Energy_Today_kWh'), sameDay and not formulaChanged)
+        energy_today_output['Load_Energy_Today_kWh']=holdRoundingDip(today_load, oldToday.get('Load_Energy_Today_kWh'), not formulaChanged)
 
     ############  Core Power Stats    ############
 

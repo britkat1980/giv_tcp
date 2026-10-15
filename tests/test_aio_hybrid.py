@@ -49,3 +49,9 @@ def test_battery_rate():
     assert read.getInvModel(_plant("8204", [(0, 8)])).batmaxrate == 12000
     # no stack detected: the inverter's rating
     assert read.getInvModel(_plant("8204", [])).batmaxrate == 12000
+
+def test_battery_pause():
+    # Its pause controls worked in 3.5, so they aren't removed as unsupported (#647)
+    caps = PlantCapabilities(device_type=Model.ALL_IN_ONE_HYBRID, bcu_stacks=[(0, 4)], arm_firmware_version=6)
+    assert not read.pauseModeUnsupported(caps)
+    assert modbus_patches.PAUSE_MODE_REGISTER in manifest.write_safe_registers(Model.ALL_IN_ONE_HYBRID, 6)

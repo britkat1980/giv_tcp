@@ -243,6 +243,15 @@ def slotTargetSOC(device,kind,slot,target):
         raise NotImplementedError(kind.capitalize()+" target SOC per slot is only available on inverters with 10 time slots")
     return modbus_patches.slot_target_soc(kind,slot,target)
 
+def slotTargetSkipped(name, slot, reason):
+    # This model has no such target to write: export targets are only on the EMS, and per-slot discharge targets only
+    # on models with the 10-slot block (GivEnergy's register map: every model but AC 3.0 and Gen 1/2). 3.5 wrote the
+    # register anyway, which they ignore, and reported success, so callers like Predbat set it and moved on. Report that
+    # it was skipped, not failed, so they don't retry it every poll (#658)
+    result="Setting "+name+" "+str(slot)+" skipped: "+str(reason)
+    logger.info(result)
+    return json.dumps({'result':result})
+
 async def sbcla(device,target,readloop=False):
     temp={}
     try:
@@ -494,7 +503,10 @@ async def setExportTarget(device,payload,readloop=False):
         slot=int(payload['slot'])
         logger.debug("Setting Export Target "+str(slot) + " to: "+str(target))
         #temp= await sest(target,slot,readloop)
-        reqs=slotTargetSOC(device,"export",slot,target)
+        try:
+            reqs=slotTargetSOC(device,"export",slot,target)
+        except NotImplementedError as e:
+            return slotTargetSkipped("Export Target",slot,e)
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
             raise Exception(result['error'])
@@ -516,7 +528,10 @@ async def setDischargeTarget(device,payload,readloop=False):
         slot=int(payload['slot'])
         logger.debug("Setting Discharge Target "+str(slot) + " to: "+str(target))
         #temp= await sdct(target,slot,readloop)
-        reqs=slotTargetSOC(device,"discharge",slot,target)
+        try:
+            reqs=slotTargetSOC(device,"discharge",slot,target)
+        except NotImplementedError as e:
+            return slotTargetSkipped("Discharge Target",slot,e)
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
             raise Exception(result['error'])

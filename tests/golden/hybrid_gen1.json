@@ -1267,15 +1267,9 @@
   "setDischargeTarget({'dischargeToPercent': '30', 'slot': '1'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
+     "result": "Setting Discharge Target 1 skipped: Discharge target SOC per slot is only available on inverters with 10 time slots"
     },
     "writes": []
    }
@@ -1283,15 +1277,9 @@
   "setDischargeTarget({'dischargeToPercent': '30', 'slot': '10'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 10 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Discharge Target 10 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
+     "result": "Setting Discharge Target 10 skipped: Discharge target SOC per slot is only available on inverters with 10 time slots"
     },
     "writes": []
    }
@@ -1459,15 +1447,9 @@
   "setExportTarget({'exportToPercent': '30', 'slot': '1'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Export Target 1 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Export Target 1 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
+     "result": "Setting Export Target 1 skipped: Export target SOC is only available on the EMS"
     },
     "writes": []
    }
@@ -3924,13 +3906,7 @@
   "setDischargeTarget1(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -3946,13 +3922,7 @@
   "setDischargeTarget10(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 10 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -3968,13 +3938,7 @@
   "setDischargeTarget2(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 2 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -3990,13 +3954,7 @@
   "setDischargeTarget3(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 3 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4012,13 +3970,7 @@
   "setDischargeTarget4(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 4 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4034,13 +3986,7 @@
   "setDischargeTarget5(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 5 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4056,13 +4002,7 @@
   "setDischargeTarget6(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 6 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4078,13 +4018,7 @@
   "setDischargeTarget7(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 7 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4100,13 +4034,7 @@
   "setDischargeTarget8(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 8 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4122,13 +4050,7 @@
   "setDischargeTarget9(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 9 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setDischargeTarget",
@@ -4726,13 +4648,7 @@
   "setExportTarget1(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Export Target 1 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setExportTarget",
@@ -4748,13 +4664,7 @@
   "setExportTarget2(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Export Target 2 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setExportTarget",
@@ -4770,13 +4680,7 @@
   "setExportTarget3(30)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Export Target 3 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setExportTarget",
@@ -8317,15 +8221,9 @@
   "/setDischargeTarget({'dischargeToPercent': '30', 'slot': '1'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Discharge Target 1 failed: NotImplementedError: Discharge target SOC per slot is only available on inverters with 10 time slots (write.py:N)"
+     "result": "Setting Discharge Target 1 skipped: Discharge target SOC per slot is only available on inverters with 10 time slots"
     },
     "status": 200,
     "writes": []
@@ -8470,15 +8368,9 @@
   "/setExportTarget({'exportToPercent': '30', 'slot': '1'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Export Target 1 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Setting Export Target 1 failed: NotImplementedError: Export target SOC is only available on the EMS (write.py:N)"
+     "result": "Setting Export Target 1 skipped: Export target SOC is only available on the EMS"
     },
     "status": 200,
     "writes": []
