@@ -2,7 +2,12 @@
 
 Changes since 3.6.6.
 
+### Fixed
+- **Force Charge, Force Export and the temporary pauses showed 0 minutes left when they ran past midnight.** Their end time was saved without a date. It's now saved in full (and an end time saved by an earlier version is still read).
+- **EV charger: reading the inverter's data could fail** while the inverter was saving it, so the EVC's solar and grid-limit modes missed that update.
+
 ### Changed
+- **GivTCP's processes share their data more safely.** The register cache is now saved in one step, so it can always be read without waiting, and the few places that change it in place use a proper lock rather than a lock file, which two processes could both take, could be left behind, and made REST calls wait in half-second steps. The settings file uses the same lock. Force Charge/Export and the pauses keep their running jobs through one set of helpers, and the battery value calculation no longer needs a touch file to run once a half hour.
 - **Much less written to disk.** GivTCP's register cache (`regCache_N.pkl`) kept the last 31 outputs, for outlier detection that was removed in 3.6, but everything only uses the latest. It now keeps just that, so each poll writes about 18 KB per inverter instead of about 570 KB (around 1.6 GB a day at a 30s poll, which matters on an SD card). The battery value stats (`battery_N.pkl`) are only saved when they change, and two files nothing read (`rawdata_N.pkl` and `invippkl.pkl`) are gone.
 - **Docker: a new docker-compose.yml for running GivTCP outside Home Assistant.** It uses the released image (`britkat/giv_tcp-ma`, not the dev build), sets the timezone properly, keeps settings, captures and logs in a `config` folder next to the file, and uses host networking so GivTCP can find your inverters. It explains every port, and how to use Docker Desktop (Windows/macOS) or a bridge network instead. If you already run GivTCP in Docker, point the volume at your existing settings folder. The README's Docker instructions are updated to match.
 - The "Publishing Home Assistant Discovery messages for N new entities" message on every restart is now only logged at Debug level, and says what it is: discovery for data that wasn't in GivTCP's first read, usually the battery modules (which the Modbus library only gives once a second read confirms them). The entities aren't new to Home Assistant: it just updates the ones it has.

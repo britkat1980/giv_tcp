@@ -413,12 +413,10 @@ def holdWrites(seconds_left):
 def publishStatus(status):
     # Set Stats/status in the REST cache and on MQTT straight away (eg. "paused"); the next good poll sets it back to "online"
     try:
-        with GivLUT.cachelock:
-            regCacheStack=GivLUT.get_regcache()
-            if regCacheStack and isinstance(regCacheStack[-1].get('Stats'),dict):
-                regCacheStack[-1]['Stats']['status']=status
-                with open(GivLUT.regcache,'wb') as outp:
-                    pickle.dump(regCacheStack, outp, pickle.HIGHEST_PROTOCOL)
+        def change(output):
+            if isinstance(output.get('Stats'),dict):
+                output['Stats']['status']=status
+        GivLUT.update_regcache(change)
         if GiV_Settings.MQTT_Output:
             GivMQTT.single_MQTT_publish((GiV_Settings.MQTT_Topic or "GivEnergy")+"/"+str(GiV_Settings.serial_number)+"/Stats/status",status)
     except Exception as e:
@@ -757,7 +755,7 @@ async def watch_plant(
                 captureRequest=capture.pending()
                 if captureRequest is not None:
                     if captureTask is None or captureTask.done():
-                        open(".fullrefresh","a").close()    # so the settings and energy totals are in the capture
+                        open(GivLUT.forcefullrefresh,"a").close()    # so the settings and energy totals are in the capture
                         captureTask=asyncio.create_task(capture.run(client, int(captureRequest.get("seconds") or capture.default_seconds()),
                                                                     lambda: capture.device_summary(client.plant), logger))
                     else:
@@ -776,7 +774,7 @@ async def watch_plant(
                 if not passive:
                     #Check time since last full_refresh
                     timesincefull=datetime.datetime.now()-lastfulltime
-                    if timesincefull.total_seconds() > full_refresh_period or exists(".fullrefresh") or GiV_Settings.inverter_type.lower()=="gateway":      #always run full refresh for Gateway
+                    if timesincefull.total_seconds() > full_refresh_period or exists(GivLUT.forcefullrefresh) or GiV_Settings.inverter_type.lower()=="gateway":      #always run full refresh for Gateway
                         fullRefresh=True
                         logger.debug ("Running full refresh")
                     elif now.hour == 0 and now.minute == 0:
@@ -810,8 +808,8 @@ async def watch_plant(
                         if fullRefresh and not retry:
                             # Only mark full refresh done once it succeeds, so a post-write readback isn't lost
                             lastfulltime=datetime.datetime.now()
-                            if exists(".fullrefresh"):
-                                os.remove(".fullrefresh")
+                            if exists(GivLUT.forcefullrefresh):
+                                os.remove(GivLUT.forcefullrefresh)
                         if exists("commsfailure_"+str(GiV_Settings.givtcp_instance)+".pkl"):
                             # Remove any failed counts if connection runs OK
                             os.remove("commsfailure_"+str(GiV_Settings.givtcp_instance)+".pkl")
@@ -1463,44 +1461,16 @@ def getControls(plant,regCacheStack, inverterModel,multi_output_old=None):
     controlmode['Temp_Pause_Discharge'] = oldControl.get("Temp_Pause_Discharge","Normal")
     controlmode['Temp_Pause_Charge'] = oldControl.get("Temp_Pause_Charge","Normal")
 
-    if exists(".FCRunning"+str(GiV_Settings.givtcp_instance)):
-        logger.debug("Force Charge is Running")
-        controlmode['Force_Charge'] = "Running"
-        #Get time left to run in mins and publish to number
-        minsremain=getJobFinish(".FCRunning"+str(GiV_Settings.givtcp_instance))
-        logger.debug("Time remaining is" + str(minsremain))
-        controlmode['Force_Charge_Num']=max(0,int(minsremain))
-    else:
-        controlmode['Force_Charge'] = "Normal"
-        controlmode['Force_Charge_Num']=0
-    if exists(".FERunning"+str(GiV_Settings.givtcp_instance)):
-        logger.debug("Force_Export is Running")
-        controlmode['Force_Export'] = "Running"
-        minsremain=getJobFinish(".FERunning"+str(GiV_Settings.givtcp_instance))
-        logger.debug("Time remaining is" + str(minsremain))
-        controlmode['Force_Export_Num']=max(0,int(minsremain))
-    else:
-        logger.debug("Force Export is not Running")
-        controlmode['Force_Export'] = "Normal"
-        controlmode['Force_Export_Num']=0
-    if exists(".tpcRunning_"+str(GiV_Settings.givtcp_instance)):
-        logger.debug("Temp Pause Charge is Running")
-        controlmode['Temp_Pause_Charge'] = "Running"
-        minsremain=getJobFinish(".tpcRunning_"+str(GiV_Settings.givtcp_instance))
-        logger.debug("Time remaining is" + str(minsremain))
-        controlmode['Temp_Pause_Charge_Num']=max(0,int(minsremain))
-    else:
-        controlmode['Temp_Pause_Charge'] = "Normal"
-        controlmode['Temp_Pause_Charge_Num']=0
-    if exists(".tpdRunning_"+str(GiV_Settings.givtcp_instance)):
-        logger.debug("Temp_Pause_Discharge is Running")
-        controlmode['Temp_Pause_Discharge'] = "Running"
-        minsremain=getJobFinish(".tpdRunning_"+str(GiV_Settings.givtcp_instance))
-        logger.debug("Time remaining is" + str(minsremain))
-        controlmode['Temp_Pause_Discharge_Num']=max(0,int(minsremain))
-    else:
-        controlmode['Temp_Pause_Discharge'] = "Normal"
-        controlmode['Temp_Pause_Discharge_Num']=0
+    # Force Charge/Export and the temporary pauses are running while their revert job is (GivLUT.runningJob)
+    for kind,key in (("forceCharge","Force_Charge"),("forceExport","Force_Export"),
+                     ("tempPauseCharge","Temp_Pause_Charge"),("tempPauseDischarge","Temp_Pause_Discharge")):
+        if GivLUT.runningJob(kind):
+            controlmode[key]="Running"
+            controlmode[key+'_Num']=GivLUT.jobMinutesLeft(kind)
+            logger.debug(key+" is running, "+str(controlmode[key+'_Num'])+" minutes left")
+        else:
+            controlmode[key]="Normal"
+            controlmode[key+'_Num']=0
     return controlmode
 
 
@@ -3016,41 +2986,23 @@ def updateFirstRun(SN):
     script_dir = os.path.dirname(__file__)
     rel_path = "settings.py"
     abs_file_path = os.path.join(script_dir, rel_path)
-    #check for settings lockfile before
-    count=0
-    while True:
-        logger.debug("Opening settings for first run")
-        if exists('.settings_lockfile'):
-            logger.debug("Waiting for settings to be available")
-            time.sleep(1)
-            count=count+1
-            if count==50:
-                logger.error("Could not access settings file to update EVC Serial Number")
-                break
-        else:
-            logger.debug("Settings available")
-            #Create setting lockfile
-            open(".settings_lockfile",'a').close()
+    # The settings file is shared by GivTCP's processes, so hold the settings lock while changing it
+    with GivLUT.fileLock(os.path.join(script_dir, ".settings_lockfile")):
+        with open(abs_file_path, "r") as f:
+            lines = f.readlines()
+        with open(abs_file_path, "w") as f:
+            for line in lines:
+                if line.strip("\n") == "    first_run= True":
+                    f.write("    first_run= False\n")
+                else:
+                    f.write(line)
+                if "serial_number=" in line:
+                    logger.debug("serial number aready exists: \""+line+"\"")
+                    isSN = True
 
-            with open(abs_file_path, "r") as f:
-                lines = f.readlines()
-            with open(abs_file_path, "w") as f:
-                for line in lines:
-                    if line.strip("\n") == "    first_run= True":
-                        f.write("    first_run= False\n")
-                    else:
-                        f.write(line)
-                    if "serial_number=" in line:
-                        logger.debug("serial number aready exists: \""+line+"\"")
-                        isSN = True
-
-                if not isSN:
-                    logger.debug("serial number not in file, adding now")
-                    f.writelines("    serial_number= \""+SN+"\"\n")  # only add SN if its not there
-            # Delete settings_lockfile
-            os.remove('.settings_lockfile')
-            logger.debug("removing lockfile")
-            break
+            if not isSN:
+                logger.debug("serial number not in file, adding now")
+                f.writelines("    serial_number= \""+SN+"\"\n")  # only add SN if its not there
 
 
 def iterate_dict(array):        # Create a publish safe version of the output (convert non string or int datapoints)
@@ -3383,8 +3335,11 @@ def calcBatteryValue(multi_output):
         batterystats['Battery_ppkwh'] = 0
         batterystats['Battery_kWh_old'] = multi_output['Power']['Power']['SOC_kWh']
 
-    if not exists(GivLUT.firstrun) or datetime.datetime.now(GivLUT.timezone).minute == 59 or datetime.datetime.now(GivLUT.timezone).minute == 29:
-        if not exists(GivLUT.ppkwhtouch) and exists(GivLUT.batterypkl):      # only run this if there is no touchfile but there is a battery stat
+    now=datetime.datetime.now(GivLUT.timezone)
+    if not exists(GivLUT.firstrun) or now.minute in (29, 59):
+        # Once in the minute, as polls can be closer together than that, and only once there are battery stats
+        stamp=now.strftime('%Y-%m-%d %H:%M')
+        if batterystats.get('Last_Calculated')!=stamp and exists(GivLUT.batterypkl):
             battery_kwh = multi_output['Power']['Power']['SOC_kWh']
             ac_charge = float(multi_output['Energy']['Total']['AC_Charge_Energy_Total_kWh'])-float(batterystats['AC Charge last'])
             logger.debug("Battery_kWh has gone from: "+str(batterystats['Battery_kWh_old'])+" -> "+str(battery_kwh))
@@ -3405,12 +3360,8 @@ def calcBatteryValue(multi_output):
             batterystats['AC Charge last'] = float(multi_output['Energy']['Total']['AC_Charge_Energy_Total_kWh'])
             logger.debug("Updating battery_kWh_old to: "+str(battery_kwh))
             batterystats['Battery_kWh_old'] = battery_kwh
-            open(GivLUT.ppkwhtouch, 'w').close()       # set touch file  to stop repeated triggers in the single minute
+            batterystats['Last_Calculated'] = stamp
             changed = True
-
-    else:       # remove the touchfile if it exists
-        if exists(GivLUT.ppkwhtouch):
-            os.remove(GivLUT.ppkwhtouch)
 
     if changed:
         with open(GivLUT.batterypkl, 'wb') as outp:
@@ -3422,18 +3373,6 @@ def calcBatteryValue(multi_output):
     multi_output['Energy']['Rates']['Battery_Value'] = batterystats['Battery_Value']
     multi_output['Energy']['Rates']['Battery_ppkwh'] = batterystats['Battery_ppkwh']
     return (multi_output)
-
-def getJobFinish(type: str):
-    with open(type, 'r') as f:
-        lines=f.readlines()
-    endtime=lines[1]
-    logger.debug("Finish hour= "+str(endtime[:2]))
-    logger.debug("Finish minute= "+str(endtime[-2:]))
-    finishdate= datetime.datetime.now().replace(hour=int(endtime[:2]),minute=int(endtime[-2:]))
-    logger.debug("Finishtime is: "+str(finishdate))
-    timeleft=int((finishdate - datetime.datetime.now()).total_seconds()/60)+1
-    logger.debug("Time remaining is" + str(timeleft))
-    return (timeleft)
 
 def finditem(obj, key):
     if key in obj: return obj[key]

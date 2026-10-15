@@ -62,9 +62,8 @@ def finditem(obj, key):
     return None
 
 def frtouch():
-    if not exists(".fullrefresh"):
-        with open(".fullrefresh",'w') as fp:
-            pass
+    # Ask the read loop for a full refresh on its next poll
+    open(GivLUT.forcefullrefresh,'a').close()
 
 def updateControlCache(entity,value,isTime: bool=False):
     from mqtt import GivMQTT
@@ -82,16 +81,9 @@ def updateControlCache(entity,value,isTime: bool=False):
     GivMQTT.single_MQTT_publish(Topic,str(value))
 
     # now update the pkl cache file
-    if exists(GivLUT.regcache):      # if there is a cache then grab it
-        regCacheStack = GivLUT.get_regcache()
-    if "regCacheStack" in locals():
-        #find right object
-        if isTime:
-            regCacheStack[-1]['Timeslots'][entity]=value
-        else:
-            regCacheStack[-1]['Control'][entity]=value
-        with open(GivLUT.regcache, 'wb') as outp:
-            pickle.dump(regCacheStack, outp, pickle.HIGHEST_PROTOCOL)
+    def change(output):
+        output['Timeslots' if isTime else 'Control'][entity]=value
+    if GivLUT.update_regcache(change):
         logger.debug("Pushing control update to pkl cache: "+entity+" - "+str(value))
     return
 
@@ -1173,14 +1165,14 @@ async def FEResume(device,revert, readloop=False):
             logger.error("Errors in control device: "+str(result))
             raise Exception(result)
         frtouch()
-        os.remove(".FERunning"+str(GiV_Settings.givtcp_instance))
+        GivLUT.clearRunningJob("forceExport")
         updateControlCache("Force_Export","Normal")
         temp['result']="Force Export Reverted successfully"
         logger.info(temp['result'])
     except:
         e=controlError()
         temp['result']="Force Export Revert failed: " + str(e)
-        if exists(".FERunning"+str(GiV_Settings.givtcp_instance)): os.remove(".FERunning"+str(GiV_Settings.givtcp_instance))
+        GivLUT.clearRunningJob("forceExport")
         logger.error (temp['result'])
     revertDone("FEResume")
     return json.dumps(temp)
@@ -1218,8 +1210,8 @@ async def forceExport(device, exportTime,readloop=False):
 
         revert={k:v for k,v in revert.items() if v is not None}     # only revert what was read
         reqs=device.set_battery_soc_reserve(4)      # the device model picks the single/three-phase register itself
-        finish=GivLUT.getTime(datetime.now()+timedelta(minutes=exportTime))
-        slot=TimeSlot(datetime.strptime(GivLUT.getTime(datetime.now()),"%H:%M"),datetime.strptime(finish,"%H:%M"))
+        finish=datetime.now()+timedelta(minutes=exportTime)
+        slot=TimeSlot(datetime.strptime(GivLUT.getTime(datetime.now()),"%H:%M"),datetime.strptime(GivLUT.getTime(finish),"%H:%M"))
 
         if "3ph" in GiV_Settings.inverter_type.lower():
             reqs.extend(device.set_force_discharge(True))  # turn on Force Export in 3PH
@@ -1235,11 +1227,11 @@ async def forceExport(device, exportTime,readloop=False):
         if result:
             logger.error("Errors in control device: "+str(result))
             raise Exception(result)
-        if exists(".FERunning"+str(GiV_Settings.givtcp_instance)):    # If a forcecharge is already running, change time of revert job to new end time.
+        if GivLUT.runningJob("forceExport"):    # If a forcecharge is already running, change time of revert job to new end time.
             logger.info("Force Export already running, changing end time")
-            revert=getFEArgs()[0]   # set new revert object and cancel old revert job
+            revert=revertJobArgs("forceExport")[0]   # set new revert object and cancel old revert job
             logger.debug("new revert= "+ str(revert))
-        fejob=scheduleRevert("FEResume",revert,timedelta(minutes=exportTime),".FERunning"+str(GiV_Settings.givtcp_instance))
+        fejob=scheduleRevert("FEResume",revert,timedelta(minutes=exportTime),"forceExport")
         logger.debug("Force Export revert jobid is: "+fejob.id)
         temp['result']="Export successfully forced for "+str(exportTime)+" minutes"
         updateControlCache("Force_Export","Running")
@@ -1294,7 +1286,7 @@ async def FCResume(device,revert,readloop=False):
             logger.error("Errors in control device: "+str(result))
             raise Exception(result)
         frtouch()        
-        os.remove(".FCRunning"+str(GiV_Settings.givtcp_instance))
+        GivLUT.clearRunningJob("forceCharge")
         updateControlCache("Force_Charge","Normal")
         temp['result']="Force Charge Reverted successfully"
         logger.info(temp['result'])
@@ -1302,7 +1294,7 @@ async def FCResume(device,revert,readloop=False):
         e=controlError()
         logger.error("Force Charge revert failed: "+str(e))
         temp['result']="Force Charge revert failed: "+str(e)
-        if exists(".FCRunning"+str(GiV_Settings.givtcp_instance)): os.remove(".FCRunning"+str(GiV_Settings.givtcp_instance))
+        GivLUT.clearRunningJob("forceCharge")
         logger.error(temp['result'])
     revertDone("FCResume")
     return json.dumps(temp)
@@ -1323,15 +1315,14 @@ def savePendingReverts(pending):
         pickle.dump(pending, outp, pickle.HIGHEST_PROTOCOL)
     os.replace(tmp, pendingRevertsFile())
 
-def scheduleRevert(command, payload, delay: timedelta, marker):
-    """Schedule a timed revert (eg. FEResume) and write its marker file (job id and finish time). The scheduled job
-    only lives in Redis, which a restart clears, so also keep a copy for recoverReverts() to run or reschedule."""
+def scheduleRevert(command, payload, delay: timedelta, kind):
+    """Schedule a timed revert (eg. FEResume) and save it as the running job of its kind (as GivLUT.running_jobs).
+    The scheduled job only lives in Redis, which a restart clears, so also keep a copy for recoverReverts()"""
     job=GivQueue.q.enqueue_in(delay,queueWrite,command,payload)
     due=datetime.now()+delay
-    with open(marker, 'w') as f:
-        f.write('\n'.join([str(job.id),GivLUT.getTime(due)]))
+    GivLUT.saveRunningJob(kind, job.id, due)
     pending=loadPendingReverts()
-    pending[command]={"payload":payload,"due":due,"job":job.id,"marker":marker}
+    pending[command]={"payload":payload,"due":due,"job":job.id,"kind":kind}
     try:
         savePendingReverts(pending)
     except Exception as e:
@@ -1358,12 +1349,11 @@ def recoverReverts():
             remaining=revert["due"]-datetime.now()
             if remaining.total_seconds()<=0:
                 logger.warning(command+" was due at "+revert["due"].strftime("%H:%M")+" but GivTCP restarted before it ran, so running it now")
-                with open(revert["marker"], 'w') as f:      # the revert removes it when done
-                    f.write('\n'.join(["",GivLUT.getTime(revert["due"])]))
+                GivLUT.saveRunningJob(revert["kind"], "", revert["due"])     # shows it running until the revert clears it
                 queueWrite(command, revert["payload"])
             else:
                 logger.warning("GivTCP restarted before "+command+" was due, so rescheduling it for "+revert["due"].strftime("%H:%M"))
-                scheduleRevert(command, revert["payload"], remaining, revert["marker"])
+                scheduleRevert(command, revert["payload"], remaining, revert["kind"])
         except Exception as e:
             logger.error("Unable to recover the "+command+" revert, so check the inverter settings: "+str(e))
             revertDone(command)
@@ -1390,38 +1380,16 @@ def cancelJob(device, jobid, readloop=False):
         logger.error(temp['result'])
     return json.dumps(temp)
 
-def getFCArgs():
+def revertJobArgs(kind):
+    """The revert details of a running Force Charge/Export (kind as GivLUT.running_jobs). Its revert job is removed
+    from the schedule, as a new one replaces it"""
     from rq.job import Job
-    # getjobid
-    f=open(".FCRunning"+str(GiV_Settings.givtcp_instance), 'r')
-    jobid=f.readline().strip('\n')
-    f.close()
-    # get the revert details from the old job
+    jobid=GivLUT.runningJob(kind)[0]
     try:
         job=Job.fetch(jobid,GivQueue.redis_connection)
     except Exception:
         # Not in Redis (eg. GivTCP restarted since), so use the copy kept for recoverReverts()
-        saved=loadPendingReverts().get("FCResume")
-        if saved is None:
-            raise
-        return (saved["payload"],)
-    details=job.args[1:] if job.args and isinstance(job.args[0],str) else job.args    # args are (command, revert)
-    logger.debug("Previous args= "+str(details))
-    GivQueue.q.scheduled_job_registry.remove(jobid) # Remove the job from the schedule
-    return (details)
-
-def getFEArgs():
-    from rq.job import Job
-    # getjobid
-    f=open(".FERunning"+str(GiV_Settings.givtcp_instance), 'r')
-    jobid=f.readline().strip('\n')
-    f.close()
-    # get the revert details from the old job
-    try:
-        job=Job.fetch(jobid,GivQueue.redis_connection)
-    except Exception:
-        # Not in Redis (eg. GivTCP restarted since), so use the copy kept for recoverReverts()
-        saved=loadPendingReverts().get("FEResume")
+        saved=next((r for r in loadPendingReverts().values() if r.get("kind")==kind), None)
         if saved is None:
             raise
         return (saved["payload"],)
@@ -1463,14 +1431,14 @@ async def forceCharge(device, chargeTime, readloop=False):
                 revert['forceACChargeEnable']= regCacheStack[-1]["Control"]["Force_AC_Charge_Enable"]
 
         revert={k:v for k,v in revert.items() if v is not None}     # only revert what was read
-        finish=GivLUT.getTime(datetime.now()+timedelta(minutes=chargeTime))
+        finish=datetime.now()+timedelta(minutes=chargeTime)
         reqs=chargeTargetSOC(device,100)
         if "slot1TargetSOC" in revert:
             try:
                 reqs.extend(slotTargetSOC(device,"charge",1,100))
             except NotImplementedError:
                 del revert["slot1TargetSOC"]    # read but can't be written here yet (eg. Gateway), so leave it
-        slot=TimeSlot(datetime.strptime(GivLUT.getTime(datetime.now()),"%H:%M"),datetime.strptime(finish,"%H:%M"))
+        slot=TimeSlot(datetime.strptime(GivLUT.getTime(datetime.now()),"%H:%M"),datetime.strptime(GivLUT.getTime(finish),"%H:%M"))
         reqs.extend(device.set_charge_slot(1,slot))
         if "3ph" in GiV_Settings.inverter_type.lower():
             reqs.extend(optionalAcLimit("charge",100))
@@ -1488,11 +1456,11 @@ async def forceCharge(device, chargeTime, readloop=False):
         if result:
             logger.error("Errors in control device: "+str(result))
             raise Exception(result)
-        if exists(".FCRunning"+str(GiV_Settings.givtcp_instance)):    # If a forcecharge is already running, change time of revert job to new end time
+        if GivLUT.runningJob("forceCharge"):    # If a forcecharge is already running, change time of revert job to new end time
             logger.info("Force Charge already running, changing end time")
-            revert=getFCArgs()[0]   # set new revert object and cancel old revert job
+            revert=revertJobArgs("forceCharge")[0]   # set new revert object and cancel old revert job
             logger.info("new revert= "+ str(revert))
-        fcjob=scheduleRevert("FCResume",revert,timedelta(minutes=chargeTime),".FCRunning"+str(GiV_Settings.givtcp_instance))
+        fcjob=scheduleRevert("FCResume",revert,timedelta(minutes=chargeTime),"forceCharge")
         logger.debug("Force Charge revert jobid is: "+fcjob.id)
         temp['result']="Charge successfully forced for "+str(chargeTime)+" minutes"
         updateControlCache("Force_Charge","Running")
@@ -1510,7 +1478,7 @@ async def tmpPDResume(device, payload, readloop=False):
     try:
         logger.debug("Reverting Temp Pause Discharge")
         result=await setDischargeRate(device,payload,readloop)
-        if exists(".tpdRunning_"+str(GiV_Settings.givtcp_instance)): os.remove(".tpdRunning_"+str(GiV_Settings.givtcp_instance))
+        GivLUT.clearRunningJob("tempPauseDischarge")
         temp['result']="Temp Pause Discharge Reverted"
         updateControlCache("Temp_Pause_Discharge","Normal")
         updateControlCache("Battery_Discharge_Rate",payload["dischargeRate"])
@@ -1544,7 +1512,7 @@ async def tempPauseDischarge(device, pauseTime, readloop=False):
             raise Exception(json.loads(result)['result'])
         payload['dischargeRate']=revertRate
         delay=float(pauseTime*60)
-        tpdjob=scheduleRevert("tmpPDResume",payload,timedelta(seconds=delay),".tpdRunning_"+str(GiV_Settings.givtcp_instance))
+        tpdjob=scheduleRevert("tmpPDResume",payload,timedelta(seconds=delay),"tempPauseDischarge")
         
         logger.debug("Temp Pause Discharge revert jobid is: "+tpdjob.id)
         temp['result']="Discharge paused for "+str(delay)+" seconds"
@@ -1567,7 +1535,7 @@ async def tmpPCResume(device, payload, readloop=False):
     try:
         logger.debug("Reverting Temp Pause Charge...")
         result=await setChargeRate(device,payload,readloop)
-        if exists(".tpcRunning_"+str(GiV_Settings.givtcp_instance)): os.remove(".tpcRunning_"+str(GiV_Settings.givtcp_instance))
+        GivLUT.clearRunningJob("tempPauseCharge")
         temp['result']="Temp Pause Charge Reverted"
         updateControlCache("Temp_Pause_Charge","Normal")
         updateControlCache("Battery_Charge_Rate",payload["chargeRate"])
@@ -1599,7 +1567,7 @@ async def tempPauseCharge(device, pauseTime, readloop=False):
             raise Exception(json.loads(result)['result'])
         payload['chargeRate']=revertRate
         delay=float(pauseTime*60)
-        tpcjob=scheduleRevert("tmpPCResume",payload,timedelta(seconds=delay),".tpcRunning_"+str(GiV_Settings.givtcp_instance))
+        tpcjob=scheduleRevert("tmpPCResume",payload,timedelta(seconds=delay),"tempPauseCharge")
         logger.debug("Temp Pause Charge revert jobid is: "+tpcjob.id)
         temp['result']="Charge paused for "+str(delay)+" seconds"
         updateControlCache("Temp_Pause_Charge","Running")
