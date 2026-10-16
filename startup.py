@@ -30,7 +30,7 @@ SuperTimezone=""
 
 # Check if config directory exists and creates it if not
 
-INVERTER_KEY_DEFAULTS={"inverter_enable_":False,"invertorIP_":"","serial_number_":"","Model_":"","inverter_battery_only_":False,"recovery_pause_":0}
+INVERTER_KEY_DEFAULTS={"inverter_enable_":False,"invertorIP_":"","serial_number_":"","Model_":"","inverter_battery_only_":False,"inverter_no_battery_":False,"recovery_pause_":0}
 
 def startGunicorn(app, port, workers, logname):
     # Gunicorn's own errors (eg. a worker failing to load the app, or the port being in use) go to a log in
@@ -231,6 +231,7 @@ def createsettingsjson(inv):
         outp.write("    serial_number=\""+str(setts["serial_number_"+str(inv)])+"\"\n")
         outp.write("    inverter_type=\""+str(setts["Model_"+str(inv)])+"\"\n")
         outp.write("    Battery_Only="+str(setts["inverter_battery_only_"+str(inv)]).capitalize()+"\n")
+        outp.write("    No_Battery="+str(str(setts.get("inverter_no_battery_"+str(inv))).lower()=="true")+"\n")
         outp.write("    MQTT_Address=\""+str(setts["MQTT_Address"])+"\"\n")
         outp.write("    MQTT_Username=\""+str(setts["MQTT_Username"])+"\"\n")
         outp.write("    MQTT_Password=\""+str(setts["MQTT_Password"])+"\"\n")
@@ -819,6 +820,8 @@ for inv in range(1,setts['number_of_inverters']+1):
             if str(setts.get("inverter_battery_only_"+str(inv))).lower()=="true":     # as settings.py gets it
                 # Ignored before 3.6 (it was written as a string), so make it obvious why inverter data isn't published
                 logger.info ("Invertor "+str(inv)+" only publishes battery data and controls, as \"Only report battery data and controls\" is ticked in its settings")
+            if str(setts.get("inverter_no_battery_"+str(inv))).lower()=="true":
+                logger.info ("Invertor "+str(inv)+" isn't checked for batteries when none are found, as \"No battery fitted\" is ticked in its settings")
             selfRun[inv]=subprocess.Popen(["/usr/local/bin/python3",PATH+"/read.py", "start"])
 
         

@@ -43,6 +43,11 @@
                 label="Only report battery data and controls (for use when this inverter is connected to EMS or Gateway in parallel mode)"
                 color="#4fbba9"
               />
+              <v-switch
+                v-model="inv.noBattery"
+                label="No battery fitted (a hybrid running without a battery, so GivTCP stops checking for one)"
+                color="#4fbba9"
+              />
               <v-text-field
                 v-model.number="inv.recoveryPause"
                 type="number"
