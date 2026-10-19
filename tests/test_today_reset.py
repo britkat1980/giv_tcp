@@ -85,3 +85,35 @@ def test_load_dips_after_midnight_held():
         old = read.holdRoundingDip(value, old)
         published.append(old)
     assert published == [50.0, 0, 0.1, 0.2, 0.3, 0.4, 0.4, 0.4, 0.5, 0.5, 0.5, 0.6, 0.7, 0.7, 0.7]
+
+LOAD_INPUTS = ['Invertor_Energy_Today_kWh', 'AC_Charge_Energy_Today_kWh', 'Export_Energy_Today_kWh',
+               'Import_Energy_Today_kWh', 'PV_Energy_Today_kWh']
+
+def counters(inv, ac, export, imp, pv):
+    return dict(zip(LOAD_INPUTS, (inv, ac, export, imp, pv)))
+
+def test_partial_reset_holds_load():
+    # #669: the reporter's All-in-One over midnight. PV Today reset a poll before the others, so Load calculated from the
+    # mix read yesterday's total less PV (56.2 -> 40.1), which HA counted as a reset, then again at the real one
+    yesterday = counters(14.4, 23.5, 7.8, 57.0, 16.0)
+    pv_only = counters(14.4, 23.5, 7.8, 57.0, 0.0)
+    all_reset = counters(0.0, 0.0, 0.0, 0.1, 0.0)
+    assert read.partialTodayReset(pv_only, yesterday, LOAD_INPUTS, at(0, 0)) is True
+    assert read.partialTodayReset(all_reset, pv_only, LOAD_INPUTS, at(0, 0)) is False      # the rest reset: Load goes to 0
+    assert read.partialTodayReset(all_reset, yesterday, LOAD_INPUTS, at(0, 0)) is False    # all on the same poll
+    # Counters can reset over more than one poll: held until the last of them has
+    some = counters(0.0, 23.5, 0.0, 0.1, 0.0)
+    assert read.partialTodayReset(some, pv_only, LOAD_INPUTS, at(0, 0)) is True
+    assert read.partialTodayReset(all_reset, some, LOAD_INPUTS, at(0, 1)) is False
+
+def test_partial_reset_not_triggered_otherwise():
+    yesterday = counters(14.4, 23.5, 7.8, 57.0, 16.0)
+    pv_only = counters(14.4, 23.5, 7.8, 57.0, 0.0)
+    assert read.partialTodayReset(pv_only, yesterday, LOAD_INPUTS, at(12, 0)) is False     # only near midnight
+    assert read.partialTodayReset(pv_only, yesterday, LOAD_INPUTS, None) is False          # clock not read yet
+    assert read.partialTodayReset(counters(14.5, 23.5, 7.8, 57.1, 16.0), yesterday, LOAD_INPUTS, at(0, 0)) is False
+    # A counter too small to tell a reset from a tick (eg. no export yesterday) doesn't count either way
+    quiet = counters(14.4, 23.5, 0.1, 57.0, 16.0)
+    assert read.partialTodayReset(counters(0.0, 0.0, 0.1, 0.0, 0.0), quiet, LOAD_INPUTS, at(0, 0)) is False
+    # DC hybrids don't use PV in Load, so PV resetting first doesn't hold it
+    assert read.partialTodayReset(pv_only, yesterday, LOAD_INPUTS[:4], at(0, 0)) is False
