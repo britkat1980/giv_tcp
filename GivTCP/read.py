@@ -467,6 +467,17 @@ def hvModulesRead(plant: Plant):
     valid=[b.is_valid() for hvstack in plant.hv_stacks for b in hvstack.bmus]
     return {bank for bank,ok in zip(banks,valid) if ok} if len(valid)==len(banks) else set()
 
+def liteQuery():
+    # Lite mode (lite_query, per inverter): ask the HV battery stacks as little as possible, as the inverter passes
+    # each read on to the stack's BCU or module
+    return str(getattr(GiV_Settings,'lite_query',False)).lower()=="true"
+
+def hvBcusRead(plant: Plant):
+    # The stack (BCU) reads whose stack already has data. Not the All-in-One, whose batteries are laid out differently
+    if not modbus_patches._hv(plant.capabilities):
+        return set()
+    return {(hvstack.device_address,60,60) for hvstack in plant.hv_stacks if hvstack.bcu.is_valid()}
+
 async def readPlant(client, fullRefresh):
     # Run the register reads. Partial failures still leave good data in the register cache so keep going,
     # only a total failure (RefreshFailed) or lost connection is raised
@@ -476,7 +487,13 @@ async def readPlant(client, fullRefresh):
     # Between full refreshes, leave out the HV battery module reads once their data has been read: it's cell
     # voltages and temperatures, and each module is a read of its own, so 12 of 24 reads a poll on two 6-module
     # stacks (#614). The stack values (SOC, power, voltage) come from the BCU, which is still read every poll
-    modbus_patches.skip_banks=set() if fullRefresh else hvModulesRead(client.plant)
+    # In lite mode the modules are only read until they have data, and the stacks (BCUs) between full refreshes only
+    # until they have data
+    light=liteQuery()
+    skip=hvModulesRead(client.plant) if light or not fullRefresh else set()
+    if light and not fullRefresh:
+        skip|=hvBcusRead(client.plant)
+    modbus_patches.skip_banks=skip
     reads=[lambda: client.refresh(max_age=max_age)]
     if fullRefresh:
         reads.append(client.load_config)    #Run full HR read on fullRefresh
@@ -2628,6 +2645,9 @@ def processThreePhaseInfo(plant: Plant):
                 if isinstance(stack_data, dict) and 'Stack_Design_Capacity' in stack_data:
                     cap = cap + stack_data['Stack_Design_Capacity']
         inverter['Battery_Capacity_kWh'] = cap
+        if liteQuery() and cap and isinstance(power_output.get('SOC'),(int,float)):
+            # The stacks' remaining capacity is only read on full refreshes, so work it out from the inverter's SOC
+            power_output['SOC_kWh']=round(power_output['SOC']*cap/100,2)
 
         inverter['Inverter_Temperature']=GEInv.t_inverter
         inverter['Boost_Temperature']=GEInv.t_boost

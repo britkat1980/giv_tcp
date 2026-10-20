@@ -1,3 +1,10 @@
+# Unreleased
+
+Changes since 3.6.8.
+
+### Added
+- **Lite mode**, set per inverter on the config page (`lite_query_N`, off by default), for HV battery stacks (three-phase and HV Gen 3; not the All-in-One). The inverter passes every read of a battery stack (its BCU) or battery module on to the battery, and on some systems that seems to be more than the inverter keeps up with. In lite mode each module is only read until it has data, and each stack only on full refreshes once it has data. The inverter's own battery figures (SOC, battery power, current and voltage) are still read every poll. On three-phase, SOC kWh is worked out from the inverter's SOC and the stacks' capacity, so it still updates every poll. Module and stack values usually still update, as the dongle reads them itself for the GivEnergy cloud and passes the answers on to GivTCP: see the README, "Timeouts and an unresponsive inverter".
+
 # GivTCP 3.6.8
 
 Changes since 3.6.7.

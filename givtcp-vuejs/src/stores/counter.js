@@ -3,7 +3,7 @@ import { useSessionStorage } from '@vueuse/core'
 
 // allsettings.json keeps inverters as flat per-slot keys (invertorIP_1, invertorIP_2, ...) plus number_of_inverters.
 export function emptyInverter() {
-  return { enable: false, ip: '', serial: '', name: '', batteryOnly: false, noBattery: false, model: '', recoveryPause: 0 }
+  return { enable: false, ip: '', serial: '', name: '', batteryOnly: false, noBattery: false, model: '', recoveryPause: 0, liteQuery: false }
 }
 
 export function isEmptyInverter(inv) {
@@ -22,7 +22,8 @@ export function invertersFromSettings(setts) {
       batteryOnly: setts['inverter_battery_only_' + n] === true,
       noBattery: setts['inverter_no_battery_' + n] === true,
       model: setts['Model_' + n] ?? '',
-      recoveryPause: Number(setts['recovery_pause_' + n]) || 0
+      recoveryPause: Number(setts['recovery_pause_' + n]) || 0,
+      liteQuery: setts['lite_query_' + n] === true
     })
   }
   // Drop unused slots at the end (the template ships 5), but keep gaps so slot numbers never shift
@@ -42,6 +43,7 @@ export function invertersToSettings(list) {
     setts['inverter_no_battery_' + n] = inv.noBattery === true
     setts['Model_' + n] = inv.model
     setts['recovery_pause_' + n] = Number(inv.recoveryPause) || 0
+    setts['lite_query_' + n] = inv.liteQuery === true
   })
   return setts
 }

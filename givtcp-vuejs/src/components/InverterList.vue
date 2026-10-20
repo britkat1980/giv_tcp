@@ -56,6 +56,11 @@
                 hint="After two failed polls or reconnects in a row, send this inverter nothing for this long so it can recover"
                 persistent-hint
               />
+              <v-switch
+                v-model="inv.liteQuery"
+                label="Lite mode (HV batteries): read the battery modules only once, and the battery stacks only on full refreshes"
+                color="#4fbba9"
+              />
               <p class="text-caption mb-2">
                 Slot {{ i + 1 }}: REST API on port {{ restPort(i + 1) }} (/REST{{ i + 1 }}/). Slot numbers stay
                 fixed so existing Home Assistant and Predbat setups keep working.
