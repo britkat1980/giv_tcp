@@ -153,3 +153,18 @@ def test_cached_hybrid_without_batteries_checked_again():
     client = fake_client(lv(Model.HYBRID_GEN2, 1))
     assert asyncio.run(read.detectPlant(client)) is True       # uses the cache...
     assert read.capsSuspect                                      # ...but the read loop will detect again
+
+def test_no_battery_fitted_stops_checking():
+    # "No battery fitted" ticked: a hybrid that really has none isn't detected again every few minutes to hourly
+    env.configure(serial_number="AA1111A111", No_Battery=True)
+    asyncio.run(read.detectPlant(fake_client(lv(Model.HYBRID_GEN4, 0)), force=True))
+    assert saved() == lv(Model.HYBRID_GEN4, 0) and not read.capsSuspect
+    read.capsSuspect = False
+    assert asyncio.run(read.detectPlant(fake_client(lv(Model.HYBRID_GEN4, 0)))) is True     # the cached ones
+    assert not read.capsSuspect
+
+def test_no_battery_fitted_doesnt_apply_to_built_in_batteries():
+    # An All in One always has batteries, so none found still means they didn't answer
+    env.configure(serial_number="AA1111A111", No_Battery=True)
+    asyncio.run(read.detectPlant(fake_client(aio(0)), force=True))
+    assert not os.path.exists(read.capsFile()) and read.capsSuspect

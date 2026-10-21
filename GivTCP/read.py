@@ -352,6 +352,10 @@ def savedCaps():
         return None
     return None if missingBatteries(caps) else caps
 
+def noBatteryFitted():
+    # "No battery fitted" is ticked in this inverter's settings, so a hybrid without batteries isn't checked again for them
+    return getattr(GiV_Settings,'No_Battery',False)==True
+
 # True while the capabilities in use may be missing batteries, so the read loop keeps re-detecting until they're found
 capsSuspect=False
 # Polls between re-detects: after failed polls, and (doubling each time, up to REDETECT_MAX_SECONDS) while the
@@ -374,7 +378,7 @@ async def detectPlant(client, force=False):
             else:
                 client.plant.capabilities=caps
                 logger.info("Using cached capabilities from "+str(capsFile())+", skipping detect")
-                if maybeMissingBatteries(caps):
+                if maybeMissingBatteries(caps) and not noBatteryFitted():
                     # Re-detected from time to time (backing off to hourly), in case its battery didn't answer
                     capsSuspect=True
                     logger.info("Cached capabilities have no batteries on this "+caps.device_type.name.capitalize()+", so it will be checked again for them")
@@ -411,7 +415,7 @@ async def detectPlant(client, force=False):
             return False
         logger.warning("Two detects in a row found "+str(capsBatteryCount(caps))+" batteries rather than "+str(capsBatteryCount(saved))+", so saving the new capabilities")
     # A hybrid with no batteries is saved (it may have none), but checked again, in case they didn't answer
-    capsSuspect=maybeMissingBatteries(client.plant.capabilities)
+    capsSuspect=maybeMissingBatteries(client.plant.capabilities) and not noBatteryFitted()
     lostBatteryDetects=0
     try:
         with open(capsFile(), 'wb') as outp:
