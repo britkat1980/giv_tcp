@@ -1,3 +1,11 @@
+# GivTCP 3.6.8
+
+Changes since 3.6.7.
+
+### Fixed
+- **Load Energy Today counted again at midnight on some nights** (#669, #670, thanks @m47een). The inverter doesn't reset all its Today counters on the same poll (PV Today can reset a few seconds before the others), so a poll in between calculated Load as yesterday's total less PV, which Home Assistant counted as a reset, then again at the real one: 25-40 kWh of phantom load. Load and Self Consumption Today are now held for that poll.
+- **Hybrids without a battery re-detected every hour** (#665, thanks @plandregan). Since 3.6.7, a hybrid with no batteries found is checked again for them, in case its battery didn't answer. A new **No battery fitted** setting (with each inverter's settings on the config page) stops that, and without it GivTCP now stops checking by itself after 5 detects in a row find none, until it restarts. The re-detect is logged at info rather than as a warning.
+
 # GivTCP 3.6.7
 
 Changes since 3.6.6.

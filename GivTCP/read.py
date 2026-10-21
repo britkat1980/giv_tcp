@@ -385,11 +385,15 @@ REDETECT_POLLS=10
 REDETECT_MAX_SECONDS=3600
 # Detects in a row that found fewer batteries than the saved capabilities
 lostBatteryDetects=0
+# Detects in a row that found no batteries on a hybrid. After this many (several hours, with the back-off) it's taken to
+# have none until GivTCP restarts, for those who haven't ticked "No battery fitted": a battery fitted later is found then
+NO_BATTERY_DETECTS=5
+noBatteryDetects=0
 
 async def detectPlant(client, force=False):
     # Detect only when there is no capabilities file for this inverter (startup normally creates one).
     # Returns True if cached capabilities were used, so callers can re-detect if they turn out to be stale
-    global capsSuspect, lostBatteryDetects
+    global capsSuspect, lostBatteryDetects, noBatteryDetects
     if not force and exists(capsFile()):
         try:
             with open(capsFile(), 'rb') as inp:
@@ -399,7 +403,7 @@ async def detectPlant(client, force=False):
             else:
                 client.plant.capabilities=caps
                 logger.info("Using cached capabilities from "+str(capsFile())+", skipping detect")
-                if maybeMissingBatteries(caps) and not noBatteryFitted():
+                if maybeMissingBatteries(caps) and not noBatteryFitted() and noBatteryDetects<NO_BATTERY_DETECTS:
                     # Re-detected from time to time (backing off to hourly), in case its battery didn't answer
                     capsSuspect=True
                     logger.info("Cached capabilities have no batteries on this "+caps.device_type.name.capitalize()+", so it will be checked again for them")
@@ -436,7 +440,16 @@ async def detectPlant(client, force=False):
             return False
         logger.warning("Two detects in a row found "+str(capsBatteryCount(caps))+" batteries rather than "+str(capsBatteryCount(saved))+", so saving the new capabilities")
     # A hybrid with no batteries is saved (it may have none), but checked again, in case they didn't answer
-    capsSuspect=maybeMissingBatteries(client.plant.capabilities) and not noBatteryFitted()
+    capsSuspect=False
+    if maybeMissingBatteries(client.plant.capabilities) and not noBatteryFitted():
+        noBatteryDetects+=1
+        if noBatteryDetects<NO_BATTERY_DETECTS:
+            capsSuspect=True
+        elif noBatteryDetects==NO_BATTERY_DETECTS:
+            logger.info("Detect has found no batteries on this "+client.plant.capabilities.device_type.name.capitalize()+" "+str(NO_BATTERY_DETECTS)+
+                        " times in a row, so it's taken to have none until GivTCP restarts. Tick \"No battery fitted\" in its settings to stop checking at all")
+    else:
+        noBatteryDetects=0
     lostBatteryDetects=0
     try:
         with open(capsFile(), 'wb') as outp:
@@ -900,7 +913,7 @@ async def watch_plant(
                             if failures:
                                 logger.warning("Some devices have not responded for 10 polls, re-detecting inverter characteristics")
                             else:
-                                logger.warning("Capabilities may be missing batteries, re-detecting inverter characteristics")
+                                logger.info("Capabilities may be missing batteries, re-detecting inverter characteristics")
                             partialPolls=0
                             previousCaps=client.plant.capabilities
                             try:

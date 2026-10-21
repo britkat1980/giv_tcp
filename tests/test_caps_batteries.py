@@ -43,6 +43,7 @@ def setup_function():
         os.remove(read.capsFile())
     read.capsSuspect = False
     read.lostBatteryDetects = 0
+    read.noBatteryDetects = 0
 
 def teardown_function():
     setup_function()
@@ -168,3 +169,16 @@ def test_no_battery_fitted_doesnt_apply_to_built_in_batteries():
     env.configure(serial_number="AA1111A111", No_Battery=True)
     asyncio.run(read.detectPlant(fake_client(aio(0)), force=True))
     assert not os.path.exists(read.capsFile()) and read.capsSuspect
+
+def test_hybrid_without_batteries_stops_being_checked():
+    # Without "No battery fitted" ticked, a hybrid that keeps detecting with no batteries is taken to have none after
+    # NO_BATTERY_DETECTS detects in a row, rather than re-detected hourly for ever (#665)
+    for i in range(read.NO_BATTERY_DETECTS):
+        asyncio.run(read.detectPlant(fake_client(lv(Model.HYBRID_GEN4, 0)), force=True))
+        assert read.capsSuspect == (i < read.NO_BATTERY_DETECTS - 1)
+    read.capsSuspect = False
+    assert asyncio.run(read.detectPlant(fake_client(lv(Model.HYBRID_GEN4, 0)))) is True      # the cached ones: not suspect
+    assert not read.capsSuspect
+    asyncio.run(read.detectPlant(fake_client(lv(Model.HYBRID_GEN4, 1)), force=True))         # a battery that answers
+    assert saved() == lv(Model.HYBRID_GEN4, 1) and read.noBatteryDetects == 0
+
