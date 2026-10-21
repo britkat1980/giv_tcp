@@ -34,6 +34,7 @@ DEFAULT_SETTINGS = dict(
     inverter_num=1,
     givtcp_instance=1,
     Battery_Only=False,
+    No_Battery=False,
     isAddon=False,
     first_run=False,
     Log_Level="Info",

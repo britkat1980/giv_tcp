@@ -120,12 +120,15 @@ TODAY_BOUNCE_MINUTES=15
 TODAY_RESET_WINDOW_MINUTES=30
 _todayResets={}     # Today key: (inverter time it reset, value before)
 
+def nearTodayReset(invNow):
+    return invNow is not None and (invNow.hour==0 and invNow.minute<TODAY_RESET_WINDOW_MINUTES or invNow.hour==23 and invNow.minute>=45)
+
 def guardTodayResets(output, previous, invNow):
     today=output.get('Energy',{}).get('Today') if isinstance(output,dict) else None
     old=previous.get('Energy',{}).get('Today',{}) if isinstance(previous,dict) else {}
     if not isinstance(today,dict) or not isinstance(old,dict) or invNow is None:
         return output
-    nearMidnight=invNow.hour==0 and invNow.minute<TODAY_RESET_WINDOW_MINUTES or invNow.hour==23 and invNow.minute>=45
+    nearMidnight=nearTodayReset(invNow)
     for key,new in today.items():
         last=old.get(key)
         if isinstance(new,bool) or not isinstance(new,(int,float)) or not isinstance(last,(int,float)):
@@ -140,6 +143,24 @@ def guardTodayResets(output, previous, invNow):
             logger.info(key+" went back to "+str(new)+", the value before it reset, so keeping "+str(last))
             today[key]=last
     return output
+
+# The inverter doesn't reset its Today counters on the same poll: PV Today can reset a poll before Import, Export,
+# Invertor and AC Charge. Load calculated from that mix is yesterday's total less PV, which Home Assistant counts as a
+# reset, and then again when the rest reset (#669). So near midnight, a poll where some of the counters Load is
+# calculated from have reset and others still hold yesterday's figure doesn't update Load or Self Consumption
+def partialTodayReset(today, old, keys, invNow):
+    if not nearTodayReset(invNow) or not isinstance(today,dict) or not isinstance(old,dict):
+        return False
+    reset=waiting=False
+    for key in keys:
+        new,last=today.get(key),old.get(key)
+        if isinstance(new,bool) or not isinstance(new,(int,float)) or not isinstance(last,(int,float)) or last<0.2:
+            continue        # too small to tell a reset from a tick
+        if new<last*0.5:
+            reset=True
+        else:
+            waiting=True
+    return reset and waiting
 
 # How far the inverter's clock can be from GivTCP's before it is worth a warning, and the day it was last given
 CLOCK_DRIFT_MINUTES=5
@@ -352,6 +373,10 @@ def savedCaps():
         return None
     return None if missingBatteries(caps) else caps
 
+def noBatteryFitted():
+    # "No battery fitted" is ticked in this inverter's settings, so a hybrid without batteries isn't checked again for them
+    return getattr(GiV_Settings,'No_Battery',False)==True
+
 # True while the capabilities in use may be missing batteries, so the read loop keeps re-detecting until they're found
 capsSuspect=False
 # Polls between re-detects: after failed polls, and (doubling each time, up to REDETECT_MAX_SECONDS) while the
@@ -360,11 +385,15 @@ REDETECT_POLLS=10
 REDETECT_MAX_SECONDS=3600
 # Detects in a row that found fewer batteries than the saved capabilities
 lostBatteryDetects=0
+# Detects in a row that found no batteries on a hybrid. After this many (several hours, with the back-off) it's taken to
+# have none until GivTCP restarts, for those who haven't ticked "No battery fitted": a battery fitted later is found then
+NO_BATTERY_DETECTS=5
+noBatteryDetects=0
 
 async def detectPlant(client, force=False):
     # Detect only when there is no capabilities file for this inverter (startup normally creates one).
     # Returns True if cached capabilities were used, so callers can re-detect if they turn out to be stale
-    global capsSuspect, lostBatteryDetects
+    global capsSuspect, lostBatteryDetects, noBatteryDetects
     if not force and exists(capsFile()):
         try:
             with open(capsFile(), 'rb') as inp:
@@ -374,7 +403,7 @@ async def detectPlant(client, force=False):
             else:
                 client.plant.capabilities=caps
                 logger.info("Using cached capabilities from "+str(capsFile())+", skipping detect")
-                if maybeMissingBatteries(caps):
+                if maybeMissingBatteries(caps) and not noBatteryFitted() and noBatteryDetects<NO_BATTERY_DETECTS:
                     # Re-detected from time to time (backing off to hourly), in case its battery didn't answer
                     capsSuspect=True
                     logger.info("Cached capabilities have no batteries on this "+caps.device_type.name.capitalize()+", so it will be checked again for them")
@@ -411,7 +440,16 @@ async def detectPlant(client, force=False):
             return False
         logger.warning("Two detects in a row found "+str(capsBatteryCount(caps))+" batteries rather than "+str(capsBatteryCount(saved))+", so saving the new capabilities")
     # A hybrid with no batteries is saved (it may have none), but checked again, in case they didn't answer
-    capsSuspect=maybeMissingBatteries(client.plant.capabilities)
+    capsSuspect=False
+    if maybeMissingBatteries(client.plant.capabilities) and not noBatteryFitted():
+        noBatteryDetects+=1
+        if noBatteryDetects<NO_BATTERY_DETECTS:
+            capsSuspect=True
+        elif noBatteryDetects==NO_BATTERY_DETECTS:
+            logger.info("Detect has found no batteries on this "+client.plant.capabilities.device_type.name.capitalize()+" "+str(NO_BATTERY_DETECTS)+
+                        " times in a row, so it's taken to have none until GivTCP restarts. Tick \"No battery fitted\" in its settings to stop checking at all")
+    else:
+        noBatteryDetects=0
     lostBatteryDetects=0
     try:
         with open(capsFile(), 'wb') as outp:
@@ -875,7 +913,7 @@ async def watch_plant(
                             if failures:
                                 logger.warning("Some devices have not responded for 10 polls, re-detecting inverter characteristics")
                             else:
-                                logger.warning("Capabilities may be missing batteries, re-detecting inverter characteristics")
+                                logger.info("Capabilities may be missing batteries, re-detecting inverter characteristics")
                             partialPolls=0
                             previousCaps=client.plant.capabilities
                             try:
@@ -1834,6 +1872,12 @@ def processInverterInfo(plant: Plant):
         sameDay=bool(multi_output_old) and not newInverterDay(inverter['Invertor_Time'],multi_output_old,readAt=settingsReadAt(plant))
         energy_today_output['Self_Consumption_Energy_Today_kWh']=holdRoundingDip(today_self, oldToday.get('Self_Consumption_Energy_Today_kWh'), sameDay)
         energy_today_output['Load_Energy_Today_kWh']=holdRoundingDip(today_load, oldToday.get('Load_Energy_Today_kWh'), not formulaChanged)
+        loadInputs=['Invertor_Energy_Today_kWh','AC_Charge_Energy_Today_kWh','Export_Energy_Today_kWh','Import_Energy_Today_kWh']+([] if dcHybrid else ['PV_Energy_Today_kWh'])
+        if partialTodayReset(energy_today_output, oldToday, loadInputs, inverterNow(inverter['Invertor_Time'],settingsReadAt(plant))):
+            logger.debug("Some Today counters have reset and some haven't yet, so keeping Load and Self Consumption Today")
+            for key in ('Load_Energy_Today_kWh','Self_Consumption_Energy_Today_kWh'):
+                if isinstance(oldToday.get(key),(int,float)):
+                    energy_today_output[key]=oldToday[key]
 
     ############  Core Power Stats    ############
 
@@ -2688,7 +2732,7 @@ def processData(plant: Plant):
         givtcpdata['Last_Updated_Time'] = datetime.datetime.now(GivLUT.timezone).isoformat()
         givtcpdata['status'] = "online"
         givtcpdata['Time_Since_Last_Update'] = 0
-        givtcpdata['GivTCP_Version']= "3.6.7"
+        givtcpdata['GivTCP_Version']= "3.6.8"
         age=dataAge(plant)
         givtcpdata['Data_Age']= round(age,1) if age is not None else -1
         if age is None or age > max(3*GiV_Settings.self_run_timer, 60):

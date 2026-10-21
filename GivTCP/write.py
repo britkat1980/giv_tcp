@@ -1234,7 +1234,10 @@ async def forceExport(device, exportTime,readloop=False):
             reqs.extend(optionalAcLimit("discharge",100))
         else:
             reqs.extend(device.set_battery_discharge_limit(50))
-        reqs.extend(device.set_mode_storage(discharge_slot_1=slot,discharge_for_export=True))
+        # set_mode_storage also clears discharge slot 2 when it isn't given one, which the revert doesn't put back, so
+        # leave slot 2 as it is (#662)
+        slot2=set(device.slot_map.discharge_slots[1]) if len(device.slot_map.discharge_slots)>1 else set()
+        reqs.extend(r for r in device.set_mode_storage(discharge_slot_1=slot,discharge_for_export=True) if getattr(r,'register',None) not in slot2)
         if hasBPM:
             reqs.extend(gecommands.set_battery_pause_mode(0))
         result = await sendAsyncCommand(reqs,readloop)
