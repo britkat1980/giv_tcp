@@ -120,12 +120,15 @@ TODAY_BOUNCE_MINUTES=15
 TODAY_RESET_WINDOW_MINUTES=30
 _todayResets={}     # Today key: (inverter time it reset, value before)
 
+def nearTodayReset(invNow):
+    return invNow is not None and (invNow.hour==0 and invNow.minute<TODAY_RESET_WINDOW_MINUTES or invNow.hour==23 and invNow.minute>=45)
+
 def guardTodayResets(output, previous, invNow):
     today=output.get('Energy',{}).get('Today') if isinstance(output,dict) else None
     old=previous.get('Energy',{}).get('Today',{}) if isinstance(previous,dict) else {}
     if not isinstance(today,dict) or not isinstance(old,dict) or invNow is None:
         return output
-    nearMidnight=invNow.hour==0 and invNow.minute<TODAY_RESET_WINDOW_MINUTES or invNow.hour==23 and invNow.minute>=45
+    nearMidnight=nearTodayReset(invNow)
     for key,new in today.items():
         last=old.get(key)
         if isinstance(new,bool) or not isinstance(new,(int,float)) or not isinstance(last,(int,float)):
@@ -140,6 +143,24 @@ def guardTodayResets(output, previous, invNow):
             logger.info(key+" went back to "+str(new)+", the value before it reset, so keeping "+str(last))
             today[key]=last
     return output
+
+# The inverter doesn't reset its Today counters on the same poll: PV Today can reset a poll before Import, Export,
+# Invertor and AC Charge. Load calculated from that mix is yesterday's total less PV, which Home Assistant counts as a
+# reset, and then again when the rest reset (#669). So near midnight, a poll where some of the counters Load is
+# calculated from have reset and others still hold yesterday's figure doesn't update Load or Self Consumption
+def partialTodayReset(today, old, keys, invNow):
+    if not nearTodayReset(invNow) or not isinstance(today,dict) or not isinstance(old,dict):
+        return False
+    reset=waiting=False
+    for key in keys:
+        new,last=today.get(key),old.get(key)
+        if isinstance(new,bool) or not isinstance(new,(int,float)) or not isinstance(last,(int,float)) or last<0.2:
+            continue        # too small to tell a reset from a tick
+        if new<last*0.5:
+            reset=True
+        else:
+            waiting=True
+    return reset and waiting
 
 # How far the inverter's clock can be from GivTCP's before it is worth a warning, and the day it was last given
 CLOCK_DRIFT_MINUTES=5
@@ -1838,6 +1859,12 @@ def processInverterInfo(plant: Plant):
         sameDay=bool(multi_output_old) and not newInverterDay(inverter['Invertor_Time'],multi_output_old,readAt=settingsReadAt(plant))
         energy_today_output['Self_Consumption_Energy_Today_kWh']=holdRoundingDip(today_self, oldToday.get('Self_Consumption_Energy_Today_kWh'), sameDay)
         energy_today_output['Load_Energy_Today_kWh']=holdRoundingDip(today_load, oldToday.get('Load_Energy_Today_kWh'), not formulaChanged)
+        loadInputs=['Invertor_Energy_Today_kWh','AC_Charge_Energy_Today_kWh','Export_Energy_Today_kWh','Import_Energy_Today_kWh']+([] if dcHybrid else ['PV_Energy_Today_kWh'])
+        if partialTodayReset(energy_today_output, oldToday, loadInputs, inverterNow(inverter['Invertor_Time'],settingsReadAt(plant))):
+            logger.debug("Some Today counters have reset and some haven't yet, so keeping Load and Self Consumption Today")
+            for key in ('Load_Energy_Today_kWh','Self_Consumption_Energy_Today_kWh'):
+                if isinstance(oldToday.get(key),(int,float)):
+                    energy_today_output[key]=oldToday[key]
 
     ############  Core Power Stats    ############
 
