@@ -234,10 +234,15 @@ async def _extra_reads(client):
 
 async def _load_config(self, *args, **kwargs):
     try:
-        return await _library_load_config(self, *args, **kwargs)
-    finally:
-        # Also after a partially failed load_config: these are separate reads
+        result = await _library_load_config(self, *args, **kwargs)
+    except RefreshPartiallySucceeded:
+        # Some settings were read, so the inverter is answering: the extra reads are separate reads
         await _extra_reads(self)
+        raise
+    # Not after RefreshFailed or a lost connection: nothing answered, so they would only be more requests to a dongle
+    # that isn't responding, sent before GivTCP counts the failed poll
+    await _extra_reads(self)
+    return result
 
 Client.load_config = _load_config
 
