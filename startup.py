@@ -30,7 +30,7 @@ SuperTimezone=""
 
 # Check if config directory exists and creates it if not
 
-INVERTER_KEY_DEFAULTS={"inverter_enable_":False,"invertorIP_":"","serial_number_":"","Model_":"","inverter_battery_only_":False,"inverter_no_battery_":False,"recovery_pause_":0,"lite_query_":False}
+INVERTER_KEY_DEFAULTS={"inverter_enable_":False,"invertorIP_":"","serial_number_":"","Model_":"","inverter_battery_only_":False,"inverter_no_battery_":False,"recovery_pause_":0,"lite_query_":False,"connect_delay_":0}
 
 def startGunicorn(app, port, workers, logname):
     # Gunicorn's own errors (eg. a worker failing to load the app, or the port being in use) go to a log in
@@ -261,6 +261,7 @@ def createsettingsjson(inv):
         outp.write("    refresh_max_age="+str(float(setts.get("refresh_max_age") or 0))+"\n")
         outp.write("    recovery_pause="+str(float(setts.get("recovery_pause_"+str(inv)) or 0))+"\n")
         outp.write("    lite_query="+str(str(setts.get("lite_query_"+str(inv))).lower()=="true")+"\n")
+        outp.write("    connect_delay="+str(float(setts.get("connect_delay_"+str(inv)) or 0))+"\n")
         outp.write("    queue_retries="+str(setts["queue_retries"])+"\n")    
         outp.write("    givtcp_instance="+str(inv)+"\n")
         outp.write("    default_path=\""+str(PATH)+"\"\n")

@@ -56,6 +56,7 @@ DEFAULT_SETTINGS = dict(
     refresh_max_age=0,
     recovery_pause=0,
     lite_query=False,
+    connect_delay=0,
     queue_retries=2,
     data_smoother="None",
     timeslot_entities="both",

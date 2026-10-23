@@ -85,6 +85,13 @@ class GivClientAsync:
                     try:
                         # Use a bounded timeout for the connect operation
                         await asyncio.wait_for(_client.connect(), timeout=connect_timeout)
+                        # Some dongles don't answer requests sent straight after a connection opens, so wait before the
+                        # first one (connect_delay, per inverter, 0=off). Keep it shorter than the time the dongle
+                        # leaves a connection idle before closing it, or it closes before the first request
+                        delay=float(getattr(GiV_Settings,'connect_delay',0) or 0)
+                        if delay>0:
+                            logger.debug("Connected, waiting %ss before the first request", delay)
+                            await asyncio.sleep(delay)
                         # successful connect
                         return _client
                     except Exception as exc:

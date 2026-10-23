@@ -61,6 +61,14 @@
                 label="Lite mode (HV batteries): read the battery modules only once, and the battery stacks only on full refreshes"
                 color="#4fbba9"
               />
+              <v-text-field
+                v-model.number="inv.connectDelay"
+                type="number"
+                min="0"
+                label="Wait After Connecting (s, 0=off)"
+                hint="Wait this long after opening a connection before the first request. Keep it below the time the dongle leaves an idle connection open (often about 10s)"
+                persistent-hint
+              />
               <p class="text-caption mb-2">
                 Slot {{ i + 1 }}: REST API on port {{ restPort(i + 1) }} (/REST{{ i + 1 }}/). Slot numbers stay
                 fixed so existing Home Assistant and Predbat setups keep working.
