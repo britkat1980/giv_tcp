@@ -689,16 +689,34 @@ FULL_REFRESH_RETRIES=3
 # Seconds to the first poll if the full refresh when connecting failed
 FULL_REFRESH_RETRY_DELAY=10
 
-def settingsRetry(failures, retries):
+# Settings blocks that had their retries without ever answering since GivTCP started: (device address, base register)
+_settingsGivenUp=set()
+
+def neverAnswered(plant: Plant, failure):
+    return plant.block_age(failure.device_address, "HR", failure.base_register, failure.register_count) is None
+
+def settingsRetry(failures, retries, plant: Optional[Plant]=None):
     """After a full refresh, whether to make the next poll a full one too, and the new retry count. Retries while
-    some settings (holding registers) weren't read, rather than wait for the next full refresh (#608)"""
+    some settings (holding registers) weren't read, rather than wait for the next full refresh (#608). A block that
+    has never answered since GivTCP started only gets the retries once: it's still read with each full refresh, but
+    an inverter that doesn't support it doesn't turn most polls into full refreshes (#675)"""
     settingsFailed=[f for f in failures if f.request_type=="ReadHoldingRegistersRequest"]
+    if plant is not None:
+        settingsFailed=[f for f in settingsFailed
+                        if not ((f.device_address,f.base_register) in _settingsGivenUp and neverAnswered(plant,f))]
     if settingsFailed and retries<FULL_REFRESH_RETRIES:
         logger.debug("Inverter settings not all read (attempt "+str(retries+1)+"), next poll is a full refresh")
         return True, retries+1
     if settingsFailed:
         logger.warning("Some inverter settings could not be read after "+str(retries+1)+" attempts, trying again at the next full refresh: "+
                        ", ".join(f"HR(0x{f.device_address:02x},{f.base_register})" for f in settingsFailed))
+        if plant is not None:
+            unanswered=[f for f in settingsFailed if neverAnswered(plant,f)]
+            for f in unanswered:
+                _settingsGivenUp.add((f.device_address,f.base_register))
+            if unanswered:
+                logger.info("The inverter hasn't answered "+", ".join(f"HR(0x{f.device_address:02x},{f.base_register})" for f in unanswered)+
+                            " since GivTCP started, so it's still read with each full refresh, but no longer retried on the polls after it")
     return False, 0
 
 class Recovery:
@@ -945,7 +963,7 @@ async def watch_plant(
                         logger.debug("Data get was successful, now running handler if needed: ")
                         retry=False
                         if fullRefresh:
-                            retry,fullRetries=settingsRetry(failures,fullRetries)
+                            retry,fullRetries=settingsRetry(failures,fullRetries,client.plant)
                         if fullRefresh and not retry:
                             # Only mark full refresh done once it succeeds, so a post-write readback isn't lost
                             lastfulltime=datetime.datetime.now()
