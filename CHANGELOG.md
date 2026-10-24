@@ -1,3 +1,11 @@
+# Unreleased
+
+Changes since 3.6.8.
+
+### Fixed
+- **Every poll failing with "TypeError: '>' not supported between instances of 'NoneType' and 'int'"** on some single-phase and AC inverters (#675). Some inverters report the grid or output frequency 10 times too high (for example 500.0 for 50 Hz), which GivTCP has always divided by 10. Since 3.6, the Modbus library treats a frequency outside 40-70 Hz as invalid and gives none, and GivTCP's check then failed the whole poll, so only the cached data from before was republished. GivTCP now reads the frequency from the register itself in that case and corrects it as before. A frequency that hasn't been read yet is left out rather than failing the poll.
+- **A settings block the inverter never answers turned most polls into full refreshes** (#675). If some settings couldn't be read, GivTCP made the next 3 polls full refreshes too (#608). For a block an inverter doesn't support, such as the AC configuration block (HR 300) on some AC inverters, that repeated after every scheduled full refresh, so with a 30 second poll about 4 polls in 6 were full refreshes, each waiting for that block to time out. A block that hasn't answered once since GivTCP started now only gets those retries once. It's still read with every scheduled full refresh, and gets the retries again once it has answered.
+
 # GivTCP 3.6.8
 
 Changes since 3.6.7.
