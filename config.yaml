@@ -11,7 +11,10 @@ ingress_entry: readme.html
 services:
   - "mqtt:want"
 map:
-  - config:rw
+  # Home Assistant's config folder, at /config as before (the "config" map option is deprecated)
+  - type: homeassistant_config
+    read_only: false
+    path: /config
   - ssl
 boot:  auto
 url:  https://github.com/britkat1980/giv_tcp
