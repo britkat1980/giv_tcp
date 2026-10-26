@@ -56,7 +56,15 @@ class Sim:
                     raise CommunicationError("no response")
             self.client.connected = True
             return self.client
+        sim.new_clients = 0
         async def new_client(*args, **kwargs):
+            # Like GivClientAsync.new_client: close the old client (a failing close is caught) and return an unconnected one
+            sim.new_clients += 1
+            try:
+                await self.client.close()
+            except Exception:
+                pass
+            self.client.connected = False
             return self.client
         monkeypatch.setattr(read.GivClientAsync, "get_connection", get_connection)
         monkeypatch.setattr(read.GivClientAsync, "new_client", new_client)
@@ -202,3 +210,10 @@ def test_no_detect_when_nothing_answered(monkeypatch):
 def test_detect_when_inverter_answered(monkeypatch):
     # It answered, but not the cached devices: the capabilities may be out of date
     assert _initial_detect(monkeypatch, answered=True) == [False, True]
+
+def test_pause_reconnects_with_a_new_client(monkeypatch):
+    # After the pause the same client reconnected kept getting no answers, where a restart's new one worked (#615)
+    sim = Sim(monkeypatch, reads=[True, True, False, False, True, True])
+    sim.run(pause=600)
+    assert sim.new_clients == 1 and sim.closes == 1
+    assert sim.connect_times[0] == 780 and sim.read_times[:5] == [0, 60, 120, 180, 780]

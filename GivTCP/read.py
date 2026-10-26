@@ -965,10 +965,10 @@ async def watch_plant(
                         if recovery.enabled:
                             # The next poll is at the normal time rather than sooner, and a second failure pauses
                             if recovery.failed():
-                                try:
-                                    await closeClient(client)       # can raise on a dead socket (#613)
-                                except Exception:
-                                    pass
+                                # A new client, as a restart gives it: the same one reconnected after the pause can keep
+                                # getting no answers, where a new process connects first time (#615). new_client() closes
+                                # the old one, which can raise on a dead socket (#613)
+                                client=await GivClientAsync.new_client("the inverter not responding", quiet=True)
                                 await recovery.wait()
                                 timeoutErrors=0
                             continue
