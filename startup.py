@@ -42,10 +42,24 @@ def startGunicorn(app, port, workers, logname):
     return subprocess.Popen(command, start_new_session=True)
 
 def childProcesses():
-    """Every process startup.py started and keeps track of, except gunicorn (stopGunicorn), to stop on shutdown"""
-    procs=list(selfRun.values())+list(rqWorker.values())+[mqttBroker, nginx]
-    procs+=[globals().get(name) for name in ("redis","evcSelfRun","evcChargeModeLoop")]
-    return [p for p in procs if isinstance(p, subprocess.Popen)]
+    """The processes startup.py started and keeps track of, except gunicorn (stopGunicorn), to stop on shutdown: first
+    the ones that use Redis (read loops, RQ workers, EVC loops), then the services they need (Redis, nginx, Mosquitto).
+    An RQ worker tidies up in Redis when it stops, so Redis has to outlive it"""
+    clients=list(selfRun.values())+list(rqWorker.values())+[globals().get(n) for n in ("evcSelfRun","evcChargeModeLoop")]
+    services=[globals().get("redis"), nginx, mqttBroker]
+    return [p for p in clients if isinstance(p, subprocess.Popen)], [p for p in services if isinstance(p, subprocess.Popen)]
+
+def stopProcesses(procs, seconds):
+    # Ask them all to stop (SIGTERM), then kill any still running after this many seconds
+    for proc in procs:
+        if proc.poll() is None:
+            proc.terminate()
+    deadline=datetime.now()+timedelta(seconds=seconds)
+    for proc in procs:
+        try:
+            proc.wait(timeout=max(0.1,(deadline-datetime.now()).total_seconds()))
+        except subprocess.TimeoutExpired:
+            proc.kill()
 
 def shutdown(signum, frame):
     """Home Assistant (or docker stop) stops GivTCP with SIGTERM: stop the processes started here and exit with 0
@@ -56,16 +70,9 @@ def shutdown(signum, frame):
         for proc in list(gunicorn.values())+[globals().get("setting_rest")]:
             if isinstance(proc, subprocess.Popen):
                 stopGunicorn(proc)
-        procs=childProcesses()
-        for proc in procs:
-            if proc.poll() is None:
-                proc.terminate()
-        deadline=datetime.now()+timedelta(seconds=5)       # within the Supervisor's 10s stop timeout
-        for proc in procs:
-            try:
-                proc.wait(timeout=max(0.1,(deadline-datetime.now()).total_seconds()))
-            except subprocess.TimeoutExpired:
-                proc.kill()
+        clients,services=childProcesses()
+        stopProcesses(clients, 5)       # both within the Supervisor's 10s stop timeout
+        stopProcesses(services, 3)
         logging.shutdown()
     finally:
         os._exit(0)     # not sys.exit: the watchdog loop's bare except would catch SystemExit
