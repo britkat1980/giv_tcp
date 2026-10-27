@@ -1109,6 +1109,14 @@ def getInvModel(plant: Plant):
     if inverterModel.batmaxrate is None and not plant.capabilities.is_ems:
         # A model the library has no battery rating for: the inverter's rating is the most it can be (#628)
         inverterModel.batmaxrate=inverterModel.invmaxrate
+    caps=plant.capabilities
+    if inverterModel.batmaxrate and caps.lv_battery_addresses and not (caps.is_three_phase or caps.is_gateway or caps.is_ems):
+        # The battery rate (HR 111/112) is a percentage of the battery's capacity, at most 50% (batteryLimitPercent), so
+        # a small LV battery can't take the inverter's full rate: 2611W on a 5.2kWh battery on a 3.6kW Gen 3, as GivTCP
+        # 2.x reported, not 3600W. Reporting more had Predbat set it, read back less, and retry (#679). Not HV batteries,
+        # whose capacity figures and rates are worked out differently
+        if inverterModel.batterycapacity:
+            inverterModel.batmaxrate=min(inverterModel.batmaxrate, int(inverterModel.batterycapacity*500))
     return inverterModel
 
 def rawValues(model):
@@ -2367,7 +2375,8 @@ def processGatewayInfo(plant: Plant):
         power_output['Inverter_Relay_Voltage']=GEInv.v_inverter_relay
         power_output['Invertor_Power']=GEInv.p_aio_total
         
-        controlmode={}    
+        # Sync Time on every Gateway: its clock needs setting (eg. after the clocks change) with one All in One too (#680)
+        controlmode={'Sync_Time':"disable"}
         timeslots={}
         #Only implement these, if Parallel mode is in use
         if GEInv.parallel_aio_online_num>1:

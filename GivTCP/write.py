@@ -201,6 +201,13 @@ def batteryLimitPercent(rate,batcap,invmaxrate):
         percent=math.ceil(invmaxrate/batcap*100)
     return min(round(percent),50)
 
+def rateApplied(requested, applied):
+    # The rate is a percentage of battery capacity, at most 50%, so a small battery takes less than asked for: say what
+    # was set, rather than report the requested rate as set and have callers (eg. Predbat) read back less and retry (#679)
+    if applied is not None and int(applied)<int(requested):
+        return " (set to "+str(int(applied))+"W, the most this battery takes)"
+    return ""
+
 def maxBatteryRate(multi_output):
     rate=finditem(multi_output,'Invertor_Max_Bat_Rate')
     if not rate:
@@ -730,10 +737,11 @@ async def setChargeRate(device,payload,readloop=False):
             if "3ph" in GiV_Settings.inverter_type.lower() or "gateway" in GiV_Settings.inverter_type.lower():
                 updateControlCache("Battery_Charge_Rate_AC",target)
                 updateControlCache("Battery_Charge_Rate",int(payload['chargeRate']))
+                val=None
             else:
                 val=int(min((target/100)*(batcap), invmaxrate))
                 updateControlCache("Battery_Charge_Rate",val)
-            temp['result']="Setting battery charge rate "+str(payload['chargeRate'])+" was a success"
+            temp['result']="Setting battery charge rate "+str(payload['chargeRate'])+" was a success"+rateApplied(payload['chargeRate'],val)
             logger.info(temp['result'])
         except:
             e=controlError()
@@ -801,7 +809,8 @@ async def setDischargeRate(device,payload,readloop=False):
             else:
                 val=int(min((target/100)*(batcap), invmaxrate))
                 updateControlCache("Battery_Discharge_Rate",val)
-            temp['result']="Setting battery discharge limit "+str(payload['dischargeRate'])+" was a success"
+            applied=None if ("3ph" in GiV_Settings.inverter_type.lower() or "gateway" in GiV_Settings.inverter_type.lower()) else val
+            temp['result']="Setting battery discharge limit "+str(payload['dischargeRate'])+" was a success"+rateApplied(payload['dischargeRate'],applied)
             logger.debug ("Setting battery discharge rate to: " + str(payload['dischargeRate'])+" ("+str(target)+")")
             
             logger.info(temp['result'])
