@@ -117,3 +117,16 @@ def test_startup_keeps_folders():
     src = (pathlib.Path(__file__).parent.parent / "startup.py").read_text(encoding="utf-8")
     loop = src[src.index('for file in os.listdir(setts["cache_location"]):'):]
     assert loop.index("os.path.isdir") < loop.index("os.remove")
+
+def test_frames_the_library_cant_decode_are_redacted(capture_dirs):
+    # #668: a dongle frame the library couldn't decode reached the file with the dongle's serial number and its IP
+    # addresses, as the library only redacts frames it understands. A made-up frame shaped like it:
+    leaked = bytes.fromhex("5959000100420102") + b"WO1234G567" + b"\x00" * 8 + b"192.168.1.15\x00255.255.255.0\x00"
+    clean = capture.scrub(leaked)
+    assert len(clean) == len(leaked)                                # still well formed
+    assert b"WO1234G000" in clean and b"WO1234G567" not in clean
+    assert b"192.168" not in clean and b"255.255" not in clean and b"000.000.0.00" in clean
+    assert capture.scrub(b"SA2047G000 50.0") == b"SA2047G000 50.0"   # already redacted, and no IP address
+    asyncio.run(capture.run(FakeClient([("rx", leaked)]), 30, lambda: {"model": "AC"}))
+    text = open(os.path.join(capture.CAPTURE_DIR, capture.status()["file"])).read()
+    assert leaked.hex() not in text and clean.hex() in text
