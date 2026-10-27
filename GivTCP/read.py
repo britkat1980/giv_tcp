@@ -3065,9 +3065,20 @@ def getCache():     # Get latest cache data and return it (for use in REST)
         multi_output['result']="Error getting data from cache"+str(e)
         return json.dumps(multi_output, indent=4, sort_keys=True, default=str)
 
+def logSettings(recovery):
+    """Log the connection settings that change how GivTCP talks to the inverter, once at startup and only when on"""
+    if liteQuery():
+        logger.info("Lite mode on: HV battery modules are read until they have data, battery stacks only on full refreshes")
+    delay=float(getattr(GiV_Settings,'connect_delay',0) or 0)
+    if delay>0:
+        logger.info("Wait After Connecting on: waiting "+str(round(delay))+"s after each new connection before the first request")
+    if recovery.enabled:
+        logger.info("Pause When Inverter Stops Responding on: after "+str(recovery.STRIKES)+" failed polls in a row, sending it nothing for "+str(round(recovery.pause))+"s")
+
 async def self_run():
     # re-run everytime watch_plant Dies
     recovery=Recovery()
+    logSettings(recovery)
     while True:
         try:
             logger.info("Starting watch_plant loop...")

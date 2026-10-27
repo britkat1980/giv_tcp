@@ -1,5 +1,8 @@
 # GivTCP Unreleased
 
+### Added
+- **Connection settings in the log at startup.** When Lite mode, Wait After Connecting or Pause When Inverter Stops Responding is on, GivTCP says so once at startup (at info level), so a log shows which of them were in use.
+
 ### Fixed
 - **Connection messages missing from the log file.** Messages about opening and replacing the Modbus connection (eg. "Modbus connect attempt 1/3 failed", "Failed to establish Modbus connection", "Replacing the modbus client after...", and with debug logging "Connected, waiting 10s before the first request") were written to a separate logger without the log file handler. They never reached the log file, warnings and errors only the add-on's console, and debug lines nowhere at all. They now go to GivTCP's main log like everything else.
 
