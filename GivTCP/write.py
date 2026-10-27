@@ -1153,7 +1153,7 @@ async def setPauseEnd(device,payload,readloop=False):
 async def FEResume(device,revert, readloop=False):
     temp={}
     try:
-        logger.info("Reverting Force Export settings:")
+        logger.info("Reverting Force Export settings to: "+str(revert))
         if "mode" in revert:
             result=await setBatteryMode(device,{"mode":revert["mode"]},readloop)
             if "failed" in json.loads(result)['result'] or "Invalid" in json.loads(result)['result']:
@@ -1273,7 +1273,7 @@ async def FCResume(device,revert,readloop=False):
     temp={}
 
     try:
-        logger.info("Reverting Force Charge Settings:")
+        logger.info("Reverting Force Charge settings to: "+str(revert))     # what it puts back, eg. Target SOC (#671)
         reqs=[]
         if "chargeRate" in revert:
             is3ph="3ph" in GiV_Settings.inverter_type.lower()
