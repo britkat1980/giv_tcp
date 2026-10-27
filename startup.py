@@ -24,13 +24,14 @@ webDash={}
 rqWorker={}
 redis={}
 mqttBroker=None     # only set when GivTCP runs its own Mosquitto
+nginx=None
 networks={}
 SuperTimezone=""
 
 
 # Check if config directory exists and creates it if not
 
-INVERTER_KEY_DEFAULTS={"inverter_enable_":False,"invertorIP_":"","serial_number_":"","Model_":"","inverter_battery_only_":False,"inverter_no_battery_":False,"recovery_pause_":0}
+INVERTER_KEY_DEFAULTS={"inverter_enable_":False,"invertorIP_":"","serial_number_":"","Model_":"","inverter_battery_only_":False,"inverter_no_battery_":False,"recovery_pause_":0,"lite_query_":False,"connect_delay_":0}
 
 def startGunicorn(app, port, workers, logname):
     # Gunicorn's own errors (eg. a worker failing to load the app, or the port being in use) go to a log in
@@ -39,6 +40,42 @@ def startGunicorn(app, port, workers, logname):
     command=["/usr/local/bin/gunicorn","-w",str(workers),"-b",":"+str(port),"--log-level","warning",
              "--error-logfile","/config/GivTCP/logs/"+logname+".log",app]
     return subprocess.Popen(command, start_new_session=True)
+
+def childProcesses():
+    """The processes startup.py started and keeps track of, except gunicorn (stopGunicorn), to stop on shutdown: first
+    the ones that use Redis (read loops, RQ workers, EVC loops), then the services they need (Redis, nginx, Mosquitto).
+    An RQ worker tidies up in Redis when it stops, so Redis has to outlive it"""
+    clients=list(selfRun.values())+list(rqWorker.values())+[globals().get(n) for n in ("evcSelfRun","evcChargeModeLoop")]
+    services=[globals().get("redis"), nginx, mqttBroker]
+    return [p for p in clients if isinstance(p, subprocess.Popen)], [p for p in services if isinstance(p, subprocess.Popen)]
+
+def stopProcesses(procs, seconds):
+    # Ask them all to stop (SIGTERM), then kill any still running after this many seconds
+    for proc in procs:
+        if proc.poll() is None:
+            proc.terminate()
+    deadline=datetime.now()+timedelta(seconds=seconds)
+    for proc in procs:
+        try:
+            proc.wait(timeout=max(0.1,(deadline-datetime.now()).total_seconds()))
+        except subprocess.TimeoutExpired:
+            proc.kill()
+
+def shutdown(signum, frame):
+    """Home Assistant (or docker stop) stops GivTCP with SIGTERM: stop the processes started here and exit with 0
+    rather than be killed by the signal (exit code 143), which the Supervisor reports as not shutting down cleanly"""
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)       # once is enough
+    try:
+        logging.getLogger().info("Stopping GivTCP ("+signal.Signals(signum).name+")")
+        for proc in list(gunicorn.values())+[globals().get("setting_rest")]:
+            if isinstance(proc, subprocess.Popen):
+                stopGunicorn(proc)
+        clients,services=childProcesses()
+        stopProcesses(clients, 5)       # both within the Supervisor's 10s stop timeout
+        stopProcesses(services, 3)
+        logging.shutdown()
+    finally:
+        os._exit(0)     # not sys.exit: the watchdog loop's bare except would catch SystemExit
 
 def stopGunicorn(proc):
     # Stop the gunicorn master and any of its workers that are still running
@@ -260,6 +297,8 @@ def createsettingsjson(inv):
         outp.write("    self_run_timer_full="+str(setts["self_run_timer_full"])+"\n")
         outp.write("    refresh_max_age="+str(float(setts.get("refresh_max_age") or 0))+"\n")
         outp.write("    recovery_pause="+str(float(setts.get("recovery_pause_"+str(inv)) or 0))+"\n")
+        outp.write("    lite_query="+str(str(setts.get("lite_query_"+str(inv))).lower()=="true")+"\n")
+        outp.write("    connect_delay="+str(float(setts.get("connect_delay_"+str(inv)) or 0))+"\n")
         outp.write("    queue_retries="+str(setts["queue_retries"])+"\n")    
         outp.write("    givtcp_instance="+str(inv)+"\n")
         outp.write("    default_path=\""+str(PATH)+"\"\n")
@@ -436,6 +475,8 @@ logger.setLevel(logging.INFO)
 
 logging.getLogger("givenergy_modbus").setLevel(logging.CRITICAL)
 
+signal.signal(signal.SIGTERM, shutdown)
+
 
 SuperTimezone={}
 logger.info("==================== STARTING GivTCP==========================")
@@ -591,7 +632,7 @@ if not exists("/ssl/fullchain.pem"):
     shutil.copy("/app/ingress_no_ssl.conf","/etc/nginx/http.d/ingress.conf")
 
 writeRestRoutes(setts)
-subprocess.Popen(["nginx","-g","daemon off;"])
+nginx=subprocess.Popen(["nginx","-g","daemon off;"])
 logger.debug("Running nginx")
 
 if SuperTimezone: 
