@@ -20,5 +20,5 @@ def test_large_battery_keeps_the_inverter_rating():
     assert read.getInvModel(plant(Model.HYBRID_GEN3, 9.5, lv_battery_addresses=[0x32])).batmaxrate == 3600
 
 def test_reply_says_what_was_set():
-    assert write.rateApplied(3600, 2611) == " (set to 2611W, the most this battery takes)"
+    assert write.rateApplied(3600, 2611) == " (set to 2611W: the rate is a whole percentage of the battery's capacity, at most 50%)"
     assert write.rateApplied(2000, 2000) == "" and write.rateApplied(2000, None) == ""

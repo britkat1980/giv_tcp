@@ -1110,7 +1110,7 @@ def getInvModel(plant: Plant):
         # A model the library has no battery rating for: the inverter's rating is the most it can be (#628)
         inverterModel.batmaxrate=inverterModel.invmaxrate
     caps=plant.capabilities
-    if inverterModel.batmaxrate and caps.lv_battery_addresses and not (caps.is_three_phase or caps.is_gateway or caps.is_ems):
+    if inverterModel.batmaxrate and getattr(caps,'lv_battery_addresses',None) and not any(getattr(caps,c,False) for c in ('is_three_phase','is_gateway','is_ems')):
         # The battery rate (HR 111/112) is a percentage of the battery's capacity, at most 50% (batteryLimitPercent), so
         # a small LV battery can't take the inverter's full rate: 2611W on a 5.2kWh battery on a 3.6kW Gen 3, as GivTCP
         # 2.x reported, not 3600W. Reporting more had Predbat set it, read back less, and retry (#679). Not HV batteries,

@@ -205,7 +205,7 @@ def rateApplied(requested, applied):
     # The rate is a percentage of battery capacity, at most 50%, so a small battery takes less than asked for: say what
     # was set, rather than report the requested rate as set and have callers (eg. Predbat) read back less and retry (#679)
     if applied is not None and int(applied)<int(requested):
-        return " (set to "+str(int(applied))+"W, the most this battery takes)"
+        return " (set to "+str(int(applied))+"W: the rate is a whole percentage of the battery's capacity, at most 50%)"
     return ""
 
 def maxBatteryRate(multi_output):
