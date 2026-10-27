@@ -216,7 +216,7 @@ Three-phase inverters, EMS and Gateway also publish:
 | `Modbus_Version` | sensor | | Modbus protocol version |
 | `Invertor_Time` | sensor | timestamp | Inverter clock (see `Sync_Time`) |
 | `Invertor_Max_Inv_Rate` | sensor | W | Maximum inverter AC output |
-| `Invertor_Max_Bat_Rate` | sensor | W | Maximum battery charge / discharge rate |
+| `Invertor_Max_Bat_Rate` | sensor | W | Maximum battery charge / discharge rate. For an LV battery it's at most 50% of the battery's capacity (eg. about 2600W for a 5.2kWh battery), as the inverter sets the rate as a percentage of it |
 | `Export_Limit` | sensor | W | Export limit configured on the inverter |
 | `Meter_Type` | sensor | | Type of grid meter the inverter is using |
 | `Battery_Type` | sensor | | Battery type reported by the inverter |
@@ -270,7 +270,7 @@ Three-phase inverters add:
 | `Force_Charge_Num`, `Force_Export_Num`, `Temp_Pause_Charge_Num`, `Temp_Pause_Discharge_Num` | number | as above | min | Minutes remaining on the matching timer (0 when not running). Setting a value starts the timer for that many minutes (up to 250) |
 | `Real_Time_Control` | switch | `enableRTC` | | Turns on the inverter's Real Time Control setting. While it is on, writes to registers that are safe to change often are counted in `Safe_Write_Count` rather than `Write_Count` |
 | `Battery_Calibration` | select | `setBatteryCalibration` | | Start a battery calibration: `Off`, `Start`, `Charge Only` |
-| `Sync_Time` | button | `syncDateTime` | | Set the inverter clock to the current time |
+| `Sync_Time` | button | `syncDateTime` | | Set the inverter clock to the current time. A Gateway has it too, with one All-in-One or several |
 | `Reboot_Invertor` | button | `rebootInverter` | | Restart the inverter |
 | `Reboot_Addon` | button | `rebootAddon` | | Restart GivTCP |
 
