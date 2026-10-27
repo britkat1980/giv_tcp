@@ -25,7 +25,7 @@ from logging.handlers import TimedRotatingFileHandler
 
 from sharedlog import SharedTimedRotatingFileHandler   # noqa: F401  (imported from here by REST, write and influx)
 
-logger = logging.getLogger("GivLUT")
+logger = logging.getLogger("read_logger")     # GivTCP's main log (GivLUT.logger), which has the log file handler
 _client = Client(GiV_Settings.invertorIP,8899)
 _connection_lock = asyncio.Lock()
 

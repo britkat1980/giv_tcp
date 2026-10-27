@@ -1,3 +1,8 @@
+# GivTCP Unreleased
+
+### Fixed
+- **Connection messages missing from the log file.** Messages about opening and replacing the Modbus connection (eg. "Modbus connect attempt 1/3 failed", "Failed to establish Modbus connection", "Replacing the modbus client after...", and with debug logging "Connected, waiting 10s before the first request") were written to a separate logger without the log file handler. They never reached the log file, warnings and errors only the add-on's console, and debug lines nowhere at all. They now go to GivTCP's main log like everything else.
+
 # GivTCP 3.6.9
 
 Changes since 3.6.8.
