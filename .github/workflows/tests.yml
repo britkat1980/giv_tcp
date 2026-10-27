@@ -40,6 +40,7 @@ jobs:
         run: |
           python -m coverage html
           python -m coverage xml
+          python -m coverage json
       - name: Upload coverage reports
         if: ${{ !cancelled() && hashFiles('coverage.xml') != '' }}
         uses: actions/upload-artifact@v4
@@ -48,4 +49,7 @@ jobs:
           path: |
             htmlcov/
             coverage.xml
+            coverage.json
           retention-days: 14
+      - name: Require 70% coverage in every file
+        run: python tests/check_coverage.py coverage.json

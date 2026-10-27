@@ -50,4 +50,5 @@ EMS_GE*.docx
 .coverage
 .coverage.*
 coverage.xml
+coverage.json
 htmlcov/
