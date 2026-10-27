@@ -188,6 +188,20 @@ def checkInverterClock(invTime, readAt=None):
                    " against "+now.strftime(shown)+"), so its Today energy counters reset at the wrong time. "
                    "Use the Sync Time button, or the GivEnergy portal, to correct it")
 
+def acFrequency(plant: Plant, device, field):
+    """A single-phase inverter's grid or output frequency in Hz, or None if it hasn't been read. Some inverters report
+    it 10 times too high (eg. 500.0 for 50Hz), which GivTCP has always divided by 10. The Modbus library's 40-70Hz
+    bounds now turn those readings into None, which failed every poll (#675), so then decode the raw register here"""
+    value=getattr(device, field, None)
+    if value is None and plant.capabilities is not None:
+        defn=SinglePhaseInverterRegisterGetter.REGISTER_LUT[field]
+        raw=plant.register_caches.get(plant.capabilities.inverter_address,{}).get(defn.registers[0])
+        if raw:
+            value=defn.pre_conv(raw)
+    if value is None:
+        return None
+    return value/10 if value>100 else value
+
 def sumPresent(*values):
     # The sum of the values that were read, or None if none were
     present=[v for v in values if v is not None]
@@ -675,16 +689,34 @@ FULL_REFRESH_RETRIES=3
 # Seconds to the first poll if the full refresh when connecting failed
 FULL_REFRESH_RETRY_DELAY=10
 
-def settingsRetry(failures, retries):
+# Settings blocks that had their retries without ever answering since GivTCP started: (device address, base register)
+_settingsGivenUp=set()
+
+def neverAnswered(plant: Plant, failure):
+    return plant.block_age(failure.device_address, "HR", failure.base_register, failure.register_count) is None
+
+def settingsRetry(failures, retries, plant: Optional[Plant]=None):
     """After a full refresh, whether to make the next poll a full one too, and the new retry count. Retries while
-    some settings (holding registers) weren't read, rather than wait for the next full refresh (#608)"""
+    some settings (holding registers) weren't read, rather than wait for the next full refresh (#608). A block that
+    has never answered since GivTCP started only gets the retries once: it's still read with each full refresh, but
+    an inverter that doesn't support it doesn't turn most polls into full refreshes (#675)"""
     settingsFailed=[f for f in failures if f.request_type=="ReadHoldingRegistersRequest"]
+    if plant is not None:
+        settingsFailed=[f for f in settingsFailed
+                        if not ((f.device_address,f.base_register) in _settingsGivenUp and neverAnswered(plant,f))]
     if settingsFailed and retries<FULL_REFRESH_RETRIES:
         logger.debug("Inverter settings not all read (attempt "+str(retries+1)+"), next poll is a full refresh")
         return True, retries+1
     if settingsFailed:
         logger.warning("Some inverter settings could not be read after "+str(retries+1)+" attempts, trying again at the next full refresh: "+
                        ", ".join(f"HR(0x{f.device_address:02x},{f.base_register})" for f in settingsFailed))
+        if plant is not None:
+            unanswered=[f for f in settingsFailed if neverAnswered(plant,f)]
+            for f in unanswered:
+                _settingsGivenUp.add((f.device_address,f.base_register))
+            if unanswered:
+                logger.info("The inverter hasn't answered "+", ".join(f"HR(0x{f.device_address:02x},{f.base_register})" for f in unanswered)+
+                            " since GivTCP started, so it's still read with each full refresh, but no longer retried on the polls after it")
     return False, 0
 
 class Recovery:
@@ -931,7 +963,7 @@ async def watch_plant(
                         logger.debug("Data get was successful, now running handler if needed: ")
                         retry=False
                         if fullRefresh:
-                            retry,fullRetries=settingsRetry(failures,fullRetries)
+                            retry,fullRetries=settingsRetry(failures,fullRetries,client.plant)
                         if fullRefresh and not retry:
                             # Only mark full refresh done once it succeeds, so a post-write readback isn't lost
                             lastfulltime=datetime.datetime.now()
@@ -1706,16 +1738,10 @@ def processPVInfo(plant: Plant):
         power_flow_output['Solar_to_House'] = flows['Solar_to_House']
         power_flow_output['Solar_to_Grid'] = flows['Solar_to_Grid']
 
-        if GEInv.f_ac1>100:
-            freq=GEInv.f_ac1/10
-        else:
-            freq=GEInv.f_ac1
-        power_output['Grid_Frequency'] = freq
-        if GEInv.f_ac1_output>100:
-            freq=GEInv.f_ac1_output/10
-        else:
-            freq=GEInv.f_ac1_output
-        power_output['Inverter_Output_Frequency'] = freq
+        for key,field in (('Grid_Frequency','f_ac1'),('Inverter_Output_Frequency','f_ac1_output')):
+            freq=acFrequency(plant, GEInv, field)
+            if freq is not None:        # left out until it's been read, rather than failing the poll (#675)
+                power_output[key] = freq
 
         # Check for all zeros
         checksum = 0
@@ -2015,16 +2041,10 @@ def processInverterInfo(plant: Plant):
             discharge_power=0
 
 
-        if GEInv.f_ac1>100:
-            freq=GEInv.f_ac1/10
-        else:
-            freq=GEInv.f_ac1
-        power_output['Grid_Frequency'] = freq
-        if GEInv.f_ac1_output>100:
-            freq=GEInv.f_ac1_output/10
-        else:
-            freq=GEInv.f_ac1_output
-        power_output['Inverter_Output_Frequency'] = freq
+        for key,field in (('Grid_Frequency','f_ac1'),('Inverter_Output_Frequency','f_ac1_output')):
+            freq=acFrequency(plant, GEInv, field)
+            if freq is not None:        # left out until it's been read, rather than failing the poll (#675)
+                power_output[key] = freq
         # Not every model in the list has IR 247-248 read (eg. HV Gen 3), so only add it when there is a value
         if resolvedModel(plant, GEInv) in (Model.HYBRID_GEN3, Model.HYBRID_GEN4, Model.HYBRID_HV_GEN3, Model.HYBRID_3PH, Model.ALL_IN_ONE_HYBRID, Model.AIO_COMMERCIAL) \
                 and GEInv.p_combined_generation is not None:
