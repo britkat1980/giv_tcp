@@ -35,6 +35,36 @@ python -m pytest tests/test_read_cycle.py # read cycles only, about 2.5 minutes
 
 Each model takes about 15 seconds to start, because detect probes for devices that aren't there.
 
+## Coverage reports
+
+From the repository root, after installing `requirements-dev.txt`:
+
+```
+python -m coverage run -m pytest
+python -m coverage report -m
+python -m coverage html
+python -m coverage xml
+```
+
+Open `htmlcov/index.html` for a per-file report with missing lines and branches. `coverage.xml` is a
+Cobertura report for coverage services. The configuration measures Python application code in `GivTCP/`
+and the root startup/discovery scripts, including modules the tests never import. It excludes the test
+harness and the manual `GivTCP/test_loop.py` script. It does not measure the JavaScript frontends.
+Tests that extract startup functions into a separate script do not measure execution of the original
+`startup.py` file, so their behavior checks will not appear as covered lines there.
+
+You can pass pytest selectors after `pytest` for a quicker check, but that report represents only the
+selected tests. Each coverage run replaces the previous results. Run the full suite for a baseline.
+
+The **Tests and coverage** GitHub Actions workflow runs on pushes and pull requests. Its run summary shows
+a per-file coverage table, and the **python-coverage** artifact contains HTML and XML reports (retained
+for 14 days). Download and extract it, then open `htmlcov/index.html`. Reports are also generated when
+tests fail; those results may be incomplete. There is no minimum coverage threshold yet.
+
+GitHub's native PR coverage comparisons additionally require Code Quality on a supported plan and an
+upload via `actions/upload-code-coverage`. The XML report is ready for that integration; the current
+workflow uses summaries and artifacts without requiring Code Quality or a third-party service.
+
 ## Reviewing results
 
 The tests pass when GivTCP behaves as recorded in `tests/golden/`, even where the recorded behaviour is an
