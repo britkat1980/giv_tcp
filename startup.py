@@ -118,7 +118,8 @@ def writeRestRoutes(setts):
             outp.write("location /REST"+str(num)+"/ {\n    proxy_pass http://127.0.0.1:"+str(invPort(num))+"/;\n}\n")
 
 def palm_job():
-    subprocess.Popen(["/usr/local/bin/python3","/app/GivTCP_1/palm_soc.py"])
+    # In the first inverter's folder, where its read loop picks up the write requests PALM queues (#682)
+    subprocess.Popen(["/usr/local/bin/python3","/app/GivTCP_1/palm_soc.py"], cwd="/app/GivTCP_1")
 
 def validateEVC(HOST):
     logger.debug("Validating "+str(HOST))

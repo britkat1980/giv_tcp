@@ -278,6 +278,12 @@ class GivLUT:
         """Replace the write request queue in one step, so the read loop never reads a partly written file"""
         GivLUT.save_pickle(GivLUT.writerequests, requests)
 
+    def queue_write(command, payload):
+        """Ask the read loop to run a write command on its connection, with no reply (as an MQTT command is)"""
+        requests=(GivLUT.load_pickle(GivLUT.writerequests) if exists(GivLUT.writerequests) else None) or []
+        requests.append([command,payload,False])
+        GivLUT.save_writerequests(requests)
+
     def put_regcache(regCacheStack):
         with GivLUT.fileLock(GivLUT.cachelockfile):     # so it can't land in the middle of an update_regcache()
             GivLUT.save_pickle(GivLUT.regcache, regCacheStack)
