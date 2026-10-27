@@ -383,7 +383,7 @@ An EMS manages several inverters as one plant. On top of the EMS power values ab
 | `Export_Power_Limit` | number | `setExportLimit` | W | Maximum plant export |
 | `Plant_Charge_Compensation` / `Plant_Discharge_Compensation` | number | | | Charge / discharge compensation adjustment |
 | `Car_Charge_Mode` | select | | | EV charging mode: `Stop`, `Eco`, `Eco+`, `Fast` |
-| `Car_Charge_Boost` | number | `setCarChargeBoost` | W | EV charge boost power. Read-only for now: the givenergy-modbus library can't write it yet |
+| `Car_Charge_Boost` | number | `setCarChargeBoost` | W | EV charge boost power, 0-22000 W |
 
 **Timeslots** (N = 1–3):
 

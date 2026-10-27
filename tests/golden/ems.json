@@ -1336,16 +1336,11 @@
      [
       "write_logger",
       "ERROR",
-      "Error in write command: InvalidPduState HR(320) is not permitted for EMS inverter (registers: 320)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for EMS inverter'} (write.py:N)"
+      "Setting Pause Slot End failed: NotImplementedError: this inverter has no battery pause slot (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for EMS inverter'} (write.py:N)"
+     "result": "Setting Pause Slot End failed: NotImplementedError: this inverter has no battery pause slot (write.py:N)"
     },
     "writes": []
    }
@@ -1357,16 +1352,11 @@
      [
       "write_logger",
       "ERROR",
-      "Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter (registers: 319, 320)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter (write.py:N)"
+      "Setting Battery Pause Slot failed: NotImplementedError: this inverter has no battery pause slot (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Battery Pause Slot failed: Exception: Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter (write.py:N)"
+     "result": "Setting Battery Pause Slot failed: NotImplementedError: this inverter has no battery pause slot (write.py:N)"
     },
     "writes": []
    }
@@ -1378,16 +1368,11 @@
      [
       "write_logger",
       "ERROR",
-      "Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter (registers: 319)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter'} (write.py:N)"
+      "Setting Pause Slot Start failed: NotImplementedError: this inverter has no battery pause slot (write.py:N)"
      ]
     ],
     "result": {
-     "result": "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter'} (write.py:N)"
+     "result": "Setting Pause Slot Start failed: NotImplementedError: this inverter has no battery pause slot (write.py:N)"
     },
     "writes": []
    }
@@ -4515,12 +4500,7 @@
      [
       "write_logger",
       "ERROR",
-      "Error in write command: InvalidPduState HR(320) is not permitted for EMS inverter (registers: 320)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Pause Slot End failed: Exception: {'error': 'Error in write command: InvalidPduState HR(320) is not permitted for EMS inverter'} (write.py:N)"
+      "Setting Pause Slot End failed: NotImplementedError: this inverter has no battery pause slot (write.py:N)"
      ]
     ],
     "queued": [
@@ -4541,12 +4521,7 @@
      [
       "write_logger",
       "ERROR",
-      "Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter (registers: 319)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Setting Pause Slot Start failed: Exception: {'error': 'Error in write command: InvalidPduState HR(319) is not permitted for EMS inverter'} (write.py:N)"
+      "Setting Pause Slot Start failed: NotImplementedError: this inverter has no battery pause slot (write.py:N)"
      ]
     ],
     "queued": [
@@ -4846,6 +4821,7 @@
    "raw": {
     "batteries": {},
     "invertor": {
+     "arm_firmware_version": 1036,
      "calc_load_power": 677,
      "car_charge_boost": 0,
      "car_charge_mode": 0,
@@ -4855,13 +4831,27 @@
      "charge_target_1": 100,
      "charge_target_2": 100,
      "charge_target_3": 100,
+     "device_type_code": "5001",
      "discharge_slot_1": "TimeSlot(start=datetime.time(23, 30), end=datetime.time(23, 59))",
      "discharge_slot_2": "TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0))",
      "discharge_slot_3": "TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0))",
      "discharge_target_1": 4,
      "discharge_target_2": 4,
      "discharge_target_3": 4,
+     "dsp_firmware_version": 0,
      "e_active_generation_total": 0,
+     "e_generation_1_day": 32.8,
+     "e_generation_2_day": 0.0,
+     "e_generation_day": 32.8,
+     "e_generation_total": 6823.1,
+     "e_grid_in_day": 32.7,
+     "e_grid_in_total": 28587.2,
+     "e_grid_out_day": 31.0,
+     "e_grid_out_total": 12090.1,
+     "e_inverter_in_day": 0.3,
+     "e_inverter_in_total": 13217.4,
+     "e_inverter_out_day": 7.5,
+     "e_inverter_out_total": 24138.1,
      "ems_status": 1,
      "expected_car_charger_count": 0,
      "expected_inverter_count": 0,
@@ -4873,6 +4863,7 @@
      "export_target_1": 4,
      "export_target_2": 4,
      "export_target_3": 4,
+     "firmware_version": "D0.0-A0.1036",
      "grid_meter_power": -1834,
      "inverter_1_power": 1042,
      "inverter_1_serial_number": "CE2231G001",
@@ -4918,12 +4909,17 @@
      "meter_8_status": 0,
      "meter_count": 2,
      "meter_types": 16,
+     "model": "5",
      "other_battery_power": 0,
+     "p_generation": 0,
+     "p_inverter_active": 2511,
      "plant_charge_compensation": 0,
      "plant_discharge_compensation": 0,
      "plant_enabled": true,
      "plant_status": 1,
      "remaining_battery_wh": 4105,
+     "serial_number": "EMS2522000",
+     "system_time": "2026-05-27T23:05:37",
      "total_battery_power": 2511,
      "total_generation_load_power": 0
     },
@@ -5117,6 +5113,7 @@
    "raw": {
     "batteries": {},
     "invertor": {
+     "arm_firmware_version": 1036,
      "calc_load_power": 677,
      "car_charge_boost": 0,
      "car_charge_mode": 0,
@@ -5126,13 +5123,27 @@
      "charge_target_1": 100,
      "charge_target_2": 100,
      "charge_target_3": 100,
+     "device_type_code": "5001",
      "discharge_slot_1": "TimeSlot(start=datetime.time(23, 30), end=datetime.time(23, 59))",
      "discharge_slot_2": "TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0))",
      "discharge_slot_3": "TimeSlot(start=datetime.time(0, 0), end=datetime.time(0, 0))",
      "discharge_target_1": 4,
      "discharge_target_2": 4,
      "discharge_target_3": 4,
+     "dsp_firmware_version": 0,
      "e_active_generation_total": 0,
+     "e_generation_1_day": 32.8,
+     "e_generation_2_day": 0.0,
+     "e_generation_day": 32.8,
+     "e_generation_total": 6823.1,
+     "e_grid_in_day": 32.7,
+     "e_grid_in_total": 28587.2,
+     "e_grid_out_day": 31.0,
+     "e_grid_out_total": 12090.1,
+     "e_inverter_in_day": 0.3,
+     "e_inverter_in_total": 13217.4,
+     "e_inverter_out_day": 7.5,
+     "e_inverter_out_total": 24138.1,
      "ems_status": 1,
      "expected_car_charger_count": 0,
      "expected_inverter_count": 0,
@@ -5144,6 +5155,7 @@
      "export_target_1": 4,
      "export_target_2": 4,
      "export_target_3": 4,
+     "firmware_version": "D0.0-A0.1036",
      "grid_meter_power": -1834,
      "inverter_1_power": 1042,
      "inverter_1_serial_number": "CE2231G001",
@@ -5189,12 +5201,17 @@
      "meter_8_status": 0,
      "meter_count": 2,
      "meter_types": 16,
+     "model": "5",
      "other_battery_power": 0,
+     "p_generation": 0,
+     "p_inverter_active": 2511,
      "plant_charge_compensation": 0,
      "plant_discharge_compensation": 0,
      "plant_enabled": true,
      "plant_status": 1,
      "remaining_battery_wh": 4105,
+     "serial_number": "EMS2522000",
+     "system_time": "2026-05-27T23:05:37",
      "total_battery_power": 2511,
      "total_generation_load_power": 0
     },
@@ -5484,6 +5501,7 @@
    "GivEnergy/EMS2522000/Timeslots/Export_start_time_slot_1",
    "GivEnergy/EMS2522000/Timeslots/Export_start_time_slot_2",
    "GivEnergy/EMS2522000/Timeslots/Export_start_time_slot_3",
+   "GivEnergy/EMS2522000/raw/invertor/arm_firmware_version",
    "GivEnergy/EMS2522000/raw/invertor/calc_load_power",
    "GivEnergy/EMS2522000/raw/invertor/car_charge_boost",
    "GivEnergy/EMS2522000/raw/invertor/car_charge_mode",
@@ -5493,13 +5511,27 @@
    "GivEnergy/EMS2522000/raw/invertor/charge_target_1",
    "GivEnergy/EMS2522000/raw/invertor/charge_target_2",
    "GivEnergy/EMS2522000/raw/invertor/charge_target_3",
+   "GivEnergy/EMS2522000/raw/invertor/device_type_code",
    "GivEnergy/EMS2522000/raw/invertor/discharge_slot_1",
    "GivEnergy/EMS2522000/raw/invertor/discharge_slot_2",
    "GivEnergy/EMS2522000/raw/invertor/discharge_slot_3",
    "GivEnergy/EMS2522000/raw/invertor/discharge_target_1",
    "GivEnergy/EMS2522000/raw/invertor/discharge_target_2",
    "GivEnergy/EMS2522000/raw/invertor/discharge_target_3",
+   "GivEnergy/EMS2522000/raw/invertor/dsp_firmware_version",
    "GivEnergy/EMS2522000/raw/invertor/e_active_generation_total",
+   "GivEnergy/EMS2522000/raw/invertor/e_generation_1_day",
+   "GivEnergy/EMS2522000/raw/invertor/e_generation_2_day",
+   "GivEnergy/EMS2522000/raw/invertor/e_generation_day",
+   "GivEnergy/EMS2522000/raw/invertor/e_generation_total",
+   "GivEnergy/EMS2522000/raw/invertor/e_grid_in_day",
+   "GivEnergy/EMS2522000/raw/invertor/e_grid_in_total",
+   "GivEnergy/EMS2522000/raw/invertor/e_grid_out_day",
+   "GivEnergy/EMS2522000/raw/invertor/e_grid_out_total",
+   "GivEnergy/EMS2522000/raw/invertor/e_inverter_in_day",
+   "GivEnergy/EMS2522000/raw/invertor/e_inverter_in_total",
+   "GivEnergy/EMS2522000/raw/invertor/e_inverter_out_day",
+   "GivEnergy/EMS2522000/raw/invertor/e_inverter_out_total",
    "GivEnergy/EMS2522000/raw/invertor/ems_status",
    "GivEnergy/EMS2522000/raw/invertor/expected_car_charger_count",
    "GivEnergy/EMS2522000/raw/invertor/expected_inverter_count",
@@ -5511,6 +5543,7 @@
    "GivEnergy/EMS2522000/raw/invertor/export_target_1",
    "GivEnergy/EMS2522000/raw/invertor/export_target_2",
    "GivEnergy/EMS2522000/raw/invertor/export_target_3",
+   "GivEnergy/EMS2522000/raw/invertor/firmware_version",
    "GivEnergy/EMS2522000/raw/invertor/grid_meter_power",
    "GivEnergy/EMS2522000/raw/invertor/inverter_1_power",
    "GivEnergy/EMS2522000/raw/invertor/inverter_1_serial_number",
@@ -5556,12 +5589,17 @@
    "GivEnergy/EMS2522000/raw/invertor/meter_8_status",
    "GivEnergy/EMS2522000/raw/invertor/meter_count",
    "GivEnergy/EMS2522000/raw/invertor/meter_types",
+   "GivEnergy/EMS2522000/raw/invertor/model",
    "GivEnergy/EMS2522000/raw/invertor/other_battery_power",
+   "GivEnergy/EMS2522000/raw/invertor/p_generation",
+   "GivEnergy/EMS2522000/raw/invertor/p_inverter_active",
    "GivEnergy/EMS2522000/raw/invertor/plant_charge_compensation",
    "GivEnergy/EMS2522000/raw/invertor/plant_discharge_compensation",
    "GivEnergy/EMS2522000/raw/invertor/plant_enabled",
    "GivEnergy/EMS2522000/raw/invertor/plant_status",
    "GivEnergy/EMS2522000/raw/invertor/remaining_battery_wh",
+   "GivEnergy/EMS2522000/raw/invertor/serial_number",
+   "GivEnergy/EMS2522000/raw/invertor/system_time",
    "GivEnergy/EMS2522000/raw/invertor/total_battery_power",
    "GivEnergy/EMS2522000/raw/invertor/total_generation_load_power",
    "GivEnergy/EMS2522000/raw/meters/Meter_ID_1/e_export_active",

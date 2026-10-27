@@ -4,6 +4,12 @@ Found while porting GivTCP to givenergy-modbus 2.12.0 (GivTCP `modbusv2` branch)
 
 Thanks again for the migration guide and the offer of help in britkat1980/giv_tcp#556. The port has gone smoothly apart from these points.
 
+**Status (October 2026).** GivTCP now runs [britkat1980/givenergy-modbus](https://github.com/britkat1980/givenergy-modbus), a fork of 2.13.0 with these requests merged, pinned to a commit in `requirements.txt`. Each one is open as a pull request on dewet22/givenergy-modbus (#430 to #445). With the fork, GivTCP's `modbus_patches.py` no longer patches 2 (writes), 3, 10, 11, 12, 17 or 19. The fork doesn't cover these, so they're still patched:
+
+- **1:** the fork allows pause writes only on the models with evidence in the library, which are fewer than GivTCP allows.
+- **2:** the three-phase HR 240-299 read.
+- **13**, **14**, **18** and **20**.
+
 ---
 
 ## 1. Allow battery pause mode / pause slot writes (HR 318–320), firmware-gated where needed
@@ -273,8 +279,10 @@ There's no command that sets just `ENABLE_CHARGE_TARGET` (HR 20) to 1. `disable_
 
 **Problem**
 
-A capture made with `Client.capture_frames()` (GivTCP's Share Device page) contained a WiFi dongle's full serial number and its IP address, netmask and gateway in plain text (britkat1980/giv_tcp#668, givenergy-modbus 2.13.0). They came from one 72-byte rx frame (header `5959 0001 0042 01 02`): the dongle's LAN-config broadcast, `<serial><pad><ip>,<netmask>,<gateway>
-
+A capture made with `Client.capture_frames()` (GivTCP's Share Device page) contained a WiFi dongle's full serial number and its IP address, netmask and gateway in plain text (britkat1980/giv_tcp#668, givenergy-modbus 2.13.0). They came from one 72-byte rx frame (header `5959 0001 0042 01 02`): the dongle's LAN-config broadcast, `<serial><pad><ip>,<netmask>,<gateway>
+
+
+
 ` in ASCII.
 
 Two things combine:

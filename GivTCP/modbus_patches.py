@@ -1,34 +1,27 @@
 """Local extensions to givenergy-modbus, applied when this module is imported (GivLUT imports it).
 
-Writes givenergy-modbus doesn't allow yet, each enabled only on the models it applies to, plus a read the
-library doesn't do. Each one was written by GivTCP's previous modbus library (givenergy_modbus_async), and
-each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, item number in brackets):
+GivTCP runs britkat1980/givenergy-modbus: 2.13.0 with GivTCP's upstream requests merged, each open as a pull
+request on dewet22/givenergy-modbus. The fork already does these, so they're no longer patched here: the Gateway's
+10-slot map, its HR 300-359 read and its HR 313/314 rate writes; charge slot 2 at HR 243/244 on 10-slot models;
+per-slot target SOC writes; three-phase rate writes (HR 1110/1108); the EMS car charge boost (HR 2073); and the
+EMS's IR 0-59 poll.
 
-- Battery pause mode, HR 318, and pause slot, HR 319-320 [1]. The library allows these on no model.
-  Pause mode and slot on the All-in-One, Gateway, Gen 2, Gen 3 and HV Gen 3. Pause mode only on Gen 1 from
-  ARM firmware 187 (britkat1980/giv_tcp#441), which rejects reads and writes of the slot registers, and on
-  the AC from ARM firmware 200 (confirmed by a user), as neither has a pause slot. Three-phase and the
-  EMS have no pause functions. The library only reads HR 300-359 on models with the AC config block
-  (AC, All-in-One), because older hybrids time out on that block (#162), so this also reads just
+What's left, each with a request open upstream (docs/upstream-givenergy-modbus-requests.md, item number in brackets):
+
+- Battery pause mode, HR 318, and pause slot, HR 319-320 [1]. The fork allows these on the All-in-One (mode and
+  slot), and mode only on the AC from ARM firmware 200 and Gen 1 from ARM 187 to 499. GivTCP also allows mode and
+  slot on the Gateway, Gen 2, Gen 3, HV Gen 3 and All in One-HY, as 3.5 did, and mode on Gen 1 from ARM 187 with
+  no upper limit (britkat1980/giv_tcp#441): a Gen 1 rejects reads and writes of the slot registers. Three-phase and
+  the EMS have no pause functions. The library only reads HR 300-359 on models with the AC config block (AC,
+  All-in-One) and on the Gateway, because older hybrids time out on that block (#162), so this also reads just
   HR 318-320 (just HR 318 where there's no slot) after each load_config() on the others, so the current
   pause mode and slot are known.
-- Per-slot charge/discharge target SOC, HR 242-269 / 272-299 (every third register), on models with the
-  10-slot layout and on three-phase [2]. The library reads these on 10-slot models but has no writer. On
-  three-phase it doesn't read HR 240-299 at all (slots 3-10 and their targets), so this also reads that
-  block after each load_config() there.
-- Three-phase charge/discharge rate, HR 1110 / 1108 [3]. The library reads these but only allows the
-  single-phase AC rate registers (HR 313/314).
-- Gateway charge/discharge rate, HR 313 / 314 [3]. The Gateway controls the All-in-Ones behind it, and these
-  are its rate controls (givenergy-modbus#373), but the library only reads and allows them on models with the
-  AC config block. This also reads HR 313-314 after each load_config() on the Gateway, so the current rates
-  are known.
+- Three-phase slots 3-10 and their target SOCs, HR 240-299 [2]. The library doesn't read them on three-phase
+  models, so this reads that block after each load_config() there.
 - Hybrid Gen 1, Gen 3 and All in One-HY AC charge/discharge rate, HR 313 / 314 [20]. GivTCP 3.5 read and wrote them
   on every hybrid that answered HR 300-359, and owners used them (britkat1980/giv_tcp#630, #645), but the library
-  only reads and allows them on models with the AC config block. This also reads HR 313-314 after each
-  load_config() on these models (as on the Gateway), so the rates are shown again, and stops trying if they don't
-  answer.
-- EMS car charge boost, HR 2073, 0-22000 W [10]. The library reads it but has no writer.
-- Charge slot 2 on 10-slot models is at HR 243/244, not the legacy HR 31/32 the library uses (#619) [17].
+  only reads and allows them on models with the AC config block and on the Gateway. This also reads HR 313-314
+  after each load_config() on these models, so the rates are shown again, and stops trying if they don't answer.
 - Battery pack current, IR 95 [13]. The library reports it on every model, but it only holds a real value
   from BMS firmware 3020/4009 on Gen 3 and AC inverters from ARM firmware 214, and reads 0 elsewhere. This
   clears it to None everywhere else.
@@ -41,27 +34,22 @@ each has a request open upstream (docs/upstream-givenergy-modbus-requests.md, it
   read with the three-phase registers (HR/IR 1000+), which it rejects (britkat1980/giv_tcp#621). GivTCP 3.5's
   library read every 0x8xxx device single-phase, and the library's own notes say the residential All-in-One
   rejects the 1000-range reads.
-- The EMS's IR 0-59 is polled [19]. It holds the EMS's energy totals and today values and its Total Power, which
-  GivTCP 3.5 published, but the library doesn't poll it on an EMS, so they stopped updating in 3.6.
 - HV battery module cell data is only re-read on full refreshes (read.py sets skip_banks between them), as each
   module is a read of its own and cell voltages and temperatures don't need updating every poll (#614).
 
 Remove each one once the library supports it.
 """
-import dataclasses
 import logging
 
 from givenergy_modbus.client import client as client_module
 from givenergy_modbus.client.client import Client
 from givenergy_modbus.exceptions import RefreshPartiallySucceeded
-from givenergy_modbus.model import inverter as inverter_module
-from givenergy_modbus.model import manifest, slot_map
+from givenergy_modbus.model import manifest
 from givenergy_modbus.model.hv_bcu import Bmu, decode_cells_temps_serial
 from givenergy_modbus.model.inverter import Model
 from givenergy_modbus.model.plant import Plant
 from givenergy_modbus.model.register_cache import RegisterCache
-from givenergy_modbus.pdu import ReadHoldingRegistersRequest, WriteHoldingRegisterRequest
-from givenergy_modbus.pdu import write_registers
+from givenergy_modbus.pdu import ReadHoldingRegistersRequest
 
 logger = logging.getLogger("read_logger")     # GivTCP's main log (GivLUT.logger)
 
@@ -76,18 +64,9 @@ AC_PAUSE_MIN_ARM_FW = 200
 PAUSE_MODELS = frozenset({Model.ALL_IN_ONE, Model.GATEWAY, Model.HYBRID_GEN2, Model.HYBRID_GEN3,
                           Model.HYBRID_HV_GEN3, Model.ALL_IN_ONE_HYBRID})     # All in One-HY: used in 3.5 (#647)
 
-# Per-slot target SOC: slot N at base + 3*(N-1), matching the library's charge/discharge_target_soc_N reads
-SLOT_TARGET_BASE = {"charge": 242, "discharge": 272}
-SLOT_TARGET_REGISTERS = frozenset(base + 3 * i for base in SLOT_TARGET_BASE.values() for i in range(10))
-
-THREE_PHASE_AC_LIMIT = {"charge": 1110, "discharge": 1108}
-GATEWAY_AC_LIMIT = frozenset({313, 314})     # AC charge limit, AC discharge limit
+AC_LIMIT = frozenset({313, 314})     # AC charge limit, AC discharge limit
 # Hybrids that take the AC limit (HR 313/314), as they did in 3.5 (#630, #645)
 AC_LIMIT_HYBRIDS = frozenset({Model.HYBRID_GEN1, Model.HYBRID_GEN3, Model.ALL_IN_ONE_HYBRID})
-EMS_CAR_CHARGE_BOOST = 2073
-CAR_CHARGE_BOOST_MAX = 22000
-
-EXTENDED_CHARGE_SLOT_2 = (243, 244)
 
 def pause_registers(model, arm_fw):
     """The pause registers this model can write"""
@@ -106,38 +85,22 @@ def _has_pause_slot(caps):
     return PAUSE_SLOT_REGISTERS <= pause_registers(caps.device_type, caps.arm_firmware_version)
 
 def _pause_read_needed(model, arm_fw):
-    # The library reads HR 300-359, which includes the pause registers, on models with the AC config block
-    return bool(pause_registers(model, arm_fw)) and not manifest.has_capability("has_ac_config_block", model)
+    # The library reads HR 300-359, which includes the pause registers, on models with the AC config block and on
+    # the Gateway
+    return bool(pause_registers(model, arm_fw)) and not (manifest.has_capability("has_ac_config_block", model)
+                                                         or manifest.has_capability("is_gateway", model))
 
 # --- writes ------------------------------------------------------------------------------------------------
 
 def _extra_write_registers(model, arm_fw):
     extra = set(pause_registers(model, arm_fw))
-    if model is not None and (manifest.has_extended_slots(model, arm_fw) or manifest.has_capability("is_three_phase", model)):
-        extra |= SLOT_TARGET_REGISTERS
-    if model is not None and manifest.has_extended_slots(model, arm_fw) and not manifest.has_capability("is_three_phase", model):
-        extra |= set(EXTENDED_CHARGE_SLOT_2)
-    if manifest.has_capability("is_three_phase", model):
-        extra |= set(THREE_PHASE_AC_LIMIT.values())
-    if manifest.has_capability("is_gateway", model) or model in AC_LIMIT_HYBRIDS:
-        extra |= GATEWAY_AC_LIMIT
-    if manifest.has_capability("is_ems", model):
-        extra.add(EMS_CAR_CHARGE_BOOST)
+    if model in AC_LIMIT_HYBRIDS:
+        extra |= AC_LIMIT
     return extra
-
-# The Gateway has the 10-slot block (HR 240-299: slots 3-10 and every slot's target SOC) like every model but
-# AC 3.0 and Gen 1/2 (GivEnergy register map v4.1.6), and answers it, but the library gives it the 2-slot map.
-# has_extended_slots() reads this set on every call, so this one change gives the Gateway the 10-slot reads,
-# slot map and slot writes (and, below, the target SOC writes) (#577)
-manifest._EXTENDED_SLOT_MODELS = manifest._EXTENDED_SLOT_MODELS | {Model.GATEWAY}
 
 # The All in One-HY (0x82xx) is single-phase (#621). CAPABILITIES["is_three_phase"] chooses the inverter class
 # (select_inverter), the register banks polled and the settings read, and is looked up on every call
 manifest.CAPABILITIES["is_three_phase"] = manifest.CAPABILITIES["is_three_phase"] - {Model.ALL_IN_ONE_HYBRID}
-
-# The EMS's IR 0-59 (energy totals and Total Power, read.py EMS_IR_VALUES). The library polls only IR 2040+ on an
-# EMS (_refresh_banks); REFRESH_IR_RANGES is looked up on every refresh
-manifest.REFRESH_IR_RANGES["is_ems"] = [manifest.RegisterRange("IR", 0, 60)] + manifest.REFRESH_IR_RANGES["is_ems"]
 
 _library_write_safe_registers = manifest.write_safe_registers
 
@@ -145,41 +108,8 @@ def _write_safe_registers(model, arm_fw=None):
     return _library_write_safe_registers(model, arm_fw) | _extra_write_registers(model, arm_fw)
 
 # The client checks each write against this per-model set (Client._resolve_write_safe looks it up on the
-# manifest module for every write)...
+# manifest module for every write). HR 313/314 and 318-320 are already in the PDU's global WRITE_SAFE_REGISTERS
 manifest.write_safe_registers = _write_safe_registers
-# ...and the PDU checks it against this global set. Adding to it doesn't allow anything on its own, as the
-# per-model set above still has to include the register
-write_registers.WRITE_SAFE_REGISTERS.update(SLOT_TARGET_REGISTERS, {EMS_CAR_CHARGE_BOOST}, EXTENDED_CHARGE_SLOT_2)
-
-# SinglePhaseInverter.slot_map reads the inverter module's own copy, so replace both
-_charge_slots = slot_map.EXTENDED_SLOTS.charge_slots
-slot_map.EXTENDED_SLOTS = inverter_module.EXTENDED_SLOTS = dataclasses.replace(
-    slot_map.EXTENDED_SLOTS, charge_slots=(_charge_slots[0], EXTENDED_CHARGE_SLOT_2) + _charge_slots[2:])
-
-def slot_target_soc(kind, slot, target):
-    """Write the target SOC for charge or discharge slot 1-10"""
-    slot, target = int(slot), int(target)
-    if kind not in SLOT_TARGET_BASE:
-        raise ValueError("No per-slot " + str(kind) + " target SOC on inverters")
-    if not 1 <= slot <= 10:
-        raise ValueError("Slot (" + str(slot) + ") must be 1-10")
-    if not 4 <= target <= 100:
-        raise ValueError("Target SOC (" + str(target) + ") must be 4-100%")
-    return [WriteHoldingRegisterRequest(SLOT_TARGET_BASE[kind] + 3 * (slot - 1), target)]
-
-def three_phase_ac_limit(kind, percent):
-    """Write the three-phase charge or discharge rate, as a percentage of the inverter's battery rate"""
-    percent = int(percent)
-    if not 1 <= percent <= 100:      # as the library's single-phase AC limits: the inverter rejects 0
-        raise ValueError("Rate (" + str(percent) + "%) must be 1-100%")
-    return [WriteHoldingRegisterRequest(THREE_PHASE_AC_LIMIT[kind], percent)]
-
-def car_charge_boost(watts):
-    """Write the EMS car charge boost, in W"""
-    watts = int(float(watts))
-    if not 0 <= watts <= CAR_CHARGE_BOOST_MAX:
-        raise ValueError("Car charge boost (" + str(watts) + "W) must be 0-" + str(CAR_CHARGE_BOOST_MAX) + "W")
-    return [WriteHoldingRegisterRequest(EMS_CAR_CHARGE_BOOST, watts)]
 
 # --- reads -------------------------------------------------------------------------------------------------
 
@@ -194,8 +124,6 @@ EXTRA_READS = [
      "the current pause mode won't be shown (it can still be set)"),
     ("three-phase slots", lambda caps: caps.is_three_phase and not manifest.has_extended_slots(caps.device_type, caps.arm_firmware_version),
      240, 60, "charge/discharge slots 3-10 and their target SOCs won't be shown (they can still be set)"),
-    ("Gateway rates", lambda caps: caps.is_gateway, 313, 2,
-     "the current charge/discharge rates won't be shown (they can still be set)"),
     ("AC rates", lambda caps: caps.device_type in AC_LIMIT_HYBRIDS, 313, 2,
      "the current AC charge/discharge rates won't be shown (they can still be set)"),
 ]

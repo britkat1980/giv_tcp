@@ -1,6 +1,6 @@
 gunicorn
 paho-mqtt
-givenergy-modbus==2.13.0
+givenergy-modbus @ https://github.com/britkat1980/givenergy-modbus/archive/a556333bb7ac1589d7c266ed9cdf5cdfafba44e8.zip
 schedule
 influxdb_client
 requests

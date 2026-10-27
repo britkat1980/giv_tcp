@@ -155,12 +155,12 @@ async def sendAsyncCommand(reqs,readloop):
 
 def acLimit(kind,val):
     # The AC charge/discharge limit: HR313/314 on models with the AC config block (AC and All-in-One) and on
-    # the Gateway, Hybrid Gen 1 and 3 and All in One-HY (#630, #645), and HR1110/1108 on three-phase (all but AC and All-in-One via
-    # modbus_patches until givenergy-modbus supports them). Other models have no rate write it permits yet, so fail clearly
+    # the Gateway, Hybrid Gen 1 and 3 and All in One-HY (#630, #645; the hybrids via modbus_patches), and HR1110/1108 on
+    # three-phase. Other models have no rate write the library permits yet, so fail clearly
     if GiV_Settings.inverter_type.lower() in ("ac","all_in_one","gateway","hybrid_gen1","hybrid_gen3","all_in_one_hybrid"):
         return getattr(gecommands,"set_battery_"+kind+"_limit_ac")(val)
     if "3ph" in GiV_Settings.inverter_type.lower():
-        return modbus_patches.three_phase_ac_limit(kind,val)
+        return getattr(gecommands,"set_battery_"+kind+"_limit_ac_3ph")(int(val))
     raise NotImplementedError("Setting the AC "+kind+" rate is not yet supported by givenergy-modbus for "+str(GiV_Settings.inverter_type)+" inverters")
 
 def optionalAcLimit(kind,val):
@@ -240,15 +240,15 @@ def chargeTargetSOC(device,target):
     return device.set_charge_target_soc(int(target))
 
 def slotTargetSOC(device,kind,slot,target):
-    # Per-slot target SOC. givenergy-modbus provides these for EMS; for inverters with 10 time slots the
-    # charge/discharge targets (HR 242+ / 272+) are written via modbus_patches until it does
+    # Per-slot target SOC: the EMS has its own writers, and inverters with 10 time slots have charge/discharge
+    # targets at HR 242+ / 272+
     if 'ems' in GiV_Settings.inverter_type.lower():
         return getattr(gecommands,"set_ems_"+kind+"_target_soc")(int(slot),int(target))
     if kind=="export":
         raise NotImplementedError("Export target SOC is only available on the EMS")
     if len(device.slot_map.charge_slots)<10:
         raise NotImplementedError(kind.capitalize()+" target SOC per slot is only available on inverters with 10 time slots")
-    return modbus_patches.slot_target_soc(kind,slot,target)
+    return getattr(gecommands,"set_"+kind+"_slot_target_soc")(int(slot),int(target),device.slot_map)
 
 def slotTargetSkipped(name, slot, reason):
     # This model has no such target to write: export targets are only on the EMS, and per-slot discharge targets only
@@ -608,8 +608,7 @@ async def setCarChargeBoost(device,payload,readloop=False):
         if type(payload) is not dict: payload=json.loads(payload)
         if not isEMS(device):
             raise NotImplementedError("Car Charge Boost is only available on the EMS")
-        # EMS HR 2073, written via modbus_patches until givenergy-modbus supports it
-        reqs=modbus_patches.car_charge_boost(payload['boost'])
+        reqs=device.set_car_charge_boost(int(float(payload['boost'])))     # EMS HR 2073
         watts=reqs[0].value
         logger.debug("Setting Car Charge Boost to: "+str(watts)+"W")
         result= await sendAsyncCommand(reqs,readloop)

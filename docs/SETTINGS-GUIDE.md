@@ -138,7 +138,7 @@ The same controls are available as REST calls. Send a `POST` with a JSON body to
 | setEMSChargeTarget1-3 | Sets the target SOC for an EMS charge slot | — | — | `setEMSChargeTarget1` | `80` |
 | setEMSChargeStart1-3 / setEMSChargeEnd1-3 | Sets the start or end time of an EMS charge slot | — | — | `setEMSChargeStart1` | `01:00` |
 | setEMSDischargeStart1-3 / setEMSDischargeEnd1-3 | Sets the start or end time of an EMS discharge slot | — | — | `setEMSDischargeStart1` | `16:00` |
-| setCarChargeBoost | Sets the EV charge boost power in Watts. Not yet supported: the givenergy-modbus library can't write this register, so the command returns an error | `/setCarChargeBoost` | `{"boost":"2500"}` | `setCarChargeBoost` | `2500` |
+| setCarChargeBoost | Sets the EV charge boost power in Watts, 0-22000 | `/setCarChargeBoost` | `{"boost":"2500"}` | `setCarChargeBoost` | `2500` |
 
 ### EV Charger (EVC)
 
