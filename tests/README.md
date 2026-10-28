@@ -116,6 +116,8 @@ golden change too, which the diff makes visible.
 - [harness/plant.py](harness/plant.py) runs a `givenergy_modbus.testing.MockPlant` that records register writes.
   It runs on an event loop in a background thread, as GivTCP's read loop does, and calls
   `read.processWriteRequests()` for queued REST and MQTT commands.
+  Session teardown closes every client and mock server, awaits remaining tasks, then stops and closes the
+  event loop and joins its thread, so network tasks cannot be abandoned at interpreter shutdown.
 - [harness/fakes.py](harness/fakes.py) records MQTT publishes and HA discovery instead of sending them, replaces
   the RQ queue, and fixes GivTCP's clock at 2026-06-15 12:00 so time-based results don't change between runs.
 
