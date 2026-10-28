@@ -6,11 +6,14 @@ from givenergy_modbus.exceptions import CommunicationError
 import GivLUT as givlut_module
 from GivLUT import GivClientAsync
 
-def test_new_client_recovers_a_stuck_connection(plants):
+def test_new_client_recovers_a_stuck_connection(plants, monkeypatch):
+    from functools import partial
     session = plants.get("hybrid_gen2")
+    monkeypatch.setattr(givlut_module, 'Client', partial(Client, **session.pacing.client_options()))
     # A client against the same mock plant, sharing its detected plant, whose connection has dropped and whose
     # close() fails: every connect() then fails straight away, as seen on a live inverter
-    stuck = Client(session.client.host, session.client.port, plant=session.plant)
+    stuck = Client(session.client.host, session.client.port, plant=session.plant,
+                   **session.pacing.client_options())
     session.loop.run(stuck.connect())
     async def failing_close():
         raise OSError("simulated failure closing the old socket")

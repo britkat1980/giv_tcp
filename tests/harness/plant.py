@@ -15,6 +15,7 @@ from givenergy_modbus.testing import MockPlant
 
 from harness import env
 from harness.fakes import recorder
+from harness.pacing import FramePacing
 
 class LoopThread:
     def __init__(self):
@@ -59,11 +60,12 @@ class RecordingMockPlant(MockPlant):
 
 class PlantSession:
     """One device model: a mock plant, a connected client, and GivTCP's state after two read cycles"""
-    def __init__(self, key, device, loop):
+    def __init__(self, key, device, loop, pacing=None):
         import read
         self.key = key
         self.device = device
         self.loop = loop
+        self.pacing = pacing if pacing is not None else FramePacing()
         self.settings = dict(serial_number=key.upper()[:10], inverter_type=device.model.name.capitalize())
         self.mock = RecordingMockPlant.from_capture(device.path)
         if device.identity:     # the whole HR(0-59) block must be present for detect to read it
@@ -72,7 +74,7 @@ class PlantSession:
         self.client = None
         try:
             host, port = loop.run(self.mock.start())
-            self.client = Client(host, port)
+            self.client = Client(host, port, **self.pacing.client_options())
             loop.run(self.client.connect())
             env.clear_state()
             self.activate()
@@ -295,14 +297,15 @@ def _plain(payload):
 
 class Plants:
     """Starts each device's session on first use and keeps it for the whole test run"""
-    def __init__(self):
+    def __init__(self, pacing=None):
+        self.pacing = pacing if pacing is not None else FramePacing()
         self.loop = LoopThread()
         self.sessions = {}
 
     def get(self, key):
         from harness.devices import DEVICES
         if key not in self.sessions:
-            self.sessions[key] = PlantSession(key, DEVICES[key], self.loop)
+            self.sessions[key] = PlantSession(key, DEVICES[key], self.loop, pacing=self.pacing)
         session = self.sessions[key]
         session.activate(session.state)
         return session
