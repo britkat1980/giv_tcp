@@ -1,2 +1,5 @@
 -r requirements.txt
 pytest
+coverage>=7.6
+numpy
+pandas

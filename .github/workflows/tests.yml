@@ -1,0 +1,62 @@
+name: Tests and coverage
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - name: Install test dependencies
+        run: python -m pip install -r requirements-dev.txt
+      - name: Run tests with branch coverage
+        run: python -m coverage run -m pytest
+      - name: Coverage summary
+        if: ${{ !cancelled() && hashFiles('.coverage') != '' }}
+        run: |
+          echo '## Python coverage' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Coverage from this run; failed test runs may be incomplete.' >> "$GITHUB_STEP_SUMMARY"
+          python -m coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
+      - name: Generate coverage reports
+        if: ${{ !cancelled() && hashFiles('.coverage') != '' }}
+        run: |
+          python -m coverage html
+          python -m coverage xml
+          python -m coverage json
+      - name: Upload coverage reports
+        if: ${{ !cancelled() && hashFiles('coverage.xml') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-coverage-${{ matrix.os }}
+          path: |
+            htmlcov/
+            coverage.xml
+            coverage.json
+          retention-days: 14
+      - name: Require 70% coverage in every file
+        run: python tests/check_coverage.py coverage.json
