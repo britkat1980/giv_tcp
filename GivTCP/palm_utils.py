@@ -19,6 +19,8 @@ LOAD_HIST_MAX_PAGES = 10
 # A day's history is only used if it runs to at least 9pm (minutes after midnight), the time PALM starts
 # counting today
 LOAD_HIST_MIN_COVERAGE_MINS = 1260
+# The counter resets in the first readings after midnight (minutes): a drop before this is that reset
+LOAD_HIST_RESET_WINDOW_MINS = 60
 
 # This software in any form is covered by the following Open Source BSD license:
 #
@@ -254,6 +256,22 @@ class GivEnergyObj:
                 logger.warning("Load history for "+ day+ " ends at "+ (t_to_hrs(int(readings[-1][0])) if readings else "00:00")+
                                ", so it's not used for the load forecast")
                 return None
+
+            # The day's first readings can still hold the previous day's total until the counter resets: in the
+            # first hour, a drop is that reset, so the readings before it aren't today's (#684)
+            for index in range(len(readings) - 1, 0, -1):
+                if readings[index][0] < LOAD_HIST_RESET_WINDOW_MINS and readings[index][1] < readings[index - 1][1]:
+                    readings = readings[index:]
+                    break
+            # The counter can't come down later in the day, so a reading higher than every one after it is spurious
+            # (eg. a stale previous day's total) and is skipped, rather than held for the rest of the day
+            later = float('-inf')
+            kept = []
+            for minutes, energy in reversed(readings):
+                if not kept or energy <= later:
+                    kept.append((minutes, energy))
+                    later = max(later, energy)
+            readings = kept[::-1]
 
             # The day's consumption at the end of each half hour. Running maximum: the counter only rises during a
             # day, so a stale reading lower than the one before it is ignored

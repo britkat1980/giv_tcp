@@ -146,6 +146,41 @@ def test_incomplete_day_is_left_out(monkeypatch):
     assert sum(inverter.base_load) == pytest.approx(24, abs=0.5)
 
 
+def with_first_readings(rows, values):
+    """rows with its first readings' consumption replaced by values"""
+    rows = copy.deepcopy(rows)
+    for row, value in zip(rows, values):
+        row['today']['consumption'] = value
+    return rows
+
+
+@pytest.mark.parametrize('previous_day', [39.3, 20.0])
+def test_previous_days_total_before_the_midnight_reset_is_ignored(monkeypatch, previous_day):
+    # 25 October in #684: the first reading still held the previous day's total (39.3 kWh) before the counter
+    # reset to 0, and was held all day, giving 39.3 kWh in the first half hour and nothing after it. A previous
+    # day's total below today's would have held until the counter passed it
+    monkeypatch.setattr(palm.stgs.GE, 'load_hist_weight', [1])
+    monkeypatch.setattr(palm.stgs.pg, 't_now_mins', 600)
+    rows = with_first_readings(timed_day(30, 34), [previous_day, 0.0, 0.0, 0.0])
+    monkeypatch.setattr(palm.requests, 'request', Mock(side_effect=paged(rows)))
+    inverter = palm.GivEnergyObj()
+    inverter.get_load_hist()
+    assert sum(inverter.base_load) == pytest.approx(34, abs=0.5)
+    assert inverter.base_load[0] == pytest.approx(34 / 48, abs=0.1)
+    assert sum(inverter.base_load[17:]) == pytest.approx(34 * 31 / 48, abs=0.5)     # 08:30 to midnight
+
+
+def test_a_spurious_high_reading_isnt_held(monkeypatch):
+    monkeypatch.setattr(palm.stgs.GE, 'load_hist_weight', [1])
+    monkeypatch.setattr(palm.stgs.pg, 't_now_mins', 600)
+    rows = timed_day(300, 48)
+    rows[144]['today']['consumption'] = 99.0     # noon
+    monkeypatch.setattr(palm.requests, 'request', Mock(side_effect=paged(rows)))
+    inverter = palm.GivEnergyObj()
+    inverter.get_load_hist()
+    assert inverter.base_load[1:47] == [1.0] * 46
+
+
 @pytest.mark.parametrize('command,expected', [
     ('set_soc', [('77', '60'), ('64', '00:30'), ('65', '07:30')]),
     ('set_soc_winter', [('77', '100'), ('64', '00:30'), ('65', '08:00')]),
