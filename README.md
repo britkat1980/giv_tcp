@@ -196,3 +196,7 @@ Two settings on the Inverter Config page, for each inverter:
 
 - **Only report battery data and controls:** for an inverter behind a Gateway or EMS, which reports the plant's power and energy itself. GivTCP leaves out this inverter's power and energy data, and still publishes its battery data, controls, timeslots and status, and its own details such as its clock and firmware.
 - **No battery fitted:** for a hybrid running without a battery, so GivTCP stops checking it for one. When detect finds no battery on a hybrid, GivTCP checks again from time to time in case the battery didn't answer, backing off to hourly. Without this setting, it stops by itself after 5 detects in a row find none, until GivTCP restarts. AC-coupled inverters and All-in-Ones always have a battery, so GivTCP doesn't save a detect that finds none for them, and keeps trying.
+
+## Development
+
+See the [development guide](DEVELOPMENT.md) for testing, coverage, frame pacing, and extending the test harness.

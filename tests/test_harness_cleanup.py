@@ -34,7 +34,7 @@ def test_loop_close_cancels_and_awaits_remaining_tasks():
     loop.close()  # fixture cleanup can safely run twice
 
 
-def test_plants_close_real_clients_and_servers_without_pending_task_errors():
+def test_plants_close_real_clients_and_servers_without_pending_task_errors(frame_pacing):
     plants = Plants()
     errors = []
     session = PlantSession.__new__(PlantSession)
@@ -42,7 +42,7 @@ def test_plants_close_real_clients_and_servers_without_pending_task_errors():
     async def connect():
         asyncio.get_running_loop().set_exception_handler(lambda loop, context: errors.append(context))
         host, port = await session.mock.start()
-        session.client = Client(host, port)
+        session.client = Client(host, port, **frame_pacing.client_options())
         await session.client.connect()
         return [session.client.network_consumer_task, session.client.network_producer_task]
     plants.sessions['test'] = session
