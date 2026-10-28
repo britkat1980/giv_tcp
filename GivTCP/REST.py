@@ -15,11 +15,17 @@ import datetime
 import json
 from settings import GiV_Settings
 from inspect import getmembers, isfunction, getsource
+import settings_values
+from crosssite import refuse_cross_site
 
 logger = GivLUT.logger
 #set-up Flask details
 giv_api = Flask(__name__)
-CORS(giv_api)
+# Read-only data that other pages can fetch, such as the web dashboard on its own port. Everything else (control
+# commands, settings, restarts) is only for GivTCP's pages and apps that call it directly, so has no CORS and refuses
+# cross-site requests
+READ_ONLY_ROUTES=frozenset({'/readData','/getCache','/runAll','/getEVCCache','/api','/captureStatus'})
+CORS(giv_api, resources={r"^/("+"|".join(r.lstrip('/') for r in sorted(READ_ONLY_ROUTES))+r")$": {"methods": ["GET"]}})
 
 ######## REST request log: every request and its result, in its own file next to the other logs ########
 import logging
@@ -77,6 +83,7 @@ def _restLogException(sender, exception, **extra):
     restlogger.error(str(request.remote_addr)+" "+request.method+" "+request.full_path.rstrip("?")+" raised "+errDetail())
 from flask import got_request_exception
 got_request_exception.connect(_restLogException, giv_api)
+refuse_cross_site(giv_api, READ_ONLY_ROUTES)      # after _restLogStart, so refused requests are logged too
 
 with open(GivLUT.allsettings, "r") as inp:
     setts=json.load(inp)
@@ -143,7 +150,16 @@ def savesetts():
         SFILE=GivLUT.allsettings
     else:
         SFILE="/app/allsettings.json"
-    setts = request.get_json()
+    payload=request.get_json(silent=True)
+    error=settings_values.check(payload, settings_values.load_template())
+    if error:
+        return Response(json.dumps({"result":"Error: "+error}), status=400, mimetype='application/json')
+    # Merge into the saved settings, as the settings API does, rather than replacing them
+    setts={}
+    if exists(SFILE):
+        with open(SFILE, 'r') as f1:
+            setts=json.load(f1)
+    setts.update(payload)
     with open(SFILE, 'w') as f:
         f.write(json.dumps(setts,indent=4))
     return "Settings Updated"

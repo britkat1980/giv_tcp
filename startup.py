@@ -11,6 +11,7 @@ import asyncio
 from GivTCP.netscan import scan, as_list, INVERTER_PORT, EVC_PORT
 from GivTCP.capscheck import missingBatteries, capsBatteryCount
 from GivTCP.startfiles import keptOnStart
+from GivTCP.settings_values import text, flag, number     # settings.py gets each setting as a literal, never as code
 from givenergy_modbus.client.client import Client
 from givenergy_modbus.exceptions import CommunicationError
 from givenergy_modbus.model.inverter import resolve_model
@@ -33,11 +34,11 @@ SuperTimezone=""
 
 INVERTER_KEY_DEFAULTS={"inverter_enable_":False,"invertorIP_":"","serial_number_":"","Model_":"","inverter_battery_only_":False,"inverter_no_battery_":False,"recovery_pause_":0,"lite_query_":False,"connect_delay_":0}
 
-def startGunicorn(app, port, workers, logname):
+def startGunicorn(app, port, workers, logname, host=""):
     # Gunicorn's own errors (eg. a worker failing to load the app, or the port being in use) go to a log in
     # /config/GivTCP/logs, so they show in the log viewer. It runs in its own process group so a restart can
     # stop its workers as well (a worker left behind would keep the port and stop the new one starting)
-    command=["/usr/local/bin/gunicorn","-w",str(workers),"-b",":"+str(port),"--log-level","warning",
+    command=["/usr/local/bin/gunicorn","-w",str(workers),"-b",host+":"+str(port),"--log-level","warning",
              "--error-logfile","/config/GivTCP/logs/"+logname+".log",app]
     return subprocess.Popen(command, start_new_session=True)
 
@@ -265,80 +266,80 @@ def createsettingsjson(inv):
 
     with open(PATH+"/settings.py", 'w') as outp:
         outp.write("class GiV_Settings:\n")
-        outp.write("    invertorIP=\""+str(setts["invertorIP_"+str(inv)])+"\"\n")
-        outp.write("    serial_number=\""+str(setts["serial_number_"+str(inv)])+"\"\n")
-        outp.write("    inverter_type=\""+str(setts["Model_"+str(inv)])+"\"\n")
-        outp.write("    Battery_Only="+str(setts["inverter_battery_only_"+str(inv)]).capitalize()+"\n")
+        outp.write("    invertorIP="+text(setts["invertorIP_"+str(inv)])+"\n")
+        outp.write("    serial_number="+text(setts["serial_number_"+str(inv)])+"\n")
+        outp.write("    inverter_type="+text(setts["Model_"+str(inv)])+"\n")
+        outp.write("    Battery_Only="+flag(setts["inverter_battery_only_"+str(inv)])+"\n")
         outp.write("    No_Battery="+str(str(setts.get("inverter_no_battery_"+str(inv))).lower()=="true")+"\n")
-        outp.write("    MQTT_Address=\""+str(setts["MQTT_Address"])+"\"\n")
-        outp.write("    MQTT_Username=\""+str(setts["MQTT_Username"])+"\"\n")
-        outp.write("    MQTT_Password=\""+str(setts["MQTT_Password"])+"\"\n")
-        outp.write("    MQTT_Port="+str(setts["MQTT_Port"])+"\n")
-        outp.write("    MQTT_Retain="+str(setts["MQTT_Retain"]).capitalize()+"\n")
-        outp.write("    MQTT_Topic=\""+str(setts["MQTT_Topic"])+"\"\n")
+        outp.write("    MQTT_Address="+text(setts["MQTT_Address"])+"\n")
+        outp.write("    MQTT_Username="+text(setts["MQTT_Username"])+"\n")
+        outp.write("    MQTT_Password="+text(setts["MQTT_Password"])+"\n")
+        outp.write("    MQTT_Port="+number(setts["MQTT_Port"],1883)+"\n")
+        outp.write("    MQTT_Retain="+flag(setts["MQTT_Retain"])+"\n")
+        outp.write("    MQTT_Topic="+text(setts["MQTT_Topic"])+"\n")
         if isAddon:
             outp.write("    HA_Auto_D=True\n")
             outp.write("    Print_Raw_Registers=True\n")
             outp.write("    MQTT_Output=True\n")
             outp.write("    isAddon=True\n")
         else:
-            outp.write("    HA_Auto_D="+str(setts["HA_Auto_D"]).capitalize()+"\n")
-            outp.write("    Print_Raw_Registers="+str(setts["Print_Raw_Registers"]).capitalize()+"\n")
-            outp.write("    MQTT_Output="+str(setts["MQTT_Output"]).capitalize()+"\n")
+            outp.write("    HA_Auto_D="+flag(setts["HA_Auto_D"])+"\n")
+            outp.write("    Print_Raw_Registers="+flag(setts["Print_Raw_Registers"])+"\n")
+            outp.write("    MQTT_Output="+flag(setts["MQTT_Output"])+"\n")
             outp.write("    isAddon=False\n")
-        outp.write("    ha_device_prefix=\""+str(setts["inverterName_"+str(inv)])+"\"\n")
-        outp.write("    Log_Level=\""+str(setts["Log_Level"])+"\"\n")
-        outp.write("    Influx_Output="+str(setts["Influx_Output"]).capitalize()+"\n")
-        outp.write("    influxURL=\""+str(setts["influxURL"])+"\"\n")
-        outp.write("    influxToken=\""+str(setts["influxToken"])+"\"\n")
-        outp.write("    influxBucket=\""+str(setts["influxBucket"])+"\"\n")
-        outp.write("    influxOrg=\""+str(setts["influxOrg"])+"\"\n")
+        outp.write("    ha_device_prefix="+text(setts["inverterName_"+str(inv)])+"\n")
+        outp.write("    Log_Level="+text(setts["Log_Level"])+"\n")
+        outp.write("    Influx_Output="+flag(setts["Influx_Output"])+"\n")
+        outp.write("    influxURL="+text(setts["influxURL"])+"\n")
+        outp.write("    influxToken="+text(setts["influxToken"])+"\n")
+        outp.write("    influxBucket="+text(setts["influxBucket"])+"\n")
+        outp.write("    influxOrg="+text(setts["influxOrg"])+"\n")
         outp.write("    first_run_evc= True\n")
-        outp.write("    self_run_timer="+str(setts["self_run_timer"])+"\n")
-        outp.write("    self_run_timer_full="+str(setts["self_run_timer_full"])+"\n")
-        outp.write("    refresh_max_age="+str(float(setts.get("refresh_max_age") or 0))+"\n")
-        outp.write("    recovery_pause="+str(float(setts.get("recovery_pause_"+str(inv)) or 0))+"\n")
+        outp.write("    self_run_timer="+number(setts["self_run_timer"],30)+"\n")
+        outp.write("    self_run_timer_full="+number(setts["self_run_timer_full"],120)+"\n")
+        outp.write("    refresh_max_age="+number(setts.get("refresh_max_age"),0,float)+"\n")
+        outp.write("    recovery_pause="+number(setts.get("recovery_pause_"+str(inv)),0,float)+"\n")
         outp.write("    lite_query="+str(str(setts.get("lite_query_"+str(inv))).lower()=="true")+"\n")
-        outp.write("    connect_delay="+str(float(setts.get("connect_delay_"+str(inv)) or 0))+"\n")
-        outp.write("    queue_retries="+str(setts["queue_retries"])+"\n")    
+        outp.write("    connect_delay="+number(setts.get("connect_delay_"+str(inv)),0,float)+"\n")
+        outp.write("    queue_retries="+number(setts["queue_retries"],2)+"\n")
         outp.write("    givtcp_instance="+str(inv)+"\n")
-        outp.write("    default_path=\""+str(PATH)+"\"\n")
-        outp.write("    dynamic_tariff="+str(setts["dynamic_tariff"]).capitalize()+"\n")
-        outp.write("    day_rate="+str(setts["day_rate"])+"\n")
-        outp.write("    night_rate="+str(setts["night_rate"])+"\n")
-        outp.write("    export_rate="+str(setts["export_rate"])+"\n")
-        outp.write("    day_rate_start=\""+str(setts["day_rate_start"])+"\"\n")
-        outp.write("    night_rate_start=\""+str(setts["night_rate_start"])+"\"\n")
-        outp.write("    data_smoother=\""+str(setts["data_smoother"])+"\"\n")
-        outp.write("    timeslot_entities=\""+str(setts.get("timeslot_entities") or "both")+"\"\n")
+        outp.write("    default_path="+text(PATH)+"\n")
+        outp.write("    dynamic_tariff="+flag(setts["dynamic_tariff"])+"\n")
+        outp.write("    day_rate="+number(setts["day_rate"],0.395)+"\n")
+        outp.write("    night_rate="+number(setts["night_rate"],0.155)+"\n")
+        outp.write("    export_rate="+number(setts["export_rate"],0.04)+"\n")
+        outp.write("    day_rate_start="+text(setts["day_rate_start"])+"\n")
+        outp.write("    night_rate_start="+text(setts["night_rate_start"])+"\n")
+        outp.write("    data_smoother="+text(setts["data_smoother"])+"\n")
+        outp.write("    timeslot_entities="+text(setts.get("timeslot_entities") or "both")+"\n")
         outp.write("    cache_location=\"/config/GivTCP\"\n")
         outp.write("    Debug_File_Location=\"/config/GivTCP/logs/log_inv_"+str(inv)+".log\"\n")
         outp.write("    Debug_File_Location_Write=\"/config/GivTCP/logs/write_log_inv_"+str(inv)+".log\"\n")
         outp.write("    Debug_File_Location_REST=\"/config/GivTCP/logs/rest_log_inv_"+str(inv)+".log\"\n")
-        outp.write("    inverter_num=\""+str(inv)+"\"\n")
-        outp.write("    Smart_Target="+str(setts["Smart_Target"]).capitalize()+"\n")
-        outp.write("    GE_API=\""+str(setts["GE_API"])+"\"\n")
-        outp.write("    PALM_WINTER=\""+str(setts["PALM_WINTER"])+"\"\n")
-        outp.write("    PALM_SHOULDER=\""+str(setts["PALM_SHOULDER"])+"\"\n")
-        outp.write("    PALM_MIN_SOC_TARGET=\""+str(setts["PALM_MIN_SOC_TARGET"])+"\"\n")
-        outp.write("    PALM_MAX_SOC_TARGET=\""+str(setts["PALM_MAX_SOC_TARGET"])+"\"\n")
-        outp.write("    PALM_BATT_RESERVE=\""+str(setts["PALM_BATT_RESERVE"])+"\"\n")
-        outp.write("    PALM_BATT_UTILISATION=\""+str(setts["PALM_BATT_UTILISATION"])+"\"\n")
-        outp.write("    SOLCASTAPI=\""+str(setts["SOLCASTAPI"])+"\"\n")
-        outp.write("    SOLCASTSITEID=\""+str(setts["SOLCASTSITEID"])+"\"\n")
-        outp.write("    SOLCASTSITEID2=\""+str(setts["SOLCASTSITEID2"])+"\"\n")
-        outp.write("    PALM_WEIGHT=\""+str(setts["PALM_WEIGHT"])+"\"\n")
-        outp.write("    LOAD_HIST_WEIGHT=\""+str(setts["LOAD_HIST_WEIGHT"])+"\"\n")
+        outp.write("    inverter_num="+text(inv)+"\n")
+        outp.write("    Smart_Target="+flag(setts["Smart_Target"])+"\n")
+        outp.write("    GE_API="+text(setts["GE_API"])+"\n")
+        outp.write("    PALM_WINTER="+text(setts["PALM_WINTER"])+"\n")
+        outp.write("    PALM_SHOULDER="+text(setts["PALM_SHOULDER"])+"\n")
+        outp.write("    PALM_MIN_SOC_TARGET="+text(setts["PALM_MIN_SOC_TARGET"])+"\n")
+        outp.write("    PALM_MAX_SOC_TARGET="+text(setts["PALM_MAX_SOC_TARGET"])+"\n")
+        outp.write("    PALM_BATT_RESERVE="+text(setts["PALM_BATT_RESERVE"])+"\n")
+        outp.write("    PALM_BATT_UTILISATION="+text(setts["PALM_BATT_UTILISATION"])+"\n")
+        outp.write("    SOLCASTAPI="+text(setts["SOLCASTAPI"])+"\n")
+        outp.write("    SOLCASTSITEID="+text(setts["SOLCASTSITEID"])+"\n")
+        outp.write("    SOLCASTSITEID2="+text(setts["SOLCASTSITEID2"])+"\n")
+        outp.write("    PALM_WEIGHT="+text(setts["PALM_WEIGHT"])+"\n")
+        outp.write("    LOAD_HIST_WEIGHT="+text(setts["LOAD_HIST_WEIGHT"])+"\n")
 
-        outp.write("    evc_enable="+str(setts["evc_enable"]).capitalize()+"\n")
-        outp.write("    evc_ip_address=\""+str(setts["evc_ip_address"])+"\"\n")
-        outp.write("    serial_number_evc=\""+str(setts["serial_number_evc"])+"\"\n")
-        outp.write("    evc_self_run_timer="+str(setts["evc_self_run_timer"])+"\n")
-        outp.write("    evc_import_max_current="+str(setts["evc_import_max_current"])+"\n")
+        outp.write("    evc_enable="+flag(setts["evc_enable"])+"\n")
+        outp.write("    evc_ip_address="+text(setts["evc_ip_address"])+"\n")
+        outp.write("    serial_number_evc="+text(setts["serial_number_evc"])+"\n")
+        outp.write("    evc_self_run_timer="+number(setts["evc_self_run_timer"],10)+"\n")
+        outp.write("    evc_import_max_current="+number(setts["evc_import_max_current"],60)+"\n")
         if SuperTimezone:
-            outp.write("    timezone=\""+str(SuperTimezone)+"\"\n")
+            outp.write("    timezone="+text(SuperTimezone)+"\n")
         else:
-            outp.write("    timezone=\""+str(setts["timezone"])+"\"\n")
+            outp.write("    timezone="+text(setts["timezone"])+"\n")
 
 def createevcsettingsjson(inv):
     PATH= "/app/GivTCP"
@@ -349,36 +350,36 @@ def createevcsettingsjson(inv):
 
     with open(PATH+"/settings.py", 'w') as outp:
         outp.write("class GiV_Settings:\n")
-        outp.write("    MQTT_Address=\""+str(setts["MQTT_Address"])+"\"\n")
-        outp.write("    MQTT_Username=\""+str(setts["MQTT_Username"])+"\"\n")
-        outp.write("    MQTT_Password=\""+str(setts["MQTT_Password"])+"\"\n")
-        outp.write("    MQTT_Port="+str(setts["MQTT_Port"])+"\n")
-        outp.write("    MQTT_Retain="+str(setts["MQTT_Retain"]).capitalize()+"\n")
-        outp.write("    MQTT_Topic=\""+str(setts["MQTT_Topic"])+"\"\n")
+        outp.write("    MQTT_Address="+text(setts["MQTT_Address"])+"\n")
+        outp.write("    MQTT_Username="+text(setts["MQTT_Username"])+"\n")
+        outp.write("    MQTT_Password="+text(setts["MQTT_Password"])+"\n")
+        outp.write("    MQTT_Port="+number(setts["MQTT_Port"],1883)+"\n")
+        outp.write("    MQTT_Retain="+flag(setts["MQTT_Retain"])+"\n")
+        outp.write("    MQTT_Topic="+text(setts["MQTT_Topic"])+"\n")
         if isAddon:
             outp.write("    HA_Auto_D=True\n")
             outp.write("    MQTT_Output=True\n")
             outp.write("    isAddon=True\n")
         else:
-            outp.write("    HA_Auto_D="+str(setts["HA_Auto_D"]).capitalize()+"\n")
-            outp.write("    MQTT_Output="+str(setts["MQTT_Output"]).capitalize()+"\n")
+            outp.write("    HA_Auto_D="+flag(setts["HA_Auto_D"])+"\n")
+            outp.write("    MQTT_Output="+flag(setts["MQTT_Output"])+"\n")
             outp.write("    isAddon=False\n")
         outp.write("    ha_device_prefix=\"GivEVC\"\n")
-        outp.write("    Log_Level=\""+str(setts["Log_Level"])+"\"\n")
+        outp.write("    Log_Level="+text(setts["Log_Level"])+"\n")
         outp.write("    first_run_evc= True\n")
         outp.write("    givtcp_instance="+str(inv)+"\n")
         outp.write("    cache_location=\"/config/GivTCP\"\n")
         outp.write("    Debug_File_Location=\"/config/GivTCP/logs/log_evc.log\"\n")
         outp.write("    Debug_File_Location_Write=\"/config/GivTCP/logs/write_log_evc.log\"\n")
-        outp.write("    evc_enable="+str(setts["evc_enable"]).capitalize()+"\n")
-        outp.write("    evc_ip_address=\""+str(setts["evc_ip_address"])+"\"\n")
-        outp.write("    serial_number_evc=\""+str(setts["serial_number_evc"])+"\"\n")
-        outp.write("    evc_self_run_timer="+str(setts["evc_self_run_timer"])+"\n")
-        outp.write("    evc_import_max_current="+str(setts["evc_import_max_current"])+"\n")
+        outp.write("    evc_enable="+flag(setts["evc_enable"])+"\n")
+        outp.write("    evc_ip_address="+text(setts["evc_ip_address"])+"\n")
+        outp.write("    serial_number_evc="+text(setts["serial_number_evc"])+"\n")
+        outp.write("    evc_self_run_timer="+number(setts["evc_self_run_timer"],10)+"\n")
+        outp.write("    evc_import_max_current="+number(setts["evc_import_max_current"],60)+"\n")
         if SuperTimezone:
-            outp.write("    timezone=\""+str(SuperTimezone)+"\"\n")
+            outp.write("    timezone="+text(SuperTimezone)+"\n")
         else:
-            outp.write("    timezone=\""+str(setts["timezone"])+"\"\n")
+            outp.write("    timezone="+text(setts["timezone"])+"\n")
 
 def findinv(networks):
     inverterStats={}
@@ -765,7 +766,8 @@ else:
 
 os.chdir("/app/GivTCP")
 logger.debug ("Starting Settings Gunicorn on port 6350")
-setting_rest=startGunicorn("settings_rest:giv_api",6350,1,"rest_gunicorn_settings")
+# Only nginx uses the settings API, so it only listens on this machine
+setting_rest=startGunicorn("settings_rest:giv_api",6350,1,"rest_gunicorn_settings","127.0.0.1")
 
 
 ## Run EVC first
@@ -877,24 +879,9 @@ if setts['Web_Dash']==True:
     logger.debug("Creating web dashboard config")
     os.chdir("/app/WebDashboard")
     with open("app.json", 'w') as outp:
-        outp.write("{\n")
-        outp.write("  \"givTcpHosts\": [\n")
-        count=0
-        for inv in runninginv:
-            count += 1
-            GUPORT = invPort(inv)
-            if count > 1:
-                outp.write("  ,{\n")
-            else:
-                outp.write("  {\n")
-            outp.write("    \"name\": \""+setts['inverterName_'+str(inv)]+"\",\n")
-            outp.write("    \"port\": \""+str(GUPORT)+"\"\n")
-            outp.write("  }\n")
-
-        outp.write("  ],\n")
-        outp.write("  \"solarRate\": "+str(setts['day_rate'])+",\n")
-        outp.write("  \"exportRate\": "+str(setts['export_rate'])+"\n")
-        outp.write("}")
+        json.dump({"givTcpHosts": [{"name": str(setts['inverterName_'+str(inv)]), "port": str(invPort(inv))} for inv in runninginv],
+                   "solarRate": float(number(setts['day_rate'],0.395)),
+                   "exportRate": float(number(setts['export_rate'],0.04))}, outp, indent=2)
     WDPORT=int(setts['Web_Dash_Port'])
     logger.info (f"Serving Web Dashboard from port {WDPORT}")
     with open("/etc/nginx/http.d/webdashboard.conf", 'w') as wd:

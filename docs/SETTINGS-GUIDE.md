@@ -79,6 +79,8 @@ Root topic for control is:
 
 The same controls are available as REST calls. Send a `POST` with a JSON body to `http://<host>:8099/REST1/<function>` (use `REST2`, `REST3`… for other inverters), or directly to the inverter's REST port (6345 for the first inverter).
 
+Requests a web page on another site makes through your browser are refused, so another website can't send these commands or read your settings. Apps that call the REST API directly, such as Predbat, Home Assistant's `rest_command` or `curl`, aren't affected. Only the read-only data below (apart from `/settings`) can be read by pages on other sites.
+
 ### Inverter
 
 | Function | Description | REST URL | REST payload | MQTT Topic | MQTT Payload |
@@ -162,4 +164,4 @@ EVC control topics use the charger's serial number: `GivEnergy/control/<evc_seri
 | `/readData` | GET | Latest data, also published according to the output settings |
 | `/runAll` | GET | Latest data from the cache |
 | `/getEVCCache` | GET | Latest data from the EV charger |
-| `/settings` | GET / POST | Read or save GivTCP's settings (used by the config page) |
+| `/settings` | GET / POST | Read or save GivTCP's settings (used by the config page). A save is merged into the saved settings, and refused if a value isn't a single value, or isn't a number or true/false where one is expected |

@@ -295,3 +295,32 @@ def test_non_addon_settings_preserve_user_options_and_timezone(container):
     assert settings['GiV_Settings'].Print_Raw_Registers is False
     assert settings['GiV_Settings'].timezone == 'Europe/London'
     assert ns['selfRun'] == {}
+
+
+def test_settings_are_written_as_literals_never_as_code(container):
+    # Each value would end its string or line and add code if written into settings.py as it was
+    c = container
+    code = '"\n    INJECTED=True\n    x="'
+    c.run(inverter_enable_1=True, invertorIP_1='192.0.2.2', serial_number_1='TEST000001', Model_1='Hybrid',
+          MQTT_Topic='topic' + code, MQTT_Password="it's" + code, inverterName_1='Name' + code,
+          MQTT_Port='1883\n    INJECTED=True', day_rate='0.3\n    INJECTED=True', recovery_pause_1='inf',
+          MQTT_Retain='True\n    INJECTED=True', evc_enable=True, evc_ip_address='192.0.2.3' + code, Web_Dash=True)
+    for path in ('/app/GivTCP_1/settings.py', '/app/GivTCP/settings.py'):
+        settings = {}
+        exec(c.mapped(path).read_text(), settings)
+        assert not hasattr(settings['GiV_Settings'], 'INJECTED')
+    inverter = {}
+    exec(c.mapped('/app/GivTCP_1/settings.py').read_text(), inverter)
+    s = inverter['GiV_Settings']
+    assert (s.MQTT_Topic, s.MQTT_Password, s.ha_device_prefix) == ('topic' + code, "it's" + code, 'Name' + code)
+    assert (s.MQTT_Port, s.day_rate, s.recovery_pause, s.MQTT_Retain) == (1883, 0.395, 0.0, False)
+    dashboard = json.loads(c.mapped('/app/WebDashboard/app.json').read_text())
+    assert dashboard['givTcpHosts'] == [{'name': 'Name' + code, 'port': '6345'}]
+    assert dashboard['solarRate'] == 0.395
+
+
+def test_settings_api_only_listens_on_this_machine(container):
+    c = container
+    c.run(inverter_enable_1=True, invertorIP_1='192.0.2.2', serial_number_1='TEST000001', Model_1='Hybrid')
+    binds = {p.args[-1]: p.args[p.args.index('-b') + 1] for p in c.processes if 'gunicorn' in p.args[0]}
+    assert binds == {'settings_rest:giv_api': '127.0.0.1:6350', 'REST:giv_api': ':6345'}
