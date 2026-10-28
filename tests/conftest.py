@@ -63,7 +63,11 @@ def sandbox():
 
 @pytest.fixture(scope="session")
 def plants():
-    return Plants()
+    plants = Plants()
+    try:
+        yield plants
+    finally:
+        plants.close()
 
 @pytest.fixture(scope="session")
 def api():
