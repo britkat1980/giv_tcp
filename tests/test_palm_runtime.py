@@ -75,15 +75,75 @@ def test_load_history_uses_daily_weights_and_half_hour_differences(monkeypatch):
 
 
 @pytest.mark.parametrize('kind', ['no_weights', 'http_error', 'connection_error'])
-def test_load_history_unavailable_returns_zero_load(monkeypatch, kind):
+def test_load_history_unavailable_keeps_the_load_profile(monkeypatch, kind):
+    # No history isn't a day with no load, so the forecast keeps the profile it has (the default at first) (#684)
     monkeypatch.setattr(palm.stgs.GE, 'load_hist_weight', [0] if kind == 'no_weights' else [1])
     request = Mock(return_value=response({}, 503))
     if kind == 'connection_error':
         request.side_effect = palm.requests.exceptions.ConnectionError('offline')
     monkeypatch.setattr(palm.requests, 'request', request)
     inverter = palm.GivEnergyObj()
+    profile = list(inverter.base_load)
     inverter.get_load_hist()
-    assert inverter.base_load == [0] * 48
+    assert inverter.base_load == profile
+
+
+def timed_day(seconds_apart, kwh, stale_at=None, days_ago=1):
+    """A day's data points every seconds_apart, at a constant load adding up to kwh, timed in local time"""
+    from datetime import datetime, timedelta
+    day = (datetime.now() - timedelta(days_ago)).replace(hour=0, minute=0, second=0, microsecond=0)
+    count = 24 * 3600 // seconds_apart
+    rows = []
+    for i in range(count):
+        energy = i * kwh / count
+        if i == stale_at:
+            energy = 0.0     # a stale reading, lower than the one before it
+        rows.append({'time': (day + timedelta(seconds=i * seconds_apart + 27)).astimezone().isoformat(),
+                     'today': {'consumption': energy}})
+    return rows
+
+
+def paged(rows, size=2000):
+    pages = [rows[i:i + size] for i in range(0, len(rows), size)]
+    return [Mock(content=json.dumps({'data': page, 'meta': {'current_page': n + 1, 'last_page': len(pages)}}).encode(),
+                 status_code=200) for n, page in enumerate(pages)]
+
+
+@pytest.mark.parametrize('seconds_apart', [300, 30])
+def test_load_history_uses_record_times_and_every_page(monkeypatch, seconds_apart):
+    # 30-second data points were read as 5-minute ones: "a day" ended at 02:30, a tenth of the real load (#684)
+    monkeypatch.setattr(palm.stgs.GE, 'load_hist_weight', [1])
+    monkeypatch.setattr(palm.stgs.pg, 't_now_mins', 600)
+    pages = paged(timed_day(seconds_apart, 48))
+    request = Mock(side_effect=pages)
+    monkeypatch.setattr(palm.requests, 'request', request)
+    inverter = palm.GivEnergyObj()
+    inverter.get_load_hist()
+    assert request.call_count == len(pages) == (1 if seconds_apart == 300 else 2)
+    assert [call.kwargs['params']['page'] for call in request.call_args_list] == [str(n + 1) for n in range(len(pages))]
+    assert sum(inverter.base_load) == pytest.approx(48, abs=0.5)
+    assert inverter.base_load[1:47] == [1.0] * 46
+
+
+def test_load_history_ignores_a_stale_reading(monkeypatch):
+    monkeypatch.setattr(palm.stgs.GE, 'load_hist_weight', [1])
+    monkeypatch.setattr(palm.stgs.pg, 't_now_mins', 600)
+    monkeypatch.setattr(palm.requests, 'request', Mock(side_effect=paged(timed_day(300, 48, stale_at=120))))
+    inverter = palm.GivEnergyObj()
+    inverter.get_load_hist()
+    assert min(inverter.base_load) >= 0
+    assert sum(inverter.base_load) == pytest.approx(48, abs=0.5)
+
+
+def test_incomplete_day_is_left_out(monkeypatch):
+    monkeypatch.setattr(palm.stgs.GE, 'load_hist_weight', [1, 1])
+    monkeypatch.setattr(palm.stgs.pg, 't_now_mins', 600)
+    partial = [row for row in timed_day(300, 48, days_ago=2) if row['time'][11:16] < '02:30']
+    monkeypatch.setattr(palm.requests, 'request', Mock(side_effect=paged(timed_day(300, 24)) + paged(partial)))
+    inverter = palm.GivEnergyObj()
+    inverter.get_load_hist()
+    # Only the complete day counts, rather than averaging it with a day of almost no load
+    assert sum(inverter.base_load) == pytest.approx(24, abs=0.5)
 
 
 @pytest.mark.parametrize('command,expected', [
