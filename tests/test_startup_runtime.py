@@ -69,7 +69,14 @@ def container(tmp_path):
     fake_os.chdir = lambda path: cwd.__setitem__(0, path)
     fake_os.listdir = lambda path: os.listdir(mapped(path))
     fake_os.remove = lambda path: mapped(path).unlink()
-    fake_os.symlink = lambda src, dest: mapped(dest).symlink_to(mapped(src))
+    def symlink(src, dest):
+        # Windows can deny symlinks without Developer Mode or elevated privileges.
+        # The simulated container only needs the config to be readable at dest.
+        try:
+            mapped(dest).symlink_to(mapped(src))
+        except OSError:
+            shutil.copyfile(mapped(src), mapped(dest))
+    fake_os.symlink = symlink
     fake_os.killpg = Mock()
     fake_os._exit = Mock(side_effect=EndWatchdog)
     fake_os.getenv = lambda key: {'SUPERVISOR_TOKEN': 'test-token'}.get(key)
@@ -80,6 +87,7 @@ def container(tmp_path):
     fake_subprocess = SimpleNamespace(**vars(subprocess))
     fake_subprocess.Popen = Process
     fake_signal = SimpleNamespace(**vars(signal))
+    fake_signal.SIGKILL = getattr(signal, 'SIGKILL', 9)  # simulated Linux container
     fake_signal.signal = Mock()
     schedule = Mock()
     schedule.run_pending.side_effect = EndWatchdog
@@ -148,6 +156,16 @@ def test_startup_generates_instance_settings_routes_and_launches_services(contai
     assert ['/usr/local/bin/python3', '/app/GivTCP/evc.py', 'chargeMode'] in commands
     assert ns['runninginv'] == [1]
     c.schedule.every.assert_called_once()
+
+
+def test_startup_without_symlink_privileges_copies_config(container, monkeypatch):
+    def denied(*args, **kwargs):
+        raise PermissionError(1314, 'A required privilege is not held by the client')
+    monkeypatch.setattr(Path, 'symlink_to', denied)
+    ns = container.run()
+    published = container.mapped('/app/ingress/allsettings.json')
+    assert not published.is_symlink()
+    assert json.loads(published.read_text()) == ns['setts']
 
 
 def test_scan_adds_new_slot_and_reuses_cached_capabilities(container):

@@ -4,7 +4,7 @@ import copy
 import importlib
 import json
 import runpy
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import Mock
 
 import pytest
 from harness.env import ROOT
@@ -181,18 +181,21 @@ def test_soc_script_fetches_history_forecast_and_writes_target(monkeypatch):
     monkeypatch.setattr(palm, 'GivEnergyObj', Mock(return_value=inverter))
     forecast = Mock()
     monkeypatch.setattr(palm, 'SolcastObj', Mock(return_value=forecast))
-    import write
-    target = AsyncMock(return_value='ok')
-    monkeypatch.setattr(write, 'setChargeTarget', target)
+    from GivLUT import GivLUT
+    target = Mock()
+    monkeypatch.setattr(GivLUT, 'queue_write', target)
     result = runpy.run_path(str(ROOT / 'GivTCP/palm_soc.py'), run_name='__main__')
     inverter.get_load_hist.assert_called_once()
     forecast.update.assert_called_once()
-    target.assert_awaited_once_with({'chargeToPercent': 60})
+    target.assert_called_once_with('setChargeTarget', {'chargeToPercent': 60})
+    inverter.set_mode.assert_not_called()
     result['GivTCP_write_soc']('set_soc_winter')
-    target.assert_awaited_with({'chargeToPercent': 100})
+    target.assert_called_with('setChargeTarget', {'chargeToPercent': 100})
     target.side_effect = OSError('offline')
     result['GivTCP_write_soc']('set_soc')
     inverter.set_mode.assert_called_once_with('set_soc')
+    result['GivTCP_write_soc']('set_soc_winter')
+    inverter.set_mode.assert_called_with('set_soc_winter')
 
 
 def test_palm_settings_defaults_and_optional_second_array(monkeypatch):

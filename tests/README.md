@@ -64,8 +64,12 @@ network scanning. External services are replaced with fakes; files are written o
 You can pass pytest selectors after `pytest` for a quicker check, but that report represents only the
 selected tests. Each coverage run replaces the previous results. Run the full suite for a baseline.
 
-The **Tests and coverage** GitHub Actions workflow runs on pushes and pull requests. Its run summary shows
-a per-file coverage table, and the **python-coverage** artifact contains HTML, XML and JSON reports (retained
+The **Tests and coverage** GitHub Actions workflow runs on pushes and pull requests on Linux and Windows.
+Startup tests copy the simulated container config if Windows denies symlinks; portable log-handler tests
+cover reopening and rollover without relying on POSIX open-file rename behavior. The 70% per-file gate
+applies on both platforms.
+Each run summary shows a per-file coverage table, and the **python-coverage-ubuntu-latest** and
+**python-coverage-windows-latest** artifacts contain HTML, XML and JSON reports (retained
 for 14 days). Download and extract it, then open `htmlcov/index.html`. Reports are also generated when
 tests fail; those results may be incomplete. CI requires **at least 70% in every measured file**, using
 coverage.py's combined line-and-branch percentage. The check uses unrounded values and runs after report
