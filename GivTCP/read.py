@@ -188,6 +188,20 @@ def checkInverterClock(invTime, readAt=None):
                    " against "+now.strftime(shown)+"), so its Today energy counters reset at the wrong time. "
                    "Use the Sync Time button, or the GivEnergy portal, to correct it")
 
+def acFrequency(plant: Plant, device, field):
+    """A single-phase inverter's grid or output frequency in Hz, or None if it hasn't been read. Some inverters report
+    it 10 times too high (eg. 500.0 for 50Hz), which GivTCP has always divided by 10. The Modbus library's 40-70Hz
+    bounds now turn those readings into None, which failed every poll (#675), so then decode the raw register here"""
+    value=getattr(device, field, None)
+    if value is None and plant.capabilities is not None:
+        defn=SinglePhaseInverterRegisterGetter.REGISTER_LUT[field]
+        raw=plant.register_caches.get(plant.capabilities.inverter_address,{}).get(defn.registers[0])
+        if raw:
+            value=defn.pre_conv(raw)
+    if value is None:
+        return None
+    return value/10 if value>100 else value
+
 def sumPresent(*values):
     # The sum of the values that were read, or None if none were
     present=[v for v in values if v is not None]
@@ -236,7 +250,7 @@ def rebootaddon():
         url="http://supervisor/addons/self/restart"
         result = requests.post(url,
             headers={'Content-Type':'application/json',
-                    'Authorization': 'Bearer {}'.format(access_token)})
+                    'Authorization': 'Bearer {}'.format(access_token)}, timeout=30)
         logger.info("Supervisor restart was: "+str(result))
     else:
         result="Please restart GivTCP Manually..."
@@ -467,6 +481,17 @@ def hvModulesRead(plant: Plant):
     valid=[b.is_valid() for hvstack in plant.hv_stacks for b in hvstack.bmus]
     return {bank for bank,ok in zip(banks,valid) if ok} if len(valid)==len(banks) else set()
 
+def liteQuery():
+    # Lite mode (lite_query, per inverter): ask the HV battery stacks as little as possible, as the inverter passes
+    # each read on to the stack's BCU or module
+    return str(getattr(GiV_Settings,'lite_query',False)).lower()=="true"
+
+def hvBcusRead(plant: Plant):
+    # The stack (BCU) reads whose stack already has data. Not the All-in-One, whose batteries are laid out differently
+    if not modbus_patches._hv(plant.capabilities):
+        return set()
+    return {(hvstack.device_address,60,60) for hvstack in plant.hv_stacks if hvstack.bcu.is_valid()}
+
 async def readPlant(client, fullRefresh):
     # Run the register reads. Partial failures still leave good data in the register cache so keep going,
     # only a total failure (RefreshFailed) or lost connection is raised
@@ -476,7 +501,13 @@ async def readPlant(client, fullRefresh):
     # Between full refreshes, leave out the HV battery module reads once their data has been read: it's cell
     # voltages and temperatures, and each module is a read of its own, so 12 of 24 reads a poll on two 6-module
     # stacks (#614). The stack values (SOC, power, voltage) come from the BCU, which is still read every poll
-    modbus_patches.skip_banks=set() if fullRefresh else hvModulesRead(client.plant)
+    # In lite mode the modules are only read until they have data, and the stacks (BCUs) between full refreshes only
+    # until they have data
+    light=liteQuery()
+    skip=hvModulesRead(client.plant) if light or not fullRefresh else set()
+    if light and not fullRefresh:
+        skip|=hvBcusRead(client.plant)
+    modbus_patches.skip_banks=skip
     reads=[lambda: client.refresh(max_age=max_age)]
     if fullRefresh:
         reads.append(client.load_config)    #Run full HR read on fullRefresh
@@ -675,16 +706,34 @@ FULL_REFRESH_RETRIES=3
 # Seconds to the first poll if the full refresh when connecting failed
 FULL_REFRESH_RETRY_DELAY=10
 
-def settingsRetry(failures, retries):
+# Settings blocks that had their retries without ever answering since GivTCP started: (device address, base register)
+_settingsGivenUp=set()
+
+def neverAnswered(plant: Plant, failure):
+    return plant.block_age(failure.device_address, "HR", failure.base_register, failure.register_count) is None
+
+def settingsRetry(failures, retries, plant: Optional[Plant]=None):
     """After a full refresh, whether to make the next poll a full one too, and the new retry count. Retries while
-    some settings (holding registers) weren't read, rather than wait for the next full refresh (#608)"""
+    some settings (holding registers) weren't read, rather than wait for the next full refresh (#608). A block that
+    has never answered since GivTCP started only gets the retries once: it's still read with each full refresh, but
+    an inverter that doesn't support it doesn't turn most polls into full refreshes (#675)"""
     settingsFailed=[f for f in failures if f.request_type=="ReadHoldingRegistersRequest"]
+    if plant is not None:
+        settingsFailed=[f for f in settingsFailed
+                        if not ((f.device_address,f.base_register) in _settingsGivenUp and neverAnswered(plant,f))]
     if settingsFailed and retries<FULL_REFRESH_RETRIES:
         logger.debug("Inverter settings not all read (attempt "+str(retries+1)+"), next poll is a full refresh")
         return True, retries+1
     if settingsFailed:
         logger.warning("Some inverter settings could not be read after "+str(retries+1)+" attempts, trying again at the next full refresh: "+
                        ", ".join(f"HR(0x{f.device_address:02x},{f.base_register})" for f in settingsFailed))
+        if plant is not None:
+            unanswered=[f for f in settingsFailed if neverAnswered(plant,f)]
+            for f in unanswered:
+                _settingsGivenUp.add((f.device_address,f.base_register))
+            if unanswered:
+                logger.info("The inverter hasn't answered "+", ".join(f"HR(0x{f.device_address:02x},{f.base_register})" for f in unanswered)+
+                            " since GivTCP started, so it's still read with each full refresh, but no longer retried on the polls after it")
     return False, 0
 
 class Recovery:
@@ -931,7 +980,7 @@ async def watch_plant(
                         logger.debug("Data get was successful, now running handler if needed: ")
                         retry=False
                         if fullRefresh:
-                            retry,fullRetries=settingsRetry(failures,fullRetries)
+                            retry,fullRetries=settingsRetry(failures,fullRetries,client.plant)
                         if fullRefresh and not retry:
                             # Only mark full refresh done once it succeeds, so a post-write readback isn't lost
                             lastfulltime=datetime.datetime.now()
@@ -948,10 +997,10 @@ async def watch_plant(
                         if recovery.enabled:
                             # The next poll is at the normal time rather than sooner, and a second failure pauses
                             if recovery.failed():
-                                try:
-                                    await closeClient(client)       # can raise on a dead socket (#613)
-                                except Exception:
-                                    pass
+                                # A new client, as a restart gives it: the same one reconnected after the pause can keep
+                                # getting no answers, where a new process connects first time (#615). new_client() closes
+                                # the old one, which can raise on a dead socket (#613)
+                                client=await GivClientAsync.new_client("the inverter not responding", quiet=True)
                                 await recovery.wait()
                                 timeoutErrors=0
                             continue
@@ -1060,6 +1109,14 @@ def getInvModel(plant: Plant):
     if inverterModel.batmaxrate is None and not plant.capabilities.is_ems:
         # A model the library has no battery rating for: the inverter's rating is the most it can be (#628)
         inverterModel.batmaxrate=inverterModel.invmaxrate
+    caps=plant.capabilities
+    if inverterModel.batmaxrate and getattr(caps,'lv_battery_addresses',None) and not any(getattr(caps,c,False) for c in ('is_three_phase','is_gateway','is_ems')):
+        # The battery rate (HR 111/112) is a percentage of the battery's capacity, at most 50% (batteryLimitPercent), so
+        # a small LV battery can't take the inverter's full rate: 2611W on a 5.2kWh battery on a 3.6kW Gen 3, as GivTCP
+        # 2.x reported, not 3600W. Reporting more had Predbat set it, read back less, and retry (#679). Not HV batteries,
+        # whose capacity figures and rates are worked out differently
+        if inverterModel.batterycapacity:
+            inverterModel.batmaxrate=min(inverterModel.batmaxrate, int(inverterModel.batterycapacity*500))
     return inverterModel
 
 def rawValues(model):
@@ -1706,16 +1763,10 @@ def processPVInfo(plant: Plant):
         power_flow_output['Solar_to_House'] = flows['Solar_to_House']
         power_flow_output['Solar_to_Grid'] = flows['Solar_to_Grid']
 
-        if GEInv.f_ac1>100:
-            freq=GEInv.f_ac1/10
-        else:
-            freq=GEInv.f_ac1
-        power_output['Grid_Frequency'] = freq
-        if GEInv.f_ac1_output>100:
-            freq=GEInv.f_ac1_output/10
-        else:
-            freq=GEInv.f_ac1_output
-        power_output['Inverter_Output_Frequency'] = freq
+        for key,field in (('Grid_Frequency','f_ac1'),('Inverter_Output_Frequency','f_ac1_output')):
+            freq=acFrequency(plant, GEInv, field)
+            if freq is not None:        # left out until it's been read, rather than failing the poll (#675)
+                power_output[key] = freq
 
         # Check for all zeros
         checksum = 0
@@ -2015,16 +2066,10 @@ def processInverterInfo(plant: Plant):
             discharge_power=0
 
 
-        if GEInv.f_ac1>100:
-            freq=GEInv.f_ac1/10
-        else:
-            freq=GEInv.f_ac1
-        power_output['Grid_Frequency'] = freq
-        if GEInv.f_ac1_output>100:
-            freq=GEInv.f_ac1_output/10
-        else:
-            freq=GEInv.f_ac1_output
-        power_output['Inverter_Output_Frequency'] = freq
+        for key,field in (('Grid_Frequency','f_ac1'),('Inverter_Output_Frequency','f_ac1_output')):
+            freq=acFrequency(plant, GEInv, field)
+            if freq is not None:        # left out until it's been read, rather than failing the poll (#675)
+                power_output[key] = freq
         # Not every model in the list has IR 247-248 read (eg. HV Gen 3), so only add it when there is a value
         if resolvedModel(plant, GEInv) in (Model.HYBRID_GEN3, Model.HYBRID_GEN4, Model.HYBRID_HV_GEN3, Model.HYBRID_3PH, Model.ALL_IN_ONE_HYBRID, Model.AIO_COMMERCIAL) \
                 and GEInv.p_combined_generation is not None:
@@ -2330,7 +2375,8 @@ def processGatewayInfo(plant: Plant):
         power_output['Inverter_Relay_Voltage']=GEInv.v_inverter_relay
         power_output['Invertor_Power']=GEInv.p_aio_total
         
-        controlmode={}    
+        # Sync Time on every Gateway: its clock needs setting (eg. after the clocks change) with one All in One too (#680)
+        controlmode={'Sync_Time':"disable"}
         timeslots={}
         #Only implement these, if Parallel mode is in use
         if GEInv.parallel_aio_online_num>1:
@@ -2628,6 +2674,9 @@ def processThreePhaseInfo(plant: Plant):
                 if isinstance(stack_data, dict) and 'Stack_Design_Capacity' in stack_data:
                     cap = cap + stack_data['Stack_Design_Capacity']
         inverter['Battery_Capacity_kWh'] = cap
+        if liteQuery() and cap and isinstance(power_output.get('SOC'),(int,float)):
+            # The stacks' remaining capacity is only read on full refreshes, so work it out from the inverter's SOC
+            power_output['SOC_kWh']=round(power_output['SOC']*cap/100,2)
 
         inverter['Inverter_Temperature']=GEInv.t_inverter
         inverter['Boost_Temperature']=GEInv.t_boost
@@ -2732,7 +2781,7 @@ def processData(plant: Plant):
         givtcpdata['Last_Updated_Time'] = datetime.datetime.now(GivLUT.timezone).isoformat()
         givtcpdata['status'] = "online"
         givtcpdata['Time_Since_Last_Update'] = 0
-        givtcpdata['GivTCP_Version']= "3.6.8"
+        givtcpdata['GivTCP_Version']= "3.6.9"
         age=dataAge(plant)
         givtcpdata['Data_Age']= round(age,1) if age is not None else -1
         if age is None or age > max(3*GiV_Settings.self_run_timer, 60):
@@ -3016,9 +3065,20 @@ def getCache():     # Get latest cache data and return it (for use in REST)
         multi_output['result']="Error getting data from cache"+str(e)
         return json.dumps(multi_output, indent=4, sort_keys=True, default=str)
 
+def logSettings(recovery):
+    """Log the connection settings that change how GivTCP talks to the inverter, once at startup and only when on"""
+    if liteQuery():
+        logger.info("Lite mode on: HV battery modules are read until they have data, battery stacks only on full refreshes")
+    delay=float(getattr(GiV_Settings,'connect_delay',0) or 0)
+    if delay>0:
+        logger.info("Wait After Connecting on: waiting "+str(round(delay))+"s after each new connection before the first request")
+    if recovery.enabled:
+        logger.info("Pause When Inverter Stops Responding on: after "+str(recovery.STRIKES)+" failed polls in a row, sending it nothing for "+str(round(recovery.pause))+"s")
+
 async def self_run():
     # re-run everytime watch_plant Dies
     recovery=Recovery()
+    logSettings(recovery)
     while True:
         try:
             logger.info("Starting watch_plant loop...")

@@ -20,7 +20,6 @@ services:
     #   8099        web UI: config page, Share Device, Logs, the dashboard (/dashboard/), the settings API (/settings)
     #               and each inverter's REST API (/RESTn/)
     #   6345-6349   REST API for inverters 1-5 on their own ports (6356 onwards for 6+), as Predbat uses
-    #   6350        settings API on its own port
     #   3000        web dashboard on its own port (Web_Dash_Port in the settings)
     #   1883        MQTT broker, only if the MQTT address on the config page is 127.0.0.1 (GivTCP then runs its own)
     network_mode: host

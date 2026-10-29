@@ -11,6 +11,7 @@ import asyncio
 from GivTCP.netscan import scan, as_list, INVERTER_PORT, EVC_PORT
 from GivTCP.capscheck import missingBatteries, capsBatteryCount
 from GivTCP.startfiles import keptOnStart
+from GivTCP.settings_values import text, flag, number, api_key     # settings.py gets each setting as a literal, never as code
 from givenergy_modbus.client.client import Client
 from givenergy_modbus.exceptions import CommunicationError
 from givenergy_modbus.model.inverter import resolve_model
@@ -24,21 +25,58 @@ webDash={}
 rqWorker={}
 redis={}
 mqttBroker=None     # only set when GivTCP runs its own Mosquitto
+nginx=None
 networks={}
 SuperTimezone=""
 
 
 # Check if config directory exists and creates it if not
 
-INVERTER_KEY_DEFAULTS={"inverter_enable_":False,"invertorIP_":"","serial_number_":"","Model_":"","inverter_battery_only_":False,"inverter_no_battery_":False,"recovery_pause_":0}
+INVERTER_KEY_DEFAULTS={"inverter_enable_":False,"invertorIP_":"","serial_number_":"","Model_":"","inverter_battery_only_":False,"inverter_no_battery_":False,"recovery_pause_":0,"lite_query_":False,"connect_delay_":0}
 
-def startGunicorn(app, port, workers, logname):
+def startGunicorn(app, port, workers, logname, host=""):
     # Gunicorn's own errors (eg. a worker failing to load the app, or the port being in use) go to a log in
     # /config/GivTCP/logs, so they show in the log viewer. It runs in its own process group so a restart can
     # stop its workers as well (a worker left behind would keep the port and stop the new one starting)
-    command=["/usr/local/bin/gunicorn","-w",str(workers),"-b",":"+str(port),"--log-level","warning",
+    command=["/usr/local/bin/gunicorn","-w",str(workers),"-b",host+":"+str(port),"--log-level","warning",
              "--error-logfile","/config/GivTCP/logs/"+logname+".log",app]
     return subprocess.Popen(command, start_new_session=True)
+
+def childProcesses():
+    """The processes startup.py started and keeps track of, except gunicorn (stopGunicorn), to stop on shutdown: first
+    the ones that use Redis (read loops, RQ workers, EVC loops), then the services they need (Redis, nginx, Mosquitto).
+    An RQ worker tidies up in Redis when it stops, so Redis has to outlive it"""
+    clients=list(selfRun.values())+list(rqWorker.values())+[globals().get(n) for n in ("evcSelfRun","evcChargeModeLoop")]
+    services=[globals().get("redis"), nginx, mqttBroker]
+    return [p for p in clients if isinstance(p, subprocess.Popen)], [p for p in services if isinstance(p, subprocess.Popen)]
+
+def stopProcesses(procs, seconds):
+    # Ask them all to stop (SIGTERM), then kill any still running after this many seconds
+    for proc in procs:
+        if proc.poll() is None:
+            proc.terminate()
+    deadline=datetime.now()+timedelta(seconds=seconds)
+    for proc in procs:
+        try:
+            proc.wait(timeout=max(0.1,(deadline-datetime.now()).total_seconds()))
+        except subprocess.TimeoutExpired:
+            proc.kill()
+
+def shutdown(signum, frame):
+    """Home Assistant (or docker stop) stops GivTCP with SIGTERM: stop the processes started here and exit with 0
+    rather than be killed by the signal (exit code 143), which the Supervisor reports as not shutting down cleanly"""
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)       # once is enough
+    try:
+        logging.getLogger().info("Stopping GivTCP ("+signal.Signals(signum).name+")")
+        for proc in list(gunicorn.values())+[globals().get("setting_rest")]:
+            if isinstance(proc, subprocess.Popen):
+                stopGunicorn(proc)
+        clients,services=childProcesses()
+        stopProcesses(clients, 5)       # both within the Supervisor's 10s stop timeout
+        stopProcesses(services, 3)
+        logging.shutdown()
+    finally:
+        os._exit(0)     # not sys.exit: the watchdog loop's bare except would catch SystemExit
 
 def stopGunicorn(proc):
     # Stop the gunicorn master and any of its workers that are still running
@@ -75,13 +113,65 @@ def ensureInverterSlots(setts):
 def writeRestRoutes(setts):
     # nginx routes /RESTn/ to each inverter's REST API. Generated for however many slots are configured
     # (ingress*.conf includes this folder; an empty folder is valid, so nginx still starts if this fails)
+    # With a REST API key, nginx adds it, so GivTCP's own pages (eg. the config page's restart) don't need to know it
     os.makedirs("/etc/nginx/givtcp_rest", exist_ok=True)
+    key=api_key(setts)
     with open("/etc/nginx/givtcp_rest/rest.conf","w") as outp:
         for num in range(1,int(setts.get("number_of_inverters",0) or 0)+1):
-            outp.write("location /REST"+str(num)+"/ {\n    proxy_pass http://127.0.0.1:"+str(invPort(num))+"/;\n}\n")
+            outp.write("location /REST"+str(num)+"/ {\n    proxy_pass http://127.0.0.1:"+str(invPort(num))+"/;\n"
+                       +("    proxy_set_header X-API-Key \""+key+"\";\n" if key else "")+"}\n")
+
+LAN_RANGES=("10.0.0.0/8","172.16.0.0/12","192.168.0.0/16")
+HA_INGRESS="172.30.32.2"       # where Home Assistant's ingress connects from
+
+def writeWebAccess(setts, addon):
+    """Who can open the web UI on 8099/8098 (ingress*.conf includes this). As an add-on, only Home Assistant's
+    ingress (so a Home Assistant login is needed) unless Web_LAN_Access is on. In Docker, the local network as before,
+    as 8099 is the only way to the config page"""
+    lan=(not addon) or str(setts.get("Web_LAN_Access")).lower()=="true"
+    allowed=["127.0.0.1", HA_INGRESS]+(list(LAN_RANGES) if lan else [])
+    with open("/etc/nginx/givtcp_access.conf","w") as outp:
+        outp.write("".join("allow "+a+";\n" for a in allowed)+"deny all;\n")
+    return lan
+
+BROKER_CONF="/etc/mosquitto/givtcp.conf"
+BROKER_PASSWORDS="/etc/mosquitto/givtcp_passwords"
+
+def writeBroker(setts):
+    """The config for GivTCP's own Mosquitto. With an MQTT username and password set (as GivTCP connects with), it
+    only accepts those. Without them it accepts anyone on the network, as it always has, and says so"""
+    user=str(setts.get("MQTT_Username") or "")
+    password=str(setts.get("MQTT_Password") or "")
+    listen="0.0.0.0"
+    auth=["allow_anonymous true"]
+    if user or password:
+        try:
+            if not (user and password) or ":" in user or any(c in user+password for c in "\r\n"):
+                raise ValueError("the MQTT username and password must both be set, without line breaks, and the username can't contain ':'")
+            os.makedirs(os.path.dirname(BROKER_PASSWORDS), exist_ok=True)
+            with open(BROKER_PASSWORDS,"w") as outp:
+                outp.write(user+":"+password+"\n")
+            subprocess.run(["/usr/bin/mosquitto_passwd","-U",BROKER_PASSWORDS], check=True, timeout=30)
+            auth=["allow_anonymous false","password_file "+BROKER_PASSWORDS]
+            try:
+                shutil.chown(BROKER_PASSWORDS,"mosquitto","mosquitto")    # as Mosquitto wants it, readable only by it
+                os.chmod(BROKER_PASSWORDS,0o700)
+            except Exception:
+                logger.debug("Couldn't make the MQTT broker's password file Mosquitto's: "+errDetail())
+        except Exception:
+            # Don't leave the broker open on the network when credentials were meant to protect it
+            logger.error("Couldn't set up the MQTT broker's login, so it only accepts connections from GivTCP itself: "+errDetail())
+            listen="127.0.0.1"
+    else:
+        logger.warning("GivTCP's MQTT broker accepts anyone on your network, as no MQTT username and password are set. "
+                       "Set them on the config page to require them")
+    os.makedirs(os.path.dirname(BROKER_CONF), exist_ok=True)
+    with open(BROKER_CONF,"w") as outp:
+        outp.write("listener 1883 "+listen+"\n"+"\n".join(auth)+"\n")
 
 def palm_job():
-    subprocess.Popen(["/usr/local/bin/python3","/app/GivTCP_1/palm_soc.py"])
+    # In the first inverter's folder, where its read loop picks up the write requests PALM queues (#682)
+    subprocess.Popen(["/usr/local/bin/python3","/app/GivTCP_1/palm_soc.py"], cwd="/app/GivTCP_1")
 
 def validateEVC(HOST):
     logger.debug("Validating "+str(HOST))
@@ -227,78 +317,81 @@ def createsettingsjson(inv):
 
     with open(PATH+"/settings.py", 'w') as outp:
         outp.write("class GiV_Settings:\n")
-        outp.write("    invertorIP=\""+str(setts["invertorIP_"+str(inv)])+"\"\n")
-        outp.write("    serial_number=\""+str(setts["serial_number_"+str(inv)])+"\"\n")
-        outp.write("    inverter_type=\""+str(setts["Model_"+str(inv)])+"\"\n")
-        outp.write("    Battery_Only="+str(setts["inverter_battery_only_"+str(inv)]).capitalize()+"\n")
+        outp.write("    invertorIP="+text(setts["invertorIP_"+str(inv)])+"\n")
+        outp.write("    serial_number="+text(setts["serial_number_"+str(inv)])+"\n")
+        outp.write("    inverter_type="+text(setts["Model_"+str(inv)])+"\n")
+        outp.write("    Battery_Only="+flag(setts["inverter_battery_only_"+str(inv)])+"\n")
         outp.write("    No_Battery="+str(str(setts.get("inverter_no_battery_"+str(inv))).lower()=="true")+"\n")
-        outp.write("    MQTT_Address=\""+str(setts["MQTT_Address"])+"\"\n")
-        outp.write("    MQTT_Username=\""+str(setts["MQTT_Username"])+"\"\n")
-        outp.write("    MQTT_Password=\""+str(setts["MQTT_Password"])+"\"\n")
-        outp.write("    MQTT_Port="+str(setts["MQTT_Port"])+"\n")
-        outp.write("    MQTT_Retain="+str(setts["MQTT_Retain"]).capitalize()+"\n")
-        outp.write("    MQTT_Topic=\""+str(setts["MQTT_Topic"])+"\"\n")
+        outp.write("    MQTT_Address="+text(setts["MQTT_Address"])+"\n")
+        outp.write("    MQTT_Username="+text(setts["MQTT_Username"])+"\n")
+        outp.write("    MQTT_Password="+text(setts["MQTT_Password"])+"\n")
+        outp.write("    MQTT_Port="+number(setts["MQTT_Port"],1883)+"\n")
+        outp.write("    MQTT_Retain="+flag(setts["MQTT_Retain"])+"\n")
+        outp.write("    MQTT_Topic="+text(setts["MQTT_Topic"])+"\n")
         if isAddon:
             outp.write("    HA_Auto_D=True\n")
             outp.write("    Print_Raw_Registers=True\n")
             outp.write("    MQTT_Output=True\n")
             outp.write("    isAddon=True\n")
         else:
-            outp.write("    HA_Auto_D="+str(setts["HA_Auto_D"]).capitalize()+"\n")
-            outp.write("    Print_Raw_Registers="+str(setts["Print_Raw_Registers"]).capitalize()+"\n")
-            outp.write("    MQTT_Output="+str(setts["MQTT_Output"]).capitalize()+"\n")
+            outp.write("    HA_Auto_D="+flag(setts["HA_Auto_D"])+"\n")
+            outp.write("    Print_Raw_Registers="+flag(setts["Print_Raw_Registers"])+"\n")
+            outp.write("    MQTT_Output="+flag(setts["MQTT_Output"])+"\n")
             outp.write("    isAddon=False\n")
-        outp.write("    ha_device_prefix=\""+str(setts["inverterName_"+str(inv)])+"\"\n")
-        outp.write("    Log_Level=\""+str(setts["Log_Level"])+"\"\n")
-        outp.write("    Influx_Output="+str(setts["Influx_Output"]).capitalize()+"\n")
-        outp.write("    influxURL=\""+str(setts["influxURL"])+"\"\n")
-        outp.write("    influxToken=\""+str(setts["influxToken"])+"\"\n")
-        outp.write("    influxBucket=\""+str(setts["influxBucket"])+"\"\n")
-        outp.write("    influxOrg=\""+str(setts["influxOrg"])+"\"\n")
+        outp.write("    ha_device_prefix="+text(setts["inverterName_"+str(inv)])+"\n")
+        outp.write("    Log_Level="+text(setts["Log_Level"])+"\n")
+        outp.write("    Influx_Output="+flag(setts["Influx_Output"])+"\n")
+        outp.write("    influxURL="+text(setts["influxURL"])+"\n")
+        outp.write("    influxToken="+text(setts["influxToken"])+"\n")
+        outp.write("    influxBucket="+text(setts["influxBucket"])+"\n")
+        outp.write("    influxOrg="+text(setts["influxOrg"])+"\n")
         outp.write("    first_run_evc= True\n")
-        outp.write("    self_run_timer="+str(setts["self_run_timer"])+"\n")
-        outp.write("    self_run_timer_full="+str(setts["self_run_timer_full"])+"\n")
-        outp.write("    refresh_max_age="+str(float(setts.get("refresh_max_age") or 0))+"\n")
-        outp.write("    recovery_pause="+str(float(setts.get("recovery_pause_"+str(inv)) or 0))+"\n")
-        outp.write("    queue_retries="+str(setts["queue_retries"])+"\n")    
+        outp.write("    self_run_timer="+number(setts["self_run_timer"],30)+"\n")
+        outp.write("    self_run_timer_full="+number(setts["self_run_timer_full"],120)+"\n")
+        outp.write("    refresh_max_age="+number(setts.get("refresh_max_age"),0,float)+"\n")
+        outp.write("    recovery_pause="+number(setts.get("recovery_pause_"+str(inv)),0,float)+"\n")
+        outp.write("    lite_query="+str(str(setts.get("lite_query_"+str(inv))).lower()=="true")+"\n")
+        outp.write("    connect_delay="+number(setts.get("connect_delay_"+str(inv)),0,float)+"\n")
+        outp.write("    queue_retries="+number(setts["queue_retries"],2)+"\n")
         outp.write("    givtcp_instance="+str(inv)+"\n")
-        outp.write("    default_path=\""+str(PATH)+"\"\n")
-        outp.write("    dynamic_tariff="+str(setts["dynamic_tariff"]).capitalize()+"\n")
-        outp.write("    day_rate="+str(setts["day_rate"])+"\n")
-        outp.write("    night_rate="+str(setts["night_rate"])+"\n")
-        outp.write("    export_rate="+str(setts["export_rate"])+"\n")
-        outp.write("    day_rate_start=\""+str(setts["day_rate_start"])+"\"\n")
-        outp.write("    night_rate_start=\""+str(setts["night_rate_start"])+"\"\n")
-        outp.write("    data_smoother=\""+str(setts["data_smoother"])+"\"\n")
-        outp.write("    timeslot_entities=\""+str(setts.get("timeslot_entities") or "both")+"\"\n")
+        outp.write("    default_path="+text(PATH)+"\n")
+        outp.write("    dynamic_tariff="+flag(setts["dynamic_tariff"])+"\n")
+        outp.write("    day_rate="+number(setts["day_rate"],0.395)+"\n")
+        outp.write("    night_rate="+number(setts["night_rate"],0.155)+"\n")
+        outp.write("    export_rate="+number(setts["export_rate"],0.04)+"\n")
+        outp.write("    day_rate_start="+text(setts["day_rate_start"])+"\n")
+        outp.write("    night_rate_start="+text(setts["night_rate_start"])+"\n")
+        outp.write("    data_smoother="+text(setts["data_smoother"])+"\n")
+        outp.write("    timeslot_entities="+text(setts.get("timeslot_entities") or "both")+"\n")
         outp.write("    cache_location=\"/config/GivTCP\"\n")
         outp.write("    Debug_File_Location=\"/config/GivTCP/logs/log_inv_"+str(inv)+".log\"\n")
         outp.write("    Debug_File_Location_Write=\"/config/GivTCP/logs/write_log_inv_"+str(inv)+".log\"\n")
         outp.write("    Debug_File_Location_REST=\"/config/GivTCP/logs/rest_log_inv_"+str(inv)+".log\"\n")
-        outp.write("    inverter_num=\""+str(inv)+"\"\n")
-        outp.write("    Smart_Target="+str(setts["Smart_Target"]).capitalize()+"\n")
-        outp.write("    GE_API=\""+str(setts["GE_API"])+"\"\n")
-        outp.write("    PALM_WINTER=\""+str(setts["PALM_WINTER"])+"\"\n")
-        outp.write("    PALM_SHOULDER=\""+str(setts["PALM_SHOULDER"])+"\"\n")
-        outp.write("    PALM_MIN_SOC_TARGET=\""+str(setts["PALM_MIN_SOC_TARGET"])+"\"\n")
-        outp.write("    PALM_MAX_SOC_TARGET=\""+str(setts["PALM_MAX_SOC_TARGET"])+"\"\n")
-        outp.write("    PALM_BATT_RESERVE=\""+str(setts["PALM_BATT_RESERVE"])+"\"\n")
-        outp.write("    PALM_BATT_UTILISATION=\""+str(setts["PALM_BATT_UTILISATION"])+"\"\n")
-        outp.write("    SOLCASTAPI=\""+str(setts["SOLCASTAPI"])+"\"\n")
-        outp.write("    SOLCASTSITEID=\""+str(setts["SOLCASTSITEID"])+"\"\n")
-        outp.write("    SOLCASTSITEID2=\""+str(setts["SOLCASTSITEID2"])+"\"\n")
-        outp.write("    PALM_WEIGHT=\""+str(setts["PALM_WEIGHT"])+"\"\n")
-        outp.write("    LOAD_HIST_WEIGHT=\""+str(setts["LOAD_HIST_WEIGHT"])+"\"\n")
+        outp.write("    inverter_num="+text(inv)+"\n")
+        outp.write("    Smart_Target="+flag(setts["Smart_Target"])+"\n")
+        outp.write("    GE_API="+text(setts["GE_API"])+"\n")
+        outp.write("    PALM_WINTER="+text(setts["PALM_WINTER"])+"\n")
+        outp.write("    PALM_SHOULDER="+text(setts["PALM_SHOULDER"])+"\n")
+        outp.write("    PALM_MIN_SOC_TARGET="+text(setts["PALM_MIN_SOC_TARGET"])+"\n")
+        outp.write("    PALM_MAX_SOC_TARGET="+text(setts["PALM_MAX_SOC_TARGET"])+"\n")
+        outp.write("    PALM_BATT_RESERVE="+text(setts["PALM_BATT_RESERVE"])+"\n")
+        outp.write("    PALM_BATT_UTILISATION="+text(setts["PALM_BATT_UTILISATION"])+"\n")
+        outp.write("    SOLCASTAPI="+text(setts["SOLCASTAPI"])+"\n")
+        outp.write("    SOLCASTSITEID="+text(setts["SOLCASTSITEID"])+"\n")
+        outp.write("    SOLCASTSITEID2="+text(setts["SOLCASTSITEID2"])+"\n")
+        outp.write("    PALM_WEIGHT="+text(setts["PALM_WEIGHT"])+"\n")
+        outp.write("    LOAD_HIST_WEIGHT="+text(setts["LOAD_HIST_WEIGHT"])+"\n")
 
-        outp.write("    evc_enable="+str(setts["evc_enable"]).capitalize()+"\n")
-        outp.write("    evc_ip_address=\""+str(setts["evc_ip_address"])+"\"\n")
-        outp.write("    serial_number_evc=\""+str(setts["serial_number_evc"])+"\"\n")
-        outp.write("    evc_self_run_timer="+str(setts["evc_self_run_timer"])+"\n")
-        outp.write("    evc_import_max_current="+str(setts["evc_import_max_current"])+"\n")
+        outp.write("    evc_enable="+flag(setts["evc_enable"])+"\n")
+        outp.write("    evc_ip_address="+text(setts["evc_ip_address"])+"\n")
+        outp.write("    serial_number_evc="+text(setts["serial_number_evc"])+"\n")
+        outp.write("    evc_self_run_timer="+number(setts["evc_self_run_timer"],10)+"\n")
+        outp.write("    evc_import_max_current="+number(setts["evc_import_max_current"],60)+"\n")
+        outp.write("    REST_API_Key="+text(api_key(setts))+"\n")
         if SuperTimezone:
-            outp.write("    timezone=\""+str(SuperTimezone)+"\"\n")
+            outp.write("    timezone="+text(SuperTimezone)+"\n")
         else:
-            outp.write("    timezone=\""+str(setts["timezone"])+"\"\n")
+            outp.write("    timezone="+text(setts["timezone"])+"\n")
 
 def createevcsettingsjson(inv):
     PATH= "/app/GivTCP"
@@ -309,36 +402,36 @@ def createevcsettingsjson(inv):
 
     with open(PATH+"/settings.py", 'w') as outp:
         outp.write("class GiV_Settings:\n")
-        outp.write("    MQTT_Address=\""+str(setts["MQTT_Address"])+"\"\n")
-        outp.write("    MQTT_Username=\""+str(setts["MQTT_Username"])+"\"\n")
-        outp.write("    MQTT_Password=\""+str(setts["MQTT_Password"])+"\"\n")
-        outp.write("    MQTT_Port="+str(setts["MQTT_Port"])+"\n")
-        outp.write("    MQTT_Retain="+str(setts["MQTT_Retain"]).capitalize()+"\n")
-        outp.write("    MQTT_Topic=\""+str(setts["MQTT_Topic"])+"\"\n")
+        outp.write("    MQTT_Address="+text(setts["MQTT_Address"])+"\n")
+        outp.write("    MQTT_Username="+text(setts["MQTT_Username"])+"\n")
+        outp.write("    MQTT_Password="+text(setts["MQTT_Password"])+"\n")
+        outp.write("    MQTT_Port="+number(setts["MQTT_Port"],1883)+"\n")
+        outp.write("    MQTT_Retain="+flag(setts["MQTT_Retain"])+"\n")
+        outp.write("    MQTT_Topic="+text(setts["MQTT_Topic"])+"\n")
         if isAddon:
             outp.write("    HA_Auto_D=True\n")
             outp.write("    MQTT_Output=True\n")
             outp.write("    isAddon=True\n")
         else:
-            outp.write("    HA_Auto_D="+str(setts["HA_Auto_D"]).capitalize()+"\n")
-            outp.write("    MQTT_Output="+str(setts["MQTT_Output"]).capitalize()+"\n")
+            outp.write("    HA_Auto_D="+flag(setts["HA_Auto_D"])+"\n")
+            outp.write("    MQTT_Output="+flag(setts["MQTT_Output"])+"\n")
             outp.write("    isAddon=False\n")
         outp.write("    ha_device_prefix=\"GivEVC\"\n")
-        outp.write("    Log_Level=\""+str(setts["Log_Level"])+"\"\n")
+        outp.write("    Log_Level="+text(setts["Log_Level"])+"\n")
         outp.write("    first_run_evc= True\n")
         outp.write("    givtcp_instance="+str(inv)+"\n")
         outp.write("    cache_location=\"/config/GivTCP\"\n")
         outp.write("    Debug_File_Location=\"/config/GivTCP/logs/log_evc.log\"\n")
         outp.write("    Debug_File_Location_Write=\"/config/GivTCP/logs/write_log_evc.log\"\n")
-        outp.write("    evc_enable="+str(setts["evc_enable"]).capitalize()+"\n")
-        outp.write("    evc_ip_address=\""+str(setts["evc_ip_address"])+"\"\n")
-        outp.write("    serial_number_evc=\""+str(setts["serial_number_evc"])+"\"\n")
-        outp.write("    evc_self_run_timer="+str(setts["evc_self_run_timer"])+"\n")
-        outp.write("    evc_import_max_current="+str(setts["evc_import_max_current"])+"\n")
+        outp.write("    evc_enable="+flag(setts["evc_enable"])+"\n")
+        outp.write("    evc_ip_address="+text(setts["evc_ip_address"])+"\n")
+        outp.write("    serial_number_evc="+text(setts["serial_number_evc"])+"\n")
+        outp.write("    evc_self_run_timer="+number(setts["evc_self_run_timer"],10)+"\n")
+        outp.write("    evc_import_max_current="+number(setts["evc_import_max_current"],60)+"\n")
         if SuperTimezone:
-            outp.write("    timezone=\""+str(SuperTimezone)+"\"\n")
+            outp.write("    timezone="+text(SuperTimezone)+"\n")
         else:
-            outp.write("    timezone=\""+str(setts["timezone"])+"\"\n")
+            outp.write("    timezone="+text(setts["timezone"])+"\n")
 
 def findinv(networks):
     inverterStats={}
@@ -436,11 +529,13 @@ logger.setLevel(logging.INFO)
 
 logging.getLogger("givenergy_modbus").setLevel(logging.CRITICAL)
 
+signal.signal(signal.SIGTERM, shutdown)
+
 
 SuperTimezone={}
 logger.info("==================== STARTING GivTCP==========================")
 try:
-    logger.debug("SUPERVISOR_TOKEN is: "+ os.getenv("SUPERVISOR_TOKEN"))
+    logger.debug("SUPERVISOR_TOKEN length: "+str(len(os.getenv("SUPERVISOR_TOKEN"))))      # never the token: logs can be shared
     isAddon=True
     access_token = os.getenv("SUPERVISOR_TOKEN")
 except:
@@ -479,7 +574,7 @@ if isAddon:
     url="http://supervisor/services/mqtt"
     result = requests.get(url,
         headers={'Content-Type':'application/json',
-                'Authorization': 'Bearer {}'.format(access_token)})
+                'Authorization': 'Bearer {}'.format(access_token)}, timeout=30)
     mqttDetails=result.json()
     logger.debug("MQTT Service details found: "+str(mqttDetails))
     if mqttDetails['result']=="ok":
@@ -497,7 +592,7 @@ if isAddon:
     url="http://supervisor/info"
     result = requests.get(url,
         headers={'Content-Type':'application/json',
-                'Authorization': 'Bearer {}'.format(access_token)})
+                'Authorization': 'Bearer {}'.format(access_token)}, timeout=30)
     info=result.json()
     SuperTimezone=info['data']['timezone']
     logger.debug("Supervisor Timezone: "+str(SuperTimezone))
@@ -506,7 +601,7 @@ if isAddon:
     url="http://supervisor/addons/self/info"
     result = requests.get(url,
         headers={'Content-Type':'application/json',
-                'Authorization': 'Bearer {}'.format(access_token)})
+                'Authorization': 'Bearer {}'.format(access_token)}, timeout=30)
     baseurl=result.json()['data']['ingress_url']
     logger.debug("Ingress URL is: "+str(baseurl))
 
@@ -514,7 +609,7 @@ if isAddon:
     url="http://supervisor/network/info"
     result = requests.get(url,
         headers={'Content-Type':'application/json',
-                'Authorization': 'Bearer {}'.format(access_token)})
+                'Authorization': 'Bearer {}'.format(access_token)}, timeout=30)
     hostDetails=result.json()
     i=0
     for interface in hostDetails['data']['interfaces']:
@@ -591,7 +686,8 @@ if not exists("/ssl/fullchain.pem"):
     shutil.copy("/app/ingress_no_ssl.conf","/etc/nginx/http.d/ingress.conf")
 
 writeRestRoutes(setts)
-subprocess.Popen(["nginx","-g","daemon off;"])
+webLAN=writeWebAccess(setts, isAddon)
+nginx=subprocess.Popen(["nginx","-g","daemon off;"])
 logger.debug("Running nginx")
 
 if SuperTimezone: 
@@ -723,7 +819,8 @@ else:
 
 os.chdir("/app/GivTCP")
 logger.debug ("Starting Settings Gunicorn on port 6350")
-setting_rest=startGunicorn("settings_rest:giv_api",6350,1,"rest_gunicorn_settings")
+# Only nginx uses the settings API, so it only listens on this machine
+setting_rest=startGunicorn("settings_rest:giv_api",6350,1,"rest_gunicorn_settings","127.0.0.1")
 
 
 ## Run EVC first
@@ -799,7 +896,11 @@ for inv in range(1,setts['number_of_inverters']+1):
         if not webConfigLogged:
             logger.info("==============================================================")
             logger.info("====             Web Gui Config is at                     ====")
-            logger.info("====     http://"+str(hostIP)+":8099/config.html             ====")
+            if webLAN:
+                logger.info("====     http://"+str(hostIP)+":8099/config.html             ====")
+            else:
+                logger.info("====  Open Web UI on the add-on's page in Home Assistant   ====")
+                logger.info("====  (to use port 8099 too, turn on LAN Access there)     ====")
             if not setts['self_run']==True:
                 logger.info("====  Self Run is off, so no data collection is happening ====")
                 logger.info("====     Log into Web Gui and complete startup settings   ====")
@@ -811,9 +912,10 @@ for inv in range(1,setts['number_of_inverters']+1):
         rqWorker[inv]=subprocess.Popen(["/usr/local/bin/python3",PATH+"/worker.py"])
         logger.debug("Running RQ worker to queue and process resume calls")
 
-        if not hasMQTT and setts['MQTT_Address']=="127.0.0.1" and setts['MQTT_Output']==True:
-            logger.info ("Starting Mosquitto on port "+str(setts['MQTT_Port']))
-            mqttBroker=subprocess.Popen(["/usr/sbin/mosquitto", "-c",PATH+"/mqtt.conf"])
+        if not hasMQTT and setts['MQTT_Address']=="127.0.0.1" and setts['MQTT_Output']==True and mqttBroker is None:
+            logger.info ("Starting Mosquitto on port 1883")
+            writeBroker(setts)
+            mqttBroker=subprocess.Popen(["/usr/sbin/mosquitto", "-c",BROKER_CONF])
 
         if setts['self_run']==True: # Don't autorun if isAddon to prevent autostart creating rubbish before its checked by a user
             logger.info ("Running Invertor "+str(inv)+" ("+str(setts["serial_number_"+str(inv)])+") read loop every "+str(setts['self_run_timer'])+"/"+str(setts['self_run_timer_full'])+"s")
@@ -835,24 +937,9 @@ if setts['Web_Dash']==True:
     logger.debug("Creating web dashboard config")
     os.chdir("/app/WebDashboard")
     with open("app.json", 'w') as outp:
-        outp.write("{\n")
-        outp.write("  \"givTcpHosts\": [\n")
-        count=0
-        for inv in runninginv:
-            count += 1
-            GUPORT = invPort(inv)
-            if count > 1:
-                outp.write("  ,{\n")
-            else:
-                outp.write("  {\n")
-            outp.write("    \"name\": \""+setts['inverterName_'+str(inv)]+"\",\n")
-            outp.write("    \"port\": \""+str(GUPORT)+"\"\n")
-            outp.write("  }\n")
-
-        outp.write("  ],\n")
-        outp.write("  \"solarRate\": "+str(setts['day_rate'])+",\n")
-        outp.write("  \"exportRate\": "+str(setts['export_rate'])+"\n")
-        outp.write("}")
+        json.dump({"givTcpHosts": [{"name": str(setts['inverterName_'+str(inv)]), "port": str(invPort(inv))} for inv in runninginv],
+                   "solarRate": float(number(setts['day_rate'],0.395)),
+                   "exportRate": float(number(setts['export_rate'],0.04))}, outp, indent=2)
     WDPORT=int(setts['Web_Dash_Port'])
     logger.info (f"Serving Web Dashboard from port {WDPORT}")
     with open("/etc/nginx/http.d/webdashboard.conf", 'w') as wd:
@@ -925,8 +1012,8 @@ while True:
                 mqttBroker.kill()
                 logger.error("MQTT Broker process died. Restarting...")
                 os.chdir(PATH)
-                logger.info ("Starting Mosquitto on port "+str(setts['MQTT_Port']))
-                mqttBroker=subprocess.Popen(["/usr/sbin/mosquitto", "-c",PATH+"/mqtt.conf"])
+                logger.info ("Starting Mosquitto on port 1883")
+                mqttBroker=subprocess.Popen(["/usr/sbin/mosquitto", "-c",BROKER_CONF])
 
         if setts['evc_enable']==True:
             if not evcSelfRun.poll()==None:

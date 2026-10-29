@@ -4,6 +4,12 @@ Found while porting GivTCP to givenergy-modbus 2.12.0 (GivTCP `modbusv2` branch)
 
 Thanks again for the migration guide and the offer of help in britkat1980/giv_tcp#556. The port has gone smoothly apart from these points.
 
+**Status (October 2026).** GivTCP now runs [britkat1980/givenergy-modbus](https://github.com/britkat1980/givenergy-modbus), a fork of 2.13.0 with these requests merged, pinned to a commit in `requirements.in` (and by hash in `requirements.txt`). Each one is open as a pull request on dewet22/givenergy-modbus (#430 to #445). With the fork, GivTCP's `modbus_patches.py` no longer patches 2 (writes), 3, 10, 11, 12, 17 or 19. The fork doesn't cover these, so they're still patched:
+
+- **1:** the fork allows pause writes only on the models with evidence in the library, which are fewer than GivTCP allows.
+- **2:** the three-phase HR 240-299 read.
+- **13**, **14**, **18** and **20**.
+
 ---
 
 ## 1. Allow battery pause mode / pause slot writes (HR 318–320), firmware-gated where needed
@@ -268,3 +274,26 @@ There's no command that sets just `ENABLE_CHARGE_TARGET` (HR 20) to 1. `disable_
 - Allow HR 313/314 writes on `Model.HYBRID_GEN1`, `Model.HYBRID_GEN3` and `Model.ALL_IN_ONE_HYBRID`, and read HR 313-314 there (a 2-register read, not the HR 300-359 block some DC hybrids time out on).
 
 **GivTCP workaround:** `GivTCP/modbus_patches.py` adds HR 313/314 to these models' write-safe registers (`AC_LIMIT_HYBRIDS`) and reads them after each `load_config()` (`EXTRA_READS`), and `write.acLimit()` sends their rate changes to them.
+
+## 21. Redact the WO dongle's LAN-config broadcast on 192.168.x.x networks, and don't pass undecodable frames through intact
+
+**Problem**
+
+A capture made with `Client.capture_frames()` (GivTCP's Share Device page) contained a WiFi dongle's full serial number and its IP address, netmask and gateway in plain text (britkat1980/giv_tcp#668, givenergy-modbus 2.13.0). They came from one 72-byte rx frame (header `5959 0001 0042 01 02`): the dongle's LAN-config broadcast, `<serial><pad><ip>,<netmask>,<gateway>
+
+
+
+` in ASCII.
+
+Two things combine:
+
+- **`LanConfigBroadcast` only matches some addresses.** It's recognised by the byte the transparent decoder reads as the function code being `'0'` (0x30). That byte is a character of the dongle's IP address text, so it's `'0'` for addresses like 10.x.x.x but not for 192.168.x.x, the most common home network: there it's `'9'`, and decoding fails with `NotImplementedError: TransparentResponse function #57 decoder`, then `InvalidFrame`.
+- **`FrameRedactor` passes undecodable frames through intact**, by design ("Any bytes that cannot be decoded ... are emitted intact"), with only a log warning. So any sensitive data in a frame the library can't decode reaches the capture.
+
+**Request**
+
+- Recognise the LAN-config broadcast by its content (a dongle serial followed by ASCII `ip,netmask,gateway`) rather than by the function-code byte, so it's decoded and redacted whatever the address.
+- Fail closed for captures: redact frames that can't be decoded rather than emit them intact. For example, zero the unit digits of anything shaped like a serial number (as for decoded frames) and the digits of anything shaped like an IPv4 address, which keeps the frame's length; or drop them, with a count in the log.
+
+**GivTCP workaround:** `GivTCP/capture.py` (`scrub()`) runs that second pass over every frame before Share Device writes it.
+

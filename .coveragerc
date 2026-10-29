@@ -1,0 +1,19 @@
+[run]
+branch = True
+source = .
+omit =
+    tests/*
+    .venv/*
+
+[report]
+# Include unimported application modules so gaps remain visible in the totals.
+include =
+    GivTCP/*.py
+    startup.py
+    findinvdev.py
+omit =
+    GivTCP/test_loop.py
+precision = 2
+
+[html]
+directory = htmlcov

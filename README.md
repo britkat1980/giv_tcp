@@ -30,7 +30,7 @@ The add-on uses Home Assistant's Mosquitto broker add-on if it's installed, and 
 #### Docker
 - Download [docker-compose.yml](https://github.com/britkat1980/giv_tcp/blob/main/docker-compose.yml) into a folder of its own, set your timezone (`TZ`) in it, and run `docker compose up -d` there. GivTCP keeps its settings, captures and logs in a `config` folder next to the file.
 - It uses host networking, so GivTCP can scan your network for inverters (Linux). On Docker Desktop (Windows/macOS), or to use a bridge network, follow the comments in the file to map the ports instead, and add your inverters by their IP address on the config page, as GivTCP can't scan your network from there.
-- Without Home Assistant, MQTT is off until you enter a broker on the config page. To use GivTCP's own broker, enter `127.0.0.1`.
+- Without Home Assistant, MQTT is off until you enter a broker on the config page. To use GivTCP's own broker, enter `127.0.0.1`. With an MQTT username and password set on the config page, GivTCP's broker only accepts those (so anything else that uses it, such as Home Assistant's MQTT integration, needs them too). Without them it accepts anyone on your network.
 
 ### Start GivTCP
 
@@ -40,7 +40,7 @@ The add-on uses Home Assistant's Mosquitto broker add-on if it's installed, and 
 ### Configure GivTCP
 
 - Open the config page:
-  - **Home Assistant:** from the GivTCP entry in the sidebar (or "Open Web UI" on the add-on page).
+  - **Home Assistant:** from the GivTCP entry in the sidebar (or "Open Web UI" on the add-on page). To open it at http://IPADDRESS:8099/config.html from other devices too, turn on **LAN Access** in the Web section: without it, port 8099 only accepts Home Assistant, so a Home Assistant login is needed.
   - **Docker:** http://IPADDRESS:8099/config.html
 - Step through the sections. The inverters found by the scan and your MQTT details should already be filled in.
   - **Inverter Config:** add or remove inverters. There's no limit on the number, and inverters found by the last scan can be added in one click.
@@ -106,7 +106,9 @@ You can also control the inverter over MQTT by publishing to:
 
 ### REST
 
-GivTCP has a REST API for data and control. In the add-on, each inverter's API is at http://IPADDRESS:8099/REST1/, /REST2/ and so on, numbered by its slot on the Inverter Config page. Call `REST1/api` to list the calls available.
+GivTCP has a REST API for data and control. Each inverter's API is at http://IPADDRESS:8099/REST1/, /REST2/ and so on (in the add-on, with LAN Access on), numbered by its slot on the Inverter Config page. Call `REST1/api` to list the calls available.
+
+To protect the controls, set a **REST API Key** in the Web section (16 to 128 letters, digits, `-` or `_`). Every call except the read-only data (`/readData`, `/getCache`, `/runAll`, `/getEVCCache`, `/api`, `/captureStatus`) then needs it, as an `X-API-Key: <key>` or `Authorization: Bearer <key>` header. GivTCP's own pages add it themselves. Only set one if everything that sends commands to GivTCP's REST API (for example a `rest_command` in Home Assistant, or Predbat if you use its REST mode) can send it. Requests from another website's page in your browser are always refused.
 
 Each inverter's API also has its own port, which is what you use with Docker in host mode: slots 1–5 use ports 6345–6349 (as in earlier versions, so existing Predbat and Home Assistant setups keep working), and slot 6 onwards use port 6356 onwards.
 
@@ -186,4 +188,17 @@ If you see many timeouts in the log, or large jumps in the Time Since Last Updat
 
 - **Read less often:** set a longer Self Run Loop Timer, e.g. 60 seconds or more, with the Full timer a multiple of it (e.g. 90 and 270).
 - **Pause When Inverter Stops Responding** (each inverter, on the Inverter Config page): if the inverter stops answering, GivTCP sends it nothing at all for this many seconds, then reconnects, giving it time to recover. Stats/status shows `paused` meanwhile. Some dongles crash if they're sent more requests while they're struggling, and this has prevented that. Write commands sent over REST during the pause get an immediate "not sent" reply, and other commands (such as the end of a force charge) are sent once it's over.
+- **Lite mode** (each inverter, on the Inverter Config page; for HV battery stacks, so three-phase and HV Gen 3): the inverter passes every read of a battery stack or battery module on to the battery, which adds to its load. In lite mode GivTCP reads each battery module only until it has data, and each battery stack only on full refreshes. The inverter's own battery figures (SOC, battery power, current and voltage) are still read every poll, and SOC kWh is worked out from them, so the live data and the controls are unaffected. You'll usually still see the battery modules' cell voltages and temperatures update: the dongle reads them itself to send to the GivEnergy cloud, and passes every answer it gets on to GivTCP too. On one system they still updated every 5 to 10 minutes, with the dongle's connection to the cloud blocked. Without that, the module values stay as GivTCP read them when it started, and the stack values (stack voltage, current, power, cycles and energy) update with each full refresh.
+- **Wait After Connecting** (each inverter, on the Inverter Config page, off by default): some dongles don't answer requests sent straight after a connection opens. GivTCP sends its first requests within milliseconds of connecting, and they all time out, so the first poll after a restart or after a recovery pause fails (in the log: "Unable to read all the inverter settings after connecting" at startup, or a failed poll straight after "Recovery pause over"), while a minute later the same reads work. With this set, GivTCP waits this many seconds after every new connection before sending anything. A failed poll right after a pause counts towards the next pause, so this matters most with Pause When Inverter Stops Responding. Many dongles close a connection after about 10 seconds without traffic, and then reconnect for every poll. On those, keep this well below 10 seconds or leave it off: if the wait is longer than the dongle's idle time, it closes the connection before GivTCP sends anything, and no data comes in at all. If your log shows "Inverter closed the Modbus connection" at debug level after most polls, your dongle is one of these. Dongles that keep the connection open between polls are only affected when GivTCP connects, so a longer wait (eg. 15 seconds) costs a few seconds after a restart or a pause.
 - **Skip Reads Fresher Than** (Self Run section): skips reads the dongle has just answered for another app polling it, such as the GivEnergy app.
+
+### Battery settings
+
+Two settings on the Inverter Config page, for each inverter:
+
+- **Only report battery data and controls:** for an inverter behind a Gateway or EMS, which reports the plant's power and energy itself. GivTCP leaves out this inverter's power and energy data, and still publishes its battery data, controls, timeslots and status, and its own details such as its clock and firmware.
+- **No battery fitted:** for a hybrid running without a battery, so GivTCP stops checking it for one. When detect finds no battery on a hybrid, GivTCP checks again from time to time in case the battery didn't answer, backing off to hourly. Without this setting, it stops by itself after 5 detects in a row find none, until GivTCP restarts. AC-coupled inverters and All-in-Ones always have a battery, so GivTCP doesn't save a detect that finds none for them, and keeps trying.
+
+## Development
+
+See the [development guide](DEVELOPMENT.md) for testing, coverage, frame pacing, and extending the test harness.

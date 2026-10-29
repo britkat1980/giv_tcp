@@ -21,6 +21,17 @@ MIN_SECONDS = 120       # long enough for a full refresh (settings, energy total
 MAX_SECONDS = 600
 ISSUES_URL = "https://github.com/britkat1980/giv_tcp/issues/new"
 
+# A second redaction pass over every frame, after the library's. The library only redacts frames it can decode, and one it
+# can't (a dongle's 72-byte status frame, #668) went into the file with the dongle's serial number and its IP addresses
+# in plain text. Serial numbers keep their prefix and date with the unit digits zeroed, as the library does, and IP
+# addresses have every digit zeroed. Neither changes the frame's length, so it's still well formed
+SERIAL_RE = re.compile(rb"([A-Z]{2}\d{4}[A-Z])\d{3}")
+IPV4_RE = re.compile(rb"(?<![\d.])\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(?![\d.])")
+
+def scrub(frame):
+    frame = SERIAL_RE.sub(lambda m: m.group(1) + b"000", bytes(frame))
+    return IPV4_RE.sub(lambda m: re.sub(rb"\d", b"0", m.group(0)), frame)
+
 def _instance():
     return str(GiV_Settings.givtcp_instance)
 
@@ -146,7 +157,7 @@ async def run(client, seconds, summarise, log=None):
         with open(work, "w") as out:
             def sink(direction, frame):
                 nonlocal frames
-                out.write(datetime.datetime.now().astimezone().isoformat() + " " + direction + " " + frame.hex() + "\n")
+                out.write(datetime.datetime.now().astimezone().isoformat() + " " + direction + " " + scrub(frame).hex() + "\n")
                 frames += 1
             await client.capture_frames(sink, duration=seconds)
         summary = summarise()

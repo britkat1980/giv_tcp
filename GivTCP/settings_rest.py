@@ -5,12 +5,14 @@ import os
 import sys
 import requests
 from flask import Flask, request, Response
-from flask_cors import CORS
 import json
+import settings_values
+from crosssite import refuse_cross_site
 
-#set-up Flask details
+#set-up Flask details. Only GivTCP's own pages use this API (through nginx), so it has no CORS and refuses
+#cross-site requests: the settings hold credentials, and become each instance's settings.py
 giv_api = Flask(__name__)
-CORS(giv_api)
+refuse_cross_site(giv_api)
 
 
 @giv_api.route('/reboot', methods=['POST'])
@@ -24,7 +26,7 @@ def reboot():
         url="http://supervisor/addons/self/restart"
         result = requests.post(url,
             headers={'Content-Type':'application/json',
-                    'Authorization': 'Bearer {}'.format(access_token)})
+                    'Authorization': 'Bearer {}'.format(access_token)}, timeout=30)
     except:
         return "Error: Reboot Manually"
 
@@ -41,18 +43,22 @@ def savesetts():
         SFILE="/app/allsettings.json"
     # Merge into the existing file rather than replacing it, so settings the config page doesn't manage
     # (Model_N, Host_IP, serial_number_evc, auto_scan...) aren't wiped back to template defaults on save
+    payload=request.get_json(silent=True)
+    error=settings_values.check(payload, settings_values.load_template())
+    if error:
+        return Response(json.dumps({"result":"Error: "+error}), status=400, mimetype='application/json')
     setts={}
     if exists(SFILE):
         with open(SFILE, 'r') as f1:
             setts=json.load(f1)
-    setts.update(request.get_json())
+    setts.update(settings_values.keep_secrets(payload, setts))
     with open(SFILE, 'w') as f:
         f.write(json.dumps(setts,indent=4))
     return "Settings Updated"
 
 @giv_api.route('/settings', methods=['GET'])
 def returnsetts():
-    """Return settings from json file
+    """Return settings from json file, with credentials hidden
     """
     if exists("/config/GivTCP/allsettings.json"):
         SFILE="/config/GivTCP/allsettings.json"
@@ -60,7 +66,7 @@ def returnsetts():
         SFILE="/app/allsettings.json"
     with open(SFILE, 'r') as f1:
         setts=json.load(f1)
-        return setts
+        return settings_values.hide_secrets(setts)
 
 @giv_api.route('/settings/found', methods=['GET'])
 def foundinverters():

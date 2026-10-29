@@ -4,7 +4,6 @@
 import palm_settings as stgs
 from palm_utils import GivEnergyObj, SolcastObj, t_to_mins
 import time
-import asyncio
 
 # Debug switch (if True) is used to run palm_Soc outside the HA environment for test purpses
 DEBUG_SW = False
@@ -12,7 +11,6 @@ if DEBUG_SW:
     import logging
 
 else:
-    import write as wr  # pylint: disable=import-error
     from GivLUT import GivLUT, GivQueue  # pylint: disable=import-error
 
 # This software in any form is covered by the following Open Source BSD license:
@@ -59,26 +57,23 @@ PALM_VERSION = "v1.1.0SoC"
 def GivTCP_write_soc(cmd: str):
     """Write SoC target directly to GivEnergy inverter. Fallback to API write"""
 
+    # The write is queued for the read loop, which sends it on its own connection, as REST and MQTT commands are.
+    # setChargeTarget() needs the read loop's device, so calling it from here always failed and PALM silently used
+    # the cloud instead (#682)
     if cmd == "set_soc":  # Sets target SoC to value
         try:
-            result={}
             logger.info("Setting Charge Target to: "+ str(inverter.tgt_soc)+ "%")
-            payload={}
-            payload['chargeToPercent']= inverter.tgt_soc
-            result=asyncio.run(wr.setChargeTarget(payload))
-            logger.debug(result)
-        except:
+            GivLUT.queue_write("setChargeTarget", {'chargeToPercent': inverter.tgt_soc})
+        except Exception as e:
+            logger.error("Couldn't queue the Charge Target write, so setting it through the GivEnergy cloud: "+type(e).__name__+": "+str(e))
             inverter.set_mode("set_soc")
 
     elif cmd == "set_soc_winter":  # Restore default overnight charge params
         try:
-            result={}
             logger.debug("Setting Charge Target to: 100%")
-            payload={}
-            payload['chargeToPercent']= 100
-            result=asyncio.run(wr.setChargeTarget(payload))
-            logger.debug(result)
-        except:
+            GivLUT.queue_write("setChargeTarget", {'chargeToPercent': 100})
+        except Exception as e:
+            logger.error("Couldn't queue the Charge Target write, so setting it through the GivEnergy cloud: "+type(e).__name__+": "+str(e))
             inverter.set_mode("set_soc_winter")
 
     else:

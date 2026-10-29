@@ -791,7 +791,7 @@
     "jobs": [],
     "logs": [],
     "result": {
-     "result": "Setting battery charge rate 99999 was a success"
+     "result": "Setting battery charge rate 99999 was a success (set to 3000W: the rate is a whole percentage of the battery's capacity, at most 50%)"
     },
     "writes": [
      [

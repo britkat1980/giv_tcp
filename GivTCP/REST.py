@@ -3,7 +3,7 @@
 from giverrors import errDetail
 from os.path import exists
 import sys
-from flask import Flask, request, render_template, Response, send_file
+from flask import Flask, request, Response, send_file
 from flask_cors import CORS
 import read as rd       #grab passthrough functions from main read file
 import write as wr      #grab passthrough functions from main write file
@@ -15,11 +15,17 @@ import datetime
 import json
 from settings import GiV_Settings
 from inspect import getmembers, isfunction, getsource
+import settings_values
+from crosssite import refuse_cross_site
 
 logger = GivLUT.logger
 #set-up Flask details
 giv_api = Flask(__name__)
-CORS(giv_api)
+# Read-only data that other pages can fetch, such as the web dashboard on its own port. Everything else (control
+# commands, settings, restarts) is only for GivTCP's pages and apps that call it directly, so has no CORS and refuses
+# cross-site requests
+READ_ONLY_ROUTES=frozenset({'/readData','/getCache','/runAll','/getEVCCache','/api','/captureStatus'})
+CORS(giv_api, resources={r"^/("+"|".join(r.lstrip('/') for r in sorted(READ_ONLY_ROUTES))+r")$": {"methods": ["GET"]}})
 
 ######## REST request log: every request and its result, in its own file next to the other logs ########
 import logging
@@ -27,7 +33,7 @@ from flask import g
 from GivLUT import SharedTimedRotatingFileHandler
 REST_LOG_MAX_BODY=500      # truncate long request/response bodies
 # Routes whose response is the full data dump: log its size rather than the start of the JSON
-REST_LOG_NO_RESPONSE={'/readData','/getCache','/runAll','/fullCache','/getEVCCache','/showdata','/api'}
+REST_LOG_NO_RESPONSE={'/readData','/getCache','/runAll','/fullCache','/getEVCCache','/api'}
 # Settings can hold credentials (eg. MQTT password), so never log their request or response bodies
 REST_LOG_NO_BODIES={'/settings'}
 # settings.py from before this change has no Debug_File_Location_REST, so fall back to the main log's folder
@@ -77,6 +83,22 @@ def _restLogException(sender, exception, **extra):
     restlogger.error(str(request.remote_addr)+" "+request.method+" "+request.full_path.rstrip("?")+" raised "+errDetail())
 from flask import got_request_exception
 got_request_exception.connect(_restLogException, giv_api)
+refuse_cross_site(giv_api, READ_ONLY_ROUTES)      # after _restLogStart, so refused requests are logged too
+
+import hmac
+@giv_api.before_request
+def _requireApiKey():
+    # With a REST API key set, everything except the read-only data needs it, as X-API-Key or "Authorization: Bearer".
+    # nginx adds it to requests from GivTCP's own pages (/RESTn/), so they don't need to know it
+    key=settings_values.api_key({"REST_API_Key": getattr(GiV_Settings,'REST_API_Key','')})
+    if not key or request.path in READ_ONLY_ROUTES or request.method=='OPTIONS':
+        return None
+    sent=request.headers.get('X-API-Key') or ''
+    auth=request.headers.get('Authorization') or ''
+    if not sent and auth.lower().startswith('bearer '):
+        sent=auth[7:].strip()
+    if not hmac.compare_digest(sent.encode(), key.encode()):
+        return Response('{"result":"Error: missing or wrong REST API key"}', status=401, mimetype='application/json')
 
 with open(GivLUT.allsettings, "r") as inp:
     setts=json.load(inp)
@@ -127,11 +149,6 @@ def api():
     with open('api.json', 'r') as inp:
         return (json.load(inp))
 
-@giv_api.route('/showdata', methods=['GET'])
-def index():
-    output=rd.getCache()
-    return render_template('showdata.html', title="page", jsonfile=json.dumps(output))
-
 @giv_api.route('/settings', methods=['POST'])
 def savesetts():
     """Save settings into json file
@@ -143,14 +160,23 @@ def savesetts():
         SFILE=GivLUT.allsettings
     else:
         SFILE="/app/allsettings.json"
-    setts = request.get_json()
+    payload=request.get_json(silent=True)
+    error=settings_values.check(payload, settings_values.load_template())
+    if error:
+        return Response(json.dumps({"result":"Error: "+error}), status=400, mimetype='application/json')
+    # Merge into the saved settings, as the settings API does, rather than replacing them
+    setts={}
+    if exists(SFILE):
+        with open(SFILE, 'r') as f1:
+            setts=json.load(f1)
+    setts.update(settings_values.keep_secrets(payload, setts))
     with open(SFILE, 'w') as f:
         f.write(json.dumps(setts,indent=4))
     return "Settings Updated"
 
 @giv_api.route('/settings', methods=['GET'])
 def returnsetts():
-    """Return settings from json file
+    """Return settings from json file, with credentials hidden
     """
     if exists(GivLUT.allsettings):
         SFILE=GivLUT.allsettings
@@ -158,7 +184,7 @@ def returnsetts():
         SFILE="/app/allsettings.json"
     with open(SFILE, 'r') as f1:
         setts=json.load(f1)
-        return setts
+        return settings_values.hide_secrets(setts)
 
 @giv_api.route('/fullCache', methods=['GET'])
 def fullcache():

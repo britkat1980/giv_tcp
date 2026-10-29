@@ -15,6 +15,7 @@ from givenergy_modbus.testing import MockPlant
 
 from harness import env
 from harness.fakes import recorder
+from harness.pacing import FramePacing
 
 class LoopThread:
     def __init__(self):
@@ -24,6 +25,28 @@ class LoopThread:
 
     def run(self, coro, timeout=120):
         return asyncio.run_coroutine_threadsafe(coro, self.loop).result(timeout)
+
+    def close(self):
+        """Finish outstanding tasks before stopping and closing the loop."""
+        if self.loop.is_closed():
+            return
+
+        async def finish():
+            pending = asyncio.all_tasks() - {asyncio.current_task()}
+            for task in pending:
+                task.cancel()
+            await asyncio.gather(*pending, return_exceptions=True)
+            await self.loop.shutdown_asyncgens()
+            await self.loop.shutdown_default_executor()
+
+        try:
+            self.run(finish(), timeout=10)
+        finally:
+            self.loop.call_soon_threadsafe(self.loop.stop)
+            self.thread.join(timeout=10)
+            if self.thread.is_alive():
+                raise RuntimeError("Plant event loop did not stop")
+            self.loop.close()
 
 class RecordingMockPlant(MockPlant):
     """MockPlant that records every register write it acknowledges"""
@@ -37,30 +60,43 @@ class RecordingMockPlant(MockPlant):
 
 class PlantSession:
     """One device model: a mock plant, a connected client, and GivTCP's state after two read cycles"""
-    def __init__(self, key, device, loop):
+    def __init__(self, key, device, loop, pacing=None):
         import read
         self.key = key
         self.device = device
         self.loop = loop
+        self.pacing = pacing if pacing is not None else FramePacing()
         self.settings = dict(serial_number=key.upper()[:10], inverter_type=device.model.name.capitalize())
         self.mock = RecordingMockPlant.from_capture(device.path)
         if device.identity:     # the whole HR(0-59) block must be present for detect to read it
             for reg in range(60):
                 self.mock.devices[0x11][HR(reg)] = device.identity.get(reg, 0)
-        host, port = loop.run(self.mock.start())
-        self.client = Client(host, port)
-        loop.run(self.client.connect())
-        env.clear_state()
-        self.activate()
-        loop.run(read.detectPlant(self.client, force=True))
-        with open(read.capsFile(), 'rb') as inp:
-            self.caps = inp.read()
-        self.read_failures = loop.run(read.readPlant(self.client, True))
-        self.settings["numBatteries"] = read.batteryCount(self.client.plant)
-        self.activate()
-        self.cycles = [self.read_cycle(), self.read_cycle(refresh=True)]
-        self.state = env.snapshot_state()
-        self.registers = {addr: dict(cache) for addr, cache in self.plant.register_caches.items()}
+        self.client = None
+        try:
+            host, port = loop.run(self.mock.start())
+            self.client = Client(host, port, **self.pacing.client_options())
+            loop.run(self.client.connect())
+            env.clear_state()
+            self.activate()
+            loop.run(read.detectPlant(self.client, force=True))
+            with open(read.capsFile(), 'rb') as inp:
+                self.caps = inp.read()
+            self.read_failures = loop.run(read.readPlant(self.client, True))
+            self.settings["numBatteries"] = read.batteryCount(self.client.plant)
+            self.activate()
+            self.cycles = [self.read_cycle(), self.read_cycle(refresh=True)]
+            self.state = env.snapshot_state()
+            self.registers = {addr: dict(cache) for addr, cache in self.plant.register_caches.items()}
+        except BaseException:
+            loop.run(self.aclose())
+            raise
+
+    async def aclose(self):
+        try:
+            if self.client is not None:
+                await self.client.close()
+        finally:
+            await self.mock.aclose()
 
     @property
     def plant(self):
@@ -261,14 +297,29 @@ def _plain(payload):
 
 class Plants:
     """Starts each device's session on first use and keeps it for the whole test run"""
-    def __init__(self):
+    def __init__(self, pacing=None):
+        self.pacing = pacing if pacing is not None else FramePacing()
         self.loop = LoopThread()
         self.sessions = {}
 
     def get(self, key):
         from harness.devices import DEVICES
         if key not in self.sessions:
-            self.sessions[key] = PlantSession(key, DEVICES[key], self.loop)
+            self.sessions[key] = PlantSession(key, DEVICES[key], self.loop, pacing=self.pacing)
         session = self.sessions[key]
         session.activate(session.state)
         return session
+
+    def close(self):
+        async def close_sessions():
+            results = await asyncio.gather(*(s.aclose() for s in self.sessions.values()),
+                                           return_exceptions=True)
+            for result in results:
+                if isinstance(result, BaseException):
+                    raise result
+        if self.loop.loop.is_closed():
+            return
+        try:
+            self.loop.run(close_sessions())
+        finally:
+            self.loop.close()

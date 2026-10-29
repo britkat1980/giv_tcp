@@ -9,12 +9,7 @@
     <link rel="icon" href="favicon.ico">
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="pages.css">
-    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
-    <script>
-        $(function() {
-           $("#includeHead").load("header.html?_=" + Date.now());   // unique URL, so a cached (stale) header is never used
-        });
-    </script>
+    <script src="header.js"></script>
     <style>
         .share-inv { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; justify-content: space-between; }
         .share-inv h3 { margin: 0; }

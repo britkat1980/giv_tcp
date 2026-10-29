@@ -155,12 +155,12 @@ async def sendAsyncCommand(reqs,readloop):
 
 def acLimit(kind,val):
     # The AC charge/discharge limit: HR313/314 on models with the AC config block (AC and All-in-One) and on
-    # the Gateway, Hybrid Gen 1 and 3 and All in One-HY (#630, #645), and HR1110/1108 on three-phase (all but AC and All-in-One via
-    # modbus_patches until givenergy-modbus supports them). Other models have no rate write it permits yet, so fail clearly
+    # the Gateway, Hybrid Gen 1 and 3 and All in One-HY (#630, #645; the hybrids via modbus_patches), and HR1110/1108 on
+    # three-phase. Other models have no rate write the library permits yet, so fail clearly
     if GiV_Settings.inverter_type.lower() in ("ac","all_in_one","gateway","hybrid_gen1","hybrid_gen3","all_in_one_hybrid"):
         return getattr(gecommands,"set_battery_"+kind+"_limit_ac")(val)
     if "3ph" in GiV_Settings.inverter_type.lower():
-        return modbus_patches.three_phase_ac_limit(kind,val)
+        return getattr(gecommands,"set_battery_"+kind+"_limit_ac_3ph")(int(val))
     raise NotImplementedError("Setting the AC "+kind+" rate is not yet supported by givenergy-modbus for "+str(GiV_Settings.inverter_type)+" inverters")
 
 def optionalAcLimit(kind,val):
@@ -201,6 +201,13 @@ def batteryLimitPercent(rate,batcap,invmaxrate):
         percent=math.ceil(invmaxrate/batcap*100)
     return min(round(percent),50)
 
+def rateApplied(requested, applied):
+    # The rate is a percentage of battery capacity, at most 50%, so a small battery takes less than asked for: say what
+    # was set, rather than report the requested rate as set and have callers (eg. Predbat) read back less and retry (#679)
+    if applied is not None and int(applied)<int(requested):
+        return " (set to "+str(int(applied))+"W: the rate is a whole percentage of the battery's capacity, at most 50%)"
+    return ""
+
 def maxBatteryRate(multi_output):
     rate=finditem(multi_output,'Invertor_Max_Bat_Rate')
     if not rate:
@@ -233,15 +240,15 @@ def chargeTargetSOC(device,target):
     return device.set_charge_target_soc(int(target))
 
 def slotTargetSOC(device,kind,slot,target):
-    # Per-slot target SOC. givenergy-modbus provides these for EMS; for inverters with 10 time slots the
-    # charge/discharge targets (HR 242+ / 272+) are written via modbus_patches until it does
+    # Per-slot target SOC: the EMS has its own writers, and inverters with 10 time slots have charge/discharge
+    # targets at HR 242+ / 272+
     if 'ems' in GiV_Settings.inverter_type.lower():
         return getattr(gecommands,"set_ems_"+kind+"_target_soc")(int(slot),int(target))
     if kind=="export":
         raise NotImplementedError("Export target SOC is only available on the EMS")
     if len(device.slot_map.charge_slots)<10:
         raise NotImplementedError(kind.capitalize()+" target SOC per slot is only available on inverters with 10 time slots")
-    return modbus_patches.slot_target_soc(kind,slot,target)
+    return getattr(gecommands,"set_"+kind+"_slot_target_soc")(int(slot),int(target),device.slot_map)
 
 def slotTargetSkipped(name, slot, reason):
     # This model has no such target to write: export targets are only on the EMS, and per-slot discharge targets only
@@ -601,8 +608,7 @@ async def setCarChargeBoost(device,payload,readloop=False):
         if type(payload) is not dict: payload=json.loads(payload)
         if not isEMS(device):
             raise NotImplementedError("Car Charge Boost is only available on the EMS")
-        # EMS HR 2073, written via modbus_patches until givenergy-modbus supports it
-        reqs=modbus_patches.car_charge_boost(payload['boost'])
+        reqs=device.set_car_charge_boost(int(float(payload['boost'])))     # EMS HR 2073
         watts=reqs[0].value
         logger.debug("Setting Car Charge Boost to: "+str(watts)+"W")
         result= await sendAsyncCommand(reqs,readloop)
@@ -730,10 +736,11 @@ async def setChargeRate(device,payload,readloop=False):
             if "3ph" in GiV_Settings.inverter_type.lower() or "gateway" in GiV_Settings.inverter_type.lower():
                 updateControlCache("Battery_Charge_Rate_AC",target)
                 updateControlCache("Battery_Charge_Rate",int(payload['chargeRate']))
+                val=None
             else:
                 val=int(min((target/100)*(batcap), invmaxrate))
                 updateControlCache("Battery_Charge_Rate",val)
-            temp['result']="Setting battery charge rate "+str(payload['chargeRate'])+" was a success"
+            temp['result']="Setting battery charge rate "+str(payload['chargeRate'])+" was a success"+rateApplied(payload['chargeRate'],val)
             logger.info(temp['result'])
         except:
             e=controlError()
@@ -801,7 +808,8 @@ async def setDischargeRate(device,payload,readloop=False):
             else:
                 val=int(min((target/100)*(batcap), invmaxrate))
                 updateControlCache("Battery_Discharge_Rate",val)
-            temp['result']="Setting battery discharge limit "+str(payload['dischargeRate'])+" was a success"
+            applied=None if ("3ph" in GiV_Settings.inverter_type.lower() or "gateway" in GiV_Settings.inverter_type.lower()) else val
+            temp['result']="Setting battery discharge limit "+str(payload['dischargeRate'])+" was a success"+rateApplied(payload['dischargeRate'],applied)
             logger.debug ("Setting battery discharge rate to: " + str(payload['dischargeRate'])+" ("+str(target)+")")
             
             logger.info(temp['result'])
@@ -1145,7 +1153,7 @@ async def setPauseEnd(device,payload,readloop=False):
 async def FEResume(device,revert, readloop=False):
     temp={}
     try:
-        logger.info("Reverting Force Export settings:")
+        logger.info("Reverting Force Export settings to: "+str(revert))
         if "mode" in revert:
             result=await setBatteryMode(device,{"mode":revert["mode"]},readloop)
             if "failed" in json.loads(result)['result'] or "Invalid" in json.loads(result)['result']:
@@ -1265,7 +1273,7 @@ async def FCResume(device,revert,readloop=False):
     temp={}
 
     try:
-        logger.info("Reverting Force Charge Settings:")
+        logger.info("Reverting Force Charge settings to: "+str(revert))     # what it puts back, eg. Target SOC (#671)
         reqs=[]
         if "chargeRate" in revert:
             is3ph="3ph" in GiV_Settings.inverter_type.lower()
@@ -1868,7 +1876,7 @@ def rebootAddon(device=None,payload=None,readloop=False):     # matches the read
             url="http://supervisor/addons/self/restart"
             result = requests.post(url,
                 headers={'Content-Type':'application/json',
-                        'Authorization': 'Bearer {}'.format(access_token)})
+                        'Authorization': 'Bearer {}'.format(access_token)}, timeout=30)
             logger.info("Supervisor restart was: "+str(result))
         else:
             result="Please restart GivTCP Manually..."

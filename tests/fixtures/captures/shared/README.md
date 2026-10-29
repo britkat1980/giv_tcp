@@ -14,3 +14,4 @@ and IP addresses are removed). They're stored here as received, renamed to `.cap
 | `ac_3001_arm282_issue638.capture` | #638 | AC (DTC 3001) behind an EMS | ARM 282, DSP 291 | 1 LV battery (BMS 4009) | Also reads LV battery addresses 0x30-0x37 once (detect) |
 | `ems_arm1036_issue638.capture` | #638 | EMS (DTC 5001) with 2 AC inverters | ARM 1036 | 2 meters | Same plant as the AC above. As #632, its IR 0-59 replies are the cloud's polls |
 | `hybrid_3ph_4006_issue667.capture` | #667 | Three-phase hybrid (DTC 4006) | ARM 0 (as reported) | 3 BCU stacks of 6 HV modules, 1 meter | The first three-phase capture with several stacks |
+| `hybrid_gen1_2001_arm451_issue666.capture` | #666 | Hybrid Gen 1 (DTC 2001) | ARM 451, DSP 450 | 1 LV battery (BMS 3022) | The original Gen 1 firmware, which doesn't answer HR 313-314 or HR 318 (#655) |

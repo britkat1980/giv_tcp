@@ -12,6 +12,16 @@ import palm_settings as stgs
 
 logger = logging.getLogger(__name__)
 
+# Load history from the GivEnergy API's data points: records per page, and the most pages read for one day (a
+# day of 30-second records is about 2,900)
+LOAD_HIST_PAGE_SIZE = 2000
+LOAD_HIST_MAX_PAGES = 10
+# A day's history is only used if it runs to at least 9pm (minutes after midnight), the time PALM starts
+# counting today
+LOAD_HIST_MIN_COVERAGE_MINS = 1260
+# The counter resets in the first readings after midnight (minutes): a drop before this is that reset
+LOAD_HIST_RESET_WINDOW_MINS = 60
+
 # This software in any form is covered by the following Open Source BSD license:
 #
 # Copyright 2023, Steve Lewis
@@ -175,50 +185,108 @@ class GivEnergyObj:
     def get_load_hist(self):
         """Download historical consumption data from GivEnergy and pack array for next SoC calc"""
 
-        def get_load_hist_day(offset: int):
-            """Get load history for a single day"""
-
-            load_array = [0] * 48
-            day_delta = offset if (stgs.pg.t_now_mins > 1260) else offset + 1  # Today if >9pm
-            day = datetime.strftime(datetime.now() - timedelta(day_delta), '%Y-%m-%d')
+        def get_load_hist_records(day: str):
+            """Every data point the GivEnergy API has for a day, from all its pages, or None if it can't be read"""
             url = stgs.GE.url + "data-points/"+ day
-            key = stgs.GE.key
             headers = {
-                'Authorization': 'Bearer  ' + key,
+                'Authorization': 'Bearer  ' + stgs.GE.key,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             }
-            params = {
-                'page': '1',
-                'pageSize': '2000'
-            }
+            records = []
+            for page in range(1, LOAD_HIST_MAX_PAGES + 1):
+                params = {'page': str(page), 'pageSize': str(LOAD_HIST_PAGE_SIZE)}
+                try:
+                    resp = requests.request('GET', url, headers=headers, params=params, timeout=10)
+                except requests.exceptions.RequestException as error:
+                    logger.error(error)
+                    return None
+                if resp.status_code != 200:
+                    logger.error("Invalid response: "+ str(resp.status_code))
+                    return None
+                try:
+                    history = json.loads(resp.content.decode('utf-8'))
+                except ValueError:
+                    logger.error("Unreadable load history for "+ day)
+                    return None
+                data = history.get('data') if isinstance(history, dict) else None
+                if not isinstance(data, list):
+                    break
+                records += data
+                # The API returns as many records a day as the inverter logged (eg. every 30s), over several pages
+                meta = history.get('meta') or {}
+                last_page = meta.get('last_page') if isinstance(meta, dict) else None
+                if (last_page is not None and page >= int(last_page)) or len(data) < LOAD_HIST_PAGE_SIZE:
+                    break
+            return records
 
-            try:
-                resp = requests.request('GET', url, headers=headers, params=params, timeout=10)
-            except requests.exceptions.RequestException as error:
-                logger.error(error)
-                return load_array
-            if resp.status_code != 200:
-                logger.error("Invalid response: "+ str(resp.status_code))
-                return load_array
+        def get_load_hist_day(offset: int):
+            """Half-hourly load for a single day (kWh), or None if the day's history doesn't cover the day"""
 
-            if len(resp.content) > 100:
-                history = json.loads(resp.content.decode('utf-8'))
-                i = 6
-                counter = 0
-                current_energy = prev_energy = 0
-                while i < 290:
+            day_delta = offset if (stgs.pg.t_now_mins > 1260) else offset + 1  # Today if >9pm
+            day_start = (datetime.now() - timedelta(day_delta)).replace(hour=0, minute=0, second=0, microsecond=0)
+            day = datetime.strftime(day_start, '%Y-%m-%d')
+            records = get_load_hist_records(day)
+            if not records:
+                return None
+
+            # Each record's today.consumption is the day's consumption so far. Place each one by its own time:
+            # the API's interval isn't fixed (5 minutes on some systems, 30 seconds on others, #684). Records
+            # without a time are taken as 5 minutes apart from midnight, as the API used to return
+            readings = []
+            for index, record in enumerate(records):
+                try:
+                    energy = float(record['today']['consumption'])
+                except (KeyError, TypeError, ValueError):
+                    continue
+                when = record.get('time') if isinstance(record, dict) else None
+                if when:
                     try:
-                        current_energy = float(history['data'][i]['today']['consumption'])
-                    except Exception:
-                        break
-                    if counter == 0:
-                        load_array[counter] = round(current_energy, 1)
-                    else:
-                        load_array[counter] = round(current_energy - prev_energy, 1)
-                    counter += 1
-                    prev_energy = current_energy
-                    i += 6
+                        local = datetime.fromisoformat(str(when).replace('Z', '+00:00')).astimezone().replace(tzinfo=None)
+                    except ValueError:
+                        continue
+                    minutes = (local - day_start).total_seconds() / 60
+                    # Not the previous or next day's: the counter resets at midnight
+                    if 0 <= minutes < 24 * 60:
+                        readings.append((minutes, energy))
+                elif index * 5 <= 24 * 60:      # the 289th (index 288) is the end of the day
+                    readings.append((index * 5, energy))
+            readings.sort()
+            if not readings or readings[-1][0] < LOAD_HIST_MIN_COVERAGE_MINS:
+                logger.warning("Load history for "+ day+ " ends at "+ (t_to_hrs(int(readings[-1][0])) if readings else "00:00")+
+                               ", so it's not used for the load forecast")
+                return None
+
+            # The day's first readings can still hold the previous day's total until the counter resets: in the
+            # first hour, a drop is that reset, so the readings before it aren't today's (#684)
+            for index in range(len(readings) - 1, 0, -1):
+                if readings[index][0] < LOAD_HIST_RESET_WINDOW_MINS and readings[index][1] < readings[index - 1][1]:
+                    readings = readings[index:]
+                    break
+            # The counter can't come down later in the day, so a reading higher than every one after it is spurious
+            # (eg. a stale previous day's total) and is skipped, rather than held for the rest of the day
+            later = float('-inf')
+            kept = []
+            for minutes, energy in reversed(readings):
+                if not kept or energy <= later:
+                    kept.append((minutes, energy))
+                    later = max(later, energy)
+            readings = kept[::-1]
+
+            # The day's consumption at the end of each half hour. Running maximum: the counter only rises during a
+            # day, so a stale reading lower than the one before it is ignored
+            load_array = [0.0] * 48
+            reading = 0
+            so_far = prev = 0.0
+            for slot in range(48):
+                end = (slot + 1) * 30
+                while reading < len(readings) and readings[reading][0] <= end:
+                    so_far = max(so_far, readings[reading][1])
+                    reading += 1
+                if readings[-1][0] < end - 30:
+                    break       # no data for this half hour (today, after 9pm): left at 0, as before
+                load_array[slot] = round(so_far - prev, 2)
+                prev = so_far
             return load_array
 
         load_hist_array = [0] * 48
@@ -230,6 +298,10 @@ class GivEnergyObj:
             if stgs.GE.load_hist_weight[i] > 0:
                 logger.debug("Processing load history for day -"+ str(i + 1))
                 load_hist_array = get_load_hist_day(i)
+                if load_hist_array is None:
+                    # Missing or incomplete history isn't a day with no load, so leave it out (#684)
+                    i += 1
+                    continue
                 j = 0
                 while j < 48:
                     acc_load[j] += load_hist_array[j] * stgs.GE.load_hist_weight[i]
@@ -241,10 +313,14 @@ class GivEnergyObj:
                 logger.debug("Skipping load history for day -"+ str(i + 1)+ " (weight <= 0)")
             i += 1
 
-        # Avoid DIV/0 if config file contains incorrect weightings
         if total_weight == 0:
-            logger.error("Configuration error: incorrect daily weightings")
-            total_weight = 1
+            if not any(w > 0 for w in stgs.GE.load_hist_weight):
+                logger.error("Configuration error: incorrect daily weightings")
+            else:
+                logger.warning("No complete load history from the GivEnergy API, so the load forecast uses the "
+                               "previous load profile")
+            # Keep the profile PALM already has (the default one at first), rather than forecast no load at all
+            return
 
         # Calculate averages and write results
         i = 0
