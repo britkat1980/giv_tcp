@@ -26,7 +26,7 @@ def reboot():
         url="http://supervisor/addons/self/restart"
         result = requests.post(url,
             headers={'Content-Type':'application/json',
-                    'Authorization': 'Bearer {}'.format(access_token)})
+                    'Authorization': 'Bearer {}'.format(access_token)}, timeout=30)
     except:
         return "Error: Reboot Manually"
 

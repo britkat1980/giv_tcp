@@ -97,7 +97,7 @@
     (function() {
         // Mark the menu item for the page we're on
         var page = location.pathname.split("/").pop().replace(".html", "");
-        $(".givnav .gn-item[data-page='" + page + "']").addClass("gn-active");
+        document.querySelectorAll(".givnav .gn-item[data-page='" + page + "']").forEach(function(el) { el.classList.add("gn-active"); });
 
         // The dashboard is served on its own port, so it opens on the host IP rather than through ingress
         fetch("hostip.json").then(function(r) { return r.json(); }).then(function(ip) {

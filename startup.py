@@ -574,7 +574,7 @@ if isAddon:
     url="http://supervisor/services/mqtt"
     result = requests.get(url,
         headers={'Content-Type':'application/json',
-                'Authorization': 'Bearer {}'.format(access_token)})
+                'Authorization': 'Bearer {}'.format(access_token)}, timeout=30)
     mqttDetails=result.json()
     logger.debug("MQTT Service details found: "+str(mqttDetails))
     if mqttDetails['result']=="ok":
@@ -592,7 +592,7 @@ if isAddon:
     url="http://supervisor/info"
     result = requests.get(url,
         headers={'Content-Type':'application/json',
-                'Authorization': 'Bearer {}'.format(access_token)})
+                'Authorization': 'Bearer {}'.format(access_token)}, timeout=30)
     info=result.json()
     SuperTimezone=info['data']['timezone']
     logger.debug("Supervisor Timezone: "+str(SuperTimezone))
@@ -601,7 +601,7 @@ if isAddon:
     url="http://supervisor/addons/self/info"
     result = requests.get(url,
         headers={'Content-Type':'application/json',
-                'Authorization': 'Bearer {}'.format(access_token)})
+                'Authorization': 'Bearer {}'.format(access_token)}, timeout=30)
     baseurl=result.json()['data']['ingress_url']
     logger.debug("Ingress URL is: "+str(baseurl))
 
@@ -609,7 +609,7 @@ if isAddon:
     url="http://supervisor/network/info"
     result = requests.get(url,
         headers={'Content-Type':'application/json',
-                'Authorization': 'Bearer {}'.format(access_token)})
+                'Authorization': 'Bearer {}'.format(access_token)}, timeout=30)
     hostDetails=result.json()
     i=0
     for interface in hostDetails['data']['interfaces']:

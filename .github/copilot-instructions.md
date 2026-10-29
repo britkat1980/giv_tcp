@@ -24,14 +24,14 @@ This file gives targeted, actionable pointers so an AI coding agent can be produ
 
 3) Runtime & developer workflows
 - Recommended dev bootstrap (local):
-  - create a Python venv and install dependencies: `pip install -r requirements.txt` (repo root has `requirements.txt`).
+  - create a Python venv and install dependencies: `pip install -r requirements-dev.txt`. Runtime dependencies are listed in `requirements.in`; `requirements.txt` is generated from it with every version and hash pinned, for the Docker image (see `DEVELOPMENT.md`).
   - Redis is required for RQ (default connection `127.0.0.1:6379`)—start a local Redis during development.
   - Run the service: `python startup.py` will initialize settings and start the usual processes in a single process for development debugging.
   - Start the background worker separately to process queued jobs: `python GivTCP/worker.py` (this launches an RQ worker connected to Redis).
   - The REST API is implemented in `GivTCP/REST.py`; it is normally started by the runtime — for quick tests, run `python startup.py` which wires everything together.
 
 4) Integration points & external deps
-- Uses the published `givenergy-modbus` library (v2, pinned in `requirements.txt`) for Modbus. `read.py` detects the plant (`Client.detect()`, capabilities cached per serial), then polls with `Client.refresh()` / `Client.load_config()`; `write.py` sends writes with `Client.one_shot_command()`. `GivTCP/modbus_patches.py` extends the library where it doesn't yet support something (see `docs/upstream-givenergy-modbus-requests.md`).
+- Uses the `givenergy-modbus` library (britkat1980's fork of v2.13.0, pinned to a commit in `requirements.in`) for Modbus. `read.py` detects the plant (`Client.detect()`, capabilities cached per serial), then polls with `Client.refresh()` / `Client.load_config()`; `write.py` sends writes with `Client.one_shot_command()`. `GivTCP/modbus_patches.py` extends the library where it doesn't yet support something (see `docs/upstream-givenergy-modbus-requests.md`).
 - MQTT: see `GivTCP/mqtt.py` (broker publishes and control topics). The project assumes Home Assistant add-on environment if `SUPERVISOR_TOKEN` exists (checked in `startup.py`).
 - Redis + RQ: `GivLUT.GivQueue` and `GivTCP/worker.py` expect Redis at `127.0.0.1:6379`.
 

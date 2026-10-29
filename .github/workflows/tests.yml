@@ -30,7 +30,7 @@ jobs:
           python-version: '3.14'
           cache: pip
           cache-dependency-path: |
-            requirements.txt
+            requirements.in
             requirements-dev.txt
       - name: Install test dependencies
         run: python -m pip install -r requirements-dev.txt

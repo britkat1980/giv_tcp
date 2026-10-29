@@ -1,5 +1,6 @@
 # givtcp-vuejs builder
-FROM node:current-alpine AS givtcp_vuejs_tmp
+# Node's LTS line, so the build doesn't change with each new Node release
+FROM node:24-alpine AS givtcp_vuejs_tmp
 
 # set the working directory in the container
 WORKDIR /app
@@ -7,7 +8,8 @@ WORKDIR /app
 # Copy file dependencies in a single layer
 COPY givtcp-vuejs .
 
-RUN npm install && \
+# npm ci installs exactly what package-lock.json lists
+RUN npm ci --no-audit --no-fund && \
     npm run build && \
     mv dist/index.html dist/config.html
 
@@ -27,7 +29,8 @@ WORKDIR /app
 
 # copy the dependencies file to the working directory
 COPY requirements.txt .
-RUN pip install -r requirements.txt --no-cache-dir
+# requirements.txt pins every package and its hash (generated from requirements.in), so pip refuses anything else
+RUN pip install --require-hashes -r requirements.txt --no-cache-dir
 
 COPY ingress.conf /etc/nginx/http.d/
 COPY ingress_no_ssl.conf /app/ingress_no_ssl.conf

@@ -72,6 +72,24 @@ Setting `--frame-delay` or `--frame-jitter` alone does not enable pacing. The py
 mode and timing. The settings apply to the shared mock-plant sessions and their reconnect clients; production
 clients and standalone timing tests keep their own settings. CI uses the same INI defaults.
 
+## Dependencies
+
+GivTCP's runtime dependencies are listed in `requirements.in`. The Docker image installs `requirements.txt`, which is
+generated from it with every package's version and hash pinned, so a build can't pick up a package that wasn't checked.
+The tests install `requirements.in` (through `requirements-dev.txt`), so they also run on Windows and catch a new
+release that breaks something before it's pinned.
+
+After changing `requirements.in`, regenerate `requirements.txt` in the image's base, so it matches the image (in Git
+Bash, put `MSYS_NO_PATHCONV=1` in front):
+
+```
+docker run --rm -v "$PWD:/src" -w /src python:3.14.5-alpine sh -c "pip install pip-tools && pip-compile --generate-hashes --allow-unsafe --strip-extras --no-emit-index-url -o requirements.txt requirements.in"
+```
+
+The config page's packages are pinned by `givtcp-vuejs/package-lock.json`, which the image installs with `npm ci`.
+Dependabot opens weekly pull requests to dev3 for the Python and npm packages, the base images and the GitHub Actions,
+and the Dependency audit workflow checks both locks for known vulnerabilities every week and whenever they change.
+
 ## Coverage reports
 
 From the repository root, after installing `requirements-dev.txt`:

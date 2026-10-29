@@ -4,7 +4,7 @@ Found while porting GivTCP to givenergy-modbus 2.12.0 (GivTCP `modbusv2` branch)
 
 Thanks again for the migration guide and the offer of help in britkat1980/giv_tcp#556. The port has gone smoothly apart from these points.
 
-**Status (October 2026).** GivTCP now runs [britkat1980/givenergy-modbus](https://github.com/britkat1980/givenergy-modbus), a fork of 2.13.0 with these requests merged, pinned to a commit in `requirements.txt`. Each one is open as a pull request on dewet22/givenergy-modbus (#430 to #445). With the fork, GivTCP's `modbus_patches.py` no longer patches 2 (writes), 3, 10, 11, 12, 17 or 19. The fork doesn't cover these, so they're still patched:
+**Status (October 2026).** GivTCP now runs [britkat1980/givenergy-modbus](https://github.com/britkat1980/givenergy-modbus), a fork of 2.13.0 with these requests merged, pinned to a commit in `requirements.in` (and by hash in `requirements.txt`). Each one is open as a pull request on dewet22/givenergy-modbus (#430 to #445). With the fork, GivTCP's `modbus_patches.py` no longer patches 2 (writes), 3, 10, 11, 12, 17 or 19. The fork doesn't cover these, so they're still patched:
 
 - **1:** the fork allows pause writes only on the models with evidence in the library, which are fewer than GivTCP allows.
 - **2:** the three-phase HR 240-299 read.

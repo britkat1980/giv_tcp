@@ -3,7 +3,7 @@
 from giverrors import errDetail
 from os.path import exists
 import sys
-from flask import Flask, request, render_template, Response, send_file
+from flask import Flask, request, Response, send_file
 from flask_cors import CORS
 import read as rd       #grab passthrough functions from main read file
 import write as wr      #grab passthrough functions from main write file
@@ -33,7 +33,7 @@ from flask import g
 from GivLUT import SharedTimedRotatingFileHandler
 REST_LOG_MAX_BODY=500      # truncate long request/response bodies
 # Routes whose response is the full data dump: log its size rather than the start of the JSON
-REST_LOG_NO_RESPONSE={'/readData','/getCache','/runAll','/fullCache','/getEVCCache','/showdata','/api'}
+REST_LOG_NO_RESPONSE={'/readData','/getCache','/runAll','/fullCache','/getEVCCache','/api'}
 # Settings can hold credentials (eg. MQTT password), so never log their request or response bodies
 REST_LOG_NO_BODIES={'/settings'}
 # settings.py from before this change has no Debug_File_Location_REST, so fall back to the main log's folder
@@ -148,11 +148,6 @@ def response(id: str):
 def api():
     with open('api.json', 'r') as inp:
         return (json.load(inp))
-
-@giv_api.route('/showdata', methods=['GET'])
-def index():
-    output=rd.getCache()
-    return render_template('showdata.html', title="page", jsonfile=json.dumps(output))
 
 @giv_api.route('/settings', methods=['POST'])
 def savesetts():

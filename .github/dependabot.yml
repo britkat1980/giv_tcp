@@ -1,0 +1,29 @@
+# Weekly pull requests to dev3 for dependency updates. requirements.txt is compiled from requirements.in, which
+# Dependabot understands; the givenergy-modbus fork (a GitHub archive) is updated by hand
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /
+    target-branch: dev3
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: npm
+    directory: /givtcp-vuejs
+    target-branch: dev3
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      config-page:
+        patterns: ["*"]
+  - package-ecosystem: docker
+    directory: /
+    target-branch: dev3
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: dev3
+    schedule:
+      interval: weekly

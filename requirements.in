@@ -1,0 +1,15 @@
+# GivTCP's runtime dependencies. requirements.txt is generated from this, with every version and hash pinned,
+# in the image's base so the result matches the image. From this folder (Git Bash: prefix with MSYS_NO_PATHCONV=1):
+#   docker run --rm -v "$PWD:/src" -w /src python:3.14.5-alpine sh -c "pip install pip-tools && pip-compile --generate-hashes --allow-unsafe --strip-extras --no-emit-index-url -o requirements.txt requirements.in"
+gunicorn
+paho-mqtt
+givenergy-modbus @ https://github.com/britkat1980/givenergy-modbus/archive/a556333bb7ac1589d7c266ed9cdf5cdfafba44e8.zip
+schedule
+influxdb_client
+requests
+flask
+flask-cors
+rq<3        # 3.0 is a new major version, not yet tested with GivTCP's worker
+redis
+pymodbus
+pip         # pinned with the rest, so the image's pip has its fixes too

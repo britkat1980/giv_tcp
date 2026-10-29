@@ -250,7 +250,7 @@ def rebootaddon():
         url="http://supervisor/addons/self/restart"
         result = requests.post(url,
             headers={'Content-Type':'application/json',
-                    'Authorization': 'Bearer {}'.format(access_token)})
+                    'Authorization': 'Bearer {}'.format(access_token)}, timeout=30)
         logger.info("Supervisor restart was: "+str(result))
     else:
         result="Please restart GivTCP Manually..."

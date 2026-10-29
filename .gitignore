@@ -52,3 +52,7 @@ EMS_GE*.docx
 coverage.xml
 coverage.json
 htmlcov/
+
+# The config page build (givtcp-vuejs): dependencies and output
+node_modules/
+givtcp-vuejs/dist/
