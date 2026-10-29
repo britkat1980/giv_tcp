@@ -147,3 +147,81 @@ def test_rest_read_only_data_is_still_shared(api, monkeypatch, site):
 def test_rest_same_origin_and_direct_calls_still_work(api, rest_settings):
     for headers in ({"Sec-Fetch-Site": "same-origin"}, {"Sec-Fetch-Site": "none"}, {}):
         assert api.post('/settings', json={"MQTT_Port": 1890}, headers=headers).status_code == 200
+
+
+SECRETS = {"MQTT_Password": "mqttpw", "influxToken": "tok", "GE_API": "ge", "SOLCASTAPI": "sol",
+           "REST_API_Key": "k" * 20}
+
+def test_secrets_are_hidden_and_kept_when_sent_back():
+    shown = settings_values.hide_secrets({**SECRETS, "MQTT_Username": "user", "influxToken": ""})
+    assert shown == {"MQTT_Password": "********", "influxToken": "", "GE_API": "********", "SOLCASTAPI": "********",
+                     "REST_API_Key": "********", "MQTT_Username": "user"}
+    saved = {"MQTT_Password": "mqttpw", "GE_API": "ge"}
+    assert settings_values.keep_secrets({"MQTT_Password": "********", "GE_API": "new", "SOLCASTAPI": "********",
+                                         "MQTT_Port": 1883}, saved) == {"MQTT_Password": "mqttpw", "GE_API": "new",
+                                                                         "MQTT_Port": 1883}
+
+
+@pytest.mark.parametrize("key, ok", [("", True), (None, True), ("********", True), ("a" * 16, True),
+                                     ("Abc-123_" * 16, True), ("short", False), ("a" * 129, False),
+                                     ('aaaaaaaaaaaaaaaa"; deny all', False), ("a" * 15 + "\n", False)])
+def test_api_key_is_checked_before_its_saved(key, ok):
+    assert (settings_values.check({"REST_API_Key": key}, {}) is None) is ok
+    assert settings_values.api_key({"REST_API_Key": key}) == (key if ok and key and key != "********" else "")
+
+
+def test_settings_api_hides_secrets_and_keeps_them_on_save(settings_api):
+    api, path = settings_api
+    (path / "allsettings.json").write_text(json.dumps(SECRETS))
+    shown = api.get('/settings').json
+    assert "mqttpw" not in json.dumps(shown) and shown["MQTT_Password"] == "********"
+    assert api.post('/settings', json={**shown, "GE_API": "newge"}).status_code == 200
+    assert json.loads((path / "allsettings.json").read_text()) == {**SECRETS, "GE_API": "newge"}
+
+
+def test_rest_settings_hide_secrets_and_keep_them_on_save(api, rest_settings):
+    rest_settings.write_text(json.dumps(SECRETS))
+    shown = api.get('/settings').json
+    assert set(shown.values()) == {"********"}
+    assert api.post('/settings', json=shown).status_code == 200
+    assert json.loads(rest_settings.read_text()) == SECRETS
+
+
+@pytest.fixture
+def keyed(monkeypatch):
+    monkeypatch.setattr(REST.GiV_Settings, "REST_API_Key", "s" * 20, raising=False)
+    called = []
+    monkeypatch.setattr(REST, "requestcommand", lambda *a: called.append(a))
+    monkeypatch.setattr(REST, "response", lambda id: '{"result":"ok"}')
+    monkeypatch.setattr(REST.rd, "getCache", lambda: {"Power": 1})
+    return called
+
+
+@pytest.mark.parametrize("headers", [{}, {"X-API-Key": "wrong"}, {"Authorization": "Bearer wrong"},
+                                     {"Authorization": "Basic " + "s" * 20}])
+def test_rest_api_key_is_needed_for_control_when_set(api, keyed, headers):
+    response = api.post('/setChargeTarget', json={"chargeToPercent": "80"}, headers=headers)
+    assert response.status_code == 401 and keyed == []
+    assert api.get('/settings', headers=headers).status_code == 401
+
+
+@pytest.mark.parametrize("headers", [{"X-API-Key": "s" * 20}, {"Authorization": "Bearer " + "s" * 20},
+                                     {"Authorization": "bearer  " + "s" * 20}])
+def test_rest_api_key_lets_control_through(api, keyed, headers):
+    assert api.post('/setChargeTarget', json={"chargeToPercent": "80"}, headers=headers).status_code == 200
+    assert keyed == [("setChargeTarget", {"chargeToPercent": "80"})]
+
+
+def test_rest_read_only_data_and_preflight_dont_need_the_key(api, keyed):
+    assert api.get('/getCache').json == {"Power": 1}
+    assert api.options('/forceCharge').status_code != 401
+
+
+def test_rest_without_a_valid_key_stays_open(api, monkeypatch):
+    called = []
+    monkeypatch.setattr(REST, "requestcommand", lambda *a: called.append(a))
+    monkeypatch.setattr(REST, "response", lambda id: '{"result":"ok"}')
+    for key in ("", "short"):
+        monkeypatch.setattr(REST.GiV_Settings, "REST_API_Key", key, raising=False)
+        assert api.post('/setChargeTarget', json={"chargeToPercent": "80"}).status_code == 200
+    assert len(called) == 2

@@ -85,6 +85,21 @@ from flask import got_request_exception
 got_request_exception.connect(_restLogException, giv_api)
 refuse_cross_site(giv_api, READ_ONLY_ROUTES)      # after _restLogStart, so refused requests are logged too
 
+import hmac
+@giv_api.before_request
+def _requireApiKey():
+    # With a REST API key set, everything except the read-only data needs it, as X-API-Key or "Authorization: Bearer".
+    # nginx adds it to requests from GivTCP's own pages (/RESTn/), so they don't need to know it
+    key=settings_values.api_key({"REST_API_Key": getattr(GiV_Settings,'REST_API_Key','')})
+    if not key or request.path in READ_ONLY_ROUTES or request.method=='OPTIONS':
+        return None
+    sent=request.headers.get('X-API-Key') or ''
+    auth=request.headers.get('Authorization') or ''
+    if not sent and auth.lower().startswith('bearer '):
+        sent=auth[7:].strip()
+    if not hmac.compare_digest(sent.encode(), key.encode()):
+        return Response('{"result":"Error: missing or wrong REST API key"}', status=401, mimetype='application/json')
+
 with open(GivLUT.allsettings, "r") as inp:
     setts=json.load(inp)
 if setts["evc_enable"]==True:
@@ -159,14 +174,14 @@ def savesetts():
     if exists(SFILE):
         with open(SFILE, 'r') as f1:
             setts=json.load(f1)
-    setts.update(payload)
+    setts.update(settings_values.keep_secrets(payload, setts))
     with open(SFILE, 'w') as f:
         f.write(json.dumps(setts,indent=4))
     return "Settings Updated"
 
 @giv_api.route('/settings', methods=['GET'])
 def returnsetts():
-    """Return settings from json file
+    """Return settings from json file, with credentials hidden
     """
     if exists(GivLUT.allsettings):
         SFILE=GivLUT.allsettings
@@ -174,7 +189,7 @@ def returnsetts():
         SFILE="/app/allsettings.json"
     with open(SFILE, 'r') as f1:
         setts=json.load(f1)
-        return setts
+        return settings_values.hide_secrets(setts)
 
 @giv_api.route('/fullCache', methods=['GET'])
 def fullcache():

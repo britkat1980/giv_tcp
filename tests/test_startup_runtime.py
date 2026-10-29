@@ -324,3 +324,76 @@ def test_settings_api_only_listens_on_this_machine(container):
     c.run(inverter_enable_1=True, invertorIP_1='192.0.2.2', serial_number_1='TEST000001', Model_1='Hybrid')
     binds = {p.args[-1]: p.args[p.args.index('-b') + 1] for p in c.processes if 'gunicorn' in p.args[0]}
     assert binds == {'settings_rest:giv_api': '127.0.0.1:6350', 'REST:giv_api': ':6345'}
+
+
+INVERTER = dict(inverter_enable_1=True, invertorIP_1='192.0.2.2', serial_number_1='TEST000001', Model_1='Hybrid')
+
+def access(c):
+    return c.mapped('/etc/nginx/givtcp_access.conf').read_text().splitlines()
+
+def test_addon_web_ui_is_ingress_only_unless_lan_access_is_on(container):
+    c = container
+    c.run(**INVERTER)
+    assert access(c) == ['allow 127.0.0.1;', 'allow 172.30.32.2;', 'deny all;']
+    c.run(**INVERTER, Web_LAN_Access=True)
+    assert access(c) == ['allow 127.0.0.1;', 'allow 172.30.32.2;', 'allow 10.0.0.0/8;', 'allow 172.16.0.0/12;',
+                         'allow 192.168.0.0/16;', 'deny all;']
+
+
+def test_docker_web_ui_stays_on_the_local_network(container):
+    c = container
+    c.os.getenv = lambda key: None
+    import socket
+    sock = Mock()
+    sock.getsockname.return_value = ('192.0.2.10', 1234)
+    c.imports['socket'] = SimpleNamespace(AF_INET=socket.AF_INET, SOCK_DGRAM=socket.SOCK_DGRAM,
+                                         socket=Mock(return_value=sock))
+    c.run(**INVERTER)
+    assert 'allow 192.168.0.0/16;' in access(c) and access(c)[-1] == 'deny all;'
+
+
+def broker(c):
+    return [p for p in c.processes if p.args[0] == '/usr/sbin/mosquitto']
+
+def test_broker_without_credentials_stays_open_and_says_so(container, caplog):
+    c = container
+    with caplog.at_level(logging.WARNING):
+        c.run(**INVERTER, MQTT_Username='', MQTT_Password='')
+    assert c.mapped('/etc/mosquitto/givtcp.conf').read_text() == 'listener 1883 0.0.0.0\nallow_anonymous true\n'
+    assert [p.args for p in broker(c)] == [['/usr/sbin/mosquitto', '-c', '/etc/mosquitto/givtcp.conf']]
+    assert "accepts anyone on your network" in caplog.text
+
+
+def test_broker_with_credentials_requires_them(container):
+    c = container
+    run = Mock()
+    c.imports['subprocess'].run = run
+    c.run(**INVERTER, MQTT_Username='givtcp', MQTT_Password='s3cret pass')
+    assert c.mapped('/etc/mosquitto/givtcp.conf').read_text() == (
+        'listener 1883 0.0.0.0\nallow_anonymous false\npassword_file /etc/mosquitto/givtcp_passwords\n')
+    assert c.mapped('/etc/mosquitto/givtcp_passwords').read_text() == 'givtcp:s3cret pass\n'   # hashed by mosquitto_passwd
+    assert run.call_args.args[0] == ['/usr/bin/mosquitto_passwd', '-U', '/etc/mosquitto/givtcp_passwords']
+    assert len(broker(c)) == 1
+
+
+@pytest.mark.parametrize("user, password, hashing", [('givtcp', 'pw', OSError('no mosquitto_passwd')),
+                                                     ('giv:tcp', 'pw', None), ('givtcp', '', None),
+                                                     ('givtcp', 'pw\nallow_anonymous true', None)])
+def test_broker_login_that_cant_be_set_up_only_listens_locally(container, user, password, hashing):
+    c = container
+    c.imports['subprocess'].run = Mock(side_effect=hashing)
+    c.run(**INVERTER, MQTT_Username=user, MQTT_Password=password)
+    assert c.mapped('/etc/mosquitto/givtcp.conf').read_text() == 'listener 1883 127.0.0.1\nallow_anonymous true\n'
+
+
+def test_rest_api_key_goes_to_settings_and_nginx(container):
+    c = container
+    c.run(**INVERTER, REST_API_Key='k' * 20)
+    settings = {}
+    exec(c.mapped('/app/GivTCP_1/settings.py').read_text(), settings)
+    assert settings['GiV_Settings'].REST_API_Key == 'k' * 20
+    assert 'proxy_set_header X-API-Key "' + 'k' * 20 + '";' in c.mapped('/etc/nginx/givtcp_rest/rest.conf').read_text()
+    c.run(**INVERTER, REST_API_Key='bad"; key')
+    exec(c.mapped('/app/GivTCP_1/settings.py').read_text(), settings)
+    assert settings['GiV_Settings'].REST_API_Key == ''
+    assert 'X-API-Key' not in c.mapped('/etc/nginx/givtcp_rest/rest.conf').read_text()

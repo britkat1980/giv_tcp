@@ -15,6 +15,8 @@
             v-else-if="input?.type === 'text'"
             v-model="storeTCP[input?.options?.parent][input?.options?.key]"
             :label="input?.options?.label"
+            :type="input?.options?.password ? 'password' : 'text'"
+            :autocomplete="input?.options?.password ? 'new-password' : undefined"
           />
           <v-switch
             v-else-if="input?.type === 'checkbox'"

@@ -51,14 +51,14 @@ def savesetts():
     if exists(SFILE):
         with open(SFILE, 'r') as f1:
             setts=json.load(f1)
-    setts.update(payload)
+    setts.update(settings_values.keep_secrets(payload, setts))
     with open(SFILE, 'w') as f:
         f.write(json.dumps(setts,indent=4))
     return "Settings Updated"
 
 @giv_api.route('/settings', methods=['GET'])
 def returnsetts():
-    """Return settings from json file
+    """Return settings from json file, with credentials hidden
     """
     if exists("/config/GivTCP/allsettings.json"):
         SFILE="/config/GivTCP/allsettings.json"
@@ -66,7 +66,7 @@ def returnsetts():
         SFILE="/app/allsettings.json"
     with open(SFILE, 'r') as f1:
         setts=json.load(f1)
-        return setts
+        return settings_values.hide_secrets(setts)
 
 @giv_api.route('/settings/found', methods=['GET'])
 def foundinverters():

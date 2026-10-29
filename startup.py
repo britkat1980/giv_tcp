@@ -11,7 +11,7 @@ import asyncio
 from GivTCP.netscan import scan, as_list, INVERTER_PORT, EVC_PORT
 from GivTCP.capscheck import missingBatteries, capsBatteryCount
 from GivTCP.startfiles import keptOnStart
-from GivTCP.settings_values import text, flag, number     # settings.py gets each setting as a literal, never as code
+from GivTCP.settings_values import text, flag, number, api_key     # settings.py gets each setting as a literal, never as code
 from givenergy_modbus.client.client import Client
 from givenergy_modbus.exceptions import CommunicationError
 from givenergy_modbus.model.inverter import resolve_model
@@ -113,10 +113,61 @@ def ensureInverterSlots(setts):
 def writeRestRoutes(setts):
     # nginx routes /RESTn/ to each inverter's REST API. Generated for however many slots are configured
     # (ingress*.conf includes this folder; an empty folder is valid, so nginx still starts if this fails)
+    # With a REST API key, nginx adds it, so GivTCP's own pages (eg. the config page's restart) don't need to know it
     os.makedirs("/etc/nginx/givtcp_rest", exist_ok=True)
+    key=api_key(setts)
     with open("/etc/nginx/givtcp_rest/rest.conf","w") as outp:
         for num in range(1,int(setts.get("number_of_inverters",0) or 0)+1):
-            outp.write("location /REST"+str(num)+"/ {\n    proxy_pass http://127.0.0.1:"+str(invPort(num))+"/;\n}\n")
+            outp.write("location /REST"+str(num)+"/ {\n    proxy_pass http://127.0.0.1:"+str(invPort(num))+"/;\n"
+                       +("    proxy_set_header X-API-Key \""+key+"\";\n" if key else "")+"}\n")
+
+LAN_RANGES=("10.0.0.0/8","172.16.0.0/12","192.168.0.0/16")
+HA_INGRESS="172.30.32.2"       # where Home Assistant's ingress connects from
+
+def writeWebAccess(setts, addon):
+    """Who can open the web UI on 8099/8098 (ingress*.conf includes this). As an add-on, only Home Assistant's
+    ingress (so a Home Assistant login is needed) unless Web_LAN_Access is on. In Docker, the local network as before,
+    as 8099 is the only way to the config page"""
+    lan=(not addon) or str(setts.get("Web_LAN_Access")).lower()=="true"
+    allowed=["127.0.0.1", HA_INGRESS]+(list(LAN_RANGES) if lan else [])
+    with open("/etc/nginx/givtcp_access.conf","w") as outp:
+        outp.write("".join("allow "+a+";\n" for a in allowed)+"deny all;\n")
+    return lan
+
+BROKER_CONF="/etc/mosquitto/givtcp.conf"
+BROKER_PASSWORDS="/etc/mosquitto/givtcp_passwords"
+
+def writeBroker(setts):
+    """The config for GivTCP's own Mosquitto. With an MQTT username and password set (as GivTCP connects with), it
+    only accepts those. Without them it accepts anyone on the network, as it always has, and says so"""
+    user=str(setts.get("MQTT_Username") or "")
+    password=str(setts.get("MQTT_Password") or "")
+    listen="0.0.0.0"
+    auth=["allow_anonymous true"]
+    if user or password:
+        try:
+            if not (user and password) or ":" in user or any(c in user+password for c in "\r\n"):
+                raise ValueError("the MQTT username and password must both be set, without line breaks, and the username can't contain ':'")
+            os.makedirs(os.path.dirname(BROKER_PASSWORDS), exist_ok=True)
+            with open(BROKER_PASSWORDS,"w") as outp:
+                outp.write(user+":"+password+"\n")
+            subprocess.run(["/usr/bin/mosquitto_passwd","-U",BROKER_PASSWORDS], check=True, timeout=30)
+            auth=["allow_anonymous false","password_file "+BROKER_PASSWORDS]
+            try:
+                shutil.chown(BROKER_PASSWORDS,"mosquitto","mosquitto")    # as Mosquitto wants it, readable only by it
+                os.chmod(BROKER_PASSWORDS,0o700)
+            except Exception:
+                logger.debug("Couldn't make the MQTT broker's password file Mosquitto's: "+errDetail())
+        except Exception:
+            # Don't leave the broker open on the network when credentials were meant to protect it
+            logger.error("Couldn't set up the MQTT broker's login, so it only accepts connections from GivTCP itself: "+errDetail())
+            listen="127.0.0.1"
+    else:
+        logger.warning("GivTCP's MQTT broker accepts anyone on your network, as no MQTT username and password are set. "
+                       "Set them on the config page to require them")
+    os.makedirs(os.path.dirname(BROKER_CONF), exist_ok=True)
+    with open(BROKER_CONF,"w") as outp:
+        outp.write("listener 1883 "+listen+"\n"+"\n".join(auth)+"\n")
 
 def palm_job():
     # In the first inverter's folder, where its read loop picks up the write requests PALM queues (#682)
@@ -336,6 +387,7 @@ def createsettingsjson(inv):
         outp.write("    serial_number_evc="+text(setts["serial_number_evc"])+"\n")
         outp.write("    evc_self_run_timer="+number(setts["evc_self_run_timer"],10)+"\n")
         outp.write("    evc_import_max_current="+number(setts["evc_import_max_current"],60)+"\n")
+        outp.write("    REST_API_Key="+text(api_key(setts))+"\n")
         if SuperTimezone:
             outp.write("    timezone="+text(SuperTimezone)+"\n")
         else:
@@ -483,7 +535,7 @@ signal.signal(signal.SIGTERM, shutdown)
 SuperTimezone={}
 logger.info("==================== STARTING GivTCP==========================")
 try:
-    logger.debug("SUPERVISOR_TOKEN is: "+ os.getenv("SUPERVISOR_TOKEN"))
+    logger.debug("SUPERVISOR_TOKEN length: "+str(len(os.getenv("SUPERVISOR_TOKEN"))))      # never the token: logs can be shared
     isAddon=True
     access_token = os.getenv("SUPERVISOR_TOKEN")
 except:
@@ -634,6 +686,7 @@ if not exists("/ssl/fullchain.pem"):
     shutil.copy("/app/ingress_no_ssl.conf","/etc/nginx/http.d/ingress.conf")
 
 writeRestRoutes(setts)
+webLAN=writeWebAccess(setts, isAddon)
 nginx=subprocess.Popen(["nginx","-g","daemon off;"])
 logger.debug("Running nginx")
 
@@ -843,7 +896,11 @@ for inv in range(1,setts['number_of_inverters']+1):
         if not webConfigLogged:
             logger.info("==============================================================")
             logger.info("====             Web Gui Config is at                     ====")
-            logger.info("====     http://"+str(hostIP)+":8099/config.html             ====")
+            if webLAN:
+                logger.info("====     http://"+str(hostIP)+":8099/config.html             ====")
+            else:
+                logger.info("====  Open Web UI on the add-on's page in Home Assistant   ====")
+                logger.info("====  (to use port 8099 too, turn on LAN Access there)     ====")
             if not setts['self_run']==True:
                 logger.info("====  Self Run is off, so no data collection is happening ====")
                 logger.info("====     Log into Web Gui and complete startup settings   ====")
@@ -855,9 +912,10 @@ for inv in range(1,setts['number_of_inverters']+1):
         rqWorker[inv]=subprocess.Popen(["/usr/local/bin/python3",PATH+"/worker.py"])
         logger.debug("Running RQ worker to queue and process resume calls")
 
-        if not hasMQTT and setts['MQTT_Address']=="127.0.0.1" and setts['MQTT_Output']==True:
-            logger.info ("Starting Mosquitto on port "+str(setts['MQTT_Port']))
-            mqttBroker=subprocess.Popen(["/usr/sbin/mosquitto", "-c",PATH+"/mqtt.conf"])
+        if not hasMQTT and setts['MQTT_Address']=="127.0.0.1" and setts['MQTT_Output']==True and mqttBroker is None:
+            logger.info ("Starting Mosquitto on port 1883")
+            writeBroker(setts)
+            mqttBroker=subprocess.Popen(["/usr/sbin/mosquitto", "-c",BROKER_CONF])
 
         if setts['self_run']==True: # Don't autorun if isAddon to prevent autostart creating rubbish before its checked by a user
             logger.info ("Running Invertor "+str(inv)+" ("+str(setts["serial_number_"+str(inv)])+") read loop every "+str(setts['self_run_timer'])+"/"+str(setts['self_run_timer_full'])+"s")
@@ -954,8 +1012,8 @@ while True:
                 mqttBroker.kill()
                 logger.error("MQTT Broker process died. Restarting...")
                 os.chdir(PATH)
-                logger.info ("Starting Mosquitto on port "+str(setts['MQTT_Port']))
-                mqttBroker=subprocess.Popen(["/usr/sbin/mosquitto", "-c",PATH+"/mqtt.conf"])
+                logger.info ("Starting Mosquitto on port 1883")
+                mqttBroker=subprocess.Popen(["/usr/sbin/mosquitto", "-c",BROKER_CONF])
 
         if setts['evc_enable']==True:
             if not evcSelfRun.poll()==None:

@@ -86,6 +86,8 @@
     "night_rate_start": "23:30",
     "Web_Dash": false,
     "Web_Dash_Port": 3000,
+    "Web_LAN_Access": false,
+    "REST_API_Key": "",
     "Smart_Target": false,
     "GE_API": "",
     "SOLCASTAPI": "",

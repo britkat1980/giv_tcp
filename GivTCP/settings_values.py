@@ -10,6 +10,31 @@ from os.path import exists
 TEMPLATE="/app/settings.json"
 KEY=re.compile(r"^[A-Za-z0-9_]{1,64}$")
 MAX_TEXT=1000
+# Settings that are credentials: never sent back by the settings APIs, which give HIDDEN in their place (when set).
+# A save that sends HIDDEN back keeps the saved value
+SECRETS=("MQTT_Password","influxToken","GE_API","SOLCASTAPI","REST_API_Key")
+HIDDEN="********"
+# The REST API key goes into nginx's config (so GivTCP's own pages can send it), so it's limited to these characters
+API_KEY=re.compile(r"^[A-Za-z0-9_-]{16,128}$")
+
+def hide_secrets(setts):
+    """A copy of the settings to send back, with every credential that's set replaced by HIDDEN"""
+    shown=dict(setts)
+    for key in SECRETS:
+        if shown.get(key):
+            shown[key]=HIDDEN
+    return shown
+
+def keep_secrets(payload, saved):
+    """The payload to save, with each credential sent back as HIDDEN replaced by its saved value"""
+    kept=dict(payload)
+    for key in SECRETS:
+        if kept.get(key)==HIDDEN:
+            if key in saved:
+                kept[key]=saved[key]
+            else:
+                del kept[key]
+    return kept
 
 def text(value):
     """A setting as a Python string literal"""
@@ -73,7 +98,15 @@ def check(payload, template):
         elif isinstance(default, (int, float)):
             if value not in (None, "") and _parse_number(value) is None:
                 return key+" must be a number"
+    rest_key=payload.get("REST_API_Key")
+    if rest_key not in (None, "", HIDDEN) and not API_KEY.match(str(rest_key)):
+        return "REST_API_Key must be 16-128 letters, digits, - or _"
     return None
+
+def api_key(setts):
+    """The REST API key, or "" when there isn't a valid one (so the REST API is open, as it always was)"""
+    key=str(setts.get("REST_API_Key") or "")
+    return key if API_KEY.match(key) else ""
 
 def load_template(path=TEMPLATE):
     try:

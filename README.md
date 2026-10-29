@@ -30,7 +30,7 @@ The add-on uses Home Assistant's Mosquitto broker add-on if it's installed, and 
 #### Docker
 - Download [docker-compose.yml](https://github.com/britkat1980/giv_tcp/blob/main/docker-compose.yml) into a folder of its own, set your timezone (`TZ`) in it, and run `docker compose up -d` there. GivTCP keeps its settings, captures and logs in a `config` folder next to the file.
 - It uses host networking, so GivTCP can scan your network for inverters (Linux). On Docker Desktop (Windows/macOS), or to use a bridge network, follow the comments in the file to map the ports instead, and add your inverters by their IP address on the config page, as GivTCP can't scan your network from there.
-- Without Home Assistant, MQTT is off until you enter a broker on the config page. To use GivTCP's own broker, enter `127.0.0.1`.
+- Without Home Assistant, MQTT is off until you enter a broker on the config page. To use GivTCP's own broker, enter `127.0.0.1`. With an MQTT username and password set on the config page, GivTCP's broker only accepts those (so anything else that uses it, such as Home Assistant's MQTT integration, needs them too). Without them it accepts anyone on your network.
 
 ### Start GivTCP
 
@@ -40,7 +40,7 @@ The add-on uses Home Assistant's Mosquitto broker add-on if it's installed, and 
 ### Configure GivTCP
 
 - Open the config page:
-  - **Home Assistant:** from the GivTCP entry in the sidebar (or "Open Web UI" on the add-on page).
+  - **Home Assistant:** from the GivTCP entry in the sidebar (or "Open Web UI" on the add-on page). To open it at http://IPADDRESS:8099/config.html from other devices too, turn on **LAN Access** in the Web section: without it, port 8099 only accepts Home Assistant, so a Home Assistant login is needed.
   - **Docker:** http://IPADDRESS:8099/config.html
 - Step through the sections. The inverters found by the scan and your MQTT details should already be filled in.
   - **Inverter Config:** add or remove inverters. There's no limit on the number, and inverters found by the last scan can be added in one click.
@@ -106,7 +106,9 @@ You can also control the inverter over MQTT by publishing to:
 
 ### REST
 
-GivTCP has a REST API for data and control. In the add-on, each inverter's API is at http://IPADDRESS:8099/REST1/, /REST2/ and so on, numbered by its slot on the Inverter Config page. Call `REST1/api` to list the calls available.
+GivTCP has a REST API for data and control. Each inverter's API is at http://IPADDRESS:8099/REST1/, /REST2/ and so on (in the add-on, with LAN Access on), numbered by its slot on the Inverter Config page. Call `REST1/api` to list the calls available.
+
+To protect the controls, set a **REST API Key** in the Web section (16 to 128 letters, digits, `-` or `_`). Every call except the read-only data (`/readData`, `/getCache`, `/runAll`, `/getEVCCache`, `/api`, `/captureStatus`) then needs it, as an `X-API-Key: <key>` or `Authorization: Bearer <key>` header. GivTCP's own pages add it themselves. Only set one if everything that sends commands to GivTCP's REST API (for example a `rest_command` in Home Assistant, or Predbat if you use its REST mode) can send it. Requests from another website's page in your browser are always refused.
 
 Each inverter's API also has its own port, which is what you use with Docker in host mode: slots 1–5 use ports 6345–6349 (as in earlier versions, so existing Predbat and Home Assistant setups keep working), and slot 6 onwards use port 6356 onwards.
 

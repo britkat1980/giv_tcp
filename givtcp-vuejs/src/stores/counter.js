@@ -96,7 +96,9 @@ export const useTcpStore = defineStore('givtcp-form', {
     }),
     web: useSessionStorage('web', {
       Web_Dash: true,
-      Web_Dash_Port: 3000
+      Web_Dash_Port: 3000,
+      Web_LAN_Access: false,
+      REST_API_Key: ""
     }),
     palm: useSessionStorage('palm', {
       Smart_Target: false,
@@ -263,7 +265,8 @@ export const useCard = defineStore('card', {
           options: {
             label: 'Password',
             parent: 'mqtt',
-            key: 'MQTT_Password'
+            key: 'MQTT_Password',
+            password: true
           }
         },
         {
@@ -317,7 +320,8 @@ export const useCard = defineStore('card', {
           options: {
             label: 'Token',
             parent: 'influx',
-            key: 'influxToken'
+            key: 'influxToken',
+            password: true
           }
         },
         {
@@ -393,8 +397,8 @@ export const useCard = defineStore('card', {
       ]
     },
     web: {
-      title: 'Dashboard',
-      subtitle: 'Simple in home display dashboard',
+      title: 'Web',
+      subtitle: 'The in-home display dashboard, and access to the web UI and REST API',
       fields: [
         {
           type: 'checkbox',
@@ -410,6 +414,23 @@ export const useCard = defineStore('card', {
             label: 'Port',
             parent: 'web',
             key: 'Web_Dash_Port'
+          }
+        },
+        {
+          type: 'checkbox',
+          options: {
+            label: 'LAN Access: open the web UI on port 8099 to your network (add-on only; without it, use Open Web UI in Home Assistant)',
+            parent: 'web',
+            key: 'Web_LAN_Access'
+          }
+        },
+        {
+          type: 'text',
+          options: {
+            label: 'REST API Key (optional, 16+ letters/digits: then control commands need it)',
+            parent: 'web',
+            key: 'REST_API_Key',
+            password: true
           }
         }
       ]
@@ -431,7 +452,8 @@ export const useCard = defineStore('card', {
           options: {
             label: 'GivEnergy API',
             parent: 'palm',
-            key: 'GE_API'
+            key: 'GE_API',
+            password: true
           }
         },
         {
@@ -439,7 +461,8 @@ export const useCard = defineStore('card', {
           options: {
             label: 'SolCast API Key',
             parent: 'palm',
-            key: 'SOLCASTAPI'
+            key: 'SOLCASTAPI',
+            password: true
           }
         },
         {
