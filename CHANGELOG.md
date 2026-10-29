@@ -1,3 +1,10 @@
+# GivTCP 3.6.10
+
+Changes since 3.6.9.
+
+### Fixed
+- **Predbat and the dashboard link couldn't reach GivTCP through port 8099 in the add-on** (#688). 3.6.9 limited the add-on's port 8099 to Home Assistant's ingress, which also blocked each inverter's REST API under `/RESTn/` (eg. Predbat set to `http://IPADDRESS:8099/REST1/`) and the Web Dashboard link in the menu (`http://IPADDRESS:8099/dashboard`). These two are open to your local network again, as their own ports (6345 and up, and the dashboard's port) always were. The config page, logs and settings still only accept Home Assistant unless **LAN Access** is on. If you've set a REST API key, anything else that sends commands through `/RESTn/` needs to send it; GivTCP's own pages still add it themselves.
+
 # GivTCP 3.6.9
 
 Changes since 3.6.8.
