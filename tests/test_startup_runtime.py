@@ -392,8 +392,33 @@ def test_rest_api_key_goes_to_settings_and_nginx(container):
     settings = {}
     exec(c.mapped('/app/GivTCP_1/settings.py').read_text(), settings)
     assert settings['GiV_Settings'].REST_API_Key == 'k' * 20
-    assert 'proxy_set_header X-API-Key "' + 'k' * 20 + '";' in c.mapped('/etc/nginx/givtcp_rest/rest.conf').read_text()
+    assert 'proxy_set_header X-API-Key $givtcp_api_key;' in c.mapped('/etc/nginx/givtcp_rest/rest.conf').read_text()
+    # nginx adds the key only for requests from where the web UI is allowed: as an add-on without LAN Access,
+    # Home Assistant's ingress. Anything else on the network passes on the key it sent itself (#688)
+    assert c.mapped('/etc/nginx/http.d/givtcp_api_key.conf').read_text() == (
+        'geo $givtcp_web_client {\n    default 0;\n    127.0.0.1 1;\n    172.30.32.2 1;\n}\n'
+        'map $givtcp_web_client $givtcp_api_key {\n    1 "' + 'k' * 20 + '";\n    default $http_x_api_key;\n}\n')
+    c.run(**INVERTER, REST_API_Key='k' * 20, Web_LAN_Access=True)
+    assert '    192.168.0.0/16 1;' in c.mapped('/etc/nginx/http.d/givtcp_api_key.conf').read_text()
     c.run(**INVERTER, REST_API_Key='bad"; key')
     exec(c.mapped('/app/GivTCP_1/settings.py').read_text(), settings)
     assert settings['GiV_Settings'].REST_API_Key == ''
     assert 'X-API-Key' not in c.mapped('/etc/nginx/givtcp_rest/rest.conf').read_text()
+    assert 'geo' not in c.mapped('/etc/nginx/http.d/givtcp_api_key.conf').read_text()
+
+
+def test_rest_routes_and_dashboard_on_8099_stay_on_the_local_network(container):
+    # The add-on's web UI is ingress-only by default, but /RESTn/ and /dashboard/ only reach what's open to the
+    # network on its own port anyway, so they stay open as before (#688: Predbat on 8099/REST1/, the Dashboard button)
+    c = container
+    c.run(**INVERTER)
+    assert access(c) == ['allow 127.0.0.1;', 'allow 172.30.32.2;', 'deny all;']
+    assert c.mapped('/etc/nginx/givtcp_lan_access.conf').read_text().splitlines() == [
+        'allow 127.0.0.1;', 'allow 172.30.32.2;', 'allow 10.0.0.0/8;', 'allow 172.16.0.0/12;', 'allow 192.168.0.0/16;',
+        'deny all;']
+    assert c.mapped('/etc/nginx/givtcp_rest/rest.conf').read_text() == (
+        'location /REST1/ {\n    include /etc/nginx/givtcp_lan_access.conf;\n    proxy_pass http://127.0.0.1:6345/;\n}\n')
+    for conf in ('ingress.conf', 'ingress_no_ssl.conf'):
+        text = (ROOT / conf).read_text()
+        dashboard = text[text.index('location /dashboard/'):]
+        assert dashboard[:dashboard.index('}')].count('include /etc/nginx/givtcp_lan_access.conf;') == 1

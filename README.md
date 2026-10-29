@@ -106,7 +106,7 @@ You can also control the inverter over MQTT by publishing to:
 
 ### REST
 
-GivTCP has a REST API for data and control. Each inverter's API is at http://IPADDRESS:8099/REST1/, /REST2/ and so on (in the add-on, with LAN Access on), numbered by its slot on the Inverter Config page. Call `REST1/api` to list the calls available.
+GivTCP has a REST API for data and control. Each inverter's API is at http://IPADDRESS:8099/REST1/, /REST2/ and so on (open to your local network, with or without LAN Access), numbered by its slot on the Inverter Config page. Call `REST1/api` to list the calls available.
 
 To protect the controls, set a **REST API Key** in the Web section (16 to 128 letters, digits, `-` or `_`). Every call except the read-only data (`/readData`, `/getCache`, `/runAll`, `/getEVCCache`, `/api`, `/captureStatus`) then needs it, as an `X-API-Key: <key>` or `Authorization: Bearer <key>` header. GivTCP's own pages add it themselves. Only set one if everything that sends commands to GivTCP's REST API (for example a `rest_command` in Home Assistant, or Predbat if you use its REST mode) can send it. Requests from another website's page in your browser are always refused.
 

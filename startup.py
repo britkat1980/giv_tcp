@@ -110,29 +110,46 @@ def ensureInverterSlots(setts):
         setts.setdefault("inverterName_"+str(num),"GivTCP" if num==1 else "GivTCP"+str(num))
     return setts
 
-def writeRestRoutes(setts):
-    # nginx routes /RESTn/ to each inverter's REST API. Generated for however many slots are configured
-    # (ingress*.conf includes this folder; an empty folder is valid, so nginx still starts if this fails)
-    # With a REST API key, nginx adds it, so GivTCP's own pages (eg. the config page's restart) don't need to know it
-    os.makedirs("/etc/nginx/givtcp_rest", exist_ok=True)
-    key=api_key(setts)
-    with open("/etc/nginx/givtcp_rest/rest.conf","w") as outp:
-        for num in range(1,int(setts.get("number_of_inverters",0) or 0)+1):
-            outp.write("location /REST"+str(num)+"/ {\n    proxy_pass http://127.0.0.1:"+str(invPort(num))+"/;\n"
-                       +("    proxy_set_header X-API-Key \""+key+"\";\n" if key else "")+"}\n")
-
 LAN_RANGES=("10.0.0.0/8","172.16.0.0/12","192.168.0.0/16")
 HA_INGRESS="172.30.32.2"       # where Home Assistant's ingress connects from
 
+def webLanAccess(setts, addon):
+    """Whether the web UI on 8099/8098 is open to the local network. As an add-on, only with Web_LAN_Access on (so
+    otherwise a Home Assistant login is needed). In Docker always, as 8099 is the only way to the config page"""
+    return (not addon) or str(setts.get("Web_LAN_Access")).lower()=="true"
+
+def webSources(setts, addon):
+    return ["127.0.0.1", HA_INGRESS]+(list(LAN_RANGES) if webLanAccess(setts, addon) else [])
+
+def writeRestRoutes(setts, addon):
+    # nginx routes /RESTn/ to each inverter's REST API. Generated for however many slots are configured
+    # (ingress*.conf includes this folder; an empty folder is valid, so nginx still starts if this fails).
+    # They're open to the local network, as the inverters' own REST ports are (#688: eg. Predbat set up with
+    # 8099/REST1/). With a REST API key, nginx adds it to requests from where the web UI is allowed, so GivTCP's own
+    # pages (eg. the config page's restart) don't need to know it. Anything else has to send the key itself
+    os.makedirs("/etc/nginx/givtcp_rest", exist_ok=True)
+    key=api_key(setts)
+    with open("/etc/nginx/http.d/givtcp_api_key.conf","w") as outp:
+        if key:
+            outp.write("geo $givtcp_web_client {\n    default 0;\n"+"".join("    "+a+" 1;\n" for a in webSources(setts, addon))+"}\n"
+                       +"map $givtcp_web_client $givtcp_api_key {\n    1 \""+key+"\";\n    default $http_x_api_key;\n}\n")
+        else:
+            outp.write("# No REST API key set, so nginx doesn't add one\n")
+    with open("/etc/nginx/givtcp_rest/rest.conf","w") as outp:
+        for num in range(1,int(setts.get("number_of_inverters",0) or 0)+1):
+            outp.write("location /REST"+str(num)+"/ {\n    include /etc/nginx/givtcp_lan_access.conf;\n"
+                       +"    proxy_pass http://127.0.0.1:"+str(invPort(num))+"/;\n"
+                       +("    proxy_set_header X-API-Key $givtcp_api_key;\n" if key else "")+"}\n")
+
 def writeWebAccess(setts, addon):
-    """Who can open the web UI on 8099/8098 (ingress*.conf includes this). As an add-on, only Home Assistant's
-    ingress (so a Home Assistant login is needed) unless Web_LAN_Access is on. In Docker, the local network as before,
-    as 8099 is the only way to the config page"""
-    lan=(not addon) or str(setts.get("Web_LAN_Access")).lower()=="true"
-    allowed=["127.0.0.1", HA_INGRESS]+(list(LAN_RANGES) if lan else [])
+    """Who can connect to 8099/8098 (ingress*.conf includes these): the web UI (givtcp_access.conf) from
+    webSources, and the routes to what's on the local network anyway on its own port, the REST APIs and the
+    dashboard (givtcp_lan_access.conf), from the local network"""
     with open("/etc/nginx/givtcp_access.conf","w") as outp:
-        outp.write("".join("allow "+a+";\n" for a in allowed)+"deny all;\n")
-    return lan
+        outp.write("".join("allow "+a+";\n" for a in webSources(setts, addon))+"deny all;\n")
+    with open("/etc/nginx/givtcp_lan_access.conf","w") as outp:
+        outp.write("".join("allow "+a+";\n" for a in ["127.0.0.1", HA_INGRESS]+list(LAN_RANGES))+"deny all;\n")
+    return webLanAccess(setts, addon)
 
 BROKER_CONF="/etc/mosquitto/givtcp.conf"
 BROKER_PASSWORDS="/etc/mosquitto/givtcp_passwords"
@@ -685,7 +702,7 @@ logger.debug("Running Redis")
 if not exists("/ssl/fullchain.pem"):
     shutil.copy("/app/ingress_no_ssl.conf","/etc/nginx/http.d/ingress.conf")
 
-writeRestRoutes(setts)
+writeRestRoutes(setts, isAddon)
 webLAN=writeWebAccess(setts, isAddon)
 nginx=subprocess.Popen(["nginx","-g","daemon off;"])
 logger.debug("Running nginx")
@@ -736,7 +753,7 @@ for inv in inverterStats:
     setts['Model_'+str(slot)]=inverterStats[inv]['Model'].name.capitalize()
 if setts["number_of_inverters"]>slotsBefore:
     # The scan added slots after nginx started, so give them their /RESTn/ routes too
-    writeRestRoutes(setts)
+    writeRestRoutes(setts, isAddon)
     subprocess.Popen(["nginx","-s","reload"])
 
 if len(evcList)>0:
