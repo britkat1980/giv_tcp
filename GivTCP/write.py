@@ -761,6 +761,10 @@ async def setChargeRateAC(device,payload,readloop=False):
     try:
         if type(payload) is not dict: payload=json.loads(payload)
         target=int(payload['chargeRate'])
+        if target == 0:
+            # As the watt-based control: the AC limit register accepts 1-100%, not 0%.
+            logger.info("AC charge limit can't be 0%, setting 1% instead")
+            target=1
         logger.debug ("Setting AC battery charge rate to: " + str(target))
         temp= await sbcla(device,target,readloop)
         if "3ph" in GiV_Settings.inverter_type.lower() or "gateway" in GiV_Settings.inverter_type.lower():
@@ -832,6 +836,10 @@ async def setDischargeRateAC(device,payload,readloop=False):
     try:
         if type(payload) is not dict: payload=json.loads(payload)
         target=int(payload['dischargeRate'])
+        if target == 0:
+            # As the watt-based control: the AC limit register accepts 1-100%, not 0%.
+            logger.info("AC discharge limit can't be 0%, setting 1% instead")
+            target=1
         logger.debug ("Setting AC battery discharge rate to: " + str(target))
         temp= await sbdla(device,target,readloop)
         if "3ph" in GiV_Settings.inverter_type.lower() or "gateway" in GiV_Settings.inverter_type.lower():
