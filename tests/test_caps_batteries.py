@@ -113,6 +113,13 @@ def test_missing_pack_on_answering_bcu_needs_two_detects():
     asyncio.run(read.detectPlant(client, force=True))
     assert client.plant.capabilities == aio_hybrid(1) and saved() == aio_hybrid(1)
 
+def test_missing_pack_logs_what_is_missing(caplog):
+    # #583: the log said "found 12 batteries but 12 were saved" when only one kind of battery device was short
+    save(aio_hybrid(1))
+    partial = aio_hybrid(1).model_copy(update={"hv_bmu_addresses": [0x50, 0x51, 0x52]})
+    asyncio.run(read.detectPlant(fake_client(partial), force=True))
+    assert "Detect found 3 battery modules (BMUs) rather than 4 saved, so keeping" in caplog.text
+
 def hv_gen3(packs):
     # A Gen 3 HV hybrid: up to 4 BCUs, each with up to 6 packs at their own BMU addresses
     return PlantCapabilities(device_type=Model.HYBRID_HV_GEN3, inverter_address=0x11, arm_firmware_version=620,

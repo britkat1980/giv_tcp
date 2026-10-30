@@ -31,7 +31,7 @@ import asyncio
 from typing import Callable, Optional
 from mqtt import GivMQTT
 from modbus_patches import pause_registers, PAUSE_MODE_REGISTER, PAUSE_SLOT_REGISTERS, bms_current_inverter
-from capscheck import missingBatteries, maybeMissingBatteries, lostBatteries, capsBatteryCount
+from capscheck import missingBatteries, maybeMissingBatteries, lostBatteries, batteryDifference
 from givenergy_modbus.model.inverter import SinglePhaseInverterRegisterGetter
 import copy
 import enum
@@ -283,6 +283,9 @@ async def lostInverter():
 def capsFile():
     return GivLUT.config_dir+"/"+GiV_Settings.serial_number+"_caps.pkl"
 
+# The optional reads this inverter doesn't answer on its firmware, kept across restarts (#673)
+modbus_patches.unanswered_file=GivLUT.config_dir+"/"+str(GiV_Settings.serial_number)+"_unanswered.json"
+
 def pauseModeUnsupported(caps):
     # Battery pause mode (HR 318): only where it can be written (see modbus_patches.pause_registers). Some
     # models read it but can't write it, and Force Charge/Export fail if they try to set it
@@ -450,9 +453,9 @@ async def detectPlant(client, force=False):
         if lostBatteryDetects<2:
             capsSuspect=True
             client.plant.capabilities=saved
-            logger.warning("Detect found "+str(capsBatteryCount(caps))+" batteries but "+str(capsBatteryCount(saved))+" were saved, so keeping the saved capabilities until another detect agrees")
+            logger.warning("Detect found "+batteryDifference(caps, saved)+" saved, so keeping the saved capabilities until another detect agrees")
             return False
-        logger.warning("Two detects in a row found "+str(capsBatteryCount(caps))+" batteries rather than "+str(capsBatteryCount(saved))+", so saving the new capabilities")
+        logger.warning("Two detects in a row found "+batteryDifference(caps, saved)+" saved, so saving the new capabilities")
     # A hybrid with no batteries is saved (it may have none), but checked again, in case they didn't answer
     capsSuspect=False
     if maybeMissingBatteries(client.plant.capabilities) and not noBatteryFitted():
@@ -1208,10 +1211,49 @@ def getMeters(plant: Plant):
         meters['Meter_ID'+str(m)]=meter
     return meters
 
+def badRead(GEInv):
+    """True if a couple of obvious data points show a bad read, so the last good data is used. One not read yet (eg.
+    the inverter's settings, after reconnecting to a dongle that didn't answer them) is a bad read too, rather than
+    an error (#583)"""
+    values=(GEInv.modbus_version, GEInv.modbus_address, GEInv.user_code, GEInv.t_inverter_heatsink)
+    if any(value is None for value in values):
+        logger.info("Inverter data not all read yet, so using the last good data")
+        return True
+    if float(values[0])>2 or values[1]>100 or values[2]>100 or values[3]>100:
+        logger.debug("Dodgy Data so using last cache...")
+        return True
+    return False
+
 def enumText(value):
     # An enum field's name, eg. "Normal", or None until its register has been read (eg. a holding register after
     # the first read following a restart failed), so one missing value doesn't fail the whole poll (#608)
     return value.name.capitalize() if value is not None else None
+
+def notifications(inverter, multi_output_old, status, details):
+    """The inverter's notifications (#529): the faults and warnings active now, logged as each appears and clears.
+    The portal's list is the GivEnergy cloud's history, which Modbus can't read, so Last_Notification (and its time)
+    keeps the most recent one after it clears"""
+    active=[d for d in details if d]
+    if not active and status in ("Warning","Fault"):
+        active=["Inverter "+status.lower()]         # the status says so, but no fault or warning bit does
+    old=finditem(multi_output_old or {},'Active_Notifications')
+    before=[] if old in (None,"None") else str(old).split("; ")
+    for item in active:
+        if item not in before:
+            logger.warning("Inverter notification: "+item)
+    for item in before:
+        if item not in active:
+            logger.info("Inverter notification cleared: "+item)
+    inverter['Active_Notifications']="; ".join(active) if active else "None"
+    new=[item for item in active if item not in before]
+    if new:
+        inverter['Last_Notification']="; ".join(new)
+        inverter['Last_Notification_Time']=datetime.datetime.now(GivLUT.timezone).isoformat(timespec='seconds')
+    else:
+        for key in ('Last_Notification','Last_Notification_Time'):
+            last=finditem(multi_output_old or {},key)
+            if last is not None:
+                inverter[key]=last
 
 _emptyBatteryPolls={}
 
@@ -1679,9 +1721,7 @@ def processPVInfo(plant: Plant):
             regCacheStack = []      # no cache yet (first poll) - previous values default to empty
             multi_output_old = {}
 
-        # Check a couple of obvious data points to reject bad reads
-        if float(GEInv.modbus_version)>2 or GEInv.modbus_address>100 or GEInv.user_code>100 or GEInv.t_inverter_heatsink>100:
-            logger.debug("Dodgy Data so using last cache...")
+        if badRead(GEInv):
             return multi_output_old
 
         # If System Time is wrong (default date) use last good time or local time if all else fails
@@ -2111,6 +2151,16 @@ def processInverterInfo(plant: Plant):
         inverter['Invertor_Temperature'] = GEInv.t_inverter_heatsink
         inverter['Export_Limit']=GEInv.grid_port_max_power_output
         inverter['Battery_Calibration_Status'] = enumText(GEInv.battery_calibration_stage)
+        # The fault and warning words (IR39/40) stay as hex until what their bits mean is confirmed (#529)
+        inverter['status'] = enumText(GEInv.status)
+        inverter['Fault_Code'] = GEInv.inverter_fault_code
+        inverter['Warning_Code'] = GEInv.inverter_warning_code
+        batteryWarnings = GEInv.charger_warning_messages
+        if batteryWarnings is not None:
+            inverter['Battery_Warnings'] = ", ".join(batteryWarnings) if batteryWarnings else "None"
+        notifications(inverter, multi_output_old, inverter['status'],
+                      [label+" code "+code for label,code in (("Fault",inverter['Fault_Code']),("Warning",inverter['Warning_Code']))
+                       if code and int(code,16)]+list(batteryWarnings or []))
 
         ######## Get Meter Details ########
 
@@ -2546,9 +2596,7 @@ def processThreePhaseInfo(plant: Plant):
         else:
             multi_output_old=regCacheStack[-1]
 
-        # Check a couple of obvious data points to reject bad reads
-        if float(GEInv.modbus_version)>2 or GEInv.modbus_address>100 or GEInv.user_code>100 or GEInv.t_inverter_heatsink>100:
-            logger.debug("Dodgy Data so using last cache...")
+        if badRead(GEInv):
             return multi_output_old
 
         # If System Time is wrong (default date) use last good time or local time if all else fails
@@ -2656,6 +2704,10 @@ def processThreePhaseInfo(plant: Plant):
         power_output['SOC_kWh'] = sockwh / count if count > 0 else 0                                      # Average SOC of all stacks...
 
         inverter['status']=enumText(GEInv.status)
+        # The fault words (IR1300-1307), decoded by givenergy-modbus (#529)
+        faults=[f for word in range(8) for f in (getattr(GEInv,'inverter_fault_codes_'+str(word),None) or [])]
+        inverter['Faults']=", ".join(faults) if faults else "None"
+        notifications(inverter, multi_output_old, inverter['status'], faults)
         # givenergy-modbus v2 decodes system_mode and battery_priority as plain ints (the old lib used enums)
         inverter['System_Mode']=GivLUT.tph_system_mode.get(GEInv.system_mode,str(GEInv.system_mode))
         inverter['Start_Delay_Time']=GEInv.start_delay_time
@@ -2781,7 +2833,7 @@ def processData(plant: Plant):
         givtcpdata['Last_Updated_Time'] = datetime.datetime.now(GivLUT.timezone).isoformat()
         givtcpdata['status'] = "online"
         givtcpdata['Time_Since_Last_Update'] = 0
-        givtcpdata['GivTCP_Version']= "3.6.11"
+        givtcpdata['GivTCP_Version']= "3.6.12"
         age=dataAge(plant)
         givtcpdata['Data_Age']= round(age,1) if age is not None else -1
         if age is None or age > max(3*GiV_Settings.self_run_timer, 60):

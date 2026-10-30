@@ -39,6 +39,7 @@ What's left, each with a request open upstream (docs/upstream-givenergy-modbus-r
 
 Remove each one once the library supports it.
 """
+import json
 import logging
 
 from givenergy_modbus.client import client as client_module
@@ -56,10 +57,13 @@ logger = logging.getLogger("read_logger")     # GivTCP's main log (GivLUT.logger
 PAUSE_MODE_REGISTER = 318
 PAUSE_SLOT_REGISTERS = frozenset({319, 320})     # pause slot start, pause slot end
 PAUSE_REGISTERS = frozenset({PAUSE_MODE_REGISTER}) | PAUSE_SLOT_REGISTERS
-# Lowest Gen 1 ARM firmware known to support pause mode (the firmware that added real-time control)
-GEN1_PAUSE_MIN_ARM_FW = 187
-# Lowest AC-coupled ARM firmware confirmed by users to support pause mode
-AC_PAUSE_MIN_ARM_FW = 200
+# The ARM firmware that supports pause mode. Firmware lines aren't numbered in order: Gen 1 went from the old 4xx line
+# to 1xx (19x beta), and the AC from 5xx to 2xx (see entity_lut.py). So the range ends below the old line, which
+# doesn't answer HR 318 (Gen 1 ARM 451, #673)
+# Gen 1: from the firmware that added real-time control (#441)
+GEN1_PAUSE_ARM_FW = range(187, 400)
+# AC: from the lowest firmware confirmed by users
+AC_PAUSE_ARM_FW = range(200, 500)
 
 PAUSE_MODELS = frozenset({Model.ALL_IN_ONE, Model.GATEWAY, Model.HYBRID_GEN2, Model.HYBRID_GEN3,
                           Model.HYBRID_HV_GEN3, Model.ALL_IN_ONE_HYBRID})     # All in One-HY: used in 3.5 (#647)
@@ -71,12 +75,12 @@ AC_LIMIT_HYBRIDS = frozenset({Model.HYBRID_GEN1, Model.HYBRID_GEN3, Model.ALL_IN
 def pause_registers(model, arm_fw):
     """The pause registers this model can write"""
     if model == Model.AC:
-        if arm_fw is not None and int(arm_fw) >= AC_PAUSE_MIN_ARM_FW:
+        if arm_fw is not None and int(arm_fw) in AC_PAUSE_ARM_FW:
             return frozenset({PAUSE_MODE_REGISTER})
         return frozenset()
     if model in PAUSE_MODELS:
         return PAUSE_REGISTERS
-    if model == Model.HYBRID_GEN1 and arm_fw is not None and int(arm_fw) >= GEN1_PAUSE_MIN_ARM_FW:
+    if model == Model.HYBRID_GEN1 and arm_fw is not None and int(arm_fw) in GEN1_PAUSE_ARM_FW:
         # Mode only: a Gen 1 rejects writes to HR 319-320, and a read including them
         return frozenset({PAUSE_MODE_REGISTER})
     return frozenset()
@@ -105,7 +109,9 @@ manifest.CAPABILITIES["is_three_phase"] = manifest.CAPABILITIES["is_three_phase"
 _library_write_safe_registers = manifest.write_safe_registers
 
 def _write_safe_registers(model, arm_fw=None):
-    return _library_write_safe_registers(model, arm_fw) | _extra_write_registers(model, arm_fw)
+    # The library allows pause mode on Gen 1 ARM 187-499, which includes the old 4xx line, so its pause registers
+    # are replaced by GivTCP's (pause_registers, in the extra registers)
+    return (_library_write_safe_registers(model, arm_fw) - PAUSE_REGISTERS) | _extra_write_registers(model, arm_fw)
 
 # The client checks each write against this per-model set (Client._resolve_write_safe looks it up on the
 # manifest module for every write). HR 313/314 and 318-320 are already in the PDU's global WRITE_SAFE_REGISTERS
@@ -134,11 +140,56 @@ EXTRA_READS = [
 EXTRA_READ_MAX_FAILURES = 3
 _extra_read_failures = {}       # per plant, which outlives a replaced client: {id(plant): {read name: failures in a row}}
 
+# The extra reads this inverter didn't answer, kept across restarts for its firmware, so they aren't tried (each
+# timing out) after every restart (#673). Set by read.py; None keeps them for this session only
+unanswered_file = None
+_unanswered_loaded = set()      # the plants (id) the saved reads have been loaded for
+
+def _firmware(client):
+    # The ARM firmware, or on three-phase (whose ARM firmware register reads 0, so the library has None) the
+    # firmware string, eg. "D0.3171-A0.3200", once it's been read. None until it's known
+    arm_fw = client.plant.capabilities.arm_firmware_version
+    if arm_fw:
+        return arm_fw
+    try:
+        return client.plant.inverter.firmware_version or None
+    except Exception:
+        return None
+
+def _load_unanswered(firmware):
+    # The reads saved as unanswered on this firmware. Another firmware may answer them, so they're tried again
+    try:
+        with open(unanswered_file) as inp:
+            saved = json.load(inp)
+        return set(saved.get("reads", [])) if saved.get("firmware") == firmware else set()
+    except (OSError, TypeError, ValueError, AttributeError):
+        return set()
+
+def _save_unanswered(firmware, reads):
+    if unanswered_file is None or firmware is None:
+        return
+    try:
+        with open(unanswered_file, "w") as outp:
+            json.dump({"firmware": firmware, "reads": sorted(reads)}, outp)
+    except OSError as e:
+        logger.debug("Unable to save the unanswered reads: " + str(e))
+
 async def _extra_reads(client):
     caps = client.plant.capabilities
     if caps is None:
         return
     failures = _extra_read_failures.setdefault(id(client.plant), {})
+    firmware = _firmware(client)
+    if firmware is not None and id(client.plant) not in _unanswered_loaded:
+        _unanswered_loaded.add(id(client.plant))
+        unanswered = _load_unanswered(firmware)
+        if unanswered:
+            logger.debug("Not reading " + ", ".join(sorted(unanswered)) + ": this inverter didn't answer on firmware " +
+                         str(firmware) + " (delete " + str(unanswered_file) + " to try again)")
+        failures.update({name: EXTRA_READ_MAX_FAILURES for name in unanswered})
+        givenUp = {n for n, f in failures.items() if f >= EXTRA_READ_MAX_FAILURES}
+        if givenUp - unanswered:
+            _save_unanswered(firmware, givenUp)       # given up before the firmware was known
     for name, applies, base, count, lost in EXTRA_READS:
         if failures.get(name, 0) >= EXTRA_READ_MAX_FAILURES or not applies(caps):
             continue
@@ -154,8 +205,12 @@ async def _extra_reads(client):
             if fails >= EXTRA_READ_MAX_FAILURES:
                 # Info, not a warning: these are optional, and some firmware doesn't answer them (eg. HR 313-314 on Gen 1
                 # ARM 451, #655), so it would warn on every restart about something that needs no action
+                unanswered = {n for n, f in failures.items() if f >= EXTRA_READ_MAX_FAILURES}
+                _save_unanswered(firmware, unanswered)
                 logger.info("Registers " + regs + " could not be read " + str(fails) + " times in a row, so " + lost +
-                               ". Not trying again until GivTCP restarts: " + str(e))
+                            ". Not trying again " + ("on this firmware (" + str(firmware) + ")" +
+                                                     (", delete " + str(unanswered_file) + " to try again" if unanswered_file else "")
+                                                     if firmware else "until GivTCP restarts") + ": " + str(e))
             else:
                 # The value read last time is kept, and it's read again with the next full refresh
                 logger.debug("Registers " + regs + " could not be read this time (" + str(fails) + " in a row): " + str(e))

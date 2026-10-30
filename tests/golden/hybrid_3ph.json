@@ -596,7 +596,7 @@
     "writes": [
      [
       17,
-      114,
+      1078,
       10
      ]
     ]
@@ -2442,7 +2442,7 @@
     "writes": [
      [
       17,
-      114,
+      1078,
       10
      ]
     ]
@@ -5688,6 +5688,7 @@
     "status": "online"
    },
    "TC2337G000": {
+    "Active_Notifications": "None",
     "Battery_Calibration_Status": "Off",
     "Battery_Capacity_kWh": 21.57,
     "Battery_Priority": "Load",
@@ -5695,6 +5696,7 @@
     "Boost_Temperature": 41.0,
     "Buck_Boost_Temperature": 44.2,
     "DC_Status": "Normal",
+    "Faults": "None",
     "Inverter_Temperature": 44.8,
     "Invertor_Firmware": "ZAAA111111",
     "Invertor_Max_Bat_Rate": 12000,
@@ -7142,6 +7144,7 @@
     "status": "online"
    },
    "TC2337G000": {
+    "Active_Notifications": "None",
     "Battery_Calibration_Status": "Off",
     "Battery_Capacity_kWh": 21.57,
     "Battery_Priority": "Load",
@@ -7149,6 +7152,7 @@
     "Boost_Temperature": 41.0,
     "Buck_Boost_Temperature": 44.2,
     "DC_Status": "Normal",
+    "Faults": "None",
     "Inverter_Temperature": 44.8,
     "Invertor_Firmware": "ZAAA111111",
     "Invertor_Max_Bat_Rate": 12000,
@@ -8234,6 +8238,7 @@
    "homeassistant/sensor/GivEnergy/TC2337G000_AC_Charge_Energy_Today_kWh/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_AC_Charge_Energy_Total_kWh/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_AC_Charge_Power/config",
+   "homeassistant/sensor/GivEnergy/TC2337G000_Active_Notifications/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_BMS_Voltage/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Battery_Calibration_Status/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Battery_Capacity_kWh/config",
@@ -8292,6 +8297,7 @@
    "homeassistant/sensor/GivEnergy/TC2337G000_Export_Phase3_Power/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Export_Power/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Export_Rate/config",
+   "homeassistant/sensor/GivEnergy/TC2337G000_Faults/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_GivTCP_Version/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Grid_Apparent_Power/config",
    "homeassistant/sensor/GivEnergy/TC2337G000_Grid_Frequency/config",
@@ -9054,6 +9060,7 @@
    "GivEnergy/TC2337G000/Stats/Time_Since_Last_Update",
    "GivEnergy/TC2337G000/Stats/Write_Count",
    "GivEnergy/TC2337G000/Stats/status",
+   "GivEnergy/TC2337G000/TC2337G000/Active_Notifications",
    "GivEnergy/TC2337G000/TC2337G000/Battery_Calibration_Status",
    "GivEnergy/TC2337G000/TC2337G000/Battery_Capacity_kWh",
    "GivEnergy/TC2337G000/TC2337G000/Battery_Priority",
@@ -9061,6 +9068,7 @@
    "GivEnergy/TC2337G000/TC2337G000/Boost_Temperature",
    "GivEnergy/TC2337G000/TC2337G000/Buck_Boost_Temperature",
    "GivEnergy/TC2337G000/TC2337G000/DC_Status",
+   "GivEnergy/TC2337G000/TC2337G000/Faults",
    "GivEnergy/TC2337G000/TC2337G000/Inverter_Temperature",
    "GivEnergy/TC2337G000/TC2337G000/Invertor_Firmware",
    "GivEnergy/TC2337G000/TC2337G000/Invertor_Max_Bat_Rate",
@@ -10367,7 +10375,7 @@
     "writes": [
      [
       17,
-      114,
+      1078,
       10
      ]
     ]

@@ -1,3 +1,22 @@
+# GivTCP 3.6.12
+
+Changes since 3.6.11.
+
+### Added
+- **Inverter notifications** (#529, thanks @gcoan). The GivEnergy portal's notification list is history kept in GivEnergy's cloud, which GivTCP can't read, but the inverter reports the faults and warnings active now, and GivTCP now publishes them:
+  - **Active Notifications**: everything active now, or "None". Each one is logged as a warning when it appears, and at info level when it clears.
+  - **Last Notification** and **Last Notification Time**: the most recent, kept after it clears, so an automation can alert on it.
+  - Single-phase inverters (AC, Hybrid, All in One): the inverter's **status** (Waiting, Normal, Warning, Fault or Updating), **Battery Warnings** (eg. "Battery temperature fault"), and the **Fault Code** and **Warning Code** in hex. What each bit of those two codes means isn't confirmed yet, so they're shown as codes, eg. "Fault code 0004". If you see a notification in the portal, please post a Share Device capture on #529 with what the portal says, so they can be named.
+  - Three-phase inverters: **Faults**, each one named.
+
+### Fixed
+- **"Error processing Three Phase data: TypeError: '>' not supported between instances of 'NoneType'..."** (#583, thanks @tonka-truck). GivTCP checks a few values on each poll to reject a bad read, but one that hadn't been read (eg. after reconnecting to a dongle that didn't answer at first) failed the check with an error. It's now treated as the bad read it is, and the last good data is used, as before, without the error.
+- **Three-phase: Battery Power Cutoff didn't change** (#693, thanks @ggoorts). It was read from the battery reserve (HR 1078) but written to the single-phase cutoff register (HR 114), so setting it had no effect. It's now written to HR 1078, the reserve the inverter discharges down to.
+- **Battery Charge Rate AC and Battery Discharge Rate AC couldn't be set to 0%** (#694, thanks @ggoorts). The inverter takes 1-100%, so 0 failed without writing anything. It now sets 1%, as the watt-based rate controls already did. 1% doesn't stop the battery completely: to hold it, raise Battery Power Cutoff (three-phase) or the reserve instead.
+- **Battery pause mode on the original Gen 1 and AC firmware** (#673, thanks @chrispurusha). Pause mode was offered from Gen 1 ARM firmware 187 and AC firmware 200 upwards, but firmware isn't numbered in order: the original Gen 1 firmware is 4xx (eg. 451) and the original AC firmware 5xx, both older than the 1xx and 2xx lines that added it. A Gen 1 on 451 doesn't answer the pause mode register, so it's no longer offered on 4xx Gen 1 or 5xx AC firmware.
+- **Optional settings an inverter doesn't answer are tried after every restart** (#673). GivTCP reads a few settings the inverter may not have (pause mode, and the AC charge/discharge rates on the hybrids). When one isn't answered three times in a row, it's now remembered for that inverter's firmware (on three-phase, whose ARM firmware number reads 0, its firmware version, eg. D0.3171-A0.3200), so it's not tried again after a restart (each try took about 10 seconds) or logged each time. After a firmware update they're tried again. To try them again sooner, delete `<serial>_unanswered.json` in the GivTCP config folder.
+- **"Detect found 12 batteries but 12 were saved"** (#583). When a detect finds fewer of one kind of battery device than were saved (eg. one battery module didn't answer), the log now says which, eg. "Detect found 5 battery modules (BMUs) rather than 6 saved".
+
 # GivTCP 3.6.11
 
 Changes since 3.6.10.

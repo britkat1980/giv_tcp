@@ -5,5 +5,7 @@ KEEP_PREFIXES=("rateData","writecount","safewritecount",".dayRate",".nightRate",
                "pendingReverts_")       # timed reverts still due, which the read loop runs or reschedules once it starts
 
 def keptOnStart(filename):
-    # Logs, the settings and rate data, and each inverter's capabilities, so detect only runs once per inverter
-    return "log" in filename or filename.startswith(KEEP_PREFIXES) or filename.endswith("_caps.pkl")
+    # Logs, the settings and rate data, and each inverter's capabilities, so detect only runs once per inverter, and
+    # the optional reads it doesn't answer (#673)
+    return ("log" in filename or filename.startswith(KEEP_PREFIXES) or filename.endswith("_caps.pkl")
+            or filename.endswith("_unanswered.json"))
