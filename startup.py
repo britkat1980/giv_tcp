@@ -140,6 +140,14 @@ def writeRestRoutes(setts, addon):
             outp.write("location /REST"+str(num)+"/ {\n    include /etc/nginx/givtcp_lan_access.conf;\n"
                        +"    proxy_pass http://127.0.0.1:"+str(invPort(num))+"/;\n"
                        +("    proxy_set_header X-API-Key $givtcp_api_key;\n" if key else "")+"}\n")
+    # /dashboard/ goes to the Web Dashboard on its own port, Web_Dash_Port (#691: it was always 3000, which on the
+    # host's network can be another add-on's). With the dashboard off, nothing of GivTCP's is there, so it's a 404
+    with open("/etc/nginx/givtcp_rest/dashboard.conf","w") as outp:
+        if str(setts.get("Web_Dash")).lower()=="true":
+            outp.write("location /dashboard/ {\n    include /etc/nginx/givtcp_lan_access.conf;\n"
+                       +"    proxy_pass http://127.0.0.1:"+number(setts.get("Web_Dash_Port"),3000,int)+"/;\n}\n")
+        else:
+            outp.write("location /dashboard/ {\n    return 404;\n}\n")
 
 def writeWebAccess(setts, addon):
     """Who can connect to 8099/8098 (ingress*.conf includes these): the web UI (givtcp_access.conf) from
