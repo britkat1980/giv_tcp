@@ -140,25 +140,37 @@ EXTRA_READS = [
 EXTRA_READ_MAX_FAILURES = 3
 _extra_read_failures = {}       # per plant, which outlives a replaced client: {id(plant): {read name: failures in a row}}
 
-# The extra reads this inverter didn't answer, kept across restarts for its ARM firmware, so they aren't tried (each
+# The extra reads this inverter didn't answer, kept across restarts for its firmware, so they aren't tried (each
 # timing out) after every restart (#673). Set by read.py; None keeps them for this session only
 unanswered_file = None
+_unanswered_loaded = set()      # the plants (id) the saved reads have been loaded for
 
-def _load_unanswered(arm_fw):
+def _firmware(client):
+    # The ARM firmware, or on three-phase (whose ARM firmware register reads 0, so the library has None) the
+    # firmware string, eg. "D0.3171-A0.3200", once it's been read. None until it's known
+    arm_fw = client.plant.capabilities.arm_firmware_version
+    if arm_fw:
+        return arm_fw
+    try:
+        return client.plant.inverter.firmware_version or None
+    except Exception:
+        return None
+
+def _load_unanswered(firmware):
     # The reads saved as unanswered on this firmware. Another firmware may answer them, so they're tried again
     try:
         with open(unanswered_file) as inp:
             saved = json.load(inp)
-        return set(saved.get("reads", [])) if saved.get("arm_fw") == arm_fw else set()
+        return set(saved.get("reads", [])) if saved.get("firmware") == firmware else set()
     except (OSError, TypeError, ValueError, AttributeError):
         return set()
 
-def _save_unanswered(arm_fw, reads):
-    if unanswered_file is None:
+def _save_unanswered(firmware, reads):
+    if unanswered_file is None or firmware is None:
         return
     try:
         with open(unanswered_file, "w") as outp:
-            json.dump({"arm_fw": arm_fw, "reads": sorted(reads)}, outp)
+            json.dump({"firmware": firmware, "reads": sorted(reads)}, outp)
     except OSError as e:
         logger.debug("Unable to save the unanswered reads: " + str(e))
 
@@ -166,13 +178,18 @@ async def _extra_reads(client):
     caps = client.plant.capabilities
     if caps is None:
         return
-    if id(client.plant) not in _extra_read_failures:
-        unanswered = _load_unanswered(caps.arm_firmware_version)
+    failures = _extra_read_failures.setdefault(id(client.plant), {})
+    firmware = _firmware(client)
+    if firmware is not None and id(client.plant) not in _unanswered_loaded:
+        _unanswered_loaded.add(id(client.plant))
+        unanswered = _load_unanswered(firmware)
         if unanswered:
-            logger.debug("Not reading " + ", ".join(sorted(unanswered)) + ": this inverter didn't answer on ARM firmware " +
-                         str(caps.arm_firmware_version) + " (delete " + str(unanswered_file) + " to try again)")
-        _extra_read_failures[id(client.plant)] = {name: EXTRA_READ_MAX_FAILURES for name in unanswered}
-    failures = _extra_read_failures[id(client.plant)]
+            logger.debug("Not reading " + ", ".join(sorted(unanswered)) + ": this inverter didn't answer on firmware " +
+                         str(firmware) + " (delete " + str(unanswered_file) + " to try again)")
+        failures.update({name: EXTRA_READ_MAX_FAILURES for name in unanswered})
+        givenUp = {n for n, f in failures.items() if f >= EXTRA_READ_MAX_FAILURES}
+        if givenUp - unanswered:
+            _save_unanswered(firmware, givenUp)       # given up before the firmware was known
     for name, applies, base, count, lost in EXTRA_READS:
         if failures.get(name, 0) >= EXTRA_READ_MAX_FAILURES or not applies(caps):
             continue
@@ -189,10 +206,11 @@ async def _extra_reads(client):
                 # Info, not a warning: these are optional, and some firmware doesn't answer them (eg. HR 313-314 on Gen 1
                 # ARM 451, #655), so it would warn on every restart about something that needs no action
                 unanswered = {n for n, f in failures.items() if f >= EXTRA_READ_MAX_FAILURES}
-                _save_unanswered(caps.arm_firmware_version, unanswered)
+                _save_unanswered(firmware, unanswered)
                 logger.info("Registers " + regs + " could not be read " + str(fails) + " times in a row, so " + lost +
-                            ". Not trying again on this firmware (ARM " + str(caps.arm_firmware_version) + ")" +
-                            (", delete " + str(unanswered_file) + " to try again" if unanswered_file else "") + ": " + str(e))
+                            ". Not trying again " + ("on this firmware (" + str(firmware) + ")" +
+                                                     (", delete " + str(unanswered_file) + " to try again" if unanswered_file else "")
+                                                     if firmware else "until GivTCP restarts") + ": " + str(e))
             else:
                 # The value read last time is kept, and it's read again with the next full refresh
                 logger.debug("Registers " + regs + " could not be read this time (" + str(fails) + " in a row): " + str(e))

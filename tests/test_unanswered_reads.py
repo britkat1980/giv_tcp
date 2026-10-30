@@ -50,10 +50,11 @@ def test_unanswered_read_saved_and_not_tried_after_a_restart(unanswered_reads, c
     with caplog.at_level(logging.INFO, logger=modbus_patches.logger.name):
         polls(client, 4)
     assert calls == [313, 313, 313]
-    assert json.loads(unanswered_reads.read_text()) == {"arm_fw": 451, "reads": ["AC rates"]}
-    assert "Not trying again on this firmware (ARM 451), delete " in caplog.text
+    assert json.loads(unanswered_reads.read_text()) == {"firmware": 451, "reads": ["AC rates"]}
+    assert "Not trying again on this firmware (451), delete " in caplog.text
     # After a restart: a new plant, and nothing tried or logged at info
     modbus_patches._extra_read_failures.clear()
+    modbus_patches._unanswered_loaded.clear()
     caplog.clear()
     client, calls = gen1(451, answers=False)
     with caplog.at_level(logging.INFO, logger=modbus_patches.logger.name):
@@ -61,8 +62,20 @@ def test_unanswered_read_saved_and_not_tried_after_a_restart(unanswered_reads, c
     assert calls == [] and not caplog.records
 
 
+def test_three_phase_keyed_on_its_firmware_string(unanswered_reads):
+    # A three-phase inverter's ARM firmware register reads 0, so the library has None: the firmware string is used,
+    # once it's been read
+    client, calls = gen1(None, answers=False)
+    client.plant.inverter = types.SimpleNamespace(firmware_version=None)
+    polls(client, 3)
+    assert not unanswered_reads.exists()          # not known yet, so not saved under no firmware
+    client.plant.inverter.firmware_version = "D0.3171-A0.3200"
+    polls(client, 1)
+    assert json.loads(unanswered_reads.read_text()) == {"firmware": "D0.3171-A0.3200", "reads": ["AC rates"]}
+
+
 def test_tried_again_on_other_firmware(unanswered_reads):
-    unanswered_reads.write_text(json.dumps({"arm_fw": 451, "reads": ["AC rates"]}))
+    unanswered_reads.write_text(json.dumps({"firmware": 451, "reads": ["AC rates"]}))
     client, calls = gen1(191, answers=True)
     polls(client, 1)
     assert 313 in calls
