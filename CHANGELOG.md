@@ -1,3 +1,10 @@
+# GivTCP 3.6.11
+
+Changes since 3.6.10.
+
+### Fixed
+- **The Dashboard button on port 8099 opened another add-on's page** (#691, thanks @Young-Grandad and @lancer73). `http://IPADDRESS:8099/dashboard/` always went to port 3000, whatever **Web Dashboard Port** was set to. The add-on shares the host's network, so with the dashboard on another port and something else on 3000 (eg. the eWeLink add-on), the button showed that instead, or a 502 with nothing there. It now goes to the port in your settings. With the Web Dashboard off, `/dashboard/` is a 404.
+
 # GivTCP 3.6.10
 
 Changes since 3.6.9.

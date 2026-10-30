@@ -418,7 +418,17 @@ def test_rest_routes_and_dashboard_on_8099_stay_on_the_local_network(container):
         'deny all;']
     assert c.mapped('/etc/nginx/givtcp_rest/rest.conf').read_text() == (
         'location /REST1/ {\n    include /etc/nginx/givtcp_lan_access.conf;\n    proxy_pass http://127.0.0.1:6345/;\n}\n')
+    # With the dashboard off, nothing of GivTCP's is behind /dashboard/
+    assert c.mapped('/etc/nginx/givtcp_rest/dashboard.conf').read_text() == 'location /dashboard/ {\n    return 404;\n}\n'
     for conf in ('ingress.conf', 'ingress_no_ssl.conf'):
-        text = (ROOT / conf).read_text()
-        dashboard = text[text.index('location /dashboard/'):]
-        assert dashboard[:dashboard.index('}')].count('include /etc/nginx/givtcp_lan_access.conf;') == 1
+        assert 'location /dashboard/' not in (ROOT / conf).read_text()
+
+
+def test_dashboard_on_8099_goes_to_the_dashboard_port_from_settings(container):
+    # #691: /dashboard/ always went to port 3000, so with Web_Dash_Port changed (eg. because another add-on on the
+    # host's network has 3000) the Dashboard button opened whatever was on 3000 instead
+    c = container
+    c.run(**INVERTER, Web_Dash=True, Web_Dash_Port=3300)
+    assert c.mapped('/etc/nginx/givtcp_rest/dashboard.conf').read_text() == (
+        'location /dashboard/ {\n    include /etc/nginx/givtcp_lan_access.conf;\n    proxy_pass http://127.0.0.1:3300/;\n}\n')
+    assert 'listen 3300;' in c.mapped('/etc/nginx/http.d/webdashboard.conf').read_text()
