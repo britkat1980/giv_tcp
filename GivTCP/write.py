@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # version 2022.01.31
 from giverrors import errDetail
+from givenergy_modbus.model.inverter_threephase import ThreePhaseInverter
 import sys
 import json
 import logging
@@ -654,7 +655,11 @@ async def setBatteryCutoff(device,payload,readloop=False):
         if target<4: target=4
         logger.debug ("Setting battery cutoff target to: " + str(target))
         #temp= await sbpr(target,readloop)
-        reqs=device.set_battery_power_reserve(target)
+        if isinstance(device, ThreePhaseInverter):
+            # Battery_Power_Cutoff reads HR1078 on three-phase: write that same reserve.
+            reqs=device.set_battery_reserve_soc(target)
+        else:
+            reqs=device.set_battery_power_reserve(target)
         result= await sendAsyncCommand(reqs,readloop)
         if 'error' in result:
             raise Exception(result['error'])
