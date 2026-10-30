@@ -287,6 +287,13 @@ class Entity_Type():
         "Stack_Charge_Energy_Total_kWh":GEType("sensor","energy","",0,'maxTotalEnergy',False,True,False),
         "Battery_Calibration":GEType("select","","setBatteryCalibration","","",True,False,False),
         "Battery_Calibration_Status":GEType("sensor","string","","","",True,False,False),
+        "Fault_Code":GEType("sensor","string","","","",True,False,False),
+        "Warning_Code":GEType("sensor","string","","","",True,False,False),
+        "Battery_Warnings":GEType("sensor","string","","","",True,False,False),
+        "Faults":GEType("sensor","string","","","",True,False,False),
+        "Active_Notifications":GEType("sensor","string","","","",True,False,False),
+        "Last_Notification":GEType("sensor","string","","","",True,False,False),
+        "Last_Notification_Time":GEType("sensor","timestamp","","","",False,False,False),
 
     ### EMS ###
         "Inverter_Count":GEType("sensor","","",0,4,False,False,False),

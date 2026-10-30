@@ -1,3 +1,14 @@
+# GivTCP 3.6.12
+
+Changes since 3.6.11.
+
+### Added
+- **Inverter notifications** (#529, thanks @gcoan). The GivEnergy portal's notification list is history kept in GivEnergy's cloud, which GivTCP can't read, but the inverter reports the faults and warnings active now, and GivTCP now publishes them:
+  - **Active Notifications**: everything active now, or "None". Each one is logged as a warning when it appears, and at info level when it clears.
+  - **Last Notification** and **Last Notification Time**: the most recent, kept after it clears, so an automation can alert on it.
+  - Single-phase inverters (AC, Hybrid, All in One): the inverter's **status** (Waiting, Normal, Warning, Fault or Updating), **Battery Warnings** (eg. "Battery temperature fault"), and the **Fault Code** and **Warning Code** in hex. What each bit of those two codes means isn't confirmed yet, so they're shown as codes, eg. "Fault code 0004". If you see a notification in the portal, please post a Share Device capture on #529 with what the portal says, so they can be named.
+  - Three-phase inverters: **Faults**, each one named.
+
 # GivTCP 3.6.11
 
 Changes since 3.6.10.

@@ -1213,6 +1213,32 @@ def enumText(value):
     # the first read following a restart failed), so one missing value doesn't fail the whole poll (#608)
     return value.name.capitalize() if value is not None else None
 
+def notifications(inverter, multi_output_old, status, details):
+    """The inverter's notifications (#529): the faults and warnings active now, logged as each appears and clears.
+    The portal's list is the GivEnergy cloud's history, which Modbus can't read, so Last_Notification (and its time)
+    keeps the most recent one after it clears"""
+    active=[d for d in details if d]
+    if not active and status in ("Warning","Fault"):
+        active=["Inverter "+status.lower()]         # the status says so, but no fault or warning bit does
+    old=finditem(multi_output_old or {},'Active_Notifications')
+    before=[] if old in (None,"None") else str(old).split("; ")
+    for item in active:
+        if item not in before:
+            logger.warning("Inverter notification: "+item)
+    for item in before:
+        if item not in active:
+            logger.info("Inverter notification cleared: "+item)
+    inverter['Active_Notifications']="; ".join(active) if active else "None"
+    new=[item for item in active if item not in before]
+    if new:
+        inverter['Last_Notification']="; ".join(new)
+        inverter['Last_Notification_Time']=datetime.datetime.now(GivLUT.timezone).isoformat(timespec='seconds')
+    else:
+        for key in ('Last_Notification','Last_Notification_Time'):
+            last=finditem(multi_output_old or {},key)
+            if last is not None:
+                inverter[key]=last
+
 _emptyBatteryPolls={}
 
 def batteryNotReady(key):
@@ -2111,6 +2137,16 @@ def processInverterInfo(plant: Plant):
         inverter['Invertor_Temperature'] = GEInv.t_inverter_heatsink
         inverter['Export_Limit']=GEInv.grid_port_max_power_output
         inverter['Battery_Calibration_Status'] = enumText(GEInv.battery_calibration_stage)
+        # The fault and warning words (IR39/40) stay as hex until what their bits mean is confirmed (#529)
+        inverter['status'] = enumText(GEInv.status)
+        inverter['Fault_Code'] = GEInv.inverter_fault_code
+        inverter['Warning_Code'] = GEInv.inverter_warning_code
+        batteryWarnings = GEInv.charger_warning_messages
+        if batteryWarnings is not None:
+            inverter['Battery_Warnings'] = ", ".join(batteryWarnings) if batteryWarnings else "None"
+        notifications(inverter, multi_output_old, inverter['status'],
+                      [label+" code "+code for label,code in (("Fault",inverter['Fault_Code']),("Warning",inverter['Warning_Code']))
+                       if code and int(code,16)]+list(batteryWarnings or []))
 
         ######## Get Meter Details ########
 
@@ -2656,6 +2692,10 @@ def processThreePhaseInfo(plant: Plant):
         power_output['SOC_kWh'] = sockwh / count if count > 0 else 0                                      # Average SOC of all stacks...
 
         inverter['status']=enumText(GEInv.status)
+        # The fault words (IR1300-1307), decoded by givenergy-modbus (#529)
+        faults=[f for word in range(8) for f in (getattr(GEInv,'inverter_fault_codes_'+str(word),None) or [])]
+        inverter['Faults']=", ".join(faults) if faults else "None"
+        notifications(inverter, multi_output_old, inverter['status'], faults)
         # givenergy-modbus v2 decodes system_mode and battery_priority as plain ints (the old lib used enums)
         inverter['System_Mode']=GivLUT.tph_system_mode.get(GEInv.system_mode,str(GEInv.system_mode))
         inverter['Start_Delay_Time']=GEInv.start_delay_time
