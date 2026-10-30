@@ -680,65 +680,85 @@
   "setBatteryPauseMode({'state': 'Disabled'})": [
    {
     "jobs": [],
-    "logs": [],
-    "result": {
-     "result": "Setting Battery Pause Mode to Disabled was a success"
-    },
-    "writes": [
+    "logs": [
      [
-      17,
-      318,
-      0
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
      ]
-    ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+    },
+    "writes": []
    }
   ],
   "setBatteryPauseMode({'state': 'PauseBoth'})": [
    {
     "jobs": [],
-    "logs": [],
-    "result": {
-     "result": "Setting Battery Pause Mode to PauseBoth was a success"
-    },
-    "writes": [
+    "logs": [
      [
-      17,
-      318,
-      3
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
      ]
-    ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+    },
+    "writes": []
    }
   ],
   "setBatteryPauseMode({'state': 'PauseCharge'})": [
    {
     "jobs": [],
-    "logs": [],
-    "result": {
-     "result": "Setting Battery Pause Mode to PauseCharge was a success"
-    },
-    "writes": [
+    "logs": [
      [
-      17,
-      318,
-      1
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
      ]
-    ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+    },
+    "writes": []
    }
   ],
   "setBatteryPauseMode({'state': 'PauseDischarge'})": [
    {
     "jobs": [],
-    "logs": [],
-    "result": {
-     "result": "Setting Battery Pause Mode to PauseDischarge was a success"
-    },
-    "writes": [
+    "logs": [
      [
-      17,
-      318,
-      2
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
      ]
-    ]
+    ],
+    "result": {
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+    },
+    "writes": []
    }
   ],
   "setBatteryReserve({'reservePercent': '2'})": [
@@ -2489,7 +2509,18 @@
   "setBatteryPauseMode(Disabled)": [
    {
     "jobs": [],
-    "logs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+     ]
+    ],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2498,19 +2529,24 @@
       }
      ]
     ],
-    "writes": [
-     [
-      17,
-      318,
-      0
-     ]
-    ]
+    "writes": []
    }
   ],
   "setBatteryPauseMode(PauseBoth)": [
    {
     "jobs": [],
-    "logs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+     ]
+    ],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2519,19 +2555,24 @@
       }
      ]
     ],
-    "writes": [
-     [
-      17,
-      318,
-      3
-     ]
-    ]
+    "writes": []
    }
   ],
   "setBatteryPauseMode(PauseCharge)": [
    {
     "jobs": [],
-    "logs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+     ]
+    ],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2540,19 +2581,24 @@
       }
      ]
     ],
-    "writes": [
-     [
-      17,
-      318,
-      1
-     ]
-    ]
+    "writes": []
    }
   ],
   "setBatteryPauseMode(PauseDischarge)": [
    {
     "jobs": [],
-    "logs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+     ]
+    ],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2561,13 +2607,7 @@
       }
      ]
     ],
-    "writes": [
-     [
-      17,
-      318,
-      2
-     ]
-    ]
+    "writes": []
    }
   ],
   "setBatteryReserve(20)": [
@@ -6445,6 +6485,7 @@
    "Battery_Discharge_Current",
    "Battery_Pack_Current",
    "Battery_pause_end_time_slot",
+   "Battery_pause_mode",
    "Battery_pause_start_time_slot"
   ],
   "discovery topics": [
@@ -7750,69 +7791,89 @@
   "/setBatteryPauseMode({'state': 'Disabled'})": [
    {
     "jobs": [],
-    "logs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+     ]
+    ],
     "result": {
-     "result": "Setting Battery Pause Mode to Disabled was a success"
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
     },
     "status": 200,
-    "writes": [
-     [
-      17,
-      318,
-      0
-     ]
-    ]
+    "writes": []
    }
   ],
   "/setBatteryPauseMode({'state': 'PauseBoth'})": [
    {
     "jobs": [],
-    "logs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+     ]
+    ],
     "result": {
-     "result": "Setting Battery Pause Mode to PauseBoth was a success"
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
     },
     "status": 200,
-    "writes": [
-     [
-      17,
-      318,
-      3
-     ]
-    ]
+    "writes": []
    }
   ],
   "/setBatteryPauseMode({'state': 'PauseCharge'})": [
    {
     "jobs": [],
-    "logs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+     ]
+    ],
     "result": {
-     "result": "Setting Battery Pause Mode to PauseCharge was a success"
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
     },
     "status": 200,
-    "writes": [
-     [
-      17,
-      318,
-      1
-     ]
-    ]
+    "writes": []
    }
   ],
   "/setBatteryPauseMode({'state': 'PauseDischarge'})": [
    {
     "jobs": [],
-    "logs": [],
+    "logs": [
+     [
+      "write_logger",
+      "ERROR",
+      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
+     ],
+     [
+      "write_logger",
+      "ERROR",
+      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+     ]
+    ],
     "result": {
-     "result": "Setting Battery Pause Mode to PauseDischarge was a success"
+     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
     },
     "status": 200,
-    "writes": [
-     [
-      17,
-      318,
-      2
-     ]
-    ]
+    "writes": []
    }
   ],
   "/setBatteryReserve({'reservePercent': '20'})": [

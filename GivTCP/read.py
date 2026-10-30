@@ -283,6 +283,9 @@ async def lostInverter():
 def capsFile():
     return GivLUT.config_dir+"/"+GiV_Settings.serial_number+"_caps.pkl"
 
+# The optional reads this inverter doesn't answer on its firmware, kept across restarts (#673)
+modbus_patches.unanswered_file=GivLUT.config_dir+"/"+str(GiV_Settings.serial_number)+"_unanswered.json"
+
 def pauseModeUnsupported(caps):
     # Battery pause mode (HR 318): only where it can be written (see modbus_patches.pause_registers). Some
     # models read it but can't write it, and Force Charge/Export fail if they try to set it

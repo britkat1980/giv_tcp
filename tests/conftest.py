@@ -86,6 +86,14 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
 def sandbox():
     env.enter()
 
+@pytest.fixture(autouse=True)
+def unanswered_reads(tmp_path, monkeypatch):
+    # Each test starts with no optional reads saved as unanswered, so one test's failed reads don't skip another's
+    import modbus_patches
+    monkeypatch.setattr(modbus_patches, "unanswered_file", str(tmp_path / "unanswered.json"))
+    monkeypatch.setattr(modbus_patches, "_extra_read_failures", {})
+    return tmp_path / "unanswered.json"
+
 @pytest.fixture(scope="session")
 def plants(frame_pacing):
     plants = Plants(pacing=frame_pacing)
