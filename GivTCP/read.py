@@ -31,7 +31,7 @@ import asyncio
 from typing import Callable, Optional
 from mqtt import GivMQTT
 from modbus_patches import pause_registers, PAUSE_MODE_REGISTER, PAUSE_SLOT_REGISTERS, bms_current_inverter
-from capscheck import missingBatteries, maybeMissingBatteries, lostBatteries, capsBatteryCount
+from capscheck import missingBatteries, maybeMissingBatteries, lostBatteries, batteryDifference
 from givenergy_modbus.model.inverter import SinglePhaseInverterRegisterGetter
 import copy
 import enum
@@ -450,9 +450,9 @@ async def detectPlant(client, force=False):
         if lostBatteryDetects<2:
             capsSuspect=True
             client.plant.capabilities=saved
-            logger.warning("Detect found "+str(capsBatteryCount(caps))+" batteries but "+str(capsBatteryCount(saved))+" were saved, so keeping the saved capabilities until another detect agrees")
+            logger.warning("Detect found "+batteryDifference(caps, saved)+" saved, so keeping the saved capabilities until another detect agrees")
             return False
-        logger.warning("Two detects in a row found "+str(capsBatteryCount(caps))+" batteries rather than "+str(capsBatteryCount(saved))+", so saving the new capabilities")
+        logger.warning("Two detects in a row found "+batteryDifference(caps, saved)+" saved, so saving the new capabilities")
     # A hybrid with no batteries is saved (it may have none), but checked again, in case they didn't answer
     capsSuspect=False
     if maybeMissingBatteries(client.plant.capabilities) and not noBatteryFitted():
@@ -1208,6 +1208,19 @@ def getMeters(plant: Plant):
         meters['Meter_ID'+str(m)]=meter
     return meters
 
+def badRead(GEInv):
+    """True if a couple of obvious data points show a bad read, so the last good data is used. One not read yet (eg.
+    the inverter's settings, after reconnecting to a dongle that didn't answer them) is a bad read too, rather than
+    an error (#583)"""
+    values=(GEInv.modbus_version, GEInv.modbus_address, GEInv.user_code, GEInv.t_inverter_heatsink)
+    if any(value is None for value in values):
+        logger.info("Inverter data not all read yet, so using the last good data")
+        return True
+    if float(values[0])>2 or values[1]>100 or values[2]>100 or values[3]>100:
+        logger.debug("Dodgy Data so using last cache...")
+        return True
+    return False
+
 def enumText(value):
     # An enum field's name, eg. "Normal", or None until its register has been read (eg. a holding register after
     # the first read following a restart failed), so one missing value doesn't fail the whole poll (#608)
@@ -1705,9 +1718,7 @@ def processPVInfo(plant: Plant):
             regCacheStack = []      # no cache yet (first poll) - previous values default to empty
             multi_output_old = {}
 
-        # Check a couple of obvious data points to reject bad reads
-        if float(GEInv.modbus_version)>2 or GEInv.modbus_address>100 or GEInv.user_code>100 or GEInv.t_inverter_heatsink>100:
-            logger.debug("Dodgy Data so using last cache...")
+        if badRead(GEInv):
             return multi_output_old
 
         # If System Time is wrong (default date) use last good time or local time if all else fails
@@ -2582,9 +2593,7 @@ def processThreePhaseInfo(plant: Plant):
         else:
             multi_output_old=regCacheStack[-1]
 
-        # Check a couple of obvious data points to reject bad reads
-        if float(GEInv.modbus_version)>2 or GEInv.modbus_address>100 or GEInv.user_code>100 or GEInv.t_inverter_heatsink>100:
-            logger.debug("Dodgy Data so using last cache...")
+        if badRead(GEInv):
             return multi_output_old
 
         # If System Time is wrong (default date) use last good time or local time if all else fails

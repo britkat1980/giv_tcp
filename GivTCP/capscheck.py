@@ -26,7 +26,16 @@ def batteryDevices(caps):
     return (len(caps.lv_battery_addresses), len(caps.bcu_stacks), sum(n for _,n in caps.bcu_stacks),
             len(caps.aio_battery_module_addresses), len(caps.hv_bmu_addresses))
 
+BATTERY_DEVICE_NAMES=("LV batteries","battery stacks (BCUs)","modules in the stacks","All in One battery modules",
+                      "battery modules (BMUs)")
+
 def lostBatteries(new, saved):
     # True if a detect found fewer of any kind of battery device than the saved capabilities for the same model
     return (getattr(new,'device_type',None) is not None and getattr(saved,'device_type',None)==new.device_type
             and any(n<s for n,s in zip(batteryDevices(new), batteryDevices(saved))))
+
+def batteryDifference(new, saved):
+    # What a detect found fewer of, eg. "5 battery modules (BMUs) rather than 6". The total can be the same when only
+    # one kind is short (#583: "found 12 batteries but 12 were saved")
+    return ", ".join(str(n)+" "+name+" rather than "+str(s)
+                     for n,s,name in zip(batteryDevices(new), batteryDevices(saved), BATTERY_DEVICE_NAMES) if n<s)

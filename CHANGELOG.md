@@ -9,6 +9,10 @@ Changes since 3.6.11.
   - Single-phase inverters (AC, Hybrid, All in One): the inverter's **status** (Waiting, Normal, Warning, Fault or Updating), **Battery Warnings** (eg. "Battery temperature fault"), and the **Fault Code** and **Warning Code** in hex. What each bit of those two codes means isn't confirmed yet, so they're shown as codes, eg. "Fault code 0004". If you see a notification in the portal, please post a Share Device capture on #529 with what the portal says, so they can be named.
   - Three-phase inverters: **Faults**, each one named.
 
+### Fixed
+- **"Error processing Three Phase data: TypeError: '>' not supported between instances of 'NoneType'..."** (#583, thanks @tonka-truck). GivTCP checks a few values on each poll to reject a bad read, but one that hadn't been read (eg. after reconnecting to a dongle that didn't answer at first) failed the check with an error. It's now treated as the bad read it is, and the last good data is used, as before, without the error.
+- **"Detect found 12 batteries but 12 were saved"** (#583). When a detect finds fewer of one kind of battery device than were saved (eg. one battery module didn't answer), the log now says which, eg. "Detect found 5 battery modules (BMUs) rather than 6 saved".
+
 # GivTCP 3.6.11
 
 Changes since 3.6.10.
