@@ -1,7 +1,9 @@
-# GivTCP Unreleased
+# GivTCP 3.6.13
+
+Changes since 3.6.12.
 
 ### Fixed
-- **Skip Reads Fresher Than didn't skip the meters, or IR 1360 on three-phase.** The dongle passes its own polls for the GivEnergy cloud on to GivTCP (about every 5 minutes on a three-phase hybrid, even with the cloud blocked), and Skip Reads Fresher Than skips what they have just updated. The Modbus library only counts an answer of exactly the size GivTCP reads, though, and the dongle reads the meters as 60 registers (GivTCP 30) and IR 1360 as 60 (GivTCP 54), so those were read again anyway. An answer that covers the whole block now counts too. A smaller one still doesn't.
+- **Skip Reads Fresher Than didn't skip the meters, or IR 1360 on three-phase** (#700, thanks @lancer73). The dongle passes its own polls for the GivEnergy cloud on to GivTCP (about every 5 minutes on a three-phase hybrid, even with the cloud blocked), and Skip Reads Fresher Than skips what they have just updated. The Modbus library only counts an answer of exactly the size GivTCP reads, though, and the dongle reads the meters as 60 registers (GivTCP 30) and IR 1360 as 60 (GivTCP 54), so those were read again anyway. An answer that covers the whole block now counts too. A smaller one still doesn't.
 
 # GivTCP 3.6.12
 
