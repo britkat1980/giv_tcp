@@ -36,11 +36,16 @@ What's left, each with a request open upstream (docs/upstream-givenergy-modbus-r
   rejects the 1000-range reads.
 - HV battery module cell data is only re-read on full refreshes (read.py sets skip_banks between them), as each
   module is a read of its own and cell voltages and temperatures don't need updating every poll (#614).
+- Skip Reads Fresher Than (refresh's max_age) also skips a block that a larger reply covering it has just updated
+  [22]. The library only counts a reply of exactly the block's size, so the dongle's own polls for the cloud (passed
+  on to GivTCP) never made the meters (read as 60 registers, the library's 30) or three-phase IR 1360 (60, not 54)
+  count as fresh.
 
 Remove each one once the library supports it.
 """
 import json
 import logging
+from datetime import datetime, timezone
 
 from givenergy_modbus.client import client as client_module
 from givenergy_modbus.client.client import Client
@@ -321,6 +326,40 @@ def _refresh_banks(caps):
 
 # _refresh_ranges() looks this up on the client module on every refresh
 client_module._refresh_banks = _refresh_banks
+
+def covering_block_age(plant, device_address, reg_type, base_register, register_count, now=None):
+    """Seconds since a reply covering the whole of this block was received, or None if none has been. The library
+    keys a block's age on the exact request (block_age), so a smaller reply never marks a larger block as fresh. A
+    larger one that covers it is just as fresh, though: the dongle's own polls for the cloud, which it passes on to
+    GivTCP, read the meters as 60 registers (the library 30) and three-phase IR 1360 as 60 (the library 54)"""
+    effective_now = now or datetime.now(timezone.utc)
+    if effective_now.tzinfo is None:
+        effective_now = effective_now.replace(tzinfo=timezone.utc)
+    newest = None
+    end = base_register + register_count
+    for (dev, kind, base, count), ts in plant.register_block_updated_at.items():
+        if dev == device_address and kind == reg_type and base <= base_register and base + count >= end:
+            if newest is None or ts > newest:
+                newest = ts
+    return None if newest is None else (effective_now - newest).total_seconds()
+
+class _CoveringAges:
+    """The plant as _refresh_ranges() sees it, with block_age() also counting replies that cover the whole block"""
+    def __init__(self, plant):
+        self._plant = plant
+    def block_age(self, device_address, reg_type, base_register, register_count, *, now=None):
+        return covering_block_age(self._plant, device_address, reg_type, base_register, register_count, now)
+    def __getattr__(self, name):
+        return getattr(self._plant, name)
+
+_library_refresh_ranges = client_module._refresh_ranges
+
+def _refresh_ranges(caps, max_age, plant, *args, **kwargs):
+    # Skip Reads Fresher Than (refresh(max_age)): also skip a block that a larger reply covering it has just updated
+    return _library_refresh_ranges(caps, max_age, _CoveringAges(plant) if max_age is not None else plant, *args, **kwargs)
+
+# refresh() looks this up on the client module on every refresh
+client_module._refresh_ranges = _refresh_ranges
 
 _library_hv_stacks = Plant.hv_stacks
 
