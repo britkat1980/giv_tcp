@@ -680,85 +680,65 @@
   "setBatteryPauseMode({'state': 'Disabled'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to Disabled was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      0
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode({'state': 'PauseBoth'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseBoth was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      3
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode({'state': 'PauseCharge'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseCharge was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      1
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode({'state': 'PauseDischarge'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseDischarge was a success"
     },
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      2
+     ]
+    ]
    }
   ],
   "setBatteryReserve({'reservePercent': '2'})": [
@@ -2509,18 +2489,7 @@
   "setBatteryPauseMode(Disabled)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2529,24 +2498,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      0
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode(PauseBoth)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2555,24 +2519,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      3
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode(PauseCharge)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2581,24 +2540,19 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      1
+     ]
+    ]
    }
   ],
   "setBatteryPauseMode(PauseDischarge)": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "queued": [
      [
       "setBatteryPauseMode",
@@ -2607,7 +2561,13 @@
       }
      ]
     ],
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      2
+     ]
+    ]
    }
   ],
   "setBatteryReserve(20)": [
@@ -5096,6 +5056,7 @@
    "Battery_Details": {
     "Battery_Stack_1": {
      "BG2134G000": {
+      "Battery_BMS_MOSFET_Temperature": 27.0,
       "Battery_Capacity": 189.61,
       "Battery_Cell_10_Voltage": 3.378,
       "Battery_Cell_11_Voltage": 3.387,
@@ -5126,13 +5087,14 @@
       "Battery_Remaining_Capacity": 154.49,
       "Battery_SOC": 81,
       "Battery_Serial_Number": "BG2134G000",
-      "Battery_Temperature": 27.0,
+      "Battery_Temperature": 23.3,
       "Battery_USB_present": 8,
       "Battery_Voltage": 54.076
      },
-     "BMS_Temperature": 23.0,
      "BMS_Voltage": 53.87,
+     "Battery_Temperature": 23.0,
      "DZ2228G000": {
+      "Battery_BMS_MOSFET_Temperature": 25.2,
       "Battery_Capacity": 150.88,
       "Battery_Cell_10_Voltage": 3.374,
       "Battery_Cell_11_Voltage": 3.37,
@@ -5163,7 +5125,7 @@
       "Battery_Remaining_Capacity": 119.59,
       "Battery_SOC": 79,
       "Battery_Serial_Number": "DZ2228G000",
-      "Battery_Temperature": 25.2,
+      "Battery_Temperature": 22.6,
       "Battery_USB_present": 8,
       "Battery_Voltage": 54.155
      }
@@ -5284,11 +5246,11 @@
     }
    },
    "SA2114G000": {
-    "Active_Notifications": "None",
+    "Active_Notifications": "No notifications",
     "Battery_Calibration_Status": "Off",
     "Battery_Capacity_kWh": 17.7152,
     "Battery_Type": "Lithium",
-    "Battery_Warnings": "None",
+    "Battery_Warnings": "No warnings",
     "Export_Limit": 6000,
     "Fault_Code": "0000",
     "Invertor_Firmware": "D0.449-A0.449",
@@ -5791,6 +5753,7 @@
    "Battery_Details": {
     "Battery_Stack_1": {
      "BG2134G000": {
+      "Battery_BMS_MOSFET_Temperature": 27.0,
       "Battery_Capacity": 189.61,
       "Battery_Cell_10_Voltage": 3.378,
       "Battery_Cell_11_Voltage": 3.387,
@@ -5821,13 +5784,14 @@
       "Battery_Remaining_Capacity": 154.49,
       "Battery_SOC": 81,
       "Battery_Serial_Number": "BG2134G000",
-      "Battery_Temperature": 27.0,
+      "Battery_Temperature": 23.3,
       "Battery_USB_present": 8,
       "Battery_Voltage": 54.076
      },
-     "BMS_Temperature": 23.0,
      "BMS_Voltage": 53.87,
+     "Battery_Temperature": 23.0,
      "DZ2228G000": {
+      "Battery_BMS_MOSFET_Temperature": 25.2,
       "Battery_Capacity": 150.88,
       "Battery_Cell_10_Voltage": 3.374,
       "Battery_Cell_11_Voltage": 3.37,
@@ -5858,7 +5822,7 @@
       "Battery_Remaining_Capacity": 119.59,
       "Battery_SOC": 79,
       "Battery_Serial_Number": "DZ2228G000",
-      "Battery_Temperature": 25.2,
+      "Battery_Temperature": 22.6,
       "Battery_USB_present": 8,
       "Battery_Voltage": 54.155
      }
@@ -5978,11 +5942,11 @@
     }
    },
    "SA2114G000": {
-    "Active_Notifications": "None",
+    "Active_Notifications": "No notifications",
     "Battery_Calibration_Status": "Off",
     "Battery_Capacity_kWh": 17.7152,
     "Battery_Type": "Lithium",
-    "Battery_Warnings": "None",
+    "Battery_Warnings": "No warnings",
     "Export_Limit": 6000,
     "Fault_Code": "0000",
     "Invertor_Firmware": "D0.449-A0.449",
@@ -6481,11 +6445,11 @@
    }
   },
   "discovery removed": [
+   "BMS_Temperature",
    "Battery_BMS_Current",
    "Battery_Discharge_Current",
    "Battery_Pack_Current",
    "Battery_pause_end_time_slot",
-   "Battery_pause_mode",
    "Battery_pause_start_time_slot"
   ],
   "discovery topics": [
@@ -6519,6 +6483,7 @@
    "homeassistant/sensor/GivEnergy/SA2114G000_AC_Charge_Energy_Total_kWh/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_AC_Charge_Power/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Active_Notifications/config",
+   "homeassistant/sensor/GivEnergy/SA2114G000_BG2134G000_Battery_BMS_MOSFET_Temperature/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_BG2134G000_Battery_Capacity/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_BG2134G000_Battery_Cell_10_Voltage/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_BG2134G000_Battery_Cell_11_Voltage/config",
@@ -6559,8 +6524,8 @@
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Discharge_Energy_Today_kWh/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Discharge_Energy_Total_kWh/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Power/config",
-   "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Stack_1_BMS_Temperature/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Stack_1_BMS_Voltage/config",
+   "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Stack_1_Battery_Temperature/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Throughput_Today_kWh/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Throughput_Total_kWh/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Type/config",
@@ -6574,6 +6539,7 @@
    "homeassistant/sensor/GivEnergy/SA2114G000_Charge_Power/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Charge_Time_Remaining/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Current_Rate/config",
+   "homeassistant/sensor/GivEnergy/SA2114G000_DZ2228G000_Battery_BMS_MOSFET_Temperature/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_DZ2228G000_Battery_Capacity/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_DZ2228G000_Battery_Cell_10_Voltage/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_DZ2228G000_Battery_Cell_11_Voltage/config",
@@ -6692,6 +6658,7 @@
    "homeassistant/time/GivEnergy/SA2114G000_Discharge_start_time_slot_2/config"
   ],
   "mqtt topics": [
+   "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BG2134G000/Battery_BMS_MOSFET_Temperature",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BG2134G000/Battery_Capacity",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BG2134G000/Battery_Cell_10_Voltage",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BG2134G000/Battery_Cell_11_Voltage",
@@ -6725,8 +6692,9 @@
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BG2134G000/Battery_Temperature",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BG2134G000/Battery_USB_present",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BG2134G000/Battery_Voltage",
-   "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BMS_Temperature",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BMS_Voltage",
+   "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/Battery_Temperature",
+   "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/DZ2228G000/Battery_BMS_MOSFET_Temperature",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/DZ2228G000/Battery_Capacity",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/DZ2228G000/Battery_Cell_10_Voltage",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/DZ2228G000/Battery_Cell_11_Voltage",
@@ -7791,89 +7759,69 @@
   "/setBatteryPauseMode({'state': 'Disabled'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to Disabled was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      0
+     ]
+    ]
    }
   ],
   "/setBatteryPauseMode({'state': 'PauseBoth'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseBoth was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      3
+     ]
+    ]
    }
   ],
   "/setBatteryPauseMode({'state': 'PauseCharge'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseCharge was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      1
+     ]
+    ]
    }
   ],
   "/setBatteryPauseMode({'state': 'PauseDischarge'})": [
    {
     "jobs": [],
-    "logs": [
-     [
-      "write_logger",
-      "ERROR",
-      "Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (registers: 318)"
-     ],
-     [
-      "write_logger",
-      "ERROR",
-      "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
-     ]
-    ],
+    "logs": [],
     "result": {
-     "result": "Error in setting Battery pause mode: Exception: Error in write command: InvalidPduState HR(318) is not permitted for HYBRID_GEN1 inverter (write.py:N)"
+     "result": "Setting Battery Pause Mode to PauseDischarge was a success"
     },
     "status": 200,
-    "writes": []
+    "writes": [
+     [
+      17,
+      318,
+      2
+     ]
+    ]
    }
   ],
   "/setBatteryReserve({'reservePercent': '20'})": [

@@ -5237,12 +5237,12 @@
     }
    },
    "SH2000G000": {
-    "Active_Notifications": "None",
+    "Active_Notifications": "No notifications",
     "Battery_Calibration_Status": "Off",
     "Battery_Capacity_kWh": 0.0,
     "Battery_Capacity_kWh_calc": 0,
     "Battery_Type": "Lead_acid",
-    "Battery_Warnings": "None",
+    "Battery_Warnings": "No warnings",
     "Export_Limit": 0,
     "Fault_Code": "0000",
     "Invertor_Firmware": "D0.3000-A0.295",
@@ -5827,12 +5827,12 @@
     }
    },
    "SH2000G000": {
-    "Active_Notifications": "None",
+    "Active_Notifications": "No notifications",
     "Battery_Calibration_Status": "Off",
     "Battery_Capacity_kWh": 0.0,
     "Battery_Capacity_kWh_calc": 0,
     "Battery_Type": "Lead_acid",
-    "Battery_Warnings": "None",
+    "Battery_Warnings": "No warnings",
     "Export_Limit": 0,
     "Fault_Code": "0000",
     "Invertor_Firmware": "D0.3000-A0.295",

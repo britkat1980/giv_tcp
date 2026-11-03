@@ -152,6 +152,7 @@ class Entity_Type():
         "Battery_Charge_MOS_State":GEType("sensor","string","","","",False,False,False),
         "Battery_Discharge_MOS_State":GEType("sensor","string","","","",False,False,False),
         "BMS_Temperature":GEType("sensor","temperature","",'-maxTemp','maxTemp',False,True,False),
+        "Battery_BMS_MOSFET_Temperature":GEType("sensor","temperature","",'-maxTemp','maxTemp',False,True,False),
         "BMS_Voltage":GEType("sensor","voltage","",0,500,False,True,False),
         "Battery_Cell_1_Voltage":GEType("sensor","voltage","",0,'maxCellVoltage',False,True,False),
         "Battery_Cell_2_Voltage":GEType("sensor","voltage","",0,'maxCellVoltage',False,True,False),
@@ -300,7 +301,7 @@ class Entity_Type():
         "Meter_Count":GEType("sensor","","",0,8,False,False,False),
         "EMS_Status":GEType("sensor","","","","",False,False,False),
         "Remaining_Battery_Wh":GEType("sensor","","",0,1000000,False,True,False),
-        "Power":GEType("sensor","power","",0,'maxPower',False,True,False),
+        "Power":GEType("sensor","power","",'-maxInvPower','maxInvPower',True,True,False),      # each inverter's power: negative while charging (#701)
         "Temperature":GEType("sensor","temperature","",0,'maxTemp',False,True,False),
         "Calculated_Load_Power":GEType("sensor","power","",0,'maxPower',False,True,False),
         "Measured_Load_Power":GEType("sensor","power","",0,'maxPower',False,True,False),

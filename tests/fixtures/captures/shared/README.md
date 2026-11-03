@@ -15,4 +15,6 @@ and IP addresses are removed). They're stored here as received, renamed to `.cap
 | `ems_arm1036_issue638.capture` | #638 | EMS (DTC 5001) with 2 AC inverters | ARM 1036 | 2 meters | Same plant as the AC above. As #632, its IR 0-59 replies are the cloud's polls |
 | `hybrid_3ph_4006_issue667.capture` | #667 | Three-phase hybrid (DTC 4006) | ARM 0 (as reported) | 3 BCU stacks of 6 HV modules, 1 meter | The first three-phase capture with several stacks |
 | `hybrid_3ph_4004_issue695.capture` | #695 | Three-phase hybrid (DTC 4004) | D0.3171-A0.3200 (ARM 0 as reported) | 6 battery stacks (as reported), 2 meters | The BCU is read once and no battery modules are, as with Lite mode on |
-| `hybrid_gen1_2001_arm451_issue666.capture` | #666 | Hybrid Gen 1 (DTC 2001) | ARM 451, DSP 450 | 1 LV battery (BMS 3022) | The original Gen 1 firmware, which doesn't answer HR 313-314 or HR 318 (#655) |
+| `hybrid_gen3_2001_arm318_issue697.capture` | #697 | Hybrid Gen 3 (DTC 2001) | ARM/DSP 318 | 1 LV battery (BMS 3022), 1 meter | |
+| `hybrid_hv_gen3_8103_issue471.capture` | #471 | Hybrid HV Gen 3, 10 kW (DTC 8103) | ARM/DSP 5 (as reported) | 2 BCU stacks (10 modules, as reported), 1 meter | Attached to #471 rather than a Device capture issue. The BCUs are read once and no battery modules are, as with Lite mode on |
+| `hybrid_gen1_2001_arm451_issue666.capture` | #666 | Hybrid Gen 1 (DTC 2001) | ARM 451, DSP 450 | 1 LV battery (BMS 3022) | The original Gen 1 firmware, which doesn't answer reads of HR 313-314 or HR 318 (#655), but takes pause mode writes (#698) |

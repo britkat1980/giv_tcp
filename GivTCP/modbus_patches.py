@@ -36,11 +36,16 @@ What's left, each with a request open upstream (docs/upstream-givenergy-modbus-r
   rejects the 1000-range reads.
 - HV battery module cell data is only re-read on full refreshes (read.py sets skip_banks between them), as each
   module is a read of its own and cell voltages and temperatures don't need updating every poll (#614).
+- Skip Reads Fresher Than (refresh's max_age) also skips a block that a larger reply covering it has just updated
+  [22]. The library only counts a reply of exactly the block's size, so the dongle's own polls for the cloud (passed
+  on to GivTCP) never made the meters (read as 60 registers, the library's 30) or three-phase IR 1360 (60, not 54)
+  count as fresh.
 
 Remove each one once the library supports it.
 """
 import json
 import logging
+from datetime import datetime, timezone
 
 from givenergy_modbus.client import client as client_module
 from givenergy_modbus.client.client import Client
@@ -57,13 +62,12 @@ logger = logging.getLogger("read_logger")     # GivTCP's main log (GivLUT.logger
 PAUSE_MODE_REGISTER = 318
 PAUSE_SLOT_REGISTERS = frozenset({319, 320})     # pause slot start, pause slot end
 PAUSE_REGISTERS = frozenset({PAUSE_MODE_REGISTER}) | PAUSE_SLOT_REGISTERS
-# The ARM firmware that supports pause mode. Firmware lines aren't numbered in order: Gen 1 went from the old 4xx line
-# to 1xx (19x beta), and the AC from 5xx to 2xx (see entity_lut.py). So the range ends below the old line, which
-# doesn't answer HR 318 (Gen 1 ARM 451, #673)
-# Gen 1: from the firmware that added real-time control (#441)
-GEN1_PAUSE_ARM_FW = range(187, 400)
-# AC: from the lowest firmware confirmed by users
-AC_PAUSE_ARM_FW = range(200, 500)
+# Lowest Gen 1 ARM firmware known to support pause mode (the firmware that added real-time control). That includes the
+# old 4xx line: Gen 1 ARM 451 doesn't answer a read of HR 318 (#673), but takes the write, and Predbat relies on it to
+# hold the battery while a car charges (#698)
+GEN1_PAUSE_MIN_ARM_FW = 187
+# Lowest AC-coupled ARM firmware confirmed by users to support pause mode
+AC_PAUSE_MIN_ARM_FW = 200
 
 PAUSE_MODELS = frozenset({Model.ALL_IN_ONE, Model.GATEWAY, Model.HYBRID_GEN2, Model.HYBRID_GEN3,
                           Model.HYBRID_HV_GEN3, Model.ALL_IN_ONE_HYBRID})     # All in One-HY: used in 3.5 (#647)
@@ -75,12 +79,12 @@ AC_LIMIT_HYBRIDS = frozenset({Model.HYBRID_GEN1, Model.HYBRID_GEN3, Model.ALL_IN
 def pause_registers(model, arm_fw):
     """The pause registers this model can write"""
     if model == Model.AC:
-        if arm_fw is not None and int(arm_fw) in AC_PAUSE_ARM_FW:
+        if arm_fw is not None and int(arm_fw) >= AC_PAUSE_MIN_ARM_FW:
             return frozenset({PAUSE_MODE_REGISTER})
         return frozenset()
     if model in PAUSE_MODELS:
         return PAUSE_REGISTERS
-    if model == Model.HYBRID_GEN1 and arm_fw is not None and int(arm_fw) in GEN1_PAUSE_ARM_FW:
+    if model == Model.HYBRID_GEN1 and arm_fw is not None and int(arm_fw) >= GEN1_PAUSE_MIN_ARM_FW:
         # Mode only: a Gen 1 rejects writes to HR 319-320, and a read including them
         return frozenset({PAUSE_MODE_REGISTER})
     return frozenset()
@@ -109,9 +113,7 @@ manifest.CAPABILITIES["is_three_phase"] = manifest.CAPABILITIES["is_three_phase"
 _library_write_safe_registers = manifest.write_safe_registers
 
 def _write_safe_registers(model, arm_fw=None):
-    # The library allows pause mode on Gen 1 ARM 187-499, which includes the old 4xx line, so its pause registers
-    # are replaced by GivTCP's (pause_registers, in the extra registers)
-    return (_library_write_safe_registers(model, arm_fw) - PAUSE_REGISTERS) | _extra_write_registers(model, arm_fw)
+    return _library_write_safe_registers(model, arm_fw) | _extra_write_registers(model, arm_fw)
 
 # The client checks each write against this per-model set (Client._resolve_write_safe looks it up on the
 # manifest module for every write). HR 313/314 and 318-320 are already in the PDU's global WRITE_SAFE_REGISTERS
@@ -321,6 +323,40 @@ def _refresh_banks(caps):
 
 # _refresh_ranges() looks this up on the client module on every refresh
 client_module._refresh_banks = _refresh_banks
+
+def covering_block_age(plant, device_address, reg_type, base_register, register_count, now=None):
+    """Seconds since a reply covering the whole of this block was received, or None if none has been. The library
+    keys a block's age on the exact request (block_age), so a smaller reply never marks a larger block as fresh. A
+    larger one that covers it is just as fresh, though: the dongle's own polls for the cloud, which it passes on to
+    GivTCP, read the meters as 60 registers (the library 30) and three-phase IR 1360 as 60 (the library 54)"""
+    effective_now = now or datetime.now(timezone.utc)
+    if effective_now.tzinfo is None:
+        effective_now = effective_now.replace(tzinfo=timezone.utc)
+    newest = None
+    end = base_register + register_count
+    for (dev, kind, base, count), ts in plant.register_block_updated_at.items():
+        if dev == device_address and kind == reg_type and base <= base_register and base + count >= end:
+            if newest is None or ts > newest:
+                newest = ts
+    return None if newest is None else (effective_now - newest).total_seconds()
+
+class _CoveringAges:
+    """The plant as _refresh_ranges() sees it, with block_age() also counting replies that cover the whole block"""
+    def __init__(self, plant):
+        self._plant = plant
+    def block_age(self, device_address, reg_type, base_register, register_count, *, now=None):
+        return covering_block_age(self._plant, device_address, reg_type, base_register, register_count, now)
+    def __getattr__(self, name):
+        return getattr(self._plant, name)
+
+_library_refresh_ranges = client_module._refresh_ranges
+
+def _refresh_ranges(caps, max_age, plant, *args, **kwargs):
+    # Skip Reads Fresher Than (refresh(max_age)): also skip a block that a larger reply covering it has just updated
+    return _library_refresh_ranges(caps, max_age, _CoveringAges(plant) if max_age is not None else plant, *args, **kwargs)
+
+# refresh() looks this up on the client module on every refresh
+client_module._refresh_ranges = _refresh_ranges
 
 _library_hv_stacks = Plant.hv_stacks
 
