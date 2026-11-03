@@ -3,6 +3,14 @@
 Changes since 3.6.12.
 
 ### Fixed
+- **Battery Pause Mode was removed from the original Gen 1 firmware in 3.6.12** (#698, thanks @browellm). 3.6.12 stopped offering pause mode on Gen 1 4xx firmware (eg. ARM 451), as it doesn't answer a read of the pause mode register (#673). It does take the write, though, and Predbat relies on it to stop the battery discharging into a car while it charges: without it, the battery charged and discharged in turn instead. It's back on those inverters, as in 3.6.11. As the inverter doesn't let it be read back, Home Assistant shows the last value set. 3.6.12's other #673 fix stays: a setting the inverter doesn't answer is still only tried until it's failed three times on that firmware, not after every restart.
+- **The new notification sensors showed "unknown"** (#699, thanks @gcoan). With nothing active, Active Notifications, Battery Warnings and Faults published "None", which Home Assistant shows as unknown. They now show "No notifications", "No warnings" and "No faults".
+- **EMS: each inverter's power stuck while it charged** (#701, thanks @cjl24). An inverter's power behind an EMS is negative while it charges, but GivTCP only accepted 0 and up, so it kept showing the last positive value (eg. 636W) until the inverter discharged again. Negative values (and 0) are now accepted.
+- **LV batteries: the battery and BMS temperatures were the wrong way round** (#702 and #329, thanks @gcoan). Each battery's **Battery Temperature** was its BMS's own temperature (its MOSFETs, which run well above the cells under load, up to about 60°C), and the battery stack's **BMS Temperature** was the battery temperature the inverter sees. Now:
+  - each battery's **Battery Temperature** is its warmest cell sensor, and its BMS temperature is the new **Battery BMS MOSFET Temperature**;
+  - the stack's battery temperature (from the inverter) is the new **Battery Temperature** under Battery Stack 1, and the stack's **BMS Temperature** is removed from Home Assistant.
+
+  The history of the existing entities will show a step at the update. HV battery stacks (All in One, HV Gen 3, three-phase) are unchanged.
 - **Skip Reads Fresher Than didn't skip the meters, or IR 1360 on three-phase** (#700, thanks @lancer73). The dongle passes its own polls for the GivEnergy cloud on to GivTCP (about every 5 minutes on a three-phase hybrid, even with the cloud blocked), and Skip Reads Fresher Than skips what they have just updated. The Modbus library only counts an answer of exactly the size GivTCP reads, though, and the dongle reads the meters as 60 registers (GivTCP 30) and IR 1360 as 60 (GivTCP 54), so those were read again anyway. An answer that covers the whole block now counts too. A smaller one still doesn't.
 
 # GivTCP 3.6.12

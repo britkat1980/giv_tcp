@@ -1,4 +1,4 @@
-"""#673: optional reads the inverter's firmware doesn't answer, and pause mode on firmware that doesn't have it."""
+"""#673: optional reads the inverter's firmware doesn't answer, kept across restarts per firmware."""
 import asyncio
 import json
 import logging
@@ -11,25 +11,18 @@ import modbus_patches
 from startfiles import keptOnStart
 
 
-def test_pause_only_on_firmware_that_has_it():
-    # Gen 1: the 1xx line from 187 (4xx is the older line, eg. ARM 451 doesn't answer HR 318). AC: 2xx, not 5xx
+def test_pause_on_old_gen1_firmware():
+    # Gen 1 ARM 451 (the old 4xx line) doesn't answer a read of HR 318 (#673), but takes the write, and Predbat
+    # relies on it to hold the battery while a car charges (#698). 3.6.12 took it away
+    assert modbus_patches.pause_registers(Model.HYBRID_GEN1, 451) == {318}
     assert modbus_patches.pause_registers(Model.HYBRID_GEN1, 187) == {318}
-    assert modbus_patches.pause_registers(Model.HYBRID_GEN1, 191) == {318}
-    assert modbus_patches.pause_registers(Model.HYBRID_GEN1, 451) == set()
     assert modbus_patches.pause_registers(Model.HYBRID_GEN1, 175) == set()
     assert modbus_patches.pause_registers(Model.AC, 212) == {318}
-    assert modbus_patches.pause_registers(Model.AC, 520) == set()
-
-
-def test_pause_not_written_on_old_gen1_firmware():
-    # The library allows HR 318 on Gen 1 ARM 187-499; GivTCP's gate replaces it
-    assert 318 not in manifest.write_safe_registers(Model.HYBRID_GEN1, 451)
-    assert 318 in manifest.write_safe_registers(Model.HYBRID_GEN1, 191)
-    assert {313, 314} <= manifest.write_safe_registers(Model.HYBRID_GEN1, 451)
+    assert 318 in manifest.write_safe_registers(Model.HYBRID_GEN1, 451)
 
 
 def gen1(arm_fw, answers):
-    # A Gen 1 whose AC rate read (HR 313-314) is answered or not, counting the attempts
+    # A Gen 1 whose pause mode (HR 318) and AC rate (HR 313-314) reads are answered or not, counting the attempts
     calls = []
     async def execute_reads(reqs, **kwargs):
         calls.append(reqs[0].base_register)
@@ -49,8 +42,8 @@ def test_unanswered_read_saved_and_not_tried_after_a_restart(unanswered_reads, c
     client, calls = gen1(451, answers=False)
     with caplog.at_level(logging.INFO, logger=modbus_patches.logger.name):
         polls(client, 4)
-    assert calls == [313, 313, 313]
-    assert json.loads(unanswered_reads.read_text()) == {"firmware": 451, "reads": ["AC rates"]}
+    assert calls == [318, 313, 318, 313, 318, 313]
+    assert json.loads(unanswered_reads.read_text()) == {"firmware": 451, "reads": ["AC rates", "pause mode"]}
     assert "Not trying again on this firmware (451), delete " in caplog.text
     # After a restart: a new plant, and nothing tried or logged at info
     modbus_patches._extra_read_failures.clear()

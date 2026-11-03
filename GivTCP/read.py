@@ -368,6 +368,10 @@ def unsupportedEntities():
     unsupported+=['Battery_BMS_Current','Battery_Discharge_Current']
     if not bms_current_inverter(device_type, caps.arm_firmware_version):
         unsupported+=['Battery_Pack_Current']      # this inverter never passes on pack current (#605)
+    if caps.lv_battery_addresses and not (caps.bcu_stacks or caps.hv_bmu_addresses or caps.aio_battery_module_addresses):
+        # LV batteries' stack BMS_Temperature was the inverter's battery temperature, now Battery_Temperature (#702).
+        # HV stacks keep theirs
+        unsupported+=['BMS_Temperature']
     return unsupported
 
 def wrongInverter(client):
@@ -1229,6 +1233,12 @@ def enumText(value):
     # the first read following a restart failed), so one missing value doesn't fail the whole poll (#608)
     return value.name.capitalize() if value is not None else None
 
+# What the notification sensors show with nothing active. Not "None": Home Assistant shows an MQTT sensor whose value is
+# "None" as unknown (#699)
+NO_NOTIFICATIONS="No notifications"
+NO_WARNINGS="No warnings"
+NO_FAULTS="No faults"
+
 def notifications(inverter, multi_output_old, status, details):
     """The inverter's notifications (#529): the faults and warnings active now, logged as each appears and clears.
     The portal's list is the GivEnergy cloud's history, which Modbus can't read, so Last_Notification (and its time)
@@ -1237,14 +1247,14 @@ def notifications(inverter, multi_output_old, status, details):
     if not active and status in ("Warning","Fault"):
         active=["Inverter "+status.lower()]         # the status says so, but no fault or warning bit does
     old=finditem(multi_output_old or {},'Active_Notifications')
-    before=[] if old in (None,"None") else str(old).split("; ")
+    before=[] if old in (None,"None",NO_NOTIFICATIONS) else str(old).split("; ")
     for item in active:
         if item not in before:
             logger.warning("Inverter notification: "+item)
     for item in before:
         if item not in active:
             logger.info("Inverter notification cleared: "+item)
-    inverter['Active_Notifications']="; ".join(active) if active else "None"
+    inverter['Active_Notifications']="; ".join(active) if active else NO_NOTIFICATIONS
     new=[item for item in active if item not in before]
     if new:
         inverter['Last_Notification']="; ".join(new)
@@ -1305,7 +1315,11 @@ def getBatteries(plant: Plant, multi_output_old):
                     battery['Battery_Cells'] = b.num_cells
                     battery['Battery_Cycles'] = b.num_cycles
                     battery['Battery_USB_present'] = b.usb_device_inserted
-                    battery['Battery_Temperature'] = b.t_bms_mosfet
+                    # The pack's temperature is its warmest cell sensor. IR 81 is the BMS's own (its MOSFETs), which runs
+                    # well above the cells under load: 3.0-3.6.12 published it as the battery temperature (#702)
+                    cellTemps=[x for x in (b.t_cells_01_04,b.t_cells_05_08,b.t_cells_09_12,b.t_cells_13_16) if x is not None]
+                    battery['Battery_Temperature'] = max(cellTemps) if cellTemps else None
+                    battery['Battery_BMS_MOSFET_Temperature'] = b.t_bms_mosfet
                     battery['Battery_Voltage'] = b.v_cells_sum
                     if b.i_battery is not None:     # None where the inverter or pack firmware doesn't report it (#605)
                         battery['Battery_Pack_Current'] = b.i_battery      # the pack's own current, negative while charging (#616)
@@ -1324,7 +1338,9 @@ def getBatteries(plant: Plant, multi_output_old):
                 else:
                     batteryNotReady(num+1)
 
-                stack['BMS_Temperature']=GEInv.t_battery
+                # The battery temperature the inverter sees (IR 56), which follows the cells: 3.0-3.6.12 published it
+                # as the BMS temperature (#702)
+                stack['Battery_Temperature']=GEInv.t_battery
                 stack['BMS_Voltage']=GEInv.v_battery
                 # Make this always Battery_Stack_1
                 batteries2['Battery_Stack_1']=stack
@@ -2157,7 +2173,7 @@ def processInverterInfo(plant: Plant):
         inverter['Warning_Code'] = GEInv.inverter_warning_code
         batteryWarnings = GEInv.charger_warning_messages
         if batteryWarnings is not None:
-            inverter['Battery_Warnings'] = ", ".join(batteryWarnings) if batteryWarnings else "None"
+            inverter['Battery_Warnings'] = ", ".join(batteryWarnings) if batteryWarnings else NO_WARNINGS
         notifications(inverter, multi_output_old, inverter['status'],
                       [label+" code "+code for label,code in (("Fault",inverter['Fault_Code']),("Warning",inverter['Warning_Code']))
                        if code and int(code,16)]+list(batteryWarnings or []))
@@ -2706,7 +2722,7 @@ def processThreePhaseInfo(plant: Plant):
         inverter['status']=enumText(GEInv.status)
         # The fault words (IR1300-1307), decoded by givenergy-modbus (#529)
         faults=[f for word in range(8) for f in (getattr(GEInv,'inverter_fault_codes_'+str(word),None) or [])]
-        inverter['Faults']=", ".join(faults) if faults else "None"
+        inverter['Faults']=", ".join(faults) if faults else NO_FAULTS
         notifications(inverter, multi_output_old, inverter['status'], faults)
         # givenergy-modbus v2 decodes system_mode and battery_priority as plain ints (the old lib used enums)
         inverter['System_Mode']=GivLUT.tph_system_mode.get(GEInv.system_mode,str(GEInv.system_mode))

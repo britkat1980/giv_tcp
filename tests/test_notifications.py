@@ -12,12 +12,12 @@ def poll(old, status="Normal", details=()):
 
 
 def test_nothing_active():
-    assert poll({}) == {'Active_Notifications': "None"}
+    assert poll({}) == {'Active_Notifications': "No notifications"}
 
 
 def test_a_fault_appears_and_is_logged(caplog):
     with caplog.at_level(logging.INFO):
-        inverter = poll({'Active_Notifications': "None"}, "Fault", ["Grid voltage Fault"])
+        inverter = poll({'Active_Notifications': "No notifications"}, "Fault", ["Grid voltage Fault"])
     assert inverter['Active_Notifications'] == "Grid voltage Fault"
     assert inverter['Last_Notification'] == "Grid voltage Fault"
     assert inverter['Last_Notification_Time']
@@ -38,7 +38,7 @@ def test_the_last_notification_is_kept_after_it_clears(caplog):
            'Last_Notification_Time': "2026-10-30T09:00:00+00:00"}
     with caplog.at_level(logging.INFO):
         inverter = poll(old)
-    assert inverter == {'Active_Notifications': "None", 'Last_Notification': "Grid voltage Fault",
+    assert inverter == {'Active_Notifications': "No notifications", 'Last_Notification': "Grid voltage Fault",
                         'Last_Notification_Time': "2026-10-30T09:00:00+00:00"}
     assert "Inverter notification cleared: Grid voltage Fault" in caplog.text
 
@@ -52,4 +52,12 @@ def test_only_the_new_one_becomes_the_last_notification():
 
 def test_a_warning_status_without_any_bit_set_is_still_a_notification():
     assert poll({}, "Warning")['Active_Notifications'] == "Inverter warning"
-    assert poll({}, "Waiting")['Active_Notifications'] == "None"
+    assert poll({}, "Waiting")['Active_Notifications'] == "No notifications"
+
+
+def test_none_from_3_6_12_is_nothing_active(caplog):
+    # 3.6.12 published "None", which Home Assistant shows as unknown (#699). Left in the cache by an upgrade, it's
+    # still nothing active, not a notification clearing
+    with caplog.at_level(logging.INFO):
+        assert poll({'Active_Notifications': "None"}) == {'Active_Notifications': "No notifications"}
+    assert "cleared" not in caplog.text

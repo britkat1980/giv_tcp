@@ -5339,12 +5339,12 @@
     }
    },
    "CH2414G000": {
-    "Active_Notifications": "None",
+    "Active_Notifications": "No notifications",
     "Battery_Calibration_Status": "Off",
     "Battery_Capacity_kWh": 15.964,
     "Battery_Capacity_kWh_calc": 13.63,
     "Battery_Type": "Lithium",
-    "Battery_Warnings": "None",
+    "Battery_Warnings": "No warnings",
     "Export_Limit": 6000,
     "Fault_Code": "0000",
     "Invertor_Firmware": "D0.612-A0.612",
@@ -6325,12 +6325,12 @@
     }
    },
    "CH2414G000": {
-    "Active_Notifications": "None",
+    "Active_Notifications": "No notifications",
     "Battery_Calibration_Status": "Off",
     "Battery_Capacity_kWh": 15.964,
     "Battery_Capacity_kWh_calc": 13.63,
     "Battery_Type": "Lithium",
-    "Battery_Warnings": "None",
+    "Battery_Warnings": "No warnings",
     "Export_Limit": 6000,
     "Fault_Code": "0000",
     "Invertor_Firmware": "D0.612-A0.612",

@@ -62,13 +62,12 @@ logger = logging.getLogger("read_logger")     # GivTCP's main log (GivLUT.logger
 PAUSE_MODE_REGISTER = 318
 PAUSE_SLOT_REGISTERS = frozenset({319, 320})     # pause slot start, pause slot end
 PAUSE_REGISTERS = frozenset({PAUSE_MODE_REGISTER}) | PAUSE_SLOT_REGISTERS
-# The ARM firmware that supports pause mode. Firmware lines aren't numbered in order: Gen 1 went from the old 4xx line
-# to 1xx (19x beta), and the AC from 5xx to 2xx (see entity_lut.py). So the range ends below the old line, which
-# doesn't answer HR 318 (Gen 1 ARM 451, #673)
-# Gen 1: from the firmware that added real-time control (#441)
-GEN1_PAUSE_ARM_FW = range(187, 400)
-# AC: from the lowest firmware confirmed by users
-AC_PAUSE_ARM_FW = range(200, 500)
+# Lowest Gen 1 ARM firmware known to support pause mode (the firmware that added real-time control). That includes the
+# old 4xx line: Gen 1 ARM 451 doesn't answer a read of HR 318 (#673), but takes the write, and Predbat relies on it to
+# hold the battery while a car charges (#698)
+GEN1_PAUSE_MIN_ARM_FW = 187
+# Lowest AC-coupled ARM firmware confirmed by users to support pause mode
+AC_PAUSE_MIN_ARM_FW = 200
 
 PAUSE_MODELS = frozenset({Model.ALL_IN_ONE, Model.GATEWAY, Model.HYBRID_GEN2, Model.HYBRID_GEN3,
                           Model.HYBRID_HV_GEN3, Model.ALL_IN_ONE_HYBRID})     # All in One-HY: used in 3.5 (#647)
@@ -80,12 +79,12 @@ AC_LIMIT_HYBRIDS = frozenset({Model.HYBRID_GEN1, Model.HYBRID_GEN3, Model.ALL_IN
 def pause_registers(model, arm_fw):
     """The pause registers this model can write"""
     if model == Model.AC:
-        if arm_fw is not None and int(arm_fw) in AC_PAUSE_ARM_FW:
+        if arm_fw is not None and int(arm_fw) >= AC_PAUSE_MIN_ARM_FW:
             return frozenset({PAUSE_MODE_REGISTER})
         return frozenset()
     if model in PAUSE_MODELS:
         return PAUSE_REGISTERS
-    if model == Model.HYBRID_GEN1 and arm_fw is not None and int(arm_fw) in GEN1_PAUSE_ARM_FW:
+    if model == Model.HYBRID_GEN1 and arm_fw is not None and int(arm_fw) >= GEN1_PAUSE_MIN_ARM_FW:
         # Mode only: a Gen 1 rejects writes to HR 319-320, and a read including them
         return frozenset({PAUSE_MODE_REGISTER})
     return frozenset()
@@ -114,9 +113,7 @@ manifest.CAPABILITIES["is_three_phase"] = manifest.CAPABILITIES["is_three_phase"
 _library_write_safe_registers = manifest.write_safe_registers
 
 def _write_safe_registers(model, arm_fw=None):
-    # The library allows pause mode on Gen 1 ARM 187-499, which includes the old 4xx line, so its pause registers
-    # are replaced by GivTCP's (pause_registers, in the extra registers)
-    return (_library_write_safe_registers(model, arm_fw) - PAUSE_REGISTERS) | _extra_write_registers(model, arm_fw)
+    return _library_write_safe_registers(model, arm_fw) | _extra_write_registers(model, arm_fw)
 
 # The client checks each write against this per-model set (Client._resolve_write_safe looks it up on the
 # manifest module for every write). HR 313/314 and 318-320 are already in the PDU's global WRITE_SAFE_REGISTERS
