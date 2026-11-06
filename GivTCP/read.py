@@ -521,6 +521,20 @@ def cloudFallback(plant: Plant):
         return 0
     return CLOUD_DATA_FALLBACK
 
+def inverterClock(plant: Plant, now):
+    # The inverter's time now (its local time, naive), or None if not known. Its clock is in the settings, which are
+    # only read on full refreshes, so add the time since they were read, as inverterNow() does
+    try:
+        invTime=plant.inverter.system_time
+    except Exception:
+        return None
+    if not isinstance(invTime, datetime.datetime) or invTime.year==2000:     # unreadable or default date
+        return None
+    readAt=settingsReadAt(plant)
+    if readAt:
+        invTime+=max(datetime.timedelta(0), now-readAt)
+    return invTime.replace(tzinfo=None)
+
 def cloudDelivered(plant: Plant, fullRefresh=True, now=None):
     # The slow banks that a reply has covered within the fallback, from the dongle's polls or GivTCP's own
     fallback=cloudFallback(plant)
@@ -529,13 +543,27 @@ def cloudDelivered(plant: Plant, fullRefresh=True, now=None):
     caps=plant.capabilities
     now=now or datetime.datetime.now(datetime.timezone.utc)
     bases=CLOUD_SLOW_BASES[caps.device_type]
-    banks={b for b in modbus_patches._library_refresh_banks(caps) if b[0]==caps.inverter_address and b[1] in bases}
+    inverterBanks={b for b in modbus_patches._library_refresh_banks(caps) if b[0]==caps.inverter_address and b[1] in bases}
+    banks=set(inverterBanks)
     if fullRefresh:
         banks|=hvBcusRead(plant)        # between full refreshes lite mode leaves the stacks out anyway
     holding=cloudPauseEnded is not None and (now-cloudPauseEnded).total_seconds()<fallback
+    # The inverter's Today counters (IR 1360 on three-phase) reset at its midnight, on some firmware a few minutes after.
+    # A reply from before its midnight is yesterday's, so the slow inverter blocks are read on the first poll of its
+    # day, and on every poll for TODAY_RESET_GRACE_MINUTES after midnight, so the reset is picked up within one poll
+    # rather than with the dongle's next poll, up to ~5 minutes later
+    invNow=inverterClock(plant, now)
+    sinceMidnight=None
+    if invNow is not None:
+        sinceMidnight=(invNow-invNow.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
+        if sinceMidnight<TODAY_RESET_GRACE_MINUTES*60:
+            banks-=inverterBanks
     delivered=set()
     for bank in banks:
         age=modbus_patches.covering_block_age(plant,bank[0],"IR",bank[1],bank[2],now)
+        if age is not None and sinceMidnight is not None and bank in inverterBanks and age>=sinceMidnight:
+            logger.debug("IR(0x%02x,%d) last received before the inverter's midnight, so reading it", bank[0], bank[1])
+            continue
         if age is not None and age<fallback:
             delivered.add(bank)
         elif age is not None and holding:
