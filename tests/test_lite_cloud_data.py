@@ -175,3 +175,55 @@ def test_timeline(tph, monkeypatch):
         assert [t for t in reads[bank] if t > last + FALLBACK]            # read again once they've stopped
     gaps = [b - a for a, b in zip(reads[ir0], reads[ir0][1:])]
     assert gaps and all(FALLBACK <= g <= FALLBACK + 60 for g in gaps)       # IR 0 every fallback period, not every poll
+
+def inverter_at(monkeypatch, hour, minute):
+    """The inverter's clock at the poll"""
+    monkeypatch.setattr(read, "inverterClock", lambda plant, now: datetime(2026, 11, 7, hour, minute))
+
+def ir1360(slow):
+    return next(b for b in slow if b[1] == 1360)
+
+def test_reply_from_before_midnight_is_read_on_the_first_poll_of_the_day(tph, monkeypatch):
+    # The Today counters (IR 1360) reset at the inverter's midnight. A reply at 23:58 is yesterday's, so the poll at
+    # 00:01 reads it, rather than waiting up to ~5 minutes for the dongle's next poll. The other slow blocks don't
+    session, slow, fast, modules, bcus = tph
+    now = clock()
+    stamp(monkeypatch, session.plant, slow | fast | bcus, 180, now)              # 23:58
+    inverter_at(monkeypatch, 0, 1)
+    assert read.cloudDelivered(session.plant, True, now) == (slow - {ir1360(slow)}) | bcus
+
+def test_reply_from_before_midnight_is_read_later_too(tph, monkeypatch):
+    # 00:07, no reply from the dongle since 23:58: still yesterday's, although well within the fallback
+    session, slow, fast, modules, bcus = tph
+    now = clock()
+    stamp(monkeypatch, session.plant, slow | fast | bcus, 540, now)              # 23:58
+    inverter_at(monkeypatch, 0, 7)
+    assert ir1360(slow) not in read.cloudDelivered(session.plant, True, now)
+
+def test_reply_from_after_midnight_is_left_to_the_dongle(tph, monkeypatch):
+    # 00:07, the dongle's poll at 00:03 (or GivTCP's own read at 00:01) is from the new day
+    session, slow, fast, modules, bcus = tph
+    now = clock()
+    stamp(monkeypatch, session.plant, slow | fast | bcus, 240, now)              # 00:03
+    inverter_at(monkeypatch, 0, 7)
+    assert read.cloudDelivered(session.plant, True, now) == slow | bcus
+
+def test_unknown_inverter_clock_as_before(tph, monkeypatch):
+    session, slow, fast, modules, bcus = tph
+    now = clock()
+    stamp(monkeypatch, session.plant, slow | fast | bcus, 300, now)
+    monkeypatch.setattr(read, "inverterClock", lambda plant, now: None)
+    assert read.cloudDelivered(session.plant, True, now) == slow | bcus
+
+def test_inverter_clock():
+    # Read with the settings on full refreshes, so the time since they were read is added
+    now = datetime(2026, 11, 6, 23, 10, tzinfo=timezone.utc)
+    def plant(system_time, read_ago):
+        stamps = {(0x11, "HR", 0, 60): now - timedelta(seconds=read_ago)} if read_ago is not None else {}
+        return types.SimpleNamespace(inverter=types.SimpleNamespace(system_time=system_time),
+                                     capabilities=types.SimpleNamespace(inverter_address=0x11),
+                                     register_block_updated_at=stamps)
+    assert read.inverterClock(plant(datetime(2026, 11, 6, 23, 50), 600), now) == datetime(2026, 11, 7, 0, 0)
+    assert read.inverterClock(plant(datetime(2026, 11, 6, 23, 50), None), now) == datetime(2026, 11, 6, 23, 50)
+    assert read.inverterClock(plant(datetime(2000, 1, 1, 0, 0), 600), now) is None      # default date
+    assert read.inverterClock(plant(None, 600), now) is None

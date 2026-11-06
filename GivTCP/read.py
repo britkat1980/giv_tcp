@@ -521,6 +521,20 @@ def cloudFallback(plant: Plant):
         return 0
     return CLOUD_DATA_FALLBACK
 
+def inverterClock(plant: Plant, now):
+    # The inverter's time now (its local time, naive), or None if not known. Its clock is in the settings, which are
+    # only read on full refreshes, so add the time since they were read, as inverterNow() does
+    try:
+        invTime=plant.inverter.system_time
+    except Exception:
+        return None
+    if not isinstance(invTime, datetime.datetime) or invTime.year==2000:     # unreadable or default date
+        return None
+    readAt=settingsReadAt(plant)
+    if readAt:
+        invTime+=max(datetime.timedelta(0), now-readAt)
+    return invTime.replace(tzinfo=None)
+
 def cloudDelivered(plant: Plant, fullRefresh=True, now=None):
     # The slow banks that a reply has covered within the fallback, from the dongle's polls or GivTCP's own
     fallback=cloudFallback(plant)
@@ -533,9 +547,18 @@ def cloudDelivered(plant: Plant, fullRefresh=True, now=None):
     if fullRefresh:
         banks|=hvBcusRead(plant)        # between full refreshes lite mode leaves the stacks out anyway
     holding=cloudPauseEnded is not None and (now-cloudPauseEnded).total_seconds()<fallback
+    # The Today counters (IR 1360) reset at the inverter's midnight. A reply from before its midnight is yesterday's, so
+    # that block is read on the first poll of the inverter's day, rather than waiting up to ~5 minutes for the dongle's
+    invNow=inverterClock(plant, now)
+    sinceMidnight=None
+    if invNow is not None:
+        sinceMidnight=(invNow-invNow.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
     delivered=set()
     for bank in banks:
         age=modbus_patches.covering_block_age(plant,bank[0],"IR",bank[1],bank[2],now)
+        if age is not None and sinceMidnight is not None and bank[0]==caps.inverter_address and bank[1]==1360 and age>=sinceMidnight:
+            logger.debug("IR(0x%02x,%d) last received before the inverter's midnight, so reading it", bank[0], bank[1])
+            continue
         if age is not None and age<fallback:
             delivered.add(bank)
         elif age is not None and holding:
