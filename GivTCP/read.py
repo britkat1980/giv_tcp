@@ -499,6 +499,75 @@ def hvBcusRead(plant: Plant):
         return set()
     return {(hvstack.device_address,60,60) for hvstack in plant.hv_stacks if hvstack.bcu.is_valid()}
 
+# The dongle polls the inverter itself for the GivEnergy cloud, every 306-312s on three-phase hybrids (also with the
+# cloud blocked), and passes every answer on to GivTCP. In lite mode on a three-phase hybrid, the live-data blocks that
+# change slowly are left to those polls, and only read when nothing has covered them for CLOUD_DATA_FALLBACK seconds:
+# EPS (IR 1180), faults and firmware (IR 1300), energy totals (IR 1360), and IR 0 and IR 180, which the three-phase
+# model doesn't use. PV, grid, load and battery power, SOC (IR 1000-1179, 1240) and the meters are read every poll.
+# The battery stacks (BCUs), which lite mode only reads on full refreshes, are left to them on those too.
+# CLOUD_DATA_FALLBACK is about twice the measured interval: below the interval, GivTCP would read the blocks just
+# before each of the dongle's polls, and if the dongle stops polling they're read at this interval, not every poll
+CLOUD_SLOW_BASES={Model.HYBRID_3PH: frozenset({0,180,1180,1300,1360})}
+CLOUD_DATA_FALLBACK=660
+
+# When a recovery pause ended (UTC). For one fallback period after it, the slow blocks are left to the dongle's next
+# poll rather than all read at once from a dongle that has only just started answering again
+cloudPauseEnded=None
+
+def cloudFallback(plant: Plant):
+    # The fallback for this inverter, or 0 when the dongle's polls aren't used (lite mode off, or another model)
+    caps=plant.capabilities
+    if not liteQuery() or caps is None or caps.device_type not in CLOUD_SLOW_BASES:
+        return 0
+    return CLOUD_DATA_FALLBACK
+
+def inverterClock(plant: Plant, now):
+    # The inverter's time now (its local time, naive), or None if not known. Its clock is in the settings, which are
+    # only read on full refreshes, so add the time since they were read, as inverterNow() does
+    try:
+        invTime=plant.inverter.system_time
+    except Exception:
+        return None
+    if not isinstance(invTime, datetime.datetime) or invTime.year==2000:     # unreadable or default date
+        return None
+    readAt=settingsReadAt(plant)
+    if readAt:
+        invTime+=max(datetime.timedelta(0), now-readAt)
+    return invTime.replace(tzinfo=None)
+
+def cloudDelivered(plant: Plant, fullRefresh=True, now=None):
+    # The slow banks that a reply has covered within the fallback, from the dongle's polls or GivTCP's own
+    fallback=cloudFallback(plant)
+    if not fallback:
+        return set()
+    caps=plant.capabilities
+    now=now or datetime.datetime.now(datetime.timezone.utc)
+    bases=CLOUD_SLOW_BASES[caps.device_type]
+    banks={b for b in modbus_patches._library_refresh_banks(caps) if b[0]==caps.inverter_address and b[1] in bases}
+    if fullRefresh:
+        banks|=hvBcusRead(plant)        # between full refreshes lite mode leaves the stacks out anyway
+    holding=cloudPauseEnded is not None and (now-cloudPauseEnded).total_seconds()<fallback
+    # The Today counters (IR 1360) reset at the inverter's midnight. A reply from before its midnight is yesterday's, so
+    # that block is read on the first poll of the inverter's day, rather than waiting up to ~5 minutes for the dongle's
+    invNow=inverterClock(plant, now)
+    sinceMidnight=None
+    if invNow is not None:
+        sinceMidnight=(invNow-invNow.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
+    delivered=set()
+    for bank in banks:
+        age=modbus_patches.covering_block_age(plant,bank[0],"IR",bank[1],bank[2],now)
+        if age is not None and sinceMidnight is not None and bank[0]==caps.inverter_address and bank[1]==1360 and age>=sinceMidnight:
+            logger.debug("IR(0x%02x,%d) last received before the inverter's midnight, so reading it", bank[0], bank[1])
+            continue
+        if age is not None and age<fallback:
+            delivered.add(bank)
+        elif age is not None and holding:
+            delivered.add(bank)
+            logger.debug("IR(0x%02x,%d) not received for %ds, but a recovery pause has just ended, so leaving it to the dongle's next poll", bank[0], bank[1], age)
+        elif age is not None:
+            logger.debug("IR(0x%02x,%d) not received for %ds, so reading it", bank[0], bank[1], age)
+    return delivered
+
 async def readPlant(client, fullRefresh):
     # Run the register reads. Partial failures still leave good data in the register cache so keep going,
     # only a total failure (RefreshFailed) or lost connection is raised
@@ -514,6 +583,8 @@ async def readPlant(client, fullRefresh):
     skip=hvModulesRead(client.plant) if light or not fullRefresh else set()
     if light and not fullRefresh:
         skip|=hvBcusRead(client.plant)
+    # In lite mode on a three-phase hybrid, also the slow blocks the dongle's own polls have delivered recently
+    skip|=cloudDelivered(client.plant,fullRefresh)
     modbus_patches.skip_banks=skip
     reads=[lambda: client.refresh(max_age=max_age)]
     if fullRefresh:
@@ -776,11 +847,13 @@ class Recovery:
         return True
 
     def waiting(self):
+        global cloudPauseEnded
         if self.until is None:
             return False
         if datetime.datetime.now()<self.until:
             return True
         self.until=None
+        cloudPauseEnded=datetime.datetime.now(datetime.timezone.utc)
         logger.info("Recovery pause over, reconnecting to the inverter")
         return False
 
@@ -3136,7 +3209,9 @@ def getCache():     # Get latest cache data and return it (for use in REST)
 def logSettings(recovery):
     """Log the connection settings that change how GivTCP talks to the inverter, once at startup and only when on"""
     if liteQuery():
-        logger.info("Lite mode on: HV battery modules are read until they have data, battery stacks only on full refreshes")
+        logger.info("Lite mode on: HV battery modules are read until they have data, battery stacks only on full refreshes. "
+                    "On three-phase hybrids, slow-changing values and the battery stacks are left to the dongle's own polls, "
+                    "and read only when none has arrived for "+str(CLOUD_DATA_FALLBACK)+"s")
     delay=float(getattr(GiV_Settings,'connect_delay',0) or 0)
     if delay>0:
         logger.info("Wait After Connecting on: waiting "+str(round(delay))+"s after each new connection before the first request")
