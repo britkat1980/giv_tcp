@@ -2370,7 +2370,8 @@ def processEMSInfo(plant: Plant):
             ems['Invertor_Time']=GEHR.system_time.replace(tzinfo=GivLUT.timezone).isoformat()
         ems['Remaining_Battery_Wh']=GEInv.remaining_battery_wh
         ems['Invertor_Serial_Number']=plant.inverter_serial_number
-        ems['Export_Limit']=GEHR.grid_port_max_power_output
+        # The EMS's own export limit (HR 2071). HR 26 on the EMS reads 0, which isn't a limit
+        ems['Export_Limit']=GEInv.export_power_limit
 
         inverters={}
         for i in range(1,MAX_MANAGED_INVERTERS+1):
@@ -2805,6 +2806,9 @@ def processThreePhaseInfo(plant: Plant):
         inverter['Invertor_Type'] = "Gen 3 - " + resolvedModel(plant, GEInv).name.capitalize()
         inverter['Invertor_Max_Bat_Rate'] = inverterModel.batmaxrate
         inverter['Invertor_Max_Inv_Rate'] = GEInv.inverter_max_power
+        # Three-phase keeps its export limit in HR 1102, switched on by HR 1103 (HR 26 reads 0). With it switched off only
+        # the inverter itself limits export, so publish its rating
+        inverter['Export_Limit'] = GEInv.export_power_limit if GEInv.enable_export_limit else GEInv.inverter_max_power
         inverter['Battery_Priority']=GivLUT.tph_battery_priority.get(GEInv.battery_priority,str(GEInv.battery_priority))
 
     # Calc HV stack capacity as function of stacks
