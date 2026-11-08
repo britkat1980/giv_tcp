@@ -1,5 +1,8 @@
 # GivTCP Unreleased
 
+### Fixed
+- **Export Limit was missing on three-phase inverters, and 0 on an EMS.** Export Limit came from holding register 26, the export limit on single-phase inverters, which reads 0 on an EMS and on a three-phase inverter. An EMS now reports its own limit (HR 2071, the same value as the Export Power Limit control), and a three-phase inverter reports its export power limit (HR 1102), or its rated power when export limiting (HR 1103) is switched off, since then only the inverter limits export. A limit of 0, a zero-export site, is now shown as 0 rather than the last non-zero value.
+
 ### Changed
 - **Lite mode on three-phase hybrids also leaves slow-changing values to the dongle's own polls.** The dongle polls the inverter itself for the GivEnergy cloud, every 5 minutes or so even with the cloud blocked, and passes every answer on to GivTCP. In lite mode on a three-phase hybrid, GivTCP now leaves the EPS values, fault codes and firmware versions, energy totals and the battery stacks (on full refreshes too) to those polls, and only reads one itself when the dongle hasn't sent it for 11 minutes. Right after a recovery pause it waits for the dongle's next poll rather than reading them all at once. On the first poll after the inverter's midnight it reads the energy totals itself, so Today's figures still reset within a poll. PV, grid, load and battery power, SOC and the meters are still read every poll. On one system a normal poll went from 11 reads to 6. Faults (and the notification sensors), EPS values and energy totals can now be about 5 minutes old. Other models, and three-phase hybrids without lite mode, are unchanged: see the README, "Timeouts and an unresponsive inverter".
 
