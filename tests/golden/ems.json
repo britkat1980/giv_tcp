@@ -4718,7 +4718,7 @@
    },
    "EMS2522000": {
     "Car_Charge_Count": 0,
-    "Export_Limit": 0,
+    "Export_Limit": 9500,
     "Inverter_Count": 2,
     "Invertor_Firmware": "D0.0-A0.1036",
     "Invertor_Serial_Number": "EMS2522000",
@@ -5010,7 +5010,7 @@
    },
    "EMS2522000": {
     "Car_Charge_Count": 0,
-    "Export_Limit": 0,
+    "Export_Limit": 9500,
     "Inverter_Count": 2,
     "Invertor_Firmware": "D0.0-A0.1036",
     "Invertor_Serial_Number": "EMS2522000",
