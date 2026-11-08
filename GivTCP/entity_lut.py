@@ -90,7 +90,7 @@ class Entity_Type():
         "Invertor_Firmware":GEType("sensor","string","",0,10000,False,False,False),
         "Modbus_Version":GEType("sensor","","",1,10,False,True,False),
         "Meter_Type":GEType("sensor","string","","","",False,False,False),
-        "Export_Limit":GEType("sensor","","",0,22000,False,False,False),
+        "Export_Limit":GEType("sensor","","",0,22000,True,False,False),     # zero is a real limit (a zero-export site)
         "Invertor_Type":GEType("sensor","string","","","",False,False,False),
         "Invertor_Temperature":GEType("sensor","temperature","",'-maxTemp','maxTemp',False,True,False),
         "Discharge_start_time_slot_1":GEType("select","","setDischargeStart1","","",False,False,False),
