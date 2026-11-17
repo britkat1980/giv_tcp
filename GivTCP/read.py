@@ -55,6 +55,15 @@ class _ConnectionWarnings(logging.Filter):
 _clientLogger=logging.getLogger("givenergy_modbus.client.client")
 _clientLogger.setLevel(logging.WARNING)
 _clientLogger.addFilter(_ConnectionWarnings())
+
+class _BatteryBankMessages(logging.Filter):
+    # The Modbus library's battery check (its "splice guard"): replies it rejects or holds, and when it adopts a new
+    # baseline. Hidden with the rest of the library's warnings, a battery whose data froze left nothing in the log (#708)
+    def filter(self, record):
+        return record.levelno>=logging.ERROR or "battery bank" in record.getMessage().lower()
+_plantLogger=logging.getLogger("givenergy_modbus.model.plant")
+_plantLogger.setLevel(logging.INFO)
+_plantLogger.addFilter(_BatteryBankMessages())
 logging.getLogger("rq.worker").setLevel(logging.CRITICAL)
 
 sys.path.append(GiV_Settings.default_path)
@@ -1339,6 +1348,29 @@ def notifications(inverter, multi_output_old, status, details):
                 inverter[key]=last
 
 _emptyBatteryPolls={}
+
+# An LV battery whose data hasn't been accepted for this long, while the inverter is answering, is reported (#708)
+STALE_BATTERY_SECONDS=900
+_staleBatteries=set()
+
+def checkStaleBatteries(plant: Plant, now=None):
+    """Warn once when an LV battery's data stops updating while the rest of the poll works: its last good values are
+    published meanwhile. The Modbus library's battery check rejects a reply where several values jump at once, and
+    a sudden step it doesn't adopt (see SPLICE_HEAL_SECONDS in GivLUT.py) is held until GivTCP restarts (#708)"""
+    caps=plant.capabilities
+    if caps is None:
+        return
+    for num,addr in enumerate(caps.lv_battery_addresses):
+        age=plant.block_age(addr,"IR",60,60,now=now)
+        if age is not None and age>STALE_BATTERY_SECONDS:
+            if addr not in _staleBatteries:
+                _staleBatteries.add(addr)
+                logger.warning("Battery "+str(num+1)+" (0x%02x) hasn't updated for %d minutes, so its values are the last good ones. "
+                               "The Modbus library rejected %d of its replies. Restarting GivTCP clears it",
+                               addr, age//60, plant.splice_reject_count.get(addr,0))
+        elif addr in _staleBatteries:
+            _staleBatteries.discard(addr)
+            logger.info("Battery "+str(num+1)+" (0x%02x) is updating again", addr)
 
 def batteryNotReady(key):
     # The library withholds a battery's data until a second read confirms the first (cold-start guard),
@@ -2907,6 +2939,7 @@ def processData(plant: Plant):
         devicetype=plant.register_caches.get(plant.capabilities.inverter_address,{}).get(HR(0))
         if devicetype is None:
             raise Exception("Inverter settings not read yet")
+        checkStaleBatteries(plant)
         modeltype=hex(devicetype)[2:4]
         if modeltype=="23":
             multi_output=processPVInfo(plant)

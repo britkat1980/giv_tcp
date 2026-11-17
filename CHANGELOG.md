@@ -1,3 +1,13 @@
+# GivTCP 3.6.15
+
+Changes since 3.6.14.
+
+### Fixed
+- **A battery's values could freeze until GivTCP restarted** (#708, thanks @gcoan). The Modbus library checks each LV battery reply and rejects one where several values jump at once, keeping the battery's last good values, as a garbled reply looks like that. A genuine sudden step, eg. when the battery starts discharging hard, can look the same, and the library held it until GivTCP restarted, so the battery's SOC, voltage and temperature stopped updating for hours. Its rejections weren't in GivTCP's log either. Now:
+  - a step that carries on smoothly for 5 minutes (and 10 polls) is accepted as the battery's new values;
+  - the library's messages about rejected battery replies are in GivTCP's log;
+  - if a battery's values still haven't updated for 15 minutes while the inverter is answering, GivTCP logs a warning naming it, and again when it updates.
+
 # GivTCP 3.6.14
 
 Changes since 3.6.13.

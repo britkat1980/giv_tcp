@@ -26,7 +26,15 @@ from logging.handlers import TimedRotatingFileHandler
 from sharedlog import SharedTimedRotatingFileHandler   # noqa: F401  (imported from here by REST, write and influx)
 
 logger = logging.getLogger("read_logger")     # GivTCP's main log (GivLUT.logger), which has the log file handler
-_client = Client(GiV_Settings.invertorIP,8899)
+# The Modbus library rejects an LV battery's reply where several values jump at once (a "splice"), keeping the last
+# good values. Off by default, its heal adopts a genuine step (eg. a sudden discharge) once it has carried on smoothly
+# for this long (and 10 polls). Without it, the battery's values stayed frozen until GivTCP restarted (#708)
+SPLICE_HEAL_SECONDS=300
+
+def newClient(host, port=8899, plant=None):
+    return Client(host, port, plant=plant, splice_reject_heal_seconds=SPLICE_HEAL_SECONDS)
+
+_client = newClient(GiV_Settings.invertorIP)
 _connection_lock = asyncio.Lock()
 
 def _collect(task):
@@ -137,7 +145,7 @@ class GivClientAsync:
                 await closeClient(old)
             except Exception as exc:
                 logger.warning("Closing the old modbus client failed: %s: %s", type(exc).__name__, exc)
-            _client = Client(host or old.host, old.port, plant=old.plant)
+            _client = newClient(host or old.host, old.port, plant=old.plant)
             return _client
 
 class GivQueue:
