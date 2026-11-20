@@ -499,15 +499,19 @@ def hvBcusRead(plant: Plant):
         return set()
     return {(hvstack.device_address,60,60) for hvstack in plant.hv_stacks if hvstack.bcu.is_valid()}
 
-# The dongle polls the inverter itself for the GivEnergy cloud, every 306-312s on three-phase hybrids (also with the
-# cloud blocked), and passes every answer on to GivTCP. In lite mode on a three-phase hybrid, the live-data blocks that
-# change slowly are left to those polls, and only read when nothing has covered them for CLOUD_DATA_FALLBACK seconds:
-# EPS (IR 1180), faults and firmware (IR 1300), energy totals (IR 1360), and IR 0 and IR 180, which the three-phase
-# model doesn't use. PV, grid, load and battery power, SOC (IR 1000-1179, 1240) and the meters are read every poll.
-# The battery stacks (BCUs), which lite mode only reads on full refreshes, are left to them on those too.
+# The dongle polls the inverter itself for the GivEnergy cloud, every 306-312s on three-phase hybrids and 310s on an HV
+# Gen 3 (also with the cloud blocked), and passes every answer on to GivTCP. In lite mode on those models, the
+# live-data blocks that change slowly are left to those polls, and only read when nothing has covered them for
+# CLOUD_DATA_FALLBACK seconds:
+# - Three-phase hybrid: EPS (IR 1180), faults and firmware (IR 1300), energy totals (IR 1360), and IR 0 and IR 180,
+#   which the three-phase model doesn't use. PV, grid, load and battery power, SOC (IR 1000-1179, 1240) and the meters
+#   are read every poll.
+# - HV Gen 3: IR 180 (alternative battery totals, only used when the battery reports none). IR 0 holds its live data,
+#   SOC, faults and Today counters, so it and the meter are read every poll.
+# On both, the battery stacks (BCUs), which lite mode only reads on full refreshes, are left to them on those too.
 # CLOUD_DATA_FALLBACK is about twice the measured interval: below the interval, GivTCP would read the blocks just
 # before each of the dongle's polls, and if the dongle stops polling they're read at this interval, not every poll
-CLOUD_SLOW_BASES={Model.HYBRID_3PH: frozenset({0,180,1180,1300,1360})}
+CLOUD_SLOW_BASES={Model.HYBRID_3PH: frozenset({0,180,1180,1300,1360}), Model.HYBRID_HV_GEN3: frozenset({180})}
 CLOUD_DATA_FALLBACK=660
 
 # When a recovery pause ended (UTC). For one fallback period after it, the slow blocks are left to the dongle's next
@@ -3214,7 +3218,7 @@ def logSettings(recovery):
     """Log the connection settings that change how GivTCP talks to the inverter, once at startup and only when on"""
     if liteQuery():
         logger.info("Lite mode on: HV battery modules are read until they have data, battery stacks only on full refreshes. "
-                    "On three-phase hybrids, slow-changing values and the battery stacks are left to the dongle's own polls, "
+                    "On three-phase hybrids and HV Gen 3, slow-changing values and the battery stacks are left to the dongle's own polls, "
                     "and read only when none has arrived for "+str(CLOUD_DATA_FALLBACK)+"s")
     delay=float(getattr(GiV_Settings,'connect_delay',0) or 0)
     if delay>0:
