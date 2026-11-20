@@ -1,3 +1,8 @@
+# GivTCP Unreleased
+
+### Changed
+- **Lite mode on HV Gen 3 also leaves slow-changing values to the dongle's own polls**, as on three-phase hybrids since 3.6.14. Its dongle polls the inverter for the GivEnergy cloud about every 310 seconds and passes the answers on to GivTCP. Nearly all of an HV Gen 3's live data, SOC, faults and Today figures are in one block, which is still read every poll with the meter, so only the alternative battery totals (used when the battery reports none) and the battery stacks, on full refreshes too, are left to the dongle: a normal poll goes from 3 reads to 2. Other models are unchanged.
+
 # GivTCP 3.6.14
 
 Changes since 3.6.13.

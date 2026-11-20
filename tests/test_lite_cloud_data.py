@@ -86,19 +86,56 @@ def test_does_nothing_without_lite_mode(tph, monkeypatch):
     assert skipped(session, monkeypatch, False, False) == modules
     assert skipped(session, monkeypatch, False, True) == set()
 
-def test_hv_gen3_unaffected(plants, monkeypatch):
+@pytest.fixture
+def hv3(plants, monkeypatch):
     session = plants.get("hybrid_hv_gen3")
     session.activate(session.state)
-    caps = session.plant.capabilities
-    stamp(monkeypatch, session.plant, modbus_patches._library_refresh_banks(caps), 300)
     monkeypatch.setattr(read.GiV_Settings, "lite_query", True, raising=False)
-    assert read.cloudFallback(session.plant) == 0
-    assert read.cloudDelivered(session.plant) == set()
+    plant = session.plant
+    caps = plant.capabilities
+    inv = caps.inverter_address
+    banks = modbus_patches._library_refresh_banks(caps)
+    slow = {b for b in banks if b[0] == inv and b[1] == 180}
+    fast = {b for b in banks if b[0] == inv and b[1] == 0} | {(m, 60, 30) for m in caps.meter_addresses}
+    modules = set(modbus_patches.hv_module_banks(caps))
+    bcus = {(s.device_address, 60, 60) for s in plant.hv_stacks}
+    assert caps.device_type == Model.HYBRID_HV_GEN3 and len(slow) == 1 and len(fast) >= 2   # the test model has no stacks
+    return session, slow, fast, modules, bcus
 
-@pytest.mark.parametrize("model", [Model.AC_3PH, Model.AIO_COMMERCIAL, Model.HYBRID_HV_GEN3, Model.HYBRID_GEN3,
+def test_hv_gen3_ir180_left_to_the_dongle(hv3, monkeypatch):
+    # IR 0 holds its live data, SOC, faults and Today counters, so only IR 180 (and the stacks) are left to the dongle
+    session, slow, fast, modules, bcus = hv3
+    stamp(monkeypatch, session.plant, slow | fast | bcus, 300)
+    assert read.cloudFallback(session.plant) == FALLBACK
+    assert skipped(session, monkeypatch, True, False) == slow | modules | bcus
+    assert skipped(session, monkeypatch, True, True) == slow | modules | bcus
+    assert not skipped(session, monkeypatch, True, False) & fast
+
+def test_hv_gen3_not_delivered_is_read(hv3, monkeypatch):
+    session, slow, fast, modules, bcus = hv3
+    stamp(monkeypatch, session.plant, slow | fast | bcus, FALLBACK + 1)
+    assert skipped(session, monkeypatch, True, False) == modules | bcus
+    assert skipped(session, monkeypatch, True, True) == modules
+
+def test_hv_gen3_without_lite_mode_unaffected(hv3, monkeypatch):
+    session, slow, fast, modules, bcus = hv3
+    stamp(monkeypatch, session.plant, slow | fast | bcus, 300)
+    assert skipped(session, monkeypatch, False, False) == modules
+    assert skipped(session, monkeypatch, False, True) == set()
+
+def test_hv_gen3_ir180_not_read_at_midnight(hv3, monkeypatch):
+    # The battery's Today figures come from IR 36-37, in the IR 0 block read every poll, so IR 180 doesn't need the
+    # midnight read that three-phase IR 1360 gets
+    session, slow, fast, modules, bcus = hv3
+    now = clock()
+    stamp(monkeypatch, session.plant, slow | fast | bcus, 180, now)              # 23:58
+    inverter_at(monkeypatch, 0, 1)
+    assert read.cloudDelivered(session.plant, True, now) == slow | bcus
+
+@pytest.mark.parametrize("model", [Model.AC_3PH, Model.AIO_COMMERCIAL, Model.HYBRID_GEN3, Model.HYBRID_GEN2,
                                    Model.ALL_IN_ONE, Model.AC])
 def test_other_models_unaffected(tph, model, monkeypatch):
-    # Only the three-phase hybrid, whose dongle polls have been measured, not everything the library calls three-phase
+    # Only the three-phase hybrid and HV Gen 3, whose dongle polls have been measured, not everything the library calls three-phase
     session, slow, fast, modules, bcus = tph
     stamp(monkeypatch, session.plant, slow | fast | bcus, 300)
     plant = types.SimpleNamespace(capabilities=types.SimpleNamespace(device_type=model, inverter_address=0x11,
