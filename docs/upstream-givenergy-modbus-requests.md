@@ -297,3 +297,15 @@ Two things combine:
 
 **GivTCP workaround:** `GivTCP/capture.py` (`scrub()`) runs that second pass over every frame before Share Device writes it.
 
+
+## 22. Count a fresher reply that covers a bank in refresh's max_age skip
+
+**Problem**
+
+`_refresh_ranges()` skips a bank when `plant.block_age(addr, "IR", base, count)` is within `max_age`. `block_age()` looks up the exact `(device, type, base, count)` key, so only a reply of exactly the bank's size counts. That's deliberate, so a partial reply such as IR(0,1) doesn't mark IR(0,60) as fresh (#196). But a larger reply that covers the whole bank is missed too, and the dongle's own polls for the cloud, which it passes on to every connected client, use different sizes from the library: in a three-phase capture (britkat1980/giv_tcp, 30 Oct 2026) the dongle read the meters as IR(60,60) where the library reads IR(60,30), and the last three-phase bank as IR(1360,60) where the library reads IR(1360,54). Their values are committed to the cache, but the library's banks never count as fresh, so a client using `max_age` to rely on the fan-out reads them anyway.
+
+**Request**
+
+In the `max_age` skip, use the freshest stamped block that covers the whole bank (`base <= bank_base` and `base + count >= bank_base + bank_count`), like `register_age()` does for a single register, rather than the exact key. A smaller reply still wouldn't count.
+
+**GivTCP workaround:** `GivTCP/modbus_patches.py` wraps `_refresh_ranges()` with a plant whose `block_age()` does this (`covering_block_age()`).

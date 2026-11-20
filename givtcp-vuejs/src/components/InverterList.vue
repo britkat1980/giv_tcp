@@ -58,7 +58,7 @@
               />
               <v-switch
                 v-model="inv.liteQuery"
-                label="Lite mode (HV batteries): read the battery modules only once, and the battery stacks only on full refreshes"
+                label="Lite mode (HV batteries): read the battery modules only once, and the battery stacks only on full refreshes. On three-phase hybrids, also leave slow-changing values to the dongle's own polls"
                 color="#4fbba9"
               />
               <v-text-field

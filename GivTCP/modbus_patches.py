@@ -36,10 +36,16 @@ What's left, each with a request open upstream (docs/upstream-givenergy-modbus-r
   rejects the 1000-range reads.
 - HV battery module cell data is only re-read on full refreshes (read.py sets skip_banks between them), as each
   module is a read of its own and cell voltages and temperatures don't need updating every poll (#614).
+- Skip Reads Fresher Than (refresh's max_age) also skips a block that a larger reply covering it has just updated
+  [22]. The library only counts a reply of exactly the block's size, so the dongle's own polls for the cloud (passed
+  on to GivTCP) never made the meters (read as 60 registers, the library's 30) or three-phase IR 1360 (60, not 54)
+  count as fresh.
 
 Remove each one once the library supports it.
 """
+import json
 import logging
+from datetime import datetime, timezone
 
 from givenergy_modbus.client import client as client_module
 from givenergy_modbus.client.client import Client
@@ -56,7 +62,9 @@ logger = logging.getLogger("read_logger")     # GivTCP's main log (GivLUT.logger
 PAUSE_MODE_REGISTER = 318
 PAUSE_SLOT_REGISTERS = frozenset({319, 320})     # pause slot start, pause slot end
 PAUSE_REGISTERS = frozenset({PAUSE_MODE_REGISTER}) | PAUSE_SLOT_REGISTERS
-# Lowest Gen 1 ARM firmware known to support pause mode (the firmware that added real-time control)
+# Lowest Gen 1 ARM firmware known to support pause mode (the firmware that added real-time control). That includes the
+# old 4xx line: Gen 1 ARM 451 doesn't answer a read of HR 318 (#673), but takes the write, and Predbat relies on it to
+# hold the battery while a car charges (#698)
 GEN1_PAUSE_MIN_ARM_FW = 187
 # Lowest AC-coupled ARM firmware confirmed by users to support pause mode
 AC_PAUSE_MIN_ARM_FW = 200
@@ -134,11 +142,56 @@ EXTRA_READS = [
 EXTRA_READ_MAX_FAILURES = 3
 _extra_read_failures = {}       # per plant, which outlives a replaced client: {id(plant): {read name: failures in a row}}
 
+# The extra reads this inverter didn't answer, kept across restarts for its firmware, so they aren't tried (each
+# timing out) after every restart (#673). Set by read.py; None keeps them for this session only
+unanswered_file = None
+_unanswered_loaded = set()      # the plants (id) the saved reads have been loaded for
+
+def _firmware(client):
+    # The ARM firmware, or on three-phase (whose ARM firmware register reads 0, so the library has None) the
+    # firmware string, eg. "D0.3171-A0.3200", once it's been read. None until it's known
+    arm_fw = client.plant.capabilities.arm_firmware_version
+    if arm_fw:
+        return arm_fw
+    try:
+        return client.plant.inverter.firmware_version or None
+    except Exception:
+        return None
+
+def _load_unanswered(firmware):
+    # The reads saved as unanswered on this firmware. Another firmware may answer them, so they're tried again
+    try:
+        with open(unanswered_file) as inp:
+            saved = json.load(inp)
+        return set(saved.get("reads", [])) if saved.get("firmware") == firmware else set()
+    except (OSError, TypeError, ValueError, AttributeError):
+        return set()
+
+def _save_unanswered(firmware, reads):
+    if unanswered_file is None or firmware is None:
+        return
+    try:
+        with open(unanswered_file, "w") as outp:
+            json.dump({"firmware": firmware, "reads": sorted(reads)}, outp)
+    except OSError as e:
+        logger.debug("Unable to save the unanswered reads: " + str(e))
+
 async def _extra_reads(client):
     caps = client.plant.capabilities
     if caps is None:
         return
     failures = _extra_read_failures.setdefault(id(client.plant), {})
+    firmware = _firmware(client)
+    if firmware is not None and id(client.plant) not in _unanswered_loaded:
+        _unanswered_loaded.add(id(client.plant))
+        unanswered = _load_unanswered(firmware)
+        if unanswered:
+            logger.debug("Not reading " + ", ".join(sorted(unanswered)) + ": this inverter didn't answer on firmware " +
+                         str(firmware) + " (delete " + str(unanswered_file) + " to try again)")
+        failures.update({name: EXTRA_READ_MAX_FAILURES for name in unanswered})
+        givenUp = {n for n, f in failures.items() if f >= EXTRA_READ_MAX_FAILURES}
+        if givenUp - unanswered:
+            _save_unanswered(firmware, givenUp)       # given up before the firmware was known
     for name, applies, base, count, lost in EXTRA_READS:
         if failures.get(name, 0) >= EXTRA_READ_MAX_FAILURES or not applies(caps):
             continue
@@ -154,8 +207,12 @@ async def _extra_reads(client):
             if fails >= EXTRA_READ_MAX_FAILURES:
                 # Info, not a warning: these are optional, and some firmware doesn't answer them (eg. HR 313-314 on Gen 1
                 # ARM 451, #655), so it would warn on every restart about something that needs no action
+                unanswered = {n for n, f in failures.items() if f >= EXTRA_READ_MAX_FAILURES}
+                _save_unanswered(firmware, unanswered)
                 logger.info("Registers " + regs + " could not be read " + str(fails) + " times in a row, so " + lost +
-                               ". Not trying again until GivTCP restarts: " + str(e))
+                            ". Not trying again " + ("on this firmware (" + str(firmware) + ")" +
+                                                     (", delete " + str(unanswered_file) + " to try again" if unanswered_file else "")
+                                                     if firmware else "until GivTCP restarts") + ": " + str(e))
             else:
                 # The value read last time is kept, and it's read again with the next full refresh
                 logger.debug("Registers " + regs + " could not be read this time (" + str(fails) + " in a row): " + str(e))
@@ -266,6 +323,40 @@ def _refresh_banks(caps):
 
 # _refresh_ranges() looks this up on the client module on every refresh
 client_module._refresh_banks = _refresh_banks
+
+def covering_block_age(plant, device_address, reg_type, base_register, register_count, now=None):
+    """Seconds since a reply covering the whole of this block was received, or None if none has been. The library
+    keys a block's age on the exact request (block_age), so a smaller reply never marks a larger block as fresh. A
+    larger one that covers it is just as fresh, though: the dongle's own polls for the cloud, which it passes on to
+    GivTCP, read the meters as 60 registers (the library 30) and three-phase IR 1360 as 60 (the library 54)"""
+    effective_now = now or datetime.now(timezone.utc)
+    if effective_now.tzinfo is None:
+        effective_now = effective_now.replace(tzinfo=timezone.utc)
+    newest = None
+    end = base_register + register_count
+    for (dev, kind, base, count), ts in plant.register_block_updated_at.items():
+        if dev == device_address and kind == reg_type and base <= base_register and base + count >= end:
+            if newest is None or ts > newest:
+                newest = ts
+    return None if newest is None else (effective_now - newest).total_seconds()
+
+class _CoveringAges:
+    """The plant as _refresh_ranges() sees it, with block_age() also counting replies that cover the whole block"""
+    def __init__(self, plant):
+        self._plant = plant
+    def block_age(self, device_address, reg_type, base_register, register_count, *, now=None):
+        return covering_block_age(self._plant, device_address, reg_type, base_register, register_count, now)
+    def __getattr__(self, name):
+        return getattr(self._plant, name)
+
+_library_refresh_ranges = client_module._refresh_ranges
+
+def _refresh_ranges(caps, max_age, plant, *args, **kwargs):
+    # Skip Reads Fresher Than (refresh(max_age)): also skip a block that a larger reply covering it has just updated
+    return _library_refresh_ranges(caps, max_age, _CoveringAges(plant) if max_age is not None else plant, *args, **kwargs)
+
+# refresh() looks this up on the client module on every refresh
+client_module._refresh_ranges = _refresh_ranges
 
 _library_hv_stacks = Plant.hv_stacks
 

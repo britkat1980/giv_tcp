@@ -31,7 +31,7 @@ import asyncio
 from typing import Callable, Optional
 from mqtt import GivMQTT
 from modbus_patches import pause_registers, PAUSE_MODE_REGISTER, PAUSE_SLOT_REGISTERS, bms_current_inverter
-from capscheck import missingBatteries, maybeMissingBatteries, lostBatteries, capsBatteryCount
+from capscheck import missingBatteries, maybeMissingBatteries, lostBatteries, batteryDifference
 from givenergy_modbus.model.inverter import SinglePhaseInverterRegisterGetter
 import copy
 import enum
@@ -283,6 +283,9 @@ async def lostInverter():
 def capsFile():
     return GivLUT.config_dir+"/"+GiV_Settings.serial_number+"_caps.pkl"
 
+# The optional reads this inverter doesn't answer on its firmware, kept across restarts (#673)
+modbus_patches.unanswered_file=GivLUT.config_dir+"/"+str(GiV_Settings.serial_number)+"_unanswered.json"
+
 def pauseModeUnsupported(caps):
     # Battery pause mode (HR 318): only where it can be written (see modbus_patches.pause_registers). Some
     # models read it but can't write it, and Force Charge/Export fail if they try to set it
@@ -365,6 +368,10 @@ def unsupportedEntities():
     unsupported+=['Battery_BMS_Current','Battery_Discharge_Current']
     if not bms_current_inverter(device_type, caps.arm_firmware_version):
         unsupported+=['Battery_Pack_Current']      # this inverter never passes on pack current (#605)
+    if caps.lv_battery_addresses and not (caps.bcu_stacks or caps.hv_bmu_addresses or caps.aio_battery_module_addresses):
+        # LV batteries' stack BMS_Temperature was the inverter's battery temperature, now Battery_Temperature (#702).
+        # HV stacks keep theirs
+        unsupported+=['BMS_Temperature']
     return unsupported
 
 def wrongInverter(client):
@@ -450,9 +457,9 @@ async def detectPlant(client, force=False):
         if lostBatteryDetects<2:
             capsSuspect=True
             client.plant.capabilities=saved
-            logger.warning("Detect found "+str(capsBatteryCount(caps))+" batteries but "+str(capsBatteryCount(saved))+" were saved, so keeping the saved capabilities until another detect agrees")
+            logger.warning("Detect found "+batteryDifference(caps, saved)+" saved, so keeping the saved capabilities until another detect agrees")
             return False
-        logger.warning("Two detects in a row found "+str(capsBatteryCount(caps))+" batteries rather than "+str(capsBatteryCount(saved))+", so saving the new capabilities")
+        logger.warning("Two detects in a row found "+batteryDifference(caps, saved)+" saved, so saving the new capabilities")
     # A hybrid with no batteries is saved (it may have none), but checked again, in case they didn't answer
     capsSuspect=False
     if maybeMissingBatteries(client.plant.capabilities) and not noBatteryFitted():
@@ -492,6 +499,75 @@ def hvBcusRead(plant: Plant):
         return set()
     return {(hvstack.device_address,60,60) for hvstack in plant.hv_stacks if hvstack.bcu.is_valid()}
 
+# The dongle polls the inverter itself for the GivEnergy cloud, every 306-312s on three-phase hybrids (also with the
+# cloud blocked), and passes every answer on to GivTCP. In lite mode on a three-phase hybrid, the live-data blocks that
+# change slowly are left to those polls, and only read when nothing has covered them for CLOUD_DATA_FALLBACK seconds:
+# EPS (IR 1180), faults and firmware (IR 1300), energy totals (IR 1360), and IR 0 and IR 180, which the three-phase
+# model doesn't use. PV, grid, load and battery power, SOC (IR 1000-1179, 1240) and the meters are read every poll.
+# The battery stacks (BCUs), which lite mode only reads on full refreshes, are left to them on those too.
+# CLOUD_DATA_FALLBACK is about twice the measured interval: below the interval, GivTCP would read the blocks just
+# before each of the dongle's polls, and if the dongle stops polling they're read at this interval, not every poll
+CLOUD_SLOW_BASES={Model.HYBRID_3PH: frozenset({0,180,1180,1300,1360})}
+CLOUD_DATA_FALLBACK=660
+
+# When a recovery pause ended (UTC). For one fallback period after it, the slow blocks are left to the dongle's next
+# poll rather than all read at once from a dongle that has only just started answering again
+cloudPauseEnded=None
+
+def cloudFallback(plant: Plant):
+    # The fallback for this inverter, or 0 when the dongle's polls aren't used (lite mode off, or another model)
+    caps=plant.capabilities
+    if not liteQuery() or caps is None or caps.device_type not in CLOUD_SLOW_BASES:
+        return 0
+    return CLOUD_DATA_FALLBACK
+
+def inverterClock(plant: Plant, now):
+    # The inverter's time now (its local time, naive), or None if not known. Its clock is in the settings, which are
+    # only read on full refreshes, so add the time since they were read, as inverterNow() does
+    try:
+        invTime=plant.inverter.system_time
+    except Exception:
+        return None
+    if not isinstance(invTime, datetime.datetime) or invTime.year==2000:     # unreadable or default date
+        return None
+    readAt=settingsReadAt(plant)
+    if readAt:
+        invTime+=max(datetime.timedelta(0), now-readAt)
+    return invTime.replace(tzinfo=None)
+
+def cloudDelivered(plant: Plant, fullRefresh=True, now=None):
+    # The slow banks that a reply has covered within the fallback, from the dongle's polls or GivTCP's own
+    fallback=cloudFallback(plant)
+    if not fallback:
+        return set()
+    caps=plant.capabilities
+    now=now or datetime.datetime.now(datetime.timezone.utc)
+    bases=CLOUD_SLOW_BASES[caps.device_type]
+    banks={b for b in modbus_patches._library_refresh_banks(caps) if b[0]==caps.inverter_address and b[1] in bases}
+    if fullRefresh:
+        banks|=hvBcusRead(plant)        # between full refreshes lite mode leaves the stacks out anyway
+    holding=cloudPauseEnded is not None and (now-cloudPauseEnded).total_seconds()<fallback
+    # The Today counters (IR 1360) reset at the inverter's midnight. A reply from before its midnight is yesterday's, so
+    # that block is read on the first poll of the inverter's day, rather than waiting up to ~5 minutes for the dongle's
+    invNow=inverterClock(plant, now)
+    sinceMidnight=None
+    if invNow is not None:
+        sinceMidnight=(invNow-invNow.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
+    delivered=set()
+    for bank in banks:
+        age=modbus_patches.covering_block_age(plant,bank[0],"IR",bank[1],bank[2],now)
+        if age is not None and sinceMidnight is not None and bank[0]==caps.inverter_address and bank[1]==1360 and age>=sinceMidnight:
+            logger.debug("IR(0x%02x,%d) last received before the inverter's midnight, so reading it", bank[0], bank[1])
+            continue
+        if age is not None and age<fallback:
+            delivered.add(bank)
+        elif age is not None and holding:
+            delivered.add(bank)
+            logger.debug("IR(0x%02x,%d) not received for %ds, but a recovery pause has just ended, so leaving it to the dongle's next poll", bank[0], bank[1], age)
+        elif age is not None:
+            logger.debug("IR(0x%02x,%d) not received for %ds, so reading it", bank[0], bank[1], age)
+    return delivered
+
 async def readPlant(client, fullRefresh):
     # Run the register reads. Partial failures still leave good data in the register cache so keep going,
     # only a total failure (RefreshFailed) or lost connection is raised
@@ -507,6 +583,8 @@ async def readPlant(client, fullRefresh):
     skip=hvModulesRead(client.plant) if light or not fullRefresh else set()
     if light and not fullRefresh:
         skip|=hvBcusRead(client.plant)
+    # In lite mode on a three-phase hybrid, also the slow blocks the dongle's own polls have delivered recently
+    skip|=cloudDelivered(client.plant,fullRefresh)
     modbus_patches.skip_banks=skip
     reads=[lambda: client.refresh(max_age=max_age)]
     if fullRefresh:
@@ -769,11 +847,13 @@ class Recovery:
         return True
 
     def waiting(self):
+        global cloudPauseEnded
         if self.until is None:
             return False
         if datetime.datetime.now()<self.until:
             return True
         self.until=None
+        cloudPauseEnded=datetime.datetime.now(datetime.timezone.utc)
         logger.info("Recovery pause over, reconnecting to the inverter")
         return False
 
@@ -1208,10 +1288,55 @@ def getMeters(plant: Plant):
         meters['Meter_ID'+str(m)]=meter
     return meters
 
+def badRead(GEInv):
+    """True if a couple of obvious data points show a bad read, so the last good data is used. One not read yet (eg.
+    the inverter's settings, after reconnecting to a dongle that didn't answer them) is a bad read too, rather than
+    an error (#583)"""
+    values=(GEInv.modbus_version, GEInv.modbus_address, GEInv.user_code, GEInv.t_inverter_heatsink)
+    if any(value is None for value in values):
+        logger.info("Inverter data not all read yet, so using the last good data")
+        return True
+    if float(values[0])>2 or values[1]>100 or values[2]>100 or values[3]>100:
+        logger.debug("Dodgy Data so using last cache...")
+        return True
+    return False
+
 def enumText(value):
     # An enum field's name, eg. "Normal", or None until its register has been read (eg. a holding register after
     # the first read following a restart failed), so one missing value doesn't fail the whole poll (#608)
     return value.name.capitalize() if value is not None else None
+
+# What the notification sensors show with nothing active. Not "None": Home Assistant shows an MQTT sensor whose value is
+# "None" as unknown (#699)
+NO_NOTIFICATIONS="No notifications"
+NO_WARNINGS="No warnings"
+NO_FAULTS="No faults"
+
+def notifications(inverter, multi_output_old, status, details):
+    """The inverter's notifications (#529): the faults and warnings active now, logged as each appears and clears.
+    The portal's list is the GivEnergy cloud's history, which Modbus can't read, so Last_Notification (and its time)
+    keeps the most recent one after it clears"""
+    active=[d for d in details if d]
+    if not active and status in ("Warning","Fault"):
+        active=["Inverter "+status.lower()]         # the status says so, but no fault or warning bit does
+    old=finditem(multi_output_old or {},'Active_Notifications')
+    before=[] if old in (None,"None",NO_NOTIFICATIONS) else str(old).split("; ")
+    for item in active:
+        if item not in before:
+            logger.warning("Inverter notification: "+item)
+    for item in before:
+        if item not in active:
+            logger.info("Inverter notification cleared: "+item)
+    inverter['Active_Notifications']="; ".join(active) if active else NO_NOTIFICATIONS
+    new=[item for item in active if item not in before]
+    if new:
+        inverter['Last_Notification']="; ".join(new)
+        inverter['Last_Notification_Time']=datetime.datetime.now(GivLUT.timezone).isoformat(timespec='seconds')
+    else:
+        for key in ('Last_Notification','Last_Notification_Time'):
+            last=finditem(multi_output_old or {},key)
+            if last is not None:
+                inverter[key]=last
 
 _emptyBatteryPolls={}
 
@@ -1263,7 +1388,11 @@ def getBatteries(plant: Plant, multi_output_old):
                     battery['Battery_Cells'] = b.num_cells
                     battery['Battery_Cycles'] = b.num_cycles
                     battery['Battery_USB_present'] = b.usb_device_inserted
-                    battery['Battery_Temperature'] = b.t_bms_mosfet
+                    # The pack's temperature is its warmest cell sensor. IR 81 is the BMS's own (its MOSFETs), which runs
+                    # well above the cells under load: 3.0-3.6.12 published it as the battery temperature (#702)
+                    cellTemps=[x for x in (b.t_cells_01_04,b.t_cells_05_08,b.t_cells_09_12,b.t_cells_13_16) if x is not None]
+                    battery['Battery_Temperature'] = max(cellTemps) if cellTemps else None
+                    battery['Battery_BMS_MOSFET_Temperature'] = b.t_bms_mosfet
                     battery['Battery_Voltage'] = b.v_cells_sum
                     if b.i_battery is not None:     # None where the inverter or pack firmware doesn't report it (#605)
                         battery['Battery_Pack_Current'] = b.i_battery      # the pack's own current, negative while charging (#616)
@@ -1282,7 +1411,9 @@ def getBatteries(plant: Plant, multi_output_old):
                 else:
                     batteryNotReady(num+1)
 
-                stack['BMS_Temperature']=GEInv.t_battery
+                # The battery temperature the inverter sees (IR 56), which follows the cells: 3.0-3.6.12 published it
+                # as the BMS temperature (#702)
+                stack['Battery_Temperature']=GEInv.t_battery
                 stack['BMS_Voltage']=GEInv.v_battery
                 # Make this always Battery_Stack_1
                 batteries2['Battery_Stack_1']=stack
@@ -1679,9 +1810,7 @@ def processPVInfo(plant: Plant):
             regCacheStack = []      # no cache yet (first poll) - previous values default to empty
             multi_output_old = {}
 
-        # Check a couple of obvious data points to reject bad reads
-        if float(GEInv.modbus_version)>2 or GEInv.modbus_address>100 or GEInv.user_code>100 or GEInv.t_inverter_heatsink>100:
-            logger.debug("Dodgy Data so using last cache...")
+        if badRead(GEInv):
             return multi_output_old
 
         # If System Time is wrong (default date) use last good time or local time if all else fails
@@ -2111,6 +2240,16 @@ def processInverterInfo(plant: Plant):
         inverter['Invertor_Temperature'] = GEInv.t_inverter_heatsink
         inverter['Export_Limit']=GEInv.grid_port_max_power_output
         inverter['Battery_Calibration_Status'] = enumText(GEInv.battery_calibration_stage)
+        # The fault and warning words (IR39/40) stay as hex until what their bits mean is confirmed (#529)
+        inverter['status'] = enumText(GEInv.status)
+        inverter['Fault_Code'] = GEInv.inverter_fault_code
+        inverter['Warning_Code'] = GEInv.inverter_warning_code
+        batteryWarnings = GEInv.charger_warning_messages
+        if batteryWarnings is not None:
+            inverter['Battery_Warnings'] = ", ".join(batteryWarnings) if batteryWarnings else NO_WARNINGS
+        notifications(inverter, multi_output_old, inverter['status'],
+                      [label+" code "+code for label,code in (("Fault",inverter['Fault_Code']),("Warning",inverter['Warning_Code']))
+                       if code and int(code,16)]+list(batteryWarnings or []))
 
         ######## Get Meter Details ########
 
@@ -2231,7 +2370,8 @@ def processEMSInfo(plant: Plant):
             ems['Invertor_Time']=GEHR.system_time.replace(tzinfo=GivLUT.timezone).isoformat()
         ems['Remaining_Battery_Wh']=GEInv.remaining_battery_wh
         ems['Invertor_Serial_Number']=plant.inverter_serial_number
-        ems['Export_Limit']=GEHR.grid_port_max_power_output
+        # The EMS's own export limit (HR 2071). HR 26 on the EMS reads 0, which isn't a limit
+        ems['Export_Limit']=GEInv.export_power_limit
 
         inverters={}
         for i in range(1,MAX_MANAGED_INVERTERS+1):
@@ -2546,9 +2686,7 @@ def processThreePhaseInfo(plant: Plant):
         else:
             multi_output_old=regCacheStack[-1]
 
-        # Check a couple of obvious data points to reject bad reads
-        if float(GEInv.modbus_version)>2 or GEInv.modbus_address>100 or GEInv.user_code>100 or GEInv.t_inverter_heatsink>100:
-            logger.debug("Dodgy Data so using last cache...")
+        if badRead(GEInv):
             return multi_output_old
 
         # If System Time is wrong (default date) use last good time or local time if all else fails
@@ -2656,6 +2794,10 @@ def processThreePhaseInfo(plant: Plant):
         power_output['SOC_kWh'] = sockwh / count if count > 0 else 0                                      # Average SOC of all stacks...
 
         inverter['status']=enumText(GEInv.status)
+        # The fault words (IR1300-1307), decoded by givenergy-modbus (#529)
+        faults=[f for word in range(8) for f in (getattr(GEInv,'inverter_fault_codes_'+str(word),None) or [])]
+        inverter['Faults']=", ".join(faults) if faults else NO_FAULTS
+        notifications(inverter, multi_output_old, inverter['status'], faults)
         # givenergy-modbus v2 decodes system_mode and battery_priority as plain ints (the old lib used enums)
         inverter['System_Mode']=GivLUT.tph_system_mode.get(GEInv.system_mode,str(GEInv.system_mode))
         inverter['Start_Delay_Time']=GEInv.start_delay_time
@@ -2664,6 +2806,9 @@ def processThreePhaseInfo(plant: Plant):
         inverter['Invertor_Type'] = "Gen 3 - " + resolvedModel(plant, GEInv).name.capitalize()
         inverter['Invertor_Max_Bat_Rate'] = inverterModel.batmaxrate
         inverter['Invertor_Max_Inv_Rate'] = GEInv.inverter_max_power
+        # Three-phase keeps its export limit in HR 1102, switched on by HR 1103 (HR 26 reads 0). With it switched off only
+        # the inverter itself limits export, so publish its rating
+        inverter['Export_Limit'] = GEInv.export_power_limit if GEInv.enable_export_limit else GEInv.inverter_max_power
         inverter['Battery_Priority']=GivLUT.tph_battery_priority.get(GEInv.battery_priority,str(GEInv.battery_priority))
 
     # Calc HV stack capacity as function of stacks
@@ -2781,7 +2926,7 @@ def processData(plant: Plant):
         givtcpdata['Last_Updated_Time'] = datetime.datetime.now(GivLUT.timezone).isoformat()
         givtcpdata['status'] = "online"
         givtcpdata['Time_Since_Last_Update'] = 0
-        givtcpdata['GivTCP_Version']= "3.6.11"
+        givtcpdata['GivTCP_Version']= "3.6.14"
         age=dataAge(plant)
         givtcpdata['Data_Age']= round(age,1) if age is not None else -1
         if age is None or age > max(3*GiV_Settings.self_run_timer, 60):
@@ -3068,7 +3213,9 @@ def getCache():     # Get latest cache data and return it (for use in REST)
 def logSettings(recovery):
     """Log the connection settings that change how GivTCP talks to the inverter, once at startup and only when on"""
     if liteQuery():
-        logger.info("Lite mode on: HV battery modules are read until they have data, battery stacks only on full refreshes")
+        logger.info("Lite mode on: HV battery modules are read until they have data, battery stacks only on full refreshes. "
+                    "On three-phase hybrids, slow-changing values and the battery stacks are left to the dongle's own polls, "
+                    "and read only when none has arrived for "+str(CLOUD_DATA_FALLBACK)+"s")
     delay=float(getattr(GiV_Settings,'connect_delay',0) or 0)
     if delay>0:
         logger.info("Wait After Connecting on: waiting "+str(round(delay))+"s after each new connection before the first request")

@@ -5060,9 +5060,10 @@
   "cycle 1 output": {
    "Battery_Details": {
     "Battery_Stack_1": {
-     "BMS_Temperature": 23.0,
      "BMS_Voltage": 52.39,
+     "Battery_Temperature": 23.0,
      "DF2244G000": {
+      "Battery_BMS_MOSFET_Temperature": 26.1,
       "Battery_Capacity": 184.82,
       "Battery_Cell_10_Voltage": 3.266,
       "Battery_Cell_11_Voltage": 3.267,
@@ -5093,7 +5094,7 @@
       "Battery_Remaining_Capacity": 83.87,
       "Battery_SOC": 45,
       "Battery_Serial_Number": "DF2244G000",
-      "Battery_Temperature": 26.1,
+      "Battery_Temperature": 23.6,
       "Battery_USB_present": 0,
       "Battery_Voltage": 52.263
      }
@@ -5126,10 +5127,13 @@
     "Temp_Pause_Discharge_Num": 0
    },
    "EA2302G000": {
+    "Active_Notifications": "No notifications",
     "Battery_Calibration_Status": "Off",
     "Battery_Capacity_kWh": 9.523200000000001,
     "Battery_Type": "Lithium",
+    "Battery_Warnings": "No warnings",
     "Export_Limit": 6000,
+    "Fault_Code": "0000",
     "Invertor_Firmware": "D0.920-A0.920",
     "Invertor_Max_Bat_Rate": 3600,
     "Invertor_Max_Inv_Rate": 3600,
@@ -5138,7 +5142,9 @@
     "Invertor_Time": "2026-07-13T23:22:19+01:00",
     "Invertor_Type": "Hybrid_gen2",
     "Meter_Type": "Em115",
-    "Modbus_Version": "1.40"
+    "Modbus_Version": "1.40",
+    "Warning_Code": "0000",
+    "status": "Normal"
    },
    "Energy": {
     "Rates": {
@@ -5714,9 +5720,10 @@
   "cycle 2 output": {
    "Battery_Details": {
     "Battery_Stack_1": {
-     "BMS_Temperature": 23.0,
      "BMS_Voltage": 52.39,
+     "Battery_Temperature": 23.0,
      "DF2244G000": {
+      "Battery_BMS_MOSFET_Temperature": 26.1,
       "Battery_Capacity": 184.82,
       "Battery_Cell_10_Voltage": 3.266,
       "Battery_Cell_11_Voltage": 3.267,
@@ -5747,7 +5754,7 @@
       "Battery_Remaining_Capacity": 83.87,
       "Battery_SOC": 45,
       "Battery_Serial_Number": "DF2244G000",
-      "Battery_Temperature": 26.1,
+      "Battery_Temperature": 23.6,
       "Battery_USB_present": 0,
       "Battery_Voltage": 52.263
      }
@@ -5780,10 +5787,13 @@
     "Temp_Pause_Discharge_Num": 0
    },
    "EA2302G000": {
+    "Active_Notifications": "No notifications",
     "Battery_Calibration_Status": "Off",
     "Battery_Capacity_kWh": 9.523200000000001,
     "Battery_Type": "Lithium",
+    "Battery_Warnings": "No warnings",
     "Export_Limit": 6000,
+    "Fault_Code": "0000",
     "Invertor_Firmware": "D0.920-A0.920",
     "Invertor_Max_Bat_Rate": 3600,
     "Invertor_Max_Inv_Rate": 3600,
@@ -5792,7 +5802,9 @@
     "Invertor_Time": "2026-07-13T23:22:19+01:00",
     "Invertor_Type": "Hybrid_gen2",
     "Meter_Type": "Em115",
-    "Modbus_Version": "1.40"
+    "Modbus_Version": "1.40",
+    "Warning_Code": "0000",
+    "status": "Normal"
    },
    "Energy": {
     "Rates": {
@@ -6364,6 +6376,7 @@
    }
   },
   "discovery removed": [
+   "BMS_Temperature",
    "Battery_BMS_Current",
    "Battery_Discharge_Current",
    "Battery_Pack_Current"
@@ -6398,6 +6411,7 @@
    "homeassistant/sensor/GivEnergy/EA2302G000_AC_Charge_Energy_Today_kWh/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_AC_Charge_Energy_Total_kWh/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_AC_Charge_Power/config",
+   "homeassistant/sensor/GivEnergy/EA2302G000_Active_Notifications/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Battery_Calibration_Status/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Battery_Capacity_kWh/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Battery_Charge_Energy_Today_kWh/config",
@@ -6406,13 +6420,14 @@
    "homeassistant/sensor/GivEnergy/EA2302G000_Battery_Discharge_Energy_Today_kWh/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Battery_Discharge_Energy_Total_kWh/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Battery_Power/config",
-   "homeassistant/sensor/GivEnergy/EA2302G000_Battery_Stack_1_BMS_Temperature/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Battery_Stack_1_BMS_Voltage/config",
+   "homeassistant/sensor/GivEnergy/EA2302G000_Battery_Stack_1_Battery_Temperature/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Battery_Throughput_Today_kWh/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Battery_Throughput_Total_kWh/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Battery_Type/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Battery_Value/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Battery_Voltage/config",
+   "homeassistant/sensor/GivEnergy/EA2302G000_Battery_Warnings/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Battery_ppkwh/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Battery_to_Grid/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Battery_to_House/config",
@@ -6420,6 +6435,7 @@
    "homeassistant/sensor/GivEnergy/EA2302G000_Charge_Power/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Charge_Time_Remaining/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Current_Rate/config",
+   "homeassistant/sensor/GivEnergy/EA2302G000_DF2244G000_Battery_BMS_MOSFET_Temperature/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_DF2244G000_Battery_Capacity/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_DF2244G000_Battery_Cell_10_Voltage/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_DF2244G000_Battery_Cell_11_Voltage/config",
@@ -6467,6 +6483,7 @@
    "homeassistant/sensor/GivEnergy/EA2302G000_Export_Limit/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Export_Power/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Export_Rate/config",
+   "homeassistant/sensor/GivEnergy/EA2302G000_Fault_Code/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_GivTCP_Version/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Grid_Current/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Grid_Frequency/config",
@@ -6535,7 +6552,9 @@
    "homeassistant/sensor/GivEnergy/EA2302G000_Solar_to_House/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Time_Since_Last_Update/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Timeout_Error/config",
+   "homeassistant/sensor/GivEnergy/EA2302G000_Warning_Code/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_Write_Count/config",
+   "homeassistant/sensor/GivEnergy/EA2302G000_status/config",
    "homeassistant/sensor/GivEnergy/EA2302G000_status/config",
    "homeassistant/switch/GivEnergy/EA2302G000_Eco_Mode/config",
    "homeassistant/switch/GivEnergy/EA2302G000_Enable_Charge_Schedule/config",
@@ -6550,8 +6569,9 @@
    "homeassistant/time/GivEnergy/EA2302G000_Discharge_start_time_slot_2/config"
   ],
   "mqtt topics": [
-   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/BMS_Temperature",
    "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/BMS_Voltage",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/Battery_Temperature",
+   "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_BMS_MOSFET_Temperature",
    "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Capacity",
    "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_10_Voltage",
    "GivEnergy/EA2302G000/Battery_Details/Battery_Stack_1/DF2244G000/Battery_Cell_11_Voltage",
@@ -6609,10 +6629,13 @@
    "GivEnergy/EA2302G000/Control/Temp_Pause_Charge_Num",
    "GivEnergy/EA2302G000/Control/Temp_Pause_Discharge",
    "GivEnergy/EA2302G000/Control/Temp_Pause_Discharge_Num",
+   "GivEnergy/EA2302G000/EA2302G000/Active_Notifications",
    "GivEnergy/EA2302G000/EA2302G000/Battery_Calibration_Status",
    "GivEnergy/EA2302G000/EA2302G000/Battery_Capacity_kWh",
    "GivEnergy/EA2302G000/EA2302G000/Battery_Type",
+   "GivEnergy/EA2302G000/EA2302G000/Battery_Warnings",
    "GivEnergy/EA2302G000/EA2302G000/Export_Limit",
+   "GivEnergy/EA2302G000/EA2302G000/Fault_Code",
    "GivEnergy/EA2302G000/EA2302G000/Invertor_Firmware",
    "GivEnergy/EA2302G000/EA2302G000/Invertor_Max_Bat_Rate",
    "GivEnergy/EA2302G000/EA2302G000/Invertor_Max_Inv_Rate",
@@ -6622,6 +6645,8 @@
    "GivEnergy/EA2302G000/EA2302G000/Invertor_Type",
    "GivEnergy/EA2302G000/EA2302G000/Meter_Type",
    "GivEnergy/EA2302G000/EA2302G000/Modbus_Version",
+   "GivEnergy/EA2302G000/EA2302G000/Warning_Code",
+   "GivEnergy/EA2302G000/EA2302G000/status",
    "GivEnergy/EA2302G000/Energy/Rates/Battery_Value",
    "GivEnergy/EA2302G000/Energy/Rates/Battery_ppkwh",
    "GivEnergy/EA2302G000/Energy/Rates/Current_Rate",

@@ -1,3 +1,48 @@
+# GivTCP 3.6.14
+
+Changes since 3.6.13.
+
+### Fixed
+- **Export Limit was missing on three-phase inverters, and 0 on an EMS** (#705, thanks @springfall2008). Export Limit came from holding register 26, the export limit on single-phase inverters, which reads 0 on an EMS and on a three-phase inverter. An EMS now reports its own limit (HR 2071, the same value as the Export Power Limit control), and a three-phase inverter reports its export power limit (HR 1102), or its rated power when export limiting (HR 1103) is switched off, since then only the inverter limits export. A limit of 0, a zero-export site, is now shown as 0 rather than the last non-zero value.
+- **Correction to 3.6.13: EMS inverter power while charging (#701) isn't fixed yet.** 3.6.13 changed the range GivTCP accepts for it, but that range is only checked by a data smoother that hasn't run since 3.0.1, so it made no difference. GivTCP publishes each inverter's power exactly as the EMS reports it, so the value seen while charging is what the EMS sends. We're looking into it with a capture.
+
+### Changed
+- **Lite mode on three-phase hybrids also leaves slow-changing values to the dongle's own polls** (#704, thanks @lancer73). The dongle polls the inverter itself for the GivEnergy cloud, every 5 minutes or so even with the cloud blocked, and passes every answer on to GivTCP. In lite mode on a three-phase hybrid, GivTCP now leaves the EPS values, fault codes and firmware versions, energy totals and the battery stacks (on full refreshes too) to those polls, and only reads one itself when the dongle hasn't sent it for 11 minutes. Right after a recovery pause it waits for the dongle's next poll rather than reading them all at once. On the first poll after the inverter's midnight it reads the energy totals itself, so Today's figures still reset within a poll. PV, grid, load and battery power, SOC and the meters are still read every poll. On one system a normal poll went from 11 reads to 6. Faults (and the notification sensors), EPS values and energy totals can now be about 5 minutes old. Other models, and three-phase hybrids without lite mode, are unchanged: see the README, "Timeouts and an unresponsive inverter".
+
+# GivTCP 3.6.13
+
+Changes since 3.6.12.
+
+### Fixed
+- **Battery Pause Mode was removed from the original Gen 1 firmware in 3.6.12** (#698, thanks @browellm). 3.6.12 stopped offering pause mode on Gen 1 4xx firmware (eg. ARM 451), as it doesn't answer a read of the pause mode register (#673). It does take the write, though, and Predbat relies on it to stop the battery discharging into a car while it charges: without it, the battery charged and discharged in turn instead. It's back on those inverters, as in 3.6.11. As the inverter doesn't let it be read back, Home Assistant shows the last value set. 3.6.12's other #673 fix stays: a setting the inverter doesn't answer is still only tried until it's failed three times on that firmware, not after every restart.
+- **The new notification sensors showed "unknown"** (#699, thanks @gcoan). With nothing active, Active Notifications, Battery Warnings and Faults published "None", which Home Assistant shows as unknown. They now show "No notifications", "No warnings" and "No faults".
+- **EMS: each inverter's power stuck while it charged** (#701, thanks @cjl24). An inverter's power behind an EMS is negative while it charges, but GivTCP only accepted 0 and up, so it kept showing the last positive value (eg. 636W) until the inverter discharged again. Negative values (and 0) are now accepted.
+- **LV batteries: the battery and BMS temperatures were the wrong way round** (#702 and #329, thanks @gcoan). Each battery's **Battery Temperature** was its BMS's own temperature (its MOSFETs, which run well above the cells under load, up to about 60°C), and the battery stack's **BMS Temperature** was the battery temperature the inverter sees. Now:
+  - each battery's **Battery Temperature** is its warmest cell sensor, and its BMS temperature is the new **Battery BMS MOSFET Temperature**;
+  - the stack's battery temperature (from the inverter) is the new **Battery Temperature** under Battery Stack 1, and the stack's **BMS Temperature** is removed from Home Assistant.
+
+  The history of the existing entities will show a step at the update. HV battery stacks (All in One, HV Gen 3, three-phase) are unchanged.
+- **Skip Reads Fresher Than didn't skip the meters, or IR 1360 on three-phase** (#700, thanks @lancer73). The dongle passes its own polls for the GivEnergy cloud on to GivTCP (about every 5 minutes on a three-phase hybrid, even with the cloud blocked), and Skip Reads Fresher Than skips what they have just updated. The Modbus library only counts an answer of exactly the size GivTCP reads, though, and the dongle reads the meters as 60 registers (GivTCP 30) and IR 1360 as 60 (GivTCP 54), so those were read again anyway. An answer that covers the whole block now counts too. A smaller one still doesn't.
+
+# GivTCP 3.6.12
+
+Changes since 3.6.11.
+
+### Added
+- **Inverter notifications** (#529, thanks @gcoan). The GivEnergy portal's notification list is history kept in GivEnergy's cloud, which GivTCP can't read, but the inverter reports the faults and warnings active now, and GivTCP now publishes them:
+  - **Active Notifications**: everything active now, or "None". Each one is logged as a warning when it appears, and at info level when it clears.
+  - **Last Notification** and **Last Notification Time**: the most recent, kept after it clears, so an automation can alert on it.
+  - Single-phase inverters (AC, Hybrid, All in One): the inverter's **status** (Waiting, Normal, Warning, Fault or Updating), **Battery Warnings** (eg. "Battery temperature fault"), and the **Fault Code** and **Warning Code** in hex. What each bit of those two codes means isn't confirmed yet, so they're shown as codes, eg. "Fault code 0004". If you see a notification in the portal, please post a Share Device capture on #529 with what the portal says, so they can be named.
+  - Three-phase inverters: **Faults**, each one named.
+
+### Fixed
+- **"Error processing Three Phase data: TypeError: '>' not supported between instances of 'NoneType'..."** (#583, thanks @tonka-truck). GivTCP checks a few values on each poll to reject a bad read, but one that hadn't been read (eg. after reconnecting to a dongle that didn't answer at first) failed the check with an error. It's now treated as the bad read it is, and the last good data is used, as before, without the error.
+- **Three-phase: Battery Power Cutoff didn't change** (#693, thanks @ggoorts). It was read from the battery reserve (HR 1078) but written to the single-phase cutoff register (HR 114), so setting it had no effect. It's now written to HR 1078, the reserve the inverter discharges down to.
+- **Battery Charge Rate AC and Battery Discharge Rate AC couldn't be set to 0%** (#694, thanks @ggoorts). The inverter takes 1-100%, so 0 failed without writing anything. It now sets 1%, as the watt-based rate controls already did. 1% doesn't stop the battery completely: to hold it, raise Battery Power Cutoff (three-phase) or the reserve instead.
+- **Battery pause mode on the original Gen 1 and AC firmware** (#673, thanks @chrispurusha). Pause mode was offered from Gen 1 ARM firmware 187 and AC firmware 200 upwards, but firmware isn't numbered in order: the original Gen 1 firmware is 4xx (eg. 451) and the original AC firmware 5xx, both older than the 1xx and 2xx lines that added it. A Gen 1 on 451 doesn't answer the pause mode register, so it's no longer offered on 4xx Gen 1 or 5xx AC firmware.
+- **Optional settings an inverter doesn't answer are tried after every restart** (#673). GivTCP reads a few settings the inverter may not have (pause mode, and the AC charge/discharge rates on the hybrids). When one isn't answered three times in a row, it's now remembered for that inverter's firmware (on three-phase, whose ARM firmware number reads 0, its firmware version, eg. D0.3171-A0.3200), so it's not tried again after a restart (each try took about 10 seconds) or logged each time. After a firmware update they're tried again. To try them again sooner, delete `<serial>_unanswered.json` in the GivTCP config folder.
+- **"Detect found 12 batteries but 12 were saved"** (#583). When a detect finds fewer of one kind of battery device than were saved (eg. one battery module didn't answer), the log now says which, eg. "Detect found 5 battery modules (BMUs) rather than 6 saved".
+
 # GivTCP 3.6.11
 
 Changes since 3.6.10.

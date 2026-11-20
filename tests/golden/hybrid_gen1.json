@@ -5056,6 +5056,7 @@
    "Battery_Details": {
     "Battery_Stack_1": {
      "BG2134G000": {
+      "Battery_BMS_MOSFET_Temperature": 27.0,
       "Battery_Capacity": 189.61,
       "Battery_Cell_10_Voltage": 3.378,
       "Battery_Cell_11_Voltage": 3.387,
@@ -5086,13 +5087,14 @@
       "Battery_Remaining_Capacity": 154.49,
       "Battery_SOC": 81,
       "Battery_Serial_Number": "BG2134G000",
-      "Battery_Temperature": 27.0,
+      "Battery_Temperature": 23.3,
       "Battery_USB_present": 8,
       "Battery_Voltage": 54.076
      },
-     "BMS_Temperature": 23.0,
      "BMS_Voltage": 53.87,
+     "Battery_Temperature": 23.0,
      "DZ2228G000": {
+      "Battery_BMS_MOSFET_Temperature": 25.2,
       "Battery_Capacity": 150.88,
       "Battery_Cell_10_Voltage": 3.374,
       "Battery_Cell_11_Voltage": 3.37,
@@ -5123,7 +5125,7 @@
       "Battery_Remaining_Capacity": 119.59,
       "Battery_SOC": 79,
       "Battery_Serial_Number": "DZ2228G000",
-      "Battery_Temperature": 25.2,
+      "Battery_Temperature": 22.6,
       "Battery_USB_present": 8,
       "Battery_Voltage": 54.155
      }
@@ -5244,10 +5246,13 @@
     }
    },
    "SA2114G000": {
+    "Active_Notifications": "No notifications",
     "Battery_Calibration_Status": "Off",
     "Battery_Capacity_kWh": 17.7152,
     "Battery_Type": "Lithium",
+    "Battery_Warnings": "No warnings",
     "Export_Limit": 6000,
+    "Fault_Code": "0000",
     "Invertor_Firmware": "D0.449-A0.449",
     "Invertor_Max_Bat_Rate": 2600,
     "Invertor_Max_Inv_Rate": 5000,
@@ -5256,7 +5261,9 @@
     "Invertor_Time": "2026-06-05T12:19:53+01:00",
     "Invertor_Type": "Hybrid_gen1",
     "Meter_Type": "Em115",
-    "Modbus_Version": "1.40"
+    "Modbus_Version": "1.40",
+    "Warning_Code": "0000",
+    "status": "Normal"
    },
    "Stats": {
     "Data_Age": "<varies>",
@@ -5746,6 +5753,7 @@
    "Battery_Details": {
     "Battery_Stack_1": {
      "BG2134G000": {
+      "Battery_BMS_MOSFET_Temperature": 27.0,
       "Battery_Capacity": 189.61,
       "Battery_Cell_10_Voltage": 3.378,
       "Battery_Cell_11_Voltage": 3.387,
@@ -5776,13 +5784,14 @@
       "Battery_Remaining_Capacity": 154.49,
       "Battery_SOC": 81,
       "Battery_Serial_Number": "BG2134G000",
-      "Battery_Temperature": 27.0,
+      "Battery_Temperature": 23.3,
       "Battery_USB_present": 8,
       "Battery_Voltage": 54.076
      },
-     "BMS_Temperature": 23.0,
      "BMS_Voltage": 53.87,
+     "Battery_Temperature": 23.0,
      "DZ2228G000": {
+      "Battery_BMS_MOSFET_Temperature": 25.2,
       "Battery_Capacity": 150.88,
       "Battery_Cell_10_Voltage": 3.374,
       "Battery_Cell_11_Voltage": 3.37,
@@ -5813,7 +5822,7 @@
       "Battery_Remaining_Capacity": 119.59,
       "Battery_SOC": 79,
       "Battery_Serial_Number": "DZ2228G000",
-      "Battery_Temperature": 25.2,
+      "Battery_Temperature": 22.6,
       "Battery_USB_present": 8,
       "Battery_Voltage": 54.155
      }
@@ -5933,10 +5942,13 @@
     }
    },
    "SA2114G000": {
+    "Active_Notifications": "No notifications",
     "Battery_Calibration_Status": "Off",
     "Battery_Capacity_kWh": 17.7152,
     "Battery_Type": "Lithium",
+    "Battery_Warnings": "No warnings",
     "Export_Limit": 6000,
+    "Fault_Code": "0000",
     "Invertor_Firmware": "D0.449-A0.449",
     "Invertor_Max_Bat_Rate": 2600,
     "Invertor_Max_Inv_Rate": 5000,
@@ -5945,7 +5957,9 @@
     "Invertor_Time": "2026-06-05T12:19:53+01:00",
     "Invertor_Type": "Hybrid_gen1",
     "Meter_Type": "Em115",
-    "Modbus_Version": "1.40"
+    "Modbus_Version": "1.40",
+    "Warning_Code": "0000",
+    "status": "Normal"
    },
    "Stats": {
     "Data_Age": "<varies>",
@@ -6431,6 +6445,7 @@
    }
   },
   "discovery removed": [
+   "BMS_Temperature",
    "Battery_BMS_Current",
    "Battery_Discharge_Current",
    "Battery_Pack_Current",
@@ -6467,6 +6482,8 @@
    "homeassistant/sensor/GivEnergy/SA2114G000_AC_Charge_Energy_Today_kWh/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_AC_Charge_Energy_Total_kWh/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_AC_Charge_Power/config",
+   "homeassistant/sensor/GivEnergy/SA2114G000_Active_Notifications/config",
+   "homeassistant/sensor/GivEnergy/SA2114G000_BG2134G000_Battery_BMS_MOSFET_Temperature/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_BG2134G000_Battery_Capacity/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_BG2134G000_Battery_Cell_10_Voltage/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_BG2134G000_Battery_Cell_11_Voltage/config",
@@ -6507,13 +6524,14 @@
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Discharge_Energy_Today_kWh/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Discharge_Energy_Total_kWh/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Power/config",
-   "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Stack_1_BMS_Temperature/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Stack_1_BMS_Voltage/config",
+   "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Stack_1_Battery_Temperature/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Throughput_Today_kWh/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Throughput_Total_kWh/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Type/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Value/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Voltage/config",
+   "homeassistant/sensor/GivEnergy/SA2114G000_Battery_Warnings/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_ppkwh/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_to_Grid/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Battery_to_House/config",
@@ -6521,6 +6539,7 @@
    "homeassistant/sensor/GivEnergy/SA2114G000_Charge_Power/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Charge_Time_Remaining/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Current_Rate/config",
+   "homeassistant/sensor/GivEnergy/SA2114G000_DZ2228G000_Battery_BMS_MOSFET_Temperature/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_DZ2228G000_Battery_Capacity/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_DZ2228G000_Battery_Cell_10_Voltage/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_DZ2228G000_Battery_Cell_11_Voltage/config",
@@ -6568,6 +6587,7 @@
    "homeassistant/sensor/GivEnergy/SA2114G000_Export_Limit/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Export_Power/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Export_Rate/config",
+   "homeassistant/sensor/GivEnergy/SA2114G000_Fault_Code/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_GivTCP_Version/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Grid_Current/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Grid_Frequency/config",
@@ -6621,7 +6641,9 @@
    "homeassistant/sensor/GivEnergy/SA2114G000_Solar_to_House/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Time_Since_Last_Update/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Timeout_Error/config",
+   "homeassistant/sensor/GivEnergy/SA2114G000_Warning_Code/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_Write_Count/config",
+   "homeassistant/sensor/GivEnergy/SA2114G000_status/config",
    "homeassistant/sensor/GivEnergy/SA2114G000_status/config",
    "homeassistant/switch/GivEnergy/SA2114G000_Eco_Mode/config",
    "homeassistant/switch/GivEnergy/SA2114G000_Enable_Charge_Schedule/config",
@@ -6636,6 +6658,7 @@
    "homeassistant/time/GivEnergy/SA2114G000_Discharge_start_time_slot_2/config"
   ],
   "mqtt topics": [
+   "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BG2134G000/Battery_BMS_MOSFET_Temperature",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BG2134G000/Battery_Capacity",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BG2134G000/Battery_Cell_10_Voltage",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BG2134G000/Battery_Cell_11_Voltage",
@@ -6669,8 +6692,9 @@
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BG2134G000/Battery_Temperature",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BG2134G000/Battery_USB_present",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BG2134G000/Battery_Voltage",
-   "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BMS_Temperature",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/BMS_Voltage",
+   "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/Battery_Temperature",
+   "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/DZ2228G000/Battery_BMS_MOSFET_Temperature",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/DZ2228G000/Battery_Capacity",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/DZ2228G000/Battery_Cell_10_Voltage",
    "GivEnergy/SA2114G000/Battery_Details/Battery_Stack_1/DZ2228G000/Battery_Cell_11_Voltage",
@@ -6800,10 +6824,13 @@
    "GivEnergy/SA2114G000/Power/Power/SOC",
    "GivEnergy/SA2114G000/Power/Power/SOC_kWh",
    "GivEnergy/SA2114G000/Power/Power/Self_Consumption_Power",
+   "GivEnergy/SA2114G000/SA2114G000/Active_Notifications",
    "GivEnergy/SA2114G000/SA2114G000/Battery_Calibration_Status",
    "GivEnergy/SA2114G000/SA2114G000/Battery_Capacity_kWh",
    "GivEnergy/SA2114G000/SA2114G000/Battery_Type",
+   "GivEnergy/SA2114G000/SA2114G000/Battery_Warnings",
    "GivEnergy/SA2114G000/SA2114G000/Export_Limit",
+   "GivEnergy/SA2114G000/SA2114G000/Fault_Code",
    "GivEnergy/SA2114G000/SA2114G000/Invertor_Firmware",
    "GivEnergy/SA2114G000/SA2114G000/Invertor_Max_Bat_Rate",
    "GivEnergy/SA2114G000/SA2114G000/Invertor_Max_Inv_Rate",
@@ -6813,6 +6840,8 @@
    "GivEnergy/SA2114G000/SA2114G000/Invertor_Type",
    "GivEnergy/SA2114G000/SA2114G000/Meter_Type",
    "GivEnergy/SA2114G000/SA2114G000/Modbus_Version",
+   "GivEnergy/SA2114G000/SA2114G000/Warning_Code",
+   "GivEnergy/SA2114G000/SA2114G000/status",
    "GivEnergy/SA2114G000/Stats/Data_Age",
    "GivEnergy/SA2114G000/Stats/GivTCP_Version",
    "GivEnergy/SA2114G000/Stats/Last_Updated_Time",

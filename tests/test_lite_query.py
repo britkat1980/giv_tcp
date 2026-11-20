@@ -9,6 +9,12 @@ import pytest
 import modbus_patches
 import read
 
+@pytest.fixture(autouse=True)
+def no_cloud_data(monkeypatch):
+    # These tests are about the module and stack reads. What lite mode leaves to the dongle's own polls on three-phase
+    # hybrids is tested in test_lite_cloud_data.py
+    monkeypatch.setattr(read, "CLOUD_SLOW_BASES", {})
+
 def skipped(session, monkeypatch, light, full):
     monkeypatch.setattr(read.GiV_Settings, "lite_query", light, raising=False)
     async def noop(**kwargs):

@@ -47,3 +47,14 @@ def test_blank_reply_keeps_previous():
     before, during = results[blank[0] - 1][1], results[blank[0]][1]
     assert during == before
     assert during["Total"]["Inverter_Out_Energy_Total_kWh"] == 18394.2
+
+def test_inverter_power_can_be_negative(monkeypatch):
+    # #701: each inverter's power behind an EMS is negative while it charges, and the limits only allowed 0 and up, so it
+    # stayed at the last positive value (636W) until it discharged again
+    import datetime
+    monkeypatch.setattr(read.GiV_Settings, "data_smoother", "Low", raising=False)
+    now = datetime.datetime(2026, 11, 1, 12, 0)
+    check = lambda new, old: read.dataSmoother2(("Power", new), ("Power", old), now.isoformat(), "EMS", now)
+    assert check(-3000, -2900) == -3000
+    assert check(0, 636) == 0                # idle
+    assert check(-30000, -2900) == -2900     # still bounded

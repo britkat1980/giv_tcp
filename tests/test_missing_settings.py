@@ -5,7 +5,7 @@ import types
 import pytest
 
 import read
-from givenergy_modbus.model.register import HR
+from givenergy_modbus.model.register import HR, IR
 
 def test_enum_text():
     assert read.enumText(None) is None
@@ -45,3 +45,21 @@ def test_full_refresh_retried_while_settings_missing():
         retry, retries = read.settingsRetry(hr, retries)
         assert retry
     assert read.settingsRetry(hr, retries) == (False, 0)   # give up until the next full refresh
+
+def process_without_ir(plants, device, missing):
+    session = plants.get(device)
+    session.activate(session.state)
+    try:
+        cache = session.plant.register_caches[session.plant.capabilities.inverter_address]
+        for r in missing:
+            cache.pop(IR(r), None)
+        return json.loads(read.processData(session.plant))
+    finally:
+        session.activate(session.state)
+
+def test_3ph_bad_read_check_with_a_value_not_read(plants, caplog):
+    # #583: after reconnecting, a value the bad-read check uses (here the heatsink temperature, IR 41) wasn't read,
+    # and comparing None with a number failed the poll with a TypeError. It's a bad read, so the last data is used
+    result = process_without_ir(plants, "hybrid_3ph", [41])
+    assert "TypeError" not in result["result"]
+    assert "Inverter data not all read yet, so using the last good data" in caplog.text

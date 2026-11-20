@@ -90,7 +90,7 @@ class Entity_Type():
         "Invertor_Firmware":GEType("sensor","string","",0,10000,False,False,False),
         "Modbus_Version":GEType("sensor","","",1,10,False,True,False),
         "Meter_Type":GEType("sensor","string","","","",False,False,False),
-        "Export_Limit":GEType("sensor","","",0,22000,False,False,False),
+        "Export_Limit":GEType("sensor","","",0,22000,True,False,False),     # zero is a real limit (a zero-export site)
         "Invertor_Type":GEType("sensor","string","","","",False,False,False),
         "Invertor_Temperature":GEType("sensor","temperature","",'-maxTemp','maxTemp',False,True,False),
         "Discharge_start_time_slot_1":GEType("select","","setDischargeStart1","","",False,False,False),
@@ -152,6 +152,7 @@ class Entity_Type():
         "Battery_Charge_MOS_State":GEType("sensor","string","","","",False,False,False),
         "Battery_Discharge_MOS_State":GEType("sensor","string","","","",False,False,False),
         "BMS_Temperature":GEType("sensor","temperature","",'-maxTemp','maxTemp',False,True,False),
+        "Battery_BMS_MOSFET_Temperature":GEType("sensor","temperature","",'-maxTemp','maxTemp',False,True,False),
         "BMS_Voltage":GEType("sensor","voltage","",0,500,False,True,False),
         "Battery_Cell_1_Voltage":GEType("sensor","voltage","",0,'maxCellVoltage',False,True,False),
         "Battery_Cell_2_Voltage":GEType("sensor","voltage","",0,'maxCellVoltage',False,True,False),
@@ -287,13 +288,20 @@ class Entity_Type():
         "Stack_Charge_Energy_Total_kWh":GEType("sensor","energy","",0,'maxTotalEnergy',False,True,False),
         "Battery_Calibration":GEType("select","","setBatteryCalibration","","",True,False,False),
         "Battery_Calibration_Status":GEType("sensor","string","","","",True,False,False),
+        "Fault_Code":GEType("sensor","string","","","",True,False,False),
+        "Warning_Code":GEType("sensor","string","","","",True,False,False),
+        "Battery_Warnings":GEType("sensor","string","","","",True,False,False),
+        "Faults":GEType("sensor","string","","","",True,False,False),
+        "Active_Notifications":GEType("sensor","string","","","",True,False,False),
+        "Last_Notification":GEType("sensor","string","","","",True,False,False),
+        "Last_Notification_Time":GEType("sensor","timestamp","","","",False,False,False),
 
     ### EMS ###
         "Inverter_Count":GEType("sensor","","",0,4,False,False,False),
         "Meter_Count":GEType("sensor","","",0,8,False,False,False),
         "EMS_Status":GEType("sensor","","","","",False,False,False),
         "Remaining_Battery_Wh":GEType("sensor","","",0,1000000,False,True,False),
-        "Power":GEType("sensor","power","",0,'maxPower',False,True,False),
+        "Power":GEType("sensor","power","",'-maxInvPower','maxInvPower',True,True,False),      # each inverter's power: negative while charging (#701)
         "Temperature":GEType("sensor","temperature","",0,'maxTemp',False,True,False),
         "Calculated_Load_Power":GEType("sensor","power","",0,'maxPower',False,True,False),
         "Measured_Load_Power":GEType("sensor","power","",0,'maxPower',False,True,False),
