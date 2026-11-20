@@ -76,7 +76,7 @@ Keep it below the dongle's idle timeout: many dongles close a connection after a
 
 ### 3.5 Lite mode
 
-Per inverter (default off), only for HV battery stacks: three-phase and HV Gen 3. Every read of a battery stack or battery module is passed on by the inverter to the battery. In lite mode GivTCP reads each battery module only until it has data, and each stack only on full refreshes. SOC, battery power, current and voltage are still read every poll. Module and stack values usually keep updating anyway, because the dongle reads them itself for the cloud and passes the answers on to GivTCP.
+Per inverter (default off), only for HV battery stacks: three-phase and HV Gen 3. Every read of a battery stack or battery module is passed on by the inverter to the battery. In lite mode GivTCP reads each battery module only until it has data, and each stack only on full refreshes. SOC, battery power, current and voltage are still read every poll. Module and stack values usually keep updating anyway, because the dongle reads them itself for the cloud and passes the answers on to GivTCP. Lite mode for Hybrid 3 phase Gen 3 and HV Gen 3 use this to reduced the load on the inverter even further and only query data this must be refreshed in intervals shorter than 5 minutes. For the rest it relies on the dongle automatic refreshes. 
 
 ### 3.6 Use latest dongle firmware
 
@@ -96,7 +96,8 @@ Timers are in seconds. Results are "before → after", in interruptions per day,
 
 | Inverter (model, DTC) | Inverter firmware | Inverter software | Battery | Stack firmware | PV | Dongle, connection | Cloud | Loop timer | Full timer | Skip Reads Fresher Than | Pause When Not Responding | Wait After Connecting | Lite mode | GivTCP version | Result | Who / issue |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 3-phase hybrid Gen3 11kW | ZAAA090909 | ZA1.0 | HV, 6 modules | BABA0009 | 2 strings 11kWp & AC-Coupled 1.8kWp | Ethernet | Blocked | 60 | 3600 | 45 | 600 | 10 | On | 3.6.10 | Before: 5-6 interruptions per day that needed restarts, with inverter hard crashes every week. After: 1-2 pauses per day that recover automatically, no restarts | @lancer73 |
+| 3-phase hybrid Gen3 11kW | ZAAA090909 | ZA1.0 | HV, 6 modules | BABA0009 | 2 strings 11kWp & AC-Coupled 1.8kWp | Ethernet | Blocked | 60 | 3600 | 45 | 600 | 10 | On | 3.6.14 | Before: 5-6 interruptions per day that needed restarts, with inverter hard crashes every week. After: 1-2 pauses per day that recover automatically, no restarts | @lancer73 |
+| HV Gen 3 | | | HV, 10 modules | | | Ethernet | Active | 90 | 360 | 0 | 600 | 0 | On | 3.6.15 | Before: Daily crash. After" Runs stable with 1-2 pauses per day. | @RogueCarbon |
 | | | | | | | | | | | | | | | |
 
 ### What the columns mean
